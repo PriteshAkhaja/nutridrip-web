@@ -98,8 +98,17 @@ export default async function PrintRxPage({ params }: { params: Promise<{ id: st
             <span className="t-micro">Patient</span>
             <div className="t-h3 mt-1">{patient?.name ?? "—"}</div>
             <div className="t-small text-[var(--color-ink-2)] mt-1">
-              {ageFrom(p.dob)} · {p.gender ?? "—"} · {p.bloodGroup ?? plan.bloodGroup ?? "—"}
-              {p.weightKg || plan.patientWeightKg ? ` · ${p.weightKg ?? plan.patientWeightKg} kg` : ""}
+              {[
+                plan.patientAge ? `${plan.patientAge} y` : ageFrom(p.dob),
+                // Stored lowercase on the record; a prescription is a formal
+                // document and "male" in the middle of one reads as a typo.
+                p.gender ? p.gender.charAt(0).toUpperCase() + p.gender.slice(1) : "—",
+                plan.bloodGroup ?? p.bloodGroup ?? "—",
+                (plan.patientWeightKg ?? p.weightKg) ? `${plan.patientWeightKg ?? p.weightKg} kg` : null,
+                (plan.patientHeightCm ?? p.heightCm) ? `${plan.patientHeightCm ?? p.heightCm} cm` : null,
+              ]
+                .filter(Boolean)
+                .join(" · ")}
             </div>
             {patient?.phone && <div className="t-data text-[13px] mt-1">{patient.phone}</div>}
             {(p.address || p.city) && (

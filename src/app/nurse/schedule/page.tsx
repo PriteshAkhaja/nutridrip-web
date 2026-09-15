@@ -7,6 +7,7 @@ import { Booking, User } from "@/lib/models";
 import { StatusPill } from "@/components/ui/Pill";
 import { EmptyState } from "@/components/ui/States";
 import { formatDate, formatTime } from "@/lib/data/inventory";
+import { plansFor } from "@/lib/data/plans";
 import { NURSE_TABS } from "../tabs";
 
 export const metadata: Metadata = { title: "Schedule" };
@@ -48,6 +49,12 @@ export default async function NurseSchedulePage({
     Array<{ _id: unknown; name: string }>
   >();
   const nameById = new Map(patients.map((p) => [String(p._id), p.name]));
+
+  // A plan is a course, not a session — it has no slot on any day, so it
+  // cannot join the list above. It sits under it instead: this screen is
+  // "what am I doing next", and reference material does not come first.
+  // Only on Upcoming — a plan is what is still to be given.
+  const plans = past ? [] : await plansFor(session);
 
   const byDay = new Map<string, typeof bookings>();
   for (const b of bookings) {
@@ -120,6 +127,36 @@ export default async function NurseSchedulePage({
           ))}
         </div>
       )}
+      {plans.length > 0 ? (
+        <section className="mt-8 pt-6 border-t border-[var(--color-line)]">
+          <span className="t-micro block mb-1">Treatment plans · {plans.length}</span>
+          <p className="t-small text-[var(--color-ink-3)] mb-3">
+            Courses your physician wrote. Read one before the session it belongs to.
+          </p>
+          <div className="flex flex-col gap-2">
+            {plans.map((p) => (
+              <Link
+                key={p.id}
+                href={`/nurse/plan/${p.id}`}
+                className="rounded-[var(--radius-md)] border border-[var(--color-line)] bg-[var(--color-surface)] p-4 flex items-center justify-between gap-3 no-underline hover:no-underline hover:border-[var(--color-primary-line)] transition-colors duration-150"
+              >
+                <div className="flex flex-col min-w-0">
+                  <span className="t-body font-medium truncate">{p.patientName}</span>
+                  <span className="t-small text-[var(--color-ink-3)] truncate">
+                    {p.diagnosis ?? `Written by ${p.doctorName}`}
+                  </span>
+                </div>
+                <div className="flex flex-col items-end flex-none">
+                  <span className="t-data text-[14.5px]">
+                    {p.sessionsPast}/{p.sessions.length}
+                  </span>
+                  <span className="t-small text-[var(--color-ink-3)]">sessions</span>
+                </div>
+              </Link>
+            ))}
+          </div>
+        </section>
+      ) : null}
     </MobileShell>
   );
 }

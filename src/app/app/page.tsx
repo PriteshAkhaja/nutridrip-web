@@ -12,6 +12,7 @@ import { ButtonLink } from "@/components/ui/Button";
 import { riskColor, riskBand } from "@/lib/models/types";
 import { approvalState } from "@/lib/clinical/validity";
 import { formatDate, formatTime } from "@/lib/data/inventory";
+import { plansFor } from "@/lib/data/plans";
 import { PATIENT_TABS } from "./tabs";
 
 export const metadata: Metadata = { title: "Home" };
@@ -88,7 +89,7 @@ export default async function PatientHomePage() {
   const session = await requireRole("patient", "superadmin");
   await connectDB();
 
-  const [user, quiz, upcoming] = await Promise.all([
+  const [user, quiz, upcoming, plans] = await Promise.all([
     User.findById(session.sub).lean<{ name: string; patient?: { vitalityScore?: number } } | null>(),
     HealthQuiz.findOne({ patientId: session.sub }).sort({ completedAt: -1 }).lean<{
       _id: unknown;
@@ -117,7 +118,12 @@ export default async function PatientHomePage() {
         remainingMl?: number;
         bagVolumeMl?: number;
       } | null>(),
+    // Drafts are excluded inside plansFor — a plan the physician has not
+    // shared yet is not the patient's to read.
+    plansFor(session),
   ]);
+
+  const plan = plans[0] ?? null;
 
   const lowest = quiz
     ? [...quiz.nutrientRisks].sort((a, b) => a.pct - b.pct).slice(0, 3)
@@ -174,6 +180,34 @@ export default async function PatientHomePage() {
           />
         </div>
       )}
+
+      {/* ---------------- Treatment plan ---------------- */}
+      {plan ? (
+        <Link
+          href={`/app/plan/${plan.id}`}
+          className="rounded-[var(--radius-lg)] border border-[var(--color-line)] bg-[var(--color-surface)] p-6 mb-4 flex items-start justify-between gap-4 no-underline hover:no-underline hover:border-[var(--color-primary-line)] transition-colors duration-150"
+        >
+          <div className="min-w-0">
+            <span className="t-micro">Your treatment plan</span>
+            <h2 className="t-h3 mt-1">
+              {plan.totalWeeks} week{plan.totalWeeks === 1 ? "" : "s"} · {plan.sessions.length}{" "}
+              session{plan.sessions.length === 1 ? "" : "s"}
+            </h2>
+            <span className="t-small text-[var(--color-ink-2)] block mt-1">
+              {plan.diagnosis ?? `Written by ${plan.doctorName}`}
+            </span>
+            <span className="t-small text-[var(--color-ink-3)] block mt-2">
+              See every drip and dose →
+            </span>
+          </div>
+          <div className="flex flex-col items-end flex-none">
+            <span className="t-data text-[18px]">
+              {plan.sessionsPast}/{plan.sessions.length}
+            </span>
+            <span className="t-small text-[var(--color-ink-3)]">so far</span>
+          </div>
+        </Link>
+      ) : null}
 
       {/* ---------------- Next session ---------------- */}
       {upcoming ? (

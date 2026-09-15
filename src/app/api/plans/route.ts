@@ -5,9 +5,19 @@ import { getSession } from "@/lib/auth/session";
 import { can } from "@/lib/auth/rbac";
 import { notify } from "@/lib/notify";
 import { ROUTES, UNITS } from "@/lib/models/types";
+import { componentsFromRecipe, type PlanComponentInput } from "@/lib/clinical/plan-input";
 import { ok, fail, handleError } from "@/lib/api";
 
 const Component = z.object({
+  /**
+   * The stocked product this line draws from.
+   *
+   * Optional only because plans written before the builder recorded it still
+   * have to load. Everything written from now on carries it: a line that is
+   * only a typed name cannot be checked against the shelf and cannot be found
+   * when a manufacturer recalls a batch.
+   */
+  masterId: z.string().optional(),
   name: z.string().min(1).max(120),
   dose: z.number().positive(),
   unit: z.enum(UNITS),
@@ -31,6 +41,15 @@ const CreatePlan = z.object({
   weeks: z.array(z.object({ weekNum: z.number().int().min(1), sessions: z.array(PlanSession) })).default([]),
   sharedWithNurse: z.boolean().default(false),
   nurseId: z.string().optional(),
+  /**
+   * What the physician measured at the consultation. Left out, the patient's
+   * record stands in — but a weight taken today and a weight typed in at
+   * signup are not the same fact, and a dose is worked out from the first.
+   */
+  patientAge: z.string().max(20).optional(),
+  patientWeightKg: z.number().positive().max(500).optional(),
+  patientHeightCm: z.number().positive().max(300).optional(),
+  bloodGroup: z.string().max(8).optional(),
 });
 
 export async function GET(req: Request) {
@@ -71,23 +90,19 @@ export async function POST(req: Request) {
     } | null>();
     if (!patient || patient.role !== "patient") return fail("That is not a patient account", 422);
 
-    // Fill in each session's components from the drip when they were not typed.
+    // The builder sends components it has already filled from the recipe. A
+    // caller that sends none still gets them, through the same helper the form
+    // uses — so the prescription reads the same either way.
     const weeks = [];
     for (const w of input.weeks) {
       const sessions = [];
       for (const s of w.sessions) {
-        let components = s.components;
+        let components: PlanComponentInput[] = s.components;
         if (components.length === 0 && s.dripId) {
           const drip = await Drip.findById(s.dripId).lean<{
-            ingredients: Array<{ name?: string; dose: number; unit: string; role: string }>;
+            ingredients: Array<{ masterId?: unknown; name?: string; dose: number; unit: string; role: string }>;
           } | null>();
-          components = (drip?.ingredients ?? []).map((i) => ({
-            name: i.name ?? "",
-            dose: i.dose,
-            unit: i.unit as (typeof UNITS)[number],
-            route: (i.role === "FLUID" ? "IV Drip in NS" : "Add to Drip Bag") as (typeof ROUTES)[number],
-            carrier: i.role === "FLUID" ? undefined : "NS 500 ml",
-          }));
+          components = componentsFromRecipe(drip?.ingredients ?? []);
         }
         sessions.push({ ...s, date: new Date(s.date), components });
       }
@@ -103,10 +118,10 @@ export async function POST(req: Request) {
       doctorId: session!.sub,
       nurseId: input.nurseId,
       diagnosis: input.diagnosis,
-      patientAge: age,
-      patientWeightKg: patient.patient?.weightKg,
-      patientHeightCm: patient.patient?.heightCm,
-      bloodGroup: patient.patient?.bloodGroup,
+      patientAge: input.patientAge ?? age,
+      patientWeightKg: input.patientWeightKg ?? patient.patient?.weightKg,
+      patientHeightCm: input.patientHeightCm ?? patient.patient?.heightCm,
+      bloodGroup: input.bloodGroup ?? patient.patient?.bloodGroup,
       startDate: new Date(input.startDate),
       totalWeeks: input.totalWeeks,
       weeks,
@@ -114,20 +129,25 @@ export async function POST(req: Request) {
       status: input.sharedWithNurse ? "active" : "draft",
     });
 
-    await notify(
-      input.patientId,
-      "Your physician has written a treatment plan",
-      `${input.totalWeeks} weeks${input.diagnosis ? ` · ${input.diagnosis}` : ""}`,
-      "info",
-      "/app"
-    );
+    // A draft has been shared with nobody, so nobody is told about it yet —
+    // the screen promises "it stays a draft until you share it", and a bell
+    // that rings anyway makes that promise false.
+    if (input.sharedWithNurse) {
+      await notify(
+        input.patientId,
+        "Your physician has written a treatment plan",
+        `${input.totalWeeks} weeks${input.diagnosis ? ` · ${input.diagnosis}` : ""}`,
+        "info",
+        `/app/plan/${String(plan._id)}`
+      );
+    }
     if (input.sharedWithNurse && input.nurseId) {
       await notify(
         input.nurseId,
         `Treatment plan shared · ${patient.name}`,
         `${input.totalWeeks} weeks of sessions to run.`,
         "info",
-        "/nurse/schedule"
+        `/nurse/plan/${String(plan._id)}`
       );
     }
 

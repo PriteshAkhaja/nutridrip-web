@@ -33,6 +33,7 @@ import {
 } from "../src/lib/models";
 import { connectDB } from "../src/lib/db/mongoose";
 import { CHECKLIST_STEPS } from "../src/lib/clinical/checklist";
+import { componentsFromRecipe } from "../src/lib/clinical/plan-input";
 import { seedQuizQuestions } from "../src/lib/clinical/quiz-store";
 
 const DAY = 86_400_000;
@@ -726,6 +727,7 @@ async function seedClinical(
   const myers = drips.find((d) => d.slug === "myers-revive")!;
   const immune = drips.find((d) => d.slug === "immune-shield")!;
   const jetlag = drips.find((d) => d.slug === "jetlag-reset")!;
+  const iron = drips.find((d) => d.slug === "iron-restore")!;
 
   await HealthQuiz.create([
     {
@@ -898,6 +900,49 @@ async function seedClinical(
     },
   ]);
 
+  /**
+   * Built from the recipes rather than retyped, so every line carries the
+   * product it is drawn from. A component that is only a name cannot be
+   * checked against the shelf and cannot be found when a batch is recalled.
+   *
+   * B12 is then moved to an intramuscular injection, as a physician would: the
+   * recipe says what is in the bag, the prescription says how it reaches the
+   * patient, and the two are not the same decision.
+   */
+  const myersComponents = componentsFromRecipe(myers.ingredients).map((c) =>
+    c.name.toLowerCase().includes("cyanocobalamin")
+      ? { ...c, route: "IM Injection" as const, carrier: undefined }
+      : c
+  );
+  const ironComponents = componentsFromRecipe(iron.ingredients);
+
+  /**
+   * A course is not the same drip on a metronome, and the demo dataset has to
+   * say so — it is the whole reason a plan is written week by week rather than
+   * generated. Riya's ferritin came back at 18 ng/mL on the lab report seeded
+   * below, so the fatigue protocol runs for a fortnight and then steps across
+   * to iron, with the reason written on the session the nurse will read.
+   */
+  const planWeeks = [1, 2, 3, 4].map((weekNum) => {
+    const onIron = weekNum >= 3;
+    const notes: Record<number, string> = {
+      1: "Start at 140 ml/hr and titrate up if tolerated.",
+      3: "Switching to iron on the back of the August ferritin. Test dose first, and stay for the full 30 minutes afterwards.",
+    };
+    return {
+      weekNum,
+      sessions: [
+        {
+          date: days(-7 + (weekNum - 1) * 7),
+          dripId: onIron ? iron._id : myers._id,
+          dripName: onIron ? iron.name : myers.name,
+          sessionNotes: notes[weekNum] ?? "",
+          components: onIron ? ironComponents : myersComponents,
+        },
+      ],
+    };
+  });
+
   await TreatmentPlan.create({
     patientId: riya._id,
     doctorId: doctor._id,
@@ -911,23 +956,7 @@ async function seedClinical(
     totalWeeks: 4,
     sharedWithNurse: true,
     status: "active",
-    weeks: [1, 2, 3, 4].map((weekNum) => ({
-      weekNum,
-      sessions: [
-        {
-          date: days(-7 + (weekNum - 1) * 7),
-          dripId: myers._id,
-          dripName: myers.name,
-          sessionNotes: weekNum === 1 ? "Start at 140 ml/hr and titrate up if tolerated." : "",
-          components: [
-            { name: "Ascorbic acid", dose: 7500, unit: "mg", route: "IV Drip in NS", carrier: "NS 500 ml" },
-            { name: "Magnesium sulphate", dose: 1000, unit: "mg", route: "Add to Drip Bag", carrier: "NS 500 ml" },
-            { name: "B-complex", dose: 2, unit: "ml", route: "Add to Drip Bag", carrier: "NS 500 ml" },
-            { name: "Cyanocobalamin", dose: 1000, unit: "mcg", route: "IM Injection", carrier: "—" },
-          ],
-        },
-      ],
-    })),
+    weeks: planWeeks,
   });
 
   await LabReport.create([
