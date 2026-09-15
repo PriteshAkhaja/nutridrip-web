@@ -8,6 +8,15 @@ describe("editable site copy", () => {
     }
   });
 
+  it("holds only copy — nothing that has no sensible default", () => {
+    // Billing registration details lived here briefly and had to be blank,
+    // which broke the rule above. They are configuration, not copy, and now
+    // live in BillingSettings. Keep it that way.
+    for (const key of Object.keys(CONTENT_DEFAULTS)) {
+      expect(key.startsWith("billing."), key).toBe(false);
+    }
+  });
+
   it("puts every key in exactly one editor group", () => {
     const grouped = Object.values(CONTENT_GROUPS).flat();
     expect(new Set(grouped).size).toBe(grouped.length);

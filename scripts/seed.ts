@@ -33,6 +33,7 @@ import {
 } from "../src/lib/models";
 import { connectDB } from "../src/lib/db/mongoose";
 import { CHECKLIST_STEPS } from "../src/lib/clinical/checklist";
+import { planAllocation } from "../src/lib/inventory/dispatch";
 import { componentsFromRecipe } from "../src/lib/clinical/plan-input";
 import { seedQuizQuestions } from "../src/lib/clinical/quiz-store";
 
@@ -148,7 +149,9 @@ async function seedUsers() {
         pincode: "560038",
         partnerSince: new Date("2025-03-14"),
         monthlyVolumeTarget: 120,
-        gstin: "29AABCH1234K1Z5",
+        // Check digit computed, not invented: a seeded GSTIN that failed its
+        // own validation would show a warning on every visit to the form.
+        gstin: "29AABCH1234K1ZN",
       },
     },
   ]);
@@ -327,8 +330,24 @@ const LOTS: LotSeed[] = [
   { key: "anaphylaxis", batchNo: "AK-2026-04", brand: "Emergency kit", manufacturer: "NutriDrip", expiryDays: 580, content: 1, contentUnit: "unit", form: "Piece", qty: 14, cost: 1200, mrp: 1800 },
 ];
 
+/**
+ * How a drip is classified on a tax invoice, until an accountant says
+ * otherwise.
+ *
+ * PLACEHOLDERS. 3004.90.99 is "other medicaments, put up in measured doses" at
+ * 12%, which is where a made-up infusion most plausibly sits — but the
+ * classification of a nutrient infusion supplied to a clinic is a question for
+ * whoever files the returns, not for this file. Both are editable per drip at
+ * /admin/inventory/drips, so a correction is a form field rather than a deploy.
+ */
+const DEFAULT_HSN = "30049099";
+const DEFAULT_GST_RATE = 12;
+
 type DripSeed = {
   slug: string;
+  /** Overrides DEFAULT_HSN / DEFAULT_GST_RATE for a drip that is classed differently. */
+  hsnCode?: string;
+  gstRate?: number;
   name: string;
   category: string;
   tagline: string;
@@ -336,6 +355,15 @@ type DripSeed = {
   infusionNotes: string;
   price: number;
   durationMin: number;
+  /**
+   * The upper end, when a session is honestly a range.
+   *
+   * The same protocol runs longer for somebody who flushes on magnesium, and
+   * iron is titrated after a test dose. A patient reads this to know roughly
+   * how long they are sitting there, and a single figure they then overrun
+   * reads as something having gone wrong.
+   */
+  durationToMin?: number;
   requiresApproval?: boolean;
   bestFor: string[];
   goodToKnow: string[];
@@ -378,6 +406,7 @@ const DRIPS: DripSeed[] = [
       "Run the carrier clear before the ascorbic acid is introduced. Magnesium is given slowly — a warm flush is expected and is not an adverse event.",
     price: 8400,
     durationMin: 45,
+    durationToMin: 60,
     bestFor: ["Persistent fatigue", "Poor sleep", "High workload weeks"],
     goodToKnow: ["Most patients feel the lift within 24 hours", "Magnesium can cause a brief warm sensation"],
     ingredients: [
@@ -407,6 +436,7 @@ const DRIPS: DripSeed[] = [
     infusionNotes: "Longer run at a lower rate. Check the site at the halfway mark.",
     price: 10600,
     durationMin: 60,
+    durationToMin: 80,
     bestFor: ["Fatigue lasting over a month", "Athletic overtraining"],
     goodToKnow: ["Usually prescribed as a course of four"],
     ingredients: [
@@ -434,6 +464,7 @@ const DRIPS: DripSeed[] = [
     infusionNotes: "Can be run at 300 ml/hr in an otherwise healthy adult.",
     price: 6800,
     durationMin: 30,
+    durationToMin: 40,
     bestFor: ["Long-haul travel", "Shift changes"],
     goodToKnow: ["Book within 24 hours of landing for the clearest effect"],
     ingredients: [
@@ -461,6 +492,7 @@ const DRIPS: DripSeed[] = [
       "Give a test dose over the first 15 minutes and observe. Stop at the first sign of a reaction.",
     price: 9800,
     durationMin: 90,
+    durationToMin: 120,
     bestFor: ["Confirmed iron deficiency anaemia"],
     goodToKnow: ["Labs required before the physician can approve", "Observation period is longer"],
     ingredients: [
@@ -487,6 +519,7 @@ const DRIPS: DripSeed[] = [
     infusionNotes: "High-dose ascorbic acid is contraindicated in G6PD deficiency — screen before approving.",
     price: 9200,
     durationMin: 60,
+    durationToMin: 80,
     bestFor: ["Recurrent infections", "Pre-travel", "Recovery weeks"],
     goodToKnow: ["G6PD screening required at high doses"],
     ingredients: [
@@ -513,6 +546,7 @@ const DRIPS: DripSeed[] = [
     infusionNotes: "Introduce alpha-lipoic acid last, after the carrier has run clear.",
     price: 9600,
     durationMin: 60,
+    durationToMin: 80,
     bestFor: ["Post-viral fatigue", "Brain fog"],
     goodToKnow: ["Best started at least seven days after fever resolves"],
     ingredients: [
@@ -540,6 +574,7 @@ const DRIPS: DripSeed[] = [
     infusionNotes: "Glutathione is a slow IV push over no less than 10 minutes. Never mix into the bag.",
     price: 11000,
     durationMin: 50,
+    durationToMin: 70,
     bestFor: ["Dull skin", "Pigmentation", "Pre-event"],
     goodToKnow: ["A course of six is the usual protocol"],
     ingredients: [
@@ -566,6 +601,7 @@ const DRIPS: DripSeed[] = [
     infusionNotes: "Run fast unless there is a cardiac or renal history.",
     price: 5400,
     durationMin: 30,
+    durationToMin: 40,
     requiresApproval: true,
     bestFor: ["Dehydration", "Heat exhaustion", "After a long run"],
     goodToKnow: ["The shortest session on the menu"],
@@ -593,6 +629,7 @@ const DRIPS: DripSeed[] = [
     infusionNotes: "Not to be given within 6 hours of competition under anti-doping rules.",
     price: 10200,
     durationMin: 55,
+    durationToMin: 75,
     bestFor: ["Race recovery", "Heavy training blocks"],
     goodToKnow: ["Check your federation's anti-doping list before booking"],
     ingredients: [
@@ -671,10 +708,13 @@ async function seedDrips(
       description: d.description,
       infusionNotes: d.infusionNotes,
       durationMin: d.durationMin,
+      durationToMin: d.durationToMin,
       priceInr: d.price,
       // category was declared on the seed type but never written, so every
       // seeded drip came out with none and fell back to "Wellness".
       category: d.category,
+      hsnCode: d.hsnCode ?? DEFAULT_HSN,
+      gstRate: d.gstRate ?? DEFAULT_GST_RATE,
       tags: d.tags ?? [],
       icon: d.icon,
       volumeMl: d.volumeMl,
@@ -722,7 +762,7 @@ async function seedClinical(
   users: Awaited<ReturnType<typeof seedUsers>>,
   drips: Awaited<ReturnType<typeof seedDrips>>
 ) {
-  const { doctor, nurse, nurse2, clinic, patients } = users;
+  const { admin, doctor, nurse, nurse2, clinic, patients } = users;
   const [riya, krishnan, bhatt, iyer] = patients;
   const myers = drips.find((d) => d.slug === "myers-revive")!;
   const immune = drips.find((d) => d.slug === "immune-shield")!;
@@ -1075,11 +1115,132 @@ async function seedClinical(
       scheduledDelivery: days(1),
     },
   ]);
+
+  /**
+   * One order that has actually been supplied.
+   *
+   * Without it nothing downstream of dispatch can be seen at all — the batch
+   * numbers a clinic keeps for a recall, the consumption ledger, and the tax
+   * invoice all begin the moment stock leaves the shelf. And dispatch itself
+   * cannot be run here to produce one: it is transactional, so it needs a
+   * replica set, and a developer's standalone mongod has none.
+   *
+   * So the ledger is written the way dispatch writes it, from the same FEFO
+   * planner — the lots below are the ones the real code would have drawn, not
+   * a plausible-looking invention, and the stock they came from is decremented
+   * so the shelf still adds up afterwards.
+   */
+  const [supplied] = await Order.create([
+    {
+      orderNo: "PO-2026-0110",
+      patientRef: "HF-CL-0037",
+      clinicId: clinic._id,
+      orderedBy: clinic._id,
+      status: "DISPATCHED",
+      includeKits: true,
+      lines: [
+        { dripId: myers._id, dripName: myers.name, quantity: 2, withKit: true, unitPrice: myers.priceInr },
+        { dripId: immune._id, dripName: immune.name, quantity: 1, withKit: true, unitPrice: immune.priceInr },
+      ],
+      amount: myers.priceInr * 2 + immune.priceInr,
+      confirmedAt: days(-6),
+      dispatchedAt: days(-5),
+    },
+  ]);
+
+  /**
+   * And one that is confirmed but not yet gone.
+   *
+   * The clinic's order page has a "Reserved for you" table, and the invoice
+   * refuses with "stock is reserved but has not left the pharmacy" — neither
+   * could be seen, because no seeded order ever sat at CONFIRMED. Confirm is
+   * transactional for the same reason dispatch is, so the reservation is
+   * written here the way confirm writes it: units counted against the same
+   * FEFO plan, and qtyReserved raised so they stop counting as available
+   * without leaving the shelf.
+   */
+  const [reserved] = await Order.create([
+    {
+      orderNo: "PO-2026-0113",
+      patientRef: "HF-CL-0041",
+      clinicId: clinic._id,
+      orderedBy: clinic._id,
+      status: "CONFIRMED",
+      includeKits: true,
+      lines: [
+        { dripId: immune._id, dripName: immune.name, quantity: 2, withKit: true, unitPrice: immune.priceInr },
+      ],
+      amount: immune.priceInr * 2,
+      confirmedAt: days(-1),
+      scheduledDelivery: days(2),
+    },
+  ]);
+
+  for (const draw of (await planAllocation(String(reserved._id))).draws) {
+    await BatchLot.updateOne({ _id: draw.lotId }, { $inc: { qtyReserved: draw.units } });
+    await Allocation.create({
+      orderId: reserved._id,
+      lotId: draw.lotId,
+      masterId: draw.masterId,
+      unitsReserved: draw.units,
+    });
+  }
+
+  const plan = await planAllocation(String(supplied._id));
+  for (const draw of plan.draws) {
+    const lot = await BatchLot.findById(draw.lotId);
+    if (!lot) continue;
+    lot.qtyOnHand = Math.max(0, lot.qtyOnHand - draw.units);
+    await lot.save();
+
+    await Consumption.create({
+      orderId: supplied._id,
+      lotId: draw.lotId,
+      masterId: draw.masterId,
+      batchNo: draw.batchNo,
+      drugName: draw.drugName,
+      unitsConsumed: draw.units,
+      activeUsed: Math.round(draw.activeUsed * 100) / 100,
+      wasted: Math.round(draw.wasted * 100) / 100,
+      contentUnit: draw.contentUnit,
+      dispatchedAt: days(-5),
+      dispatchedBy: admin._id,
+    });
+
+    await StockTxn.create({
+      type: "CONSUME",
+      lotId: draw.lotId,
+      masterId: draw.masterId,
+      delta: -draw.units,
+      balanceAfter: lot.qtyOnHand,
+      orderId: supplied._id,
+      reason: `Dispatched on ${supplied.orderNo}`,
+      actorId: admin._id,
+    });
+  }
 }
 
 async function main() {
   await connectDB();
-  console.log("Connected. Clearing existing data…");
+
+  /**
+   * Say which database is about to be emptied, before emptying it.
+   *
+   * MONGODB_URI often points at another machine on the LAN rather than
+   * localhost, and this script deletes every collection it finds. Naming the
+   * host and database first means pointing at the wrong one is visible in the
+   * terminal rather than discovered afterwards.
+   */
+  const target = (() => {
+    try {
+      const u = new URL((process.env.MONGODB_URI ?? "").replace(/^mongodb(\+srv)?:\/\//, "http://"));
+      return `${u.hostname}:${u.port || "27017"}/${u.pathname.slice(1) || "?"}`;
+    } catch {
+      return "(unreadable MONGODB_URI)";
+    }
+  })();
+  console.log(`Connected to ${target}`);
+  console.log("Clearing existing data…");
   await wipe();
 
   console.log("Seeding users…");
@@ -1103,6 +1264,12 @@ async function main() {
   await seedClinical(users, drips);
 
   console.log("\nDone. Sign in with:");
+  // Said here rather than left to be discovered: GST is off on a fresh
+  // database on purpose, because there is no GSTIN to seed that would not be
+  // a fabricated registration number.
+  console.log("\nGST is off. Clinics download a bill of supply until a real GSTIN");
+  console.log("is entered at /admin/billing — nothing here invents one.\n");
+
   console.table([
     { role: "superadmin", email: "admin@nutridrip.com", password: "admin123" },
     { role: "admin", email: "ops@nutridrip.com", password: "admin123" },

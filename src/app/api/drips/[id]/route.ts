@@ -72,6 +72,7 @@ export async function PATCH(req: Request, { params }: { params: Promise<{ id: st
       "priceInr", "category", "withKit", "isPublic", "requiresApproval", "isActive",
       "bestFor", "goodToKnow",
       "volumeMl", "durationToMin", "tags", "icon", "isPopular", "benefits",
+      "hsnCode", "gstRate",
     ] as const) {
       if (sent.has(key) && input[key] !== undefined) (drip as Record<string, unknown>)[key] = input[key];
     }

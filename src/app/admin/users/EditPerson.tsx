@@ -113,6 +113,10 @@ export function EditPerson({
           city: form.city || undefined,
           pincode: form.pincode || undefined,
           monthlyVolumeTarget: num(form.monthlyVolumeTarget),
+          // Empty string rather than undefined, so clearing a GSTIN is a real
+          // change: a clinic that deregisters has to be able to say so, and an
+          // absent key would leave the old number on their next invoice.
+          ...(user.role === "clinic" && { gstin: form.gstin }),
         }),
       });
       const json = await res.json();
@@ -193,11 +197,11 @@ export function EditPerson({
       )}
 
       <div className="mt-6 flex gap-3 flex-wrap">
-        <Button size="lg" loading={busy} disabled={!form.name} onClick={save}>
+        <Button size="md" loading={busy} disabled={!form.name} onClick={save}>
           Save changes
         </Button>
         <Link href={closeHref} className="no-underline hover:no-underline">
-          <Button variant="secondary" size="lg">
+          <Button variant="secondary" size="md">
             Done
           </Button>
         </Link>

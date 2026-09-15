@@ -12,6 +12,7 @@ import { EmptyState } from "@/components/ui/States";
 import { ButtonLink } from "@/components/ui/Button";
 import { formatInr } from "@/lib/inventory/units";
 import { formatDate, formatTime } from "@/lib/data/inventory";
+import { Arrow } from "@/components/ui/Arrow";
 
 export const metadata: Metadata = { title: "Clinic" };
 export const dynamic = "force-dynamic";
@@ -109,7 +110,7 @@ export default async function ClinicPage() {
           <div className="flex items-baseline justify-between mb-3 gap-4">
             <h2 className="t-h3">Today&apos;s room</h2>
             <Link href="/clinic/bookings" className="t-body font-medium">
-              All bookings →
+              All bookings&nbsp;<Arrow />
             </Link>
           </div>
 
@@ -151,7 +152,7 @@ export default async function ClinicPage() {
           <div className="flex items-baseline justify-between mb-3 gap-4">
             <h2 className="t-h3">Your orders</h2>
             <Link href="/clinic/orders" className="t-body font-medium">
-              All →
+              All&nbsp;<Arrow />
             </Link>
           </div>
 

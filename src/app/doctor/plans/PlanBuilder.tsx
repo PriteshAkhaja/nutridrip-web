@@ -876,7 +876,7 @@ export function PlanBuilder({
 
       <div className="mt-6">
         <Button
-          size="lg"
+          size="md"
           loading={busy}
           disabled={!patientId || sessionCount === 0 || incomplete}
           onClick={save}

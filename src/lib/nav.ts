@@ -21,6 +21,7 @@ export async function adminNav(activeCounts = true): Promise<NavItem[]> {
       { label: "People", href: "/admin/users" },
       { label: "Quiz builder", href: "/admin/quiz" },
       { label: "Site copy", href: "/admin/content" },
+      { label: "Billing", href: "/admin/billing" },
       { label: "Enquiries", href: "/admin/leads" },
     ];
   }
@@ -55,6 +56,7 @@ export async function adminNav(activeCounts = true): Promise<NavItem[]> {
     { label: "People", href: "/admin/users", badge: users },
     { label: "Quiz builder", href: "/admin/quiz" },
     { label: "Site copy", href: "/admin/content" },
+    { label: "Billing", href: "/admin/billing" },
     { label: "Enquiries", href: "/admin/leads", badge: newLeads || undefined, badgeTone: "caution" },
   ];
 }

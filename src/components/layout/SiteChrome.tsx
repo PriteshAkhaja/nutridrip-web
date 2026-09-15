@@ -5,6 +5,7 @@ import { getSession } from "@/lib/auth/session";
 import { HOME_FOR_ROLE } from "@/lib/auth/rbac";
 import { getContent } from "@/lib/content";
 import { MobileNav } from "./MobileNav";
+import { Arrow } from "@/components/ui/Arrow";
 
 const NAV = [
   { label: "Drips", href: "/drips" },
@@ -32,7 +33,7 @@ export async function SiteHeader() {
             className="t-small font-semibold no-underline hover:underline"
             style={{ color: "var(--color-primary-on-dark)" }}
           >
-            How we keep it safe →
+            How we keep it safe&nbsp;<Arrow />
           </Link>
         </div>
       </div>

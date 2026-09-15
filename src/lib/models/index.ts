@@ -6,6 +6,8 @@ export { default as BatchLot } from "./BatchLot";
 export { default as SessionKit } from "./SessionKit";
 export { default as Drip } from "./Drip";
 export { default as Order } from "./Order";
+export { default as Invoice } from "./Invoice";
+export { default as BillingSettings } from "./BillingSettings";
 export { default as Allocation } from "./Allocation";
 export { default as Consumption } from "./Consumption";
 export { default as StockTxn } from "./StockTxn";

@@ -138,7 +138,7 @@ export function AddPerson({ doctors = [] }: { doctors?: Array<{ id: string; name
       )}
 
       <div className="mt-6">
-        <Button size="lg" loading={busy} disabled={!form.name} onClick={submit}>
+        <Button size="md" loading={busy} disabled={!form.name} onClick={submit}>
           Create the account
         </Button>
       </div>

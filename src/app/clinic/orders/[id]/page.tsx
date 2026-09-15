@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { notFound } from "next/navigation";
 import type { Metadata } from "next";
 import { requireRole } from "@/lib/auth/guard";
@@ -219,6 +220,20 @@ export default async function ClinicOrderPage({ params }: { params: Promise<{ id
             </div>
             {order.notes && <p className="t-small text-[var(--color-ink-2)] mt-4">{order.notes}</p>}
           </Card>
+          {/* Only once the stock has actually left. Before dispatch nothing has
+              been supplied, and a bill for goods still on the shelf is one the
+              clinic would be right to query. */}
+          {order.status === "DISPATCHED" ? (
+            <Card padding="p-5">
+              <span className="t-micro block mb-2">Tax invoice</span>
+              <p className="t-body text-[var(--color-ink-2)] mb-4">
+                Raised against this order, with GST and the batches supplied. Print it or save it as a PDF.
+              </p>
+              <Link href={`/invoice/${String(order._id)}`} className="t-body font-semibold">
+                Download invoice &rarr;
+              </Link>
+            </Card>
+          ) : null}
         </div>
       </div>
     </ConsoleShell>

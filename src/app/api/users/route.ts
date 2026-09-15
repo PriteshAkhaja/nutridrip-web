@@ -7,6 +7,7 @@ import { hashPassword } from "@/lib/auth/password";
 import { notify } from "@/lib/notify";
 import { ROLES } from "@/lib/models/types";
 import { normalisePhone } from "@/lib/auth/phone";
+import { checkGstin } from "@/lib/billing/gst";
 import { ok, fail, handleError } from "@/lib/api";
 
 const CreateUser = z.object({
@@ -67,6 +68,14 @@ export async function POST(req: Request) {
     if (!can(session?.role, "users.manage")) return fail("Only a super admin can create accounts", 403);
 
     const input = CreateUser.parse(await req.json());
+    // A clinic's GSTIN decides whether their invoice carries CGST+SGST or
+    // IGST, so a malformed one is a wrongly taxed bill rather than a cosmetic
+    // slip. Checked here as well as on the form, because the form is not the
+    // only way in.
+    if (input.gstin) {
+      const verdict = checkGstin(input.gstin);
+      if (verdict.error) return fail(verdict.error, 422);
+    }
     const phone = input.phone ? normalisePhone(input.phone) : undefined;
     if (input.phone && !phone) return fail("That phone number does not look right", 422);
     if (!input.email && !input.phone) return fail("An email address or a phone number is required", 422);

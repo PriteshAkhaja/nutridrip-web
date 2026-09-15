@@ -38,6 +38,14 @@ export const PERMISSIONS = {
   "quiz.decide": ["superadmin", "doctor"],
   "quiz.manage": ["superadmin", "admin"],
   "content.manage": ["superadmin", "admin"],
+  /**
+   * Separate from content.manage though it holds the same roles today.
+   *
+   * Editing marketing copy and changing the GST registration invoices are
+   * raised under are different acts, and the day one of them needs narrowing
+   * it should not drag the other with it.
+   */
+  "billing.manage": ["superadmin", "admin"],
   "labs.upload": ["patient"],
   "labs.view": ["superadmin", "admin", "doctor", "patient"],
 

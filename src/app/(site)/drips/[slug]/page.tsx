@@ -17,6 +17,7 @@ import {
   FaqList,
 } from "@/components/ui/Marketing";
 import { TESTIMONIALS, AGGREGATE, COMPARISON, FAQS, TRANSFORMATION } from "@/lib/data/marketing";
+import { Arrow } from "@/components/ui/Arrow";
 
 export const dynamic = "force-dynamic";
 
@@ -410,7 +411,7 @@ export default async function DripDetailPage({ params }: { params: Promise<{ slu
         <div className="flex items-end justify-between gap-6 flex-wrap mb-10">
           <SectionHeading eyebrow="Also considered" title="Other protocols" />
           <Link href="/drips" className="t-body font-semibold mb-10">
-            All drips →
+            All drips&nbsp;<Arrow />
           </Link>
         </div>
         <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-4">

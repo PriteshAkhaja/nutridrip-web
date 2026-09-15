@@ -229,7 +229,7 @@ export function ReceiveStock({
 
           <div className="mt-6">
             <Button
-              size="lg"
+              size="md"
               loading={busy}
               disabled={!master.name || !master.hsnCode}
               onClick={() =>
@@ -377,7 +377,7 @@ export function ReceiveStock({
 
           <div className="mt-6">
             <Button
-              size="lg"
+              size="md"
               loading={busy}
               disabled={!lot.masterId || !lot.batchNo || !lot.expiry || !lot.contentValue || !lot.qtyReceived}
               onClick={() =>

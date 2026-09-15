@@ -25,6 +25,10 @@ export const DripInput = z.object({
   volumeMl: z.number().int().min(0).max(5000).nullable().optional(),
   /** The upper end of a range; must be above durationMin, checked below. */
   durationToMin: z.number().int().min(5).max(360).nullable().optional(),
+  /** Tax classification, for the invoice a clinic downloads after dispatch. */
+  hsnCode: z.string().max(12).nullable().optional(),
+  /** Null clears it: that drip is exempt, or we are not charging GST. */
+  gstRate: z.number().min(0).max(28).nullable().optional(),
   tags: z.array(z.string().max(40)).max(8).default([]),
   /** One or two characters — an emoji, not a colour. */
   icon: z.string().max(8).nullable().optional(),

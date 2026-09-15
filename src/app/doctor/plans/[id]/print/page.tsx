@@ -8,7 +8,8 @@ import { getContent } from "@/lib/content";
 import { LogoMark } from "@/components/layout/Logo";
 import { ageFrom } from "@/lib/data/clinical";
 import { formatDate } from "@/lib/data/inventory";
-import { PrintButton } from "./PrintButton";
+import { PrintButton } from "@/components/ui/PrintButton";
+import { Arrow } from "@/components/ui/Arrow";
 
 export const metadata: Metadata = { title: "Prescription" };
 export const dynamic = "force-dynamic";
@@ -68,7 +69,7 @@ export default async function PrintRxPage({ params }: { params: Promise<{ id: st
       {/* ---------------- Controls, hidden in print ---------------- */}
       <div className="no-print mx-auto max-w-[820px] flex items-center justify-between gap-4 mb-5 flex-wrap">
         <Link href="/doctor/plans" className="t-body">
-          ← Back to plans
+          <Arrow dir="left" />&nbsp;Back to plans
         </Link>
         <PrintButton />
       </div>

@@ -35,6 +35,26 @@ const DripSchema = new Schema(
     priceInr: { type: Number, default: 0 },
 
     /**
+     * What a tax invoice needs to say about this line.
+     *
+     * The drug behind a drip carries its own HSN on ProductMaster, but an
+     * order is priced per drip, not per vial — so the line on the bill is the
+     * drip, and the drip is what must carry the classification.
+     *
+     * `priceInr` is taken to already include this tax; see PRICES_INCLUDE_GST.
+     */
+    hsnCode: String,
+    /**
+     * Left unset on purpose rather than defaulted to 12.
+     *
+     * GST is optional here: a supply can be exempt, and NutriDrip may not be
+     * registered at all. A default would mean a drip nobody has classified
+     * still bills a clinic 12% — tax invented by a schema, which is worse than
+     * a bill that charges none.
+     */
+    gstRate: Number,
+
+    /**
      * How much fluid goes up, which is not the same as how much drug is in it.
      * A patient reads "500 ml" and knows roughly how long they are sitting
      * there; the dose list alone does not tell them that.

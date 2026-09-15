@@ -23,6 +23,7 @@ import {
   FAQS,
   CATEGORIES,
 } from "@/lib/data/marketing";
+import { Arrow } from "@/components/ui/Arrow";
 
 export const dynamic = "force-dynamic";
 
@@ -171,7 +172,7 @@ export default async function HomePage() {
             sub="Availability below is live — it counts only in-date stock that is not already promised to another session."
           />
           <Link href="/drips" className="t-body font-semibold mb-10">
-            All {drips.length} drips →
+            All {drips.length} drips&nbsp;<Arrow />
           </Link>
         </div>
 
@@ -230,7 +231,7 @@ export default async function HomePage() {
                 <span className="t-small text-[var(--color-ink-2)]">{c.blurb}</span>
               </span>
               <span className="t-data text-[16px] flex-none" style={{ color: "var(--color-primary)" }}>
-                →
+                <Arrow />
               </span>
             </Link>
           ))}

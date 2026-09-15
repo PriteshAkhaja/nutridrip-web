@@ -4,11 +4,15 @@ import Link from "next/link";
  * The mark is itself a Fill — a vessel filled 62% with the accent. It is the
  * one place the primitive is allowed to carry no number, because it names the
  * product rather than measuring anything.
+ *
+ * Drawn out of background colours, which is why it carries `print-exact`: a
+ * browser strips backgrounds when printing unless told otherwise, and without
+ * it the mark came out of every prescription and invoice as an empty outline.
  */
 export function LogoMark({ size = 24 }: { size?: number }) {
   return (
     <span
-      className="relative overflow-hidden flex-none inline-block"
+      className="print-exact relative overflow-hidden flex-none inline-block"
       style={{
         width: size,
         height: size,
@@ -18,7 +22,10 @@ export function LogoMark({ size = 24 }: { size?: number }) {
       }}
       aria-hidden
     >
-      <span className="absolute left-0 right-0 bottom-0 bg-[var(--color-primary)]" style={{ height: "62%" }} />
+      <span
+        className="print-exact absolute left-0 right-0 bottom-0 bg-[var(--color-primary)]"
+        style={{ height: "62%" }}
+      />
     </span>
   );
 }

@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Instrument_Sans, Inter, IBM_Plex_Mono } from "next/font/google";
+import { Instrument_Sans, Inter, Noto_Sans_Mono } from "next/font/google";
 import "./globals.css";
 
 const instrument = Instrument_Sans({
@@ -16,10 +16,10 @@ const inter = Inter({
   display: "swap",
 });
 
-const plexMono = IBM_Plex_Mono({
+const mono = Noto_Sans_Mono({
   subsets: ["latin"],
   weight: ["400", "500"],
-  variable: "--font-plex-mono",
+  variable: "--font-mono-face",
   display: "swap",
 });
 
@@ -34,7 +34,7 @@ export const metadata: Metadata = {
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en-IN" className={`${instrument.variable} ${inter.variable} ${plexMono.variable}`}>
+    <html lang="en-IN" className={`${instrument.variable} ${inter.variable} ${mono.variable}`}>
       {/* Extensions (ColorZilla, Grammarly, password managers) stamp attributes
           onto <body> before React hydrates, which reads as a server/client
           mismatch. This suppresses the warning for THIS element's own

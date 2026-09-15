@@ -3,6 +3,7 @@
 import { Input, Select } from "@/components/ui/Field";
 import { ZONE_NAMES } from "@/lib/zones";
 import type { Role } from "@/lib/models/types";
+import { checkGstin, stateCodeFromGstin, stateName } from "@/lib/billing/gst";
 
 /**
  * Every field an account can carry, in one place.
@@ -68,6 +69,11 @@ export function PersonFields({
   doctors: Array<{ id: string; name: string }>;
   mode: "create" | "edit";
 }) {
+  // Only a clinic carries one, but computing it unconditionally keeps the
+  // hooks-free path simple — checkGstin("") is not an error.
+  const gstinCheck = checkGstin(form.gstin);
+  const gstinHome = stateName(stateCodeFromGstin(form.gstin));
+
   const editing = mode === "edit";
 
   return (
@@ -205,7 +211,21 @@ export function PersonFields({
 
       {role === "clinic" && (
         <div className="grid gap-4 lg:grid-cols-2 mt-4">
-          <Input label="GSTIN" mono value={form.gstin} onChange={set("gstin")} />
+          {/* A clinic's GSTIN decides whether their invoice is CGST+SGST or
+              IGST, so a typo here is a wrongly taxed bill — checked the same
+              way our own is. */}
+          <Input
+            label="GSTIN"
+            hint={gstinHome ? `${gstinHome}` : "15 characters"}
+            mono
+            value={form.gstin}
+            error={gstinCheck.error}
+            onChange={(e) => set("gstin")({ target: { value: e.target.value.toUpperCase() } })}
+            placeholder="e.g. 29AABCH1234K1ZN"
+          />
+          {gstinCheck.warning ? (
+            <p className="t-small text-[var(--color-caution-text)]">{gstinCheck.warning}</p>
+          ) : null}
           <Input
             label="Monthly session target"
             type="number"

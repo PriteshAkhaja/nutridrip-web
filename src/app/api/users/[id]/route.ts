@@ -6,6 +6,7 @@ import { can } from "@/lib/auth/rbac";
 import { hashPassword } from "@/lib/auth/password";
 import { USER_STATUS } from "@/lib/models/types";
 import { normalisePhone } from "@/lib/auth/phone";
+import { checkGstin } from "@/lib/billing/gst";
 import { ok, fail, handleError } from "@/lib/api";
 
 const UpdateUser = z.object({
@@ -24,6 +25,15 @@ const UpdateUser = z.object({
   city: z.string().max(80).optional(),
   pincode: z.string().max(10).optional(),
   monthlyVolumeTarget: z.number().int().min(0).max(10000).optional(),
+  /**
+   * A clinic's GST registration.
+   *
+   * It was accepted when an account was created but silently dropped on every
+   * edit afterwards — the field sat on the form, said "Saved", and changed
+   * nothing. It is also load-bearing now: its first two digits decide whether
+   * that clinic's invoice carries CGST+SGST or IGST.
+   */
+  gstin: z.string().max(20).optional(),
 });
 
 export async function PATCH(req: Request, { params }: { params: Promise<{ id: string }> }) {
@@ -33,6 +43,14 @@ export async function PATCH(req: Request, { params }: { params: Promise<{ id: st
 
     const { id } = await params;
     const input = UpdateUser.parse(await req.json());
+    // A clinic's GSTIN decides whether their invoice carries CGST+SGST or
+    // IGST, so a malformed one is a wrongly taxed bill rather than a cosmetic
+    // slip. Checked here as well as on the form, because the form is not the
+    // only way in.
+    if (input.gstin) {
+      const verdict = checkGstin(input.gstin);
+      if (verdict.error) return fail(verdict.error, 422);
+    }
     await connectDB();
 
     const user = await User.findById(id);
@@ -96,6 +114,7 @@ export async function PATCH(req: Request, { params }: { params: Promise<{ id: st
         ...(input.city !== undefined && { city: input.city }),
         ...(input.pincode !== undefined && { pincode: input.pincode }),
         ...(input.monthlyVolumeTarget !== undefined && { monthlyVolumeTarget: input.monthlyVolumeTarget }),
+        ...(input.gstin !== undefined && { gstin: input.gstin }),
       };
     }
 

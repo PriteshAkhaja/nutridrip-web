@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { notFound } from "next/navigation";
 import type { Metadata } from "next";
 import { requireRole } from "@/lib/auth/guard";
@@ -258,6 +259,21 @@ export default async function OrderDetailPage({ params }: { params: Promise<{ id
             </div>
             {order.notes && <p className="t-small text-[var(--color-ink-2)] mt-4">{order.notes}</p>}
           </Card>
+
+          {/* The clinic's own copy of this is on their order page. It is here
+              too so the desk can re-send one, or answer a query about it,
+              without asking the clinic to read their own bill out. */}
+          {isDispatched && (
+            <Card padding="p-5">
+              <span className="t-micro block mb-2">Tax invoice</span>
+              <p className="t-body text-[var(--color-ink-2)] mb-4">
+                Raised against this order the first time it is opened, and the same document every time after.
+              </p>
+              <Link href={`/invoice/${String(order._id)}`} className="t-body font-semibold">
+                Open the invoice &rarr;
+              </Link>
+            </Card>
+          )}
 
           {isDraft && availability && (
             <Card padding="p-5">

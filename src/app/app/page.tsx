@@ -14,6 +14,7 @@ import { approvalState } from "@/lib/clinical/validity";
 import { formatDate, formatTime } from "@/lib/data/inventory";
 import { plansFor } from "@/lib/data/plans";
 import { PATIENT_TABS } from "./tabs";
+import { Arrow } from "@/components/ui/Arrow";
 
 export const metadata: Metadata = { title: "Home" };
 export const dynamic = "force-dynamic";
@@ -143,7 +144,7 @@ export default async function PatientHomePage() {
           <div className="flex flex-col items-center gap-2">
             <FillRing score={quiz.vitalityScore} size={150} stroke={13} caption="of 100" />
             <Link href={`/app/results/${String(quiz._id)}`} className="t-body font-medium mt-2">
-              See all 16 markers →
+              See all 16 markers&nbsp;<Arrow />
             </Link>
           </div>
 
@@ -197,7 +198,7 @@ export default async function PatientHomePage() {
               {plan.diagnosis ?? `Written by ${plan.doctorName}`}
             </span>
             <span className="t-small text-[var(--color-ink-3)] block mt-2">
-              See every drip and dose →
+              See every drip and dose&nbsp;<Arrow />
             </span>
           </div>
           <div className="flex flex-col items-end flex-none">

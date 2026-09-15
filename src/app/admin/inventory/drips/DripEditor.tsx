@@ -22,6 +22,9 @@ export type DripDraft = {
   infusionNotes: string;
   durationMin: string;
   priceInr: string;
+  /** Tax classification, printed on the invoice a clinic downloads. */
+  hsnCode: string;
+  gstRate: string;
   /** Which group it shows under on the public catalogue. "" means none. */
   category: string;
   /** Upper end of the session range. "" means a single figure. */
@@ -67,6 +70,8 @@ export const emptyDrip = (): DripDraft => ({
   durationToMin: "",
   volumeMl: "500",
   priceInr: "8000",
+  hsnCode: "30049099",
+  gstRate: "12",
   category: "",
   tags: [],
   icon: "",
@@ -119,6 +124,12 @@ export function DripEditor({
         infusionNotes: d.infusionNotes || undefined,
         durationMin: Number(d.durationMin) || 45,
         priceInr: Number(d.priceInr) || 0,
+        // null, not undefined: JSON.stringify drops an undefined value, so the
+        // key never reaches the server and "cleared" is indistinguishable from
+        // "not sent". Null says it out loud.
+        hsnCode: d.hsnCode || null,
+        // null clears it: that drip is exempt, or we are not charging GST.
+        gstRate: d.gstRate === "" ? null : Number(d.gstRate),
         category: d.category || null,
         durationToMin: d.durationToMin ? Number(d.durationToMin) : null,
         volumeMl: d.volumeMl ? Number(d.volumeMl) : null,
@@ -264,8 +275,12 @@ export function DripEditor({
       </div>
 
       <div className="grid gap-4 lg:grid-cols-4 mt-4">
+        {/* The price is read as tax-inclusive when a clinic is invoiced — the
+            taxable value is worked back out of it, so the bill and the order
+            come to the same figure. */}
         <Input
           label="Price ₹"
+          hint="includes GST"
           type="number"
           mono
           value={d.priceInr}
@@ -296,6 +311,37 @@ export function DripEditor({
             onChange={(v) => setD({ ...d, isPopular: v })}
           />
         </div>
+      </div>
+
+      {/* An order is priced per drip, not per vial, so the line on a clinic's
+          tax invoice is the drip — and the drip is what has to carry the
+          classification. The drug behind it has its own HSN on the product
+          master; that one describes the vial, not what was sold.
+
+          Both are optional. Leave the rate blank and this drip is billed with
+          no GST on it; leave NutriDrip's own GSTIN unset at /admin/content and
+          nothing is taxed at all. */}
+      <div className="grid gap-4 lg:grid-cols-4 mt-4">
+        <Input
+          label="HSN code"
+          hint="on the invoice"
+          mono
+          value={d.hsnCode}
+          onChange={(e) => setD({ ...d, hsnCode: e.target.value })}
+          placeholder="30049099"
+        />
+        <Input
+          label="GST rate"
+          hint="% · blank = none"
+          type="number"
+          min={0}
+          max={28}
+          step="any"
+          mono
+          value={d.gstRate}
+          onChange={(e) => setD({ ...d, gstRate: e.target.value })}
+          placeholder="none"
+        />
       </div>
 
       {/* Tags feed the search as well as the card, so "NAD+" finds a drip whose
@@ -556,7 +602,7 @@ export function DripEditor({
 
       <div className="flex gap-2 mt-6 flex-wrap">
         <Button
-          size="lg"
+          size="md"
           loading={busy}
           disabled={!d.name || d.ingredients.filter((l) => l.masterId && l.dose).length === 0}
           onClick={save}

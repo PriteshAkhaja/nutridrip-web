@@ -355,7 +355,7 @@ export function QuizEditor({
         )}
 
         <div className="flex gap-2 mt-6 flex-wrap">
-          <Button size="lg" loading={busy} disabled={!editing.qid || !editing.question} onClick={save}>
+          <Button size="md" loading={busy} disabled={!editing.qid || !editing.question} onClick={save}>
             Save question
           </Button>
           {answeredByQid[editing.qid] !== undefined || initial.some((q) => q.id === editing.qid) ? (

@@ -14,6 +14,7 @@ import { ageFrom } from "@/lib/data/clinical";
 import { toDay, type PlanComponentInput } from "@/lib/clinical/plan-input";
 import { PlanBuilder, type PlanDraft } from "./PlanBuilder";
 import { ShareToggle } from "./ShareToggle";
+import { Arrow } from "@/components/ui/Arrow";
 
 export const metadata: Metadata = { title: "Treatment plans" };
 export const dynamic = "force-dynamic";
@@ -224,7 +225,7 @@ export default async function PlansPage({
             const noted = sessions.filter((s) => s.sessionNotes).length;
 
             return (
-              <Card key={String(p._id)} padding="p-6">
+              <Card key={String(p._id)} padding="p-6" className="h-full flex flex-col">
                 <div className="flex items-start justify-between gap-4 mb-4">
                   <div className="min-w-0">
                     <div className="flex items-baseline gap-3 flex-wrap">
@@ -250,7 +251,11 @@ export default async function PlansPage({
                   <FillSegments name="Sessions run" done={past} total={sessions.length} />
                 </div>
 
-                <div className="flex flex-col gap-2 mt-4">
+                {/* mb-4 carries the fixed gap above the footer rule. It cannot
+                    live on the footer as mt-4, because that footer uses mt-auto
+                    to sink to the card's base and auto absorbs the whole
+                    margin — leaving 0 on any card tall enough to have no slack. */}
+                <div className="flex flex-col gap-2 mt-4 mb-4">
                   {[
                     ["Starts", p.startDate ? formatDate(p.startDate) : "—"],
                     ["Protocols", protocols.length ? protocols.join(" · ") : "—"],
@@ -265,12 +270,12 @@ export default async function PlansPage({
                   ))}
                 </div>
 
-                <div className="mt-4 pt-4 border-t border-[var(--color-line)] flex items-center gap-5 flex-wrap">
+                <div className="mt-auto pt-4 border-t border-[var(--color-line)] flex items-center gap-5 flex-wrap">
                   <Link href={`/doctor/plans?edit=${String(p._id)}`} className="t-small font-semibold">
-                    Edit the plan →
+                    Edit the plan&nbsp;<Arrow />
                   </Link>
                   <Link href={`/doctor/plans/${String(p._id)}/print`} className="t-small font-semibold">
-                    Print Rx →
+                    Print Rx&nbsp;<Arrow />
                   </Link>
                 </div>
                 <div className="mt-4 pt-4 border-t border-[var(--color-line)]">

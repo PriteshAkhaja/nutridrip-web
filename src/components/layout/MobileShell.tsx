@@ -2,6 +2,7 @@ import Link from "next/link";
 import type { ReactNode } from "react";
 import { LogoMark } from "./Logo";
 import { NotificationBell } from "./NotificationBell";
+import { Arrow } from "@/components/ui/Arrow";
 
 export type Tab = { label: string; href: string; badge?: number };
 
@@ -37,7 +38,7 @@ export function MobileShell({
               aria-label={back.label}
               className="w-11 h-11 -ml-2 inline-flex items-center justify-center rounded-[var(--radius-sm)] text-[var(--color-ink-2)] no-underline hover:no-underline hover:bg-[var(--color-surface-2)]"
             >
-              ←
+              <Arrow dir="left" />
             </Link>
           ) : (
             <LogoMark size={22} />

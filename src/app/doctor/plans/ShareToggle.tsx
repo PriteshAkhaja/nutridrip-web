@@ -67,8 +67,11 @@ export function ShareToggle({
             ))}
           </Select>
         </div>
+        {/* md, not sm: this button sits in a row with the select, and the
+            shared control height (44px) is what makes the two read as one
+            group. A 36px button beside a 44px select reads as misaligned. */}
         <Button
-          size="sm"
+          size="md"
           loading={busy}
           disabled={!choice}
           onClick={() => patch({ nurseId: choice, sharedWithNurse: true })}

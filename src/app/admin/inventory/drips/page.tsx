@@ -39,6 +39,8 @@ export default async function DripBuilderPage() {
       description?: string;
       infusionNotes?: string;
       priceInr: number;
+      hsnCode?: string;
+      gstRate?: number;
       durationMin: number;
       isActive: boolean;
       withKit: boolean;
@@ -111,6 +113,8 @@ export default async function DripBuilderPage() {
               infusionNotes: d.infusionNotes ?? "",
               durationMin: String(d.durationMin ?? 45),
               priceInr: String(d.priceInr ?? 0),
+              hsnCode: d.hsnCode ?? "",
+              gstRate: d.gstRate === undefined || d.gstRate === null ? "" : String(d.gstRate),
               category: d.category ?? "",
               durationToMin: d.durationToMin != null ? String(d.durationToMin) : "",
               volumeMl: d.volumeMl != null ? String(d.volumeMl) : "",
@@ -147,7 +151,7 @@ export default async function DripBuilderPage() {
           const maxDose = Math.max(...d.ingredients.map((i) => i.dose), 1);
 
           return (
-            <Card key={String(d._id)} padding="p-6">
+            <Card key={String(d._id)} padding="p-6" className="h-full flex flex-col">
               <div className="flex items-start justify-between gap-4 mb-4">
                 <div className="min-w-0">
                   <div className="flex items-center gap-3 flex-wrap">
@@ -165,7 +169,7 @@ export default async function DripBuilderPage() {
                 </div>
               </div>
 
-              <div className="flex flex-col gap-[14px] py-4 border-y border-[var(--color-line)]">
+              <div className="flex flex-col gap-[14px] py-4 border-t border-[var(--color-line)]">
                 {d.ingredients.map((ing, i) => {
                   const master = masterById.get(String(ing.masterId));
                   const slip = master ? !sameFamily(ing.unit, master.canonicalUnit) : false;
@@ -195,7 +199,7 @@ export default async function DripBuilderPage() {
                 })}
               </div>
 
-              <div className="flex items-center justify-between gap-4 mt-4 flex-wrap">
+              <div className="flex items-center justify-between gap-4 mt-auto pt-4 border-t border-[var(--color-line)] flex-wrap">
                 <div className="flex gap-6">
                   <div className="flex flex-col">
                     <span className="t-micro">Can prepare</span>

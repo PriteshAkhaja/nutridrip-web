@@ -13,6 +13,7 @@ import { Booking, HealthQuiz, Order, User } from "@/lib/models";
 import { getAlerts } from "@/lib/inventory/alerts";
 import { formatInr } from "@/lib/inventory/units";
 import { formatDate, formatTime } from "@/lib/data/inventory";
+import { Arrow } from "@/components/ui/Arrow";
 
 export const metadata: Metadata = { title: "Overview" };
 export const dynamic = "force-dynamic";
@@ -162,7 +163,7 @@ export default async function AdminOverviewPage() {
           <div className="flex items-baseline justify-between mb-3 gap-4">
             <h2 className="t-h3">Open preparation orders</h2>
             <Link href="/admin/inventory/orders" className="t-body font-medium">
-              All orders →
+              All orders&nbsp;<Arrow />
             </Link>
           </div>
 
