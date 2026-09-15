@@ -340,9 +340,13 @@ export function DripEditor({
           <span className="t-micro">What it helps with</span>
           <span className="t-small text-[var(--color-ink-3)]">{d.benefits.length} of 6</span>
         </div>
+        {/* items-end, matching the ingredient rows above. Only the first row
+            carries labels, so it is taller — aligning to the START put its
+            Remove link up beside the labels instead of beside the box it
+            removes. */}
         <div className="flex flex-col gap-3">
           {d.benefits.map((b, i) => (
-            <div key={i} className="grid gap-2 lg:grid-cols-[1fr_2fr_auto] items-start">
+            <div key={i} className="grid gap-2 lg:grid-cols-[1fr_2fr_auto] items-end">
               <Input
                 label={i === 0 ? "Heading" : undefined}
                 value={b.title}

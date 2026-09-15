@@ -143,8 +143,14 @@ export default async function DripDetailPage({ params }: { params: Promise<{ slu
                 {drip.description}
               </p>
 
+              {/* A heading, because three unlabelled grey boxes between the
+                  description and the tick list read as more description. And
+                  mb-6 as well as mt-6: the tick list carries only a bottom
+                  margin, so without it the two blocks touch. */}
               {drip.benefits.length > 0 && (
-                <div className="grid gap-3 sm:grid-cols-2 mt-6">
+                <div className="mt-6 mb-6">
+                  <span className="t-micro block mb-3">What it helps with</span>
+                  <div className="grid gap-3 sm:grid-cols-2">
                   {drip.benefits.map((b) => (
                     <div
                       key={b.title}
@@ -156,6 +162,7 @@ export default async function DripDetailPage({ params }: { params: Promise<{ slu
                       )}
                     </div>
                   ))}
+                  </div>
                 </div>
               )}
 

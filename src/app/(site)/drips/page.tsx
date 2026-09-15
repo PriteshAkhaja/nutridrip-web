@@ -117,20 +117,25 @@ export default async function CataloguePage({
               className="rounded-[var(--radius-lg)] border border-[var(--color-line)] bg-[var(--color-surface)] p-6 no-underline hover:no-underline hover:border-[var(--color-ink)] transition-colors duration-150 flex flex-col gap-4"
             >
               <div className="flex items-start justify-between gap-4">
-                <div className="min-w-0 flex gap-3">
-                  {/* An emoji, not a colour: the palette keeps its clinical
-                      hues for genuine status, so a card earns identity here
-                      without spending one. */}
-                  {d.icon && (
-                    <span aria-hidden="true" className="text-[26px] leading-none flex-none">
-                      {d.icon}
-                    </span>
-                  )}
-                  <div className="min-w-0">
-                    <span className="t-micro">{d.category}</span>
-                    <h2 className="t-h3 mt-1">{d.name}</h2>
-                    <div className="mt-2"><Stars rating={5} size={12} /></div>
-                  </div>
+                {/* The icon sits ON the category line rather than beside the
+                    whole block. Beside it, a card with an icon indented its
+                    name and description while a card without one did not, so a
+                    grid of cards never lined up down the left edge.
+
+                    An emoji, not a colour: the palette keeps its clinical hues
+                    for genuine status, so a card earns identity without
+                    spending one. */}
+                <div className="min-w-0">
+                  <span className="t-micro flex items-center gap-[6px]">
+                    {d.icon && (
+                      <span aria-hidden="true" className="text-[15px] leading-none">
+                        {d.icon}
+                      </span>
+                    )}
+                    {d.category}
+                  </span>
+                  <h2 className="t-h3 mt-1">{d.name}</h2>
+                  <div className="mt-2"><Stars rating={5} size={12} /></div>
                 </div>
                 <div className="flex flex-col items-end gap-2 flex-none">
                   {availabilityPill(available)}

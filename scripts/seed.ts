@@ -339,12 +339,36 @@ type DripSeed = {
   bestFor: string[];
   goodToKnow: string[];
   ingredients: Array<[string, number, "mg" | "mcg" | "g" | "ml" | "IU" | "unit", "ACTIVE" | "FLUID" | "PREMED" | "ADDITIVE", string?]>;
+  /** Catalogue chips and search. Ingredient names earn their place here: a
+      patient who has read about glutathione will not search "Glow Protocol". */
+  tags?: string[];
+  /** One emoji. Never a colour — the palette keeps its hues for status. */
+  icon?: string;
+  /** Matches the carrier in the recipe, or the page contradicts itself. */
+  volumeMl?: number;
+  /**
+   * What it helps with, explained.
+   *
+   * Written descriptively — what is in the bag and who it suits — rather than
+   * as efficacy claims. Anything stronger than this belongs to a physician,
+   * not to seed data.
+   */
+  benefits?: Array<{ title: string; description?: string }>;
 };
 
 /** The nine-drip catalogue from Block 1. */
 const DRIPS: DripSeed[] = [
   {
     slug: "myers-revive",
+    icon: "⚡",
+    volumeMl: 500,
+    tags: ["Energy", "B-complex", "Magnesium", "Fatigue"],
+    benefits: [
+      { title: "Energy metabolism", description: "B-complex and B12 are the cofactors the body burns through on high-workload weeks." },
+      { title: "Muscle and sleep", description: "Magnesium is given slowly; a warm flush is expected and is not an adverse event." },
+      { title: "Antioxidant load", description: "7,500 mg of ascorbic acid in a saline carrier." },
+      { title: "A starting point", description: "The usual first drip, before anything more specific is considered." },
+    ],
     name: "Myers' Revive",
     category: "Energy",
     tagline: "The default first drip",
@@ -367,6 +391,14 @@ const DRIPS: DripSeed[] = [
   },
   {
     slug: "deep-recharge",
+    icon: "🔋",
+    volumeMl: 500,
+    tags: ["Energy", "L-carnitine", "B12", "Burnout"],
+    benefits: [
+      { title: "For fatigue that has lasted", description: "Aimed at tiredness lasting over a month, not at one bad night." },
+      { title: "Amino acid support", description: "L-carnitine and taurine, at higher doses than the standard Myers'." },
+      { title: "Usually a course", description: "Normally prescribed as four sessions rather than one." },
+    ],
     name: "Deep Recharge",
     category: "Energy",
     tagline: "For sustained fatigue",
@@ -386,6 +418,14 @@ const DRIPS: DripSeed[] = [
   },
   {
     slug: "jetlag-reset",
+    icon: "✈️",
+    volumeMl: 500,
+    tags: ["Travel", "Jet lag", "Electrolytes", "Shift work"],
+    benefits: [
+      { title: "Lighter than the energy drips", description: "A shorter, smaller session — for the day you land, not a full recharge." },
+      { title: "Rehydration first", description: "Electrolytes in saline — cabin air and long flights take fluid out." },
+      { title: "Timing matters", description: "Clearest effect within 24 hours of landing or a shift change." },
+    ],
     name: "Jetlag Reset",
     category: "Energy",
     tagline: "Built around travel days",
@@ -404,6 +444,14 @@ const DRIPS: DripSeed[] = [
   },
   {
     slug: "iron-restore",
+    icon: "🩸",
+    volumeMl: 500,
+    tags: ["Iron", "Anaemia", "Lab-confirmed", "Fatigue"],
+    benefits: [
+      { title: "Only with labs", description: "A physician cannot approve this without recent blood work. Iron is not given speculatively." },
+      { title: "For confirmed deficiency", description: "Prescribed for iron deficiency anaemia, not for tiredness in general." },
+      { title: "A longer sit", description: "90 minutes, and the observation period afterwards is longer than usual." },
+    ],
     name: "Iron Restore",
     category: "Energy",
     tagline: "Requires recent labs",
@@ -423,6 +471,14 @@ const DRIPS: DripSeed[] = [
   },
   {
     slug: "immune-shield",
+    icon: "🛡️",
+    volumeMl: 500,
+    tags: ["Immunity", "Vitamin C", "Zinc", "Pre-travel"],
+    benefits: [
+      { title: "Three minerals, not one", description: "15,000 mg of ascorbic acid, with zinc and selenium alongside it." },
+      { title: "Screening required", description: "G6PD screening is required before a dose this high." },
+      { title: "Before you travel", description: "Often booked in the week before a trip or during a recovery stretch." },
+    ],
     name: "Immune Shield",
     category: "Immunity",
     tagline: "High-dose vitamin C",
@@ -441,6 +497,14 @@ const DRIPS: DripSeed[] = [
   },
   {
     slug: "post-viral-rebuild",
+    icon: "🌱",
+    volumeMl: 500,
+    tags: ["Post-viral", "Brain fog", "Alpha-lipoic acid", "Recovery"],
+    benefits: [
+      { title: "Seven days after the fever", description: "Started once a fever has resolved, never during the illness itself." },
+      { title: "Antioxidant-forward", description: "Alpha-lipoic acid alongside ascorbic acid and B-complex." },
+      { title: "For the tail end", description: "Aimed at the fatigue and fog that outlast the illness itself." },
+    ],
     name: "Post-viral Rebuild",
     category: "Post-viral",
     tagline: "After the infection clears",
@@ -460,6 +524,14 @@ const DRIPS: DripSeed[] = [
   },
   {
     slug: "glow-protocol",
+    icon: "✨",
+    volumeMl: 500,
+    tags: ["Skin", "Glutathione", "Pigmentation", "Antioxidant"],
+    benefits: [
+      { title: "Given slowly", description: "Glutathione is a slow push at the end of the carrier, never a fast one." },
+      { title: "With vitamin C", description: "Ascorbic acid alongside it, as the protocol is normally written." },
+      { title: "A course, not a session", description: "Six sessions is the usual protocol; one is rarely the plan." },
+    ],
     name: "Glow Protocol",
     category: "Skin",
     tagline: "Given as a slow push",
@@ -478,6 +550,14 @@ const DRIPS: DripSeed[] = [
   },
   {
     slug: "hydrate-plus",
+    icon: "💧",
+    volumeMl: 500,
+    tags: ["Hydration", "Electrolytes", "Hangover", "Heat"],
+    benefits: [
+      { title: "Ringer lactate, not saline", description: "A balanced electrolyte carrier rather than plain salt water." },
+      { title: "For heat and exertion", description: "Dehydration, heat exhaustion, or after a long run." },
+      { title: "Thirty minutes", description: "In and out, with no course to commit to." },
+    ],
     name: "Hydrate Plus",
     category: "Hydration",
     tagline: "Fast rehydration",
@@ -497,6 +577,14 @@ const DRIPS: DripSeed[] = [
   },
   {
     slug: "athletic-recovery",
+    icon: "🏃",
+    volumeMl: 500,
+    tags: ["Recovery", "Taurine", "Magnesium", "Post-event"],
+    benefits: [
+      { title: "After, not before", description: "Built for the 24 hours following a hard effort." },
+      { title: "Amino acids and magnesium", description: "Taurine, L-carnitine and magnesium in Ringer lactate." },
+      { title: "Check your federation", description: "Read your anti-doping list before booking — some bodies restrict IV volumes." },
+    ],
     name: "Athletic Recovery",
     category: "Athletic recovery",
     tagline: "After the event, not before",
@@ -583,6 +671,13 @@ async function seedDrips(
       infusionNotes: d.infusionNotes,
       durationMin: d.durationMin,
       priceInr: d.price,
+      // category was declared on the seed type but never written, so every
+      // seeded drip came out with none and fell back to "Wellness".
+      category: d.category,
+      tags: d.tags ?? [],
+      icon: d.icon,
+      volumeMl: d.volumeMl,
+      benefits: d.benefits ?? [],
       bestFor: d.bestFor,
       goodToKnow: d.goodToKnow,
       isPublic: true,
