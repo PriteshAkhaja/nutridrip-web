@@ -1,0 +1,26 @@
+import { getSession } from "@/lib/auth/session";
+import { can } from "@/lib/auth/rbac";
+import { cancelOrder } from "@/lib/inventory/dispatch";
+import { notify } from "@/lib/notify";
+import { ok, fail, handleError } from "@/lib/api";
+
+export async function POST(req: Request, { params }: { params: Promise<{ id: string }> }) {
+  try {
+    const session = await getSession();
+    if (!can(session?.role, "orders.update")) return fail("Not permitted", 403);
+    const { id } = await params;
+    const body = await req.json().catch(() => ({}));
+    const order = await cancelOrder(id, body?.reason, session!.sub);
+    await notify(
+      order.clinicId ? String(order.clinicId) : String(order.orderedBy),
+      "Your order was cancelled",
+      `${order.orderNo} · The reserved stock has been released.`,
+      "warning",
+      "/clinic/orders"
+    );
+
+    return ok({ order });
+  } catch (err) {
+    return handleError(err);
+  }
+}

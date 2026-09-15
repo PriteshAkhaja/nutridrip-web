@@ -1,0 +1,314 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<meta name="design_doc_mode" content="canvas">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Sans:wght@400;500;600;700&family=Inter:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+html,body{margin:0;padding:0}
+body{background:#EFEDE8;color:#16211E;font-family:Inter,system-ui,sans-serif;-webkit-font-smoothing:antialiased}
+*{box-sizing:border-box}
+a{color:#2D6A5A;text-decoration:none}
+a:hover{color:#22513F;text-decoration:underline}
+@keyframes ndShimmer{0%{background-position:-200% 0}100%{background-position:200% 0}}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+</style>
+</helmet>
+
+<div style="padding:48px;display:flex;flex-direction:column;gap:56px">
+
+<div style="display:flex;flex-direction:column;gap:8px;max-width:70ch">
+  <span style="font:500 11.5px/1.4 Inter,sans-serif;text-transform:uppercase;letter-spacing:0.08em;color:#8A9491">Block 7 · States</span>
+  <h1 style="font:700 34px/1.15 'Instrument Sans',Inter,sans-serif;letter-spacing:-0.02em;margin:0">States</h1>
+  <p style="font:400 16px/1.6 Inter,sans-serif;color:#4A5654;margin:0;text-wrap:pretty">Four state categories — loading, empty, failed and offline — worked through the surfaces across the pack where each one decides whether the product feels trustworthy. The rule throughout is that a state never loses the user's place or their work — a failure says what happened, what it cost, and what to press.</p>
+</div>
+
+<!-- 7.1 LOADING -->
+<section style="display:flex;flex-direction:column;gap:12px">
+  <div style="display:flex;align-items:baseline;gap:12px"><span style="font:500 13px/1.5 'IBM Plex Mono',monospace;color:#8A9491">7.1</span><span style="font:600 18px/1.3 'Instrument Sans',Inter,sans-serif">Loading — skeletons match the shape of what's coming</span></div>
+  <div style="display:flex;gap:24px;flex-wrap:wrap;align-items:flex-start">
+    <div style="width:700px;background:#FCFBF8;border:1px solid #D6D3CB;border-radius:16px;padding:24px">
+      <span style="font:500 11.5px/1.4 Inter,sans-serif;text-transform:uppercase;letter-spacing:0.08em;color:#8A9491">Approvals queue · first load</span>
+      <div style="border:1px solid #E8E6E0;border-radius:16px;background:#FFFFFF;overflow:hidden;margin-top:14px">
+        <div style="display:grid;grid-template-columns:1.5fr 1.2fr 0.8fr 1fr;background:#F6F5F1;border-bottom:1px solid #E8E6E0">
+          <div style="padding:10px 20px;font:500 11.5px/1.4 Inter,sans-serif;text-transform:uppercase;letter-spacing:0.08em;color:#8A9491">Patient</div>
+          <div style="padding:10px 12px;font:500 11.5px/1.4 Inter,sans-serif;text-transform:uppercase;letter-spacing:0.08em;color:#8A9491">Drip</div>
+          <div style="padding:10px 12px;text-align:right;font:500 11.5px/1.4 Inter,sans-serif;text-transform:uppercase;letter-spacing:0.08em;color:#8A9491">Vitality</div>
+          <div style="padding:10px 20px;font:500 11.5px/1.4 Inter,sans-serif;text-transform:uppercase;letter-spacing:0.08em;color:#8A9491">SLA</div>
+        </div>
+        <sc-for list="{{ skeletonRows }}" as="r" hint-placeholder-count="5">
+          <div style="display:grid;grid-template-columns:1.5fr 1.2fr 0.8fr 1fr;align-items:center;border-bottom:1px solid #E8E6E0">
+            <div style="padding:16px 20px;display:flex;flex-direction:column;gap:7px">
+              <div style="height:12px;width:{{ r.a }};border-radius:4px;background:linear-gradient(90deg,#F6F5F1 25%,#EFEDE8 50%,#F6F5F1 75%);background-size:200% 100%;animation:ndShimmer 1.4s linear infinite"></div>
+              <div style="height:10px;width:{{ r.b }};border-radius:4px;background:linear-gradient(90deg,#F6F5F1 25%,#EFEDE8 50%,#F6F5F1 75%);background-size:200% 100%;animation:ndShimmer 1.4s linear infinite"></div>
+            </div>
+            <div style="padding:16px 12px"><div style="height:12px;width:{{ r.c }};border-radius:4px;background:linear-gradient(90deg,#F6F5F1 25%,#EFEDE8 50%,#F6F5F1 75%);background-size:200% 100%;animation:ndShimmer 1.4s linear infinite"></div></div>
+            <div style="padding:16px 12px;display:flex;justify-content:flex-end"><div style="height:12px;width:34px;border-radius:4px;background:linear-gradient(90deg,#F6F5F1 25%,#EFEDE8 50%,#F6F5F1 75%);background-size:200% 100%;animation:ndShimmer 1.4s linear infinite"></div></div>
+            <div style="padding:16px 20px"><div style="height:6px;border-radius:999px;background:linear-gradient(90deg,#F6F5F1 25%,#EFEDE8 50%,#F6F5F1 75%);background-size:200% 100%;animation:ndShimmer 1.4s linear infinite"></div></div>
+          </div>
+        </sc-for>
+      </div>
+      <p style="font:400 13px/1.5 Inter,sans-serif;color:#8A9491;margin:12px 0 0">No spinner over a table. The header, column widths and row height are already correct, so nothing jumps when data lands.</p>
+    </div>
+
+    <div style="width:390px;background:#FCFBF8;border:1px solid #D6D3CB;border-radius:28px;padding:24px">
+      <span style="font:500 11.5px/1.4 Inter,sans-serif;text-transform:uppercase;letter-spacing:0.08em;color:#8A9491">Patient results · computing</span>
+      <div style="display:flex;flex-direction:column;align-items:center;gap:18px;margin-top:20px">
+        <div style="width:150px;height:150px;border-radius:50%;border:13px solid #F6F5F1;position:relative;display:flex;align-items:center;justify-content:center">
+          <div style="position:absolute;inset:-13px;border-radius:50%;border:13px solid transparent;border-top-color:#E08A4C"></div>
+          <span style="font:400 13px/1.5 'IBM Plex Mono',monospace;color:#8A9491">scoring</span>
+        </div>
+        <div style="width:100%;display:flex;flex-direction:column;gap:12px">
+          <sc-for list="{{ skeletonBars }}" as="b" hint-placeholder-count="3">
+            <div>
+              <div style="height:10px;width:{{ b.label }};border-radius:4px;margin-bottom:7px;background:linear-gradient(90deg,#F6F5F1 25%,#EFEDE8 50%,#F6F5F1 75%);background-size:200% 100%;animation:ndShimmer 1.4s linear infinite"></div>
+              <div style="height:5px;border-radius:999px;background:linear-gradient(90deg,#F6F5F1 25%,#EFEDE8 50%,#F6F5F1 75%);background-size:200% 100%;animation:ndShimmer 1.4s linear infinite"></div>
+            </div>
+          </sc-for>
+        </div>
+        <span style="font:400 13px/1.5 Inter,sans-serif;color:#4A5654;text-align:center">Comparing your 16 markers against reference ranges. About five seconds.</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- 7.2 EMPTY -->
+<section style="display:flex;flex-direction:column;gap:12px">
+  <div style="display:flex;align-items:baseline;gap:12px"><span style="font:500 13px/1.5 'IBM Plex Mono',monospace;color:#8A9491">7.2</span><span style="font:600 18px/1.3 'Instrument Sans',Inter,sans-serif">Empty — four kinds, four different jobs</span></div>
+  <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:20px;width:1440px">
+    <sc-for list="{{ empties }}" as="e" hint-placeholder-count="4">
+      <div style="background:#FCFBF8;border:1px solid #D6D3CB;border-radius:16px;padding:28px;display:flex;flex-direction:column;gap:14px;align-items:flex-start;min-height:300px">
+        <span style="font:500 11.5px/1.4 Inter,sans-serif;text-transform:uppercase;letter-spacing:0.08em;color:#8A9491">{{ e.kind }}</span>
+        <svg width="88" height="56" viewBox="0 0 88 56" aria-hidden="true"><defs><pattern id="b7Stripe" width="8" height="8" patternTransform="rotate(45)" patternUnits="userSpaceOnUse"><rect width="4" height="8" fill="#E8E6E0"></rect></pattern></defs><rect x="0.5" y="0.5" width="87" height="55" rx="10" fill="url(#b7Stripe)" stroke="#E8E6E0"></rect><rect x="30" y="16" width="28" height="24" rx="5" fill="#FCFBF8" stroke="#D6D3CB"></rect></svg>
+        <span style="font:600 18px/1.3 'Instrument Sans',Inter,sans-serif">{{ e.title }}</span>
+        <p style="font:400 14.5px/1.55 Inter,sans-serif;color:#4A5654;margin:0;text-wrap:pretty">{{ e.body }}</p>
+        <button type="button" style="min-height:44px;padding:0 16px;border-radius:8px;border:1px solid {{ e.btnLine }};background:{{ e.btnBg }};color:{{ e.btnFg }};font:600 14.5px/1 Inter,sans-serif;cursor:pointer;margin-top:auto">{{ e.btn }}</button>
+      </div>
+    </sc-for>
+  </div>
+</section>
+
+<!-- 7.3 FAILURE -->
+<section style="display:flex;flex-direction:column;gap:12px">
+  <div style="display:flex;align-items:baseline;gap:12px"><span style="font:500 13px/1.5 'IBM Plex Mono',monospace;color:#8A9491">7.3</span><span style="font:600 18px/1.3 'Instrument Sans',Inter,sans-serif">Failure — never lose the user's work</span></div>
+  <div style="display:flex;gap:24px;flex-wrap:wrap;align-items:flex-start">
+
+    <div style="width:460px;background:#FCFBF8;border:1px solid #D6D3CB;border-radius:16px;padding:28px;display:flex;flex-direction:column;gap:16px">
+      <span style="font:500 11.5px/1.4 Inter,sans-serif;text-transform:uppercase;letter-spacing:0.08em;color:#8A9491">Payment failed</span>
+      <div style="border:1px solid #C0453C;background:#FAEBEA;border-radius:12px;padding:18px">
+        <div style="display:flex;gap:12px">
+          <span style="width:20px;height:20px;border-radius:50%;background:#C0453C;color:#FFFFFF;display:inline-flex;align-items:center;justify-content:center;font:600 12px/1 Inter,sans-serif;flex:none">✕</span>
+          <div>
+            <span style="font:600 16px/1.4 Inter,sans-serif">Your bank declined the hold</span>
+            <p style="font:400 14.5px/1.55 Inter,sans-serif;color:#4A5654;margin:4px 0 0">Nothing was charged. Your 10:30 AM slot on 14 Sep is held for <span style="font:500 14.5px/1.55 'IBM Plex Mono',monospace">9:41</span> more minutes.</p>
+          </div>
+        </div>
+      </div>
+      <div style="border:1px solid #E8E6E0;background:#FFFFFF;border-radius:12px;padding:18px">
+        <div style="display:flex;flex-direction:column;gap:10px">
+          <div style="display:flex;justify-content:space-between"><span style="font:400 14.5px/1.55 Inter,sans-serif;color:#4A5654">Reference</span><span style="font:500 14.5px/1.55 'IBM Plex Mono',monospace">PAY-88F21C</span></div>
+          <div style="display:flex;justify-content:space-between"><span style="font:400 14.5px/1.55 Inter,sans-serif;color:#4A5654">Reason from bank</span><span style="font:500 14.5px/1.55 Inter,sans-serif">Insufficient limit</span></div>
+          <div style="display:flex;justify-content:space-between"><span style="font:400 14.5px/1.55 Inter,sans-serif;color:#4A5654">Amount</span><span style="font:500 14.5px/1.55 'IBM Plex Mono',monospace">₹10,620</span></div>
+        </div>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:10px">
+        <button type="button" style="min-height:52px;border-radius:8px;border:1px solid #2D6A5A;background:#2D6A5A;color:#FFFFFF;font:600 16px/1 Inter,sans-serif;cursor:pointer">Try another card</button>
+        <button type="button" style="min-height:44px;border-radius:8px;border:1px solid #D6D3CB;background:#FFFFFF;font:600 14.5px/1 Inter,sans-serif;cursor:pointer">Pay by UPI</button>
+        <button type="button" style="min-height:44px;border-radius:8px;border:1px solid transparent;background:transparent;color:#2D6A5A;font:600 14.5px/1 Inter,sans-serif;cursor:pointer">Keep the slot, pay later</button>
+      </div>
+    </div>
+
+    <div style="width:460px;background:#FCFBF8;border:1px solid #D6D3CB;border-radius:16px;padding:28px;display:flex;flex-direction:column;gap:16px">
+      <span style="font:500 11.5px/1.4 Inter,sans-serif;text-transform:uppercase;letter-spacing:0.08em;color:#8A9491">Sync conflict · nurse app</span>
+      <div style="border:1px solid #C07A22;background:#FBF1E1;border-radius:12px;padding:18px">
+        <div style="display:flex;gap:12px">
+          <span style="width:20px;height:20px;border-radius:50%;background:#C07A22;color:#FFFFFF;display:inline-flex;align-items:center;justify-content:center;font:600 12px/1 Inter,sans-serif;flex:none">!</span>
+          <div>
+            <span style="font:600 16px/1.4 Inter,sans-serif">The protocol changed while you were offline</span>
+            <p style="font:400 14.5px/1.55 Inter,sans-serif;color:#4A5654;margin:4px 0 0">Dr Iyer lowered magnesium after you started. Your recorded steps are safe. Choose which version to continue with.</p>
+          </div>
+        </div>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:12px">
+        <div style="border:1.5px solid #2D6A5A;background:#FFFFFF;border-radius:12px;padding:16px">
+          <div style="display:flex;justify-content:space-between;align-items:baseline"><span style="font:600 14.5px/1.55 Inter,sans-serif">Server version</span><span style="font:500 13px/1.5 'IBM Plex Mono',monospace;color:#2D6A5A">recommended</span></div>
+          <div style="display:flex;justify-content:space-between;margin-top:10px"><span style="font:400 14.5px/1.55 Inter,sans-serif;color:#4A5654">Magnesium sulphate</span><span style="font:500 14.5px/1.55 'IBM Plex Mono',monospace">600 mg</span></div>
+          <span style="font:400 13px/1.5 'IBM Plex Mono',monospace;color:#8A9491">signed 13 Sep, 11:58 · KMC-48211</span>
+        </div>
+        <div style="border:1px solid #E8E6E0;background:#FFFFFF;border-radius:12px;padding:16px">
+          <span style="font:600 14.5px/1.55 Inter,sans-serif">Your local version</span>
+          <div style="display:flex;justify-content:space-between;margin-top:10px"><span style="font:400 14.5px/1.55 Inter,sans-serif;color:#4A5654">Magnesium sulphate</span><span style="font:500 14.5px/1.55 'IBM Plex Mono',monospace">1,000 mg</span></div>
+          <span style="font:400 13px/1.5 'IBM Plex Mono',monospace;color:#8A9491">cached 13 Sep, 09:40</span>
+        </div>
+      </div>
+      <button type="button" style="min-height:52px;border-radius:8px;border:1px solid #2D6A5A;background:#2D6A5A;color:#FFFFFF;font:600 16px/1 Inter,sans-serif;cursor:pointer">Use server version</button>
+    </div>
+
+    <div style="width:460px;background:#FCFBF8;border:1px solid #D6D3CB;border-radius:16px;padding:28px;display:flex;flex-direction:column;gap:16px">
+      <span style="font:500 11.5px/1.4 Inter,sans-serif;text-transform:uppercase;letter-spacing:0.08em;color:#8A9491">Server error · pharmacist</span>
+      <div style="border:1px solid #E8E6E0;background:#FFFFFF;border-radius:12px;padding:28px;display:flex;flex-direction:column;gap:14px;align-items:flex-start">
+        <svg width="88" height="56" viewBox="0 0 88 56" aria-hidden="true"><rect x="0.5" y="0.5" width="87" height="55" rx="10" fill="url(#b7Stripe)" stroke="#E8E6E0"></rect></svg>
+        <span style="font:600 18px/1.3 'Instrument Sans',Inter,sans-serif">We couldn't reach the stock service</span>
+        <p style="font:400 14.5px/1.55 Inter,sans-serif;color:#4A5654;margin:0">Availability numbers are hidden rather than guessed — an out-of-date count here would put a nurse in front of a patient without the vials.</p>
+        <div style="display:flex;flex-direction:column;gap:5px">
+          <span style="font:400 13px/1.5 'IBM Plex Mono',monospace;color:#8A9491">ERR-STOCK-503 · 14 Sep, 09:12 IST</span>
+          <span style="font:400 13px/1.5 'IBM Plex Mono',monospace;color:#8A9491">last good read 09:04 · 8 min ago</span>
+        </div>
+        <div style="display:flex;gap:10px;flex-wrap:wrap">
+          <button type="button" style="min-height:44px;padding:0 16px;border-radius:8px;border:1px solid #2D6A5A;background:#2D6A5A;color:#FFFFFF;font:600 14.5px/1 Inter,sans-serif;cursor:pointer">Retry</button>
+          <button type="button" style="min-height:44px;padding:0 16px;border-radius:8px;border:1px solid #D6D3CB;background:#FFFFFF;font:600 14.5px/1 Inter,sans-serif;cursor:pointer">Show last good read</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- 7.4 OFFLINE -->
+<section style="display:flex;flex-direction:column;gap:12px">
+  <div style="display:flex;align-items:baseline;gap:12px"><span style="font:500 13px/1.5 'IBM Plex Mono',monospace;color:#8A9491">7.4</span><span style="font:600 18px/1.3 'Instrument Sans',Inter,sans-serif">Offline & sync — a normal condition, not an error</span></div>
+  <div style="display:flex;gap:24px;flex-wrap:wrap;align-items:flex-start">
+
+    <div style="width:390px;height:844px;background:#FCFBF8;border:1px solid #D6D3CB;border-radius:28px;overflow:hidden;display:flex;flex-direction:column">
+      <div style="display:flex;justify-content:space-between;padding:14px 22px 6px;font:500 13px/1.5 'IBM Plex Mono',monospace;color:#16211E"><span>10:34</span><span>✕ ▮▮▯</span></div>
+      <div style="padding:10px 22px 0"><div style="border:1px solid #C07A22;background:#FBF1E1;border-radius:8px;padding:10px 12px;display:flex;align-items:center;gap:10px"><span style="width:8px;height:8px;border-radius:50%;background:#C07A22;flex:none"></span><span style="font:500 13px/1.5 Inter,sans-serif;flex:1">Offline since 10:12</span><span style="font:500 13px/1.5 'IBM Plex Mono',monospace;color:#C07A22">7 queued</span></div></div>
+      <div style="padding:18px 22px;display:flex;flex-direction:column;gap:14px;flex:1">
+        <span style="font:600 18px/1.3 'Instrument Sans',Inter,sans-serif">Waiting to sync</span>
+        <div style="display:flex;flex-direction:column;gap:10px">
+          <sc-for list="{{ queued }}" as="q" hint-placeholder-count="5">
+            <div style="border:1px solid #E8E6E0;background:#FFFFFF;border-radius:12px;padding:14px;display:flex;gap:12px;align-items:center">
+              <span style="width:20px;height:20px;border-radius:6px;background:{{ q.bg }};border:{{ q.line }};color:{{ q.fg }};display:inline-flex;align-items:center;justify-content:center;font:600 11px/1 Inter,sans-serif;flex:none">{{ q.mark }}</span>
+              <div style="flex:1">
+                <span style="font:500 14.5px/1.55 Inter,sans-serif">{{ q.label }}</span>
+                <div style="font:400 13px/1.5 'IBM Plex Mono',monospace;color:#8A9491">{{ q.time }}</div>
+              </div>
+              <span style="font:400 13px/1.5 Inter,sans-serif;color:{{ q.statusFg }};flex:none">{{ q.status }}</span>
+            </div>
+          </sc-for>
+        </div>
+        <div style="border:1px solid #C5DCD4;background:#EAF2EF;border-radius:12px;padding:14px;margin-top:auto">
+          <span style="font:600 14.5px/1.55 Inter,sans-serif">You can keep working</span>
+          <p style="font:400 14.5px/1.55 Inter,sans-serif;color:#4A5654;margin:4px 0 0">Everything above is saved on this device and will upload in order when signal returns. Nothing is lost if the app closes.</p>
+        </div>
+      </div>
+      <div style="border-top:1px solid #E8E6E0;background:#FFFFFF;padding:14px 22px 24px">
+        <button type="button" style="min-height:56px;width:100%;border-radius:8px;border:1px solid #D6D3CB;background:#FFFFFF;font:600 16px/1 Inter,sans-serif;cursor:pointer">Retry sync now</button>
+      </div>
+    </div>
+
+    <div style="width:390px;height:844px;background:#FCFBF8;border:1px solid #D6D3CB;border-radius:28px;overflow:hidden;display:flex;flex-direction:column">
+      <div style="display:flex;justify-content:space-between;padding:14px 22px 6px;font:500 13px/1.5 'IBM Plex Mono',monospace;color:#16211E"><span>10:41</span><span>▮▮▮ ◔</span></div>
+      <div style="padding:10px 22px 0"><div style="border:1px solid #2F8F5B;background:#E9F5EE;border-radius:8px;padding:10px 12px;display:flex;align-items:center;gap:10px"><span style="width:8px;height:8px;border-radius:50%;background:#2F8F5B;flex:none"></span><span style="font:500 13px/1.5 Inter,sans-serif;flex:1">Back online · syncing</span><span style="font:500 13px/1.5 'IBM Plex Mono',monospace;color:#2F8F5B">5 of 7</span></div></div>
+      <div style="padding:18px 22px;display:flex;flex-direction:column;gap:14px;flex:1">
+        <div>
+          <div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:8px"><span style="font:600 18px/1.3 'Instrument Sans',Inter,sans-serif">Uploading</span><span style="font:500 14.5px/1.55 'IBM Plex Mono',monospace">71%</span></div>
+          <div style="height:6px;border-radius:999px;background:#F6F5F1;overflow:hidden;position:relative"><div style="position:absolute;top:0;bottom:0;left:0;width:71%;background:#2F8F5B"></div></div>
+        </div>
+        <div style="display:flex;flex-direction:column;gap:10px">
+          <sc-for list="{{ syncing }}" as="s" hint-placeholder-count="5">
+            <div style="border:1px solid #E8E6E0;background:#FFFFFF;border-radius:12px;padding:14px;display:flex;gap:12px;align-items:center">
+              <span style="width:20px;height:20px;border-radius:6px;background:{{ s.bg }};border:{{ s.line }};color:{{ s.fg }};display:inline-flex;align-items:center;justify-content:center;font:600 11px/1 Inter,sans-serif;flex:none">{{ s.mark }}</span>
+              <div style="flex:1">
+                <span style="font:500 14.5px/1.55 Inter,sans-serif">{{ s.label }}</span>
+                <div style="font:400 13px/1.5 'IBM Plex Mono',monospace;color:#8A9491">{{ s.time }}</div>
+              </div>
+              <span style="font:400 13px/1.5 Inter,sans-serif;color:{{ s.statusFg }};flex:none">{{ s.status }}</span>
+            </div>
+          </sc-for>
+        </div>
+        <div style="border:1px solid #C0453C;background:#FAEBEA;border-radius:12px;padding:14px;margin-top:auto">
+          <span style="font:600 14.5px/1.55 Inter,sans-serif">1 item needs your attention</span>
+          <p style="font:400 14.5px/1.55 Inter,sans-serif;color:#4A5654;margin:4px 0 10px">The adverse event log was rejected because the physician already closed AE-0219. Reopen it or attach your note to the closed record.</p>
+          <button type="button" style="min-height:44px;width:100%;border-radius:8px;border:1px solid #C0453C;background:#FFFFFF;color:#C0453C;font:600 14.5px/1 Inter,sans-serif;cursor:pointer">Resolve</button>
+        </div>
+      </div>
+    </div>
+
+    <div style="width:460px;background:#FCFBF8;border:1px solid #D6D3CB;border-radius:16px;padding:28px;display:flex;flex-direction:column;gap:16px">
+      <span style="font:500 11.5px/1.4 Inter,sans-serif;text-transform:uppercase;letter-spacing:0.08em;color:#8A9491">Toast stack · desktop, bottom-left</span>
+      <div style="display:flex;flex-direction:column;gap:10px">
+        <div style="display:flex;gap:12px;align-items:center;background:#16211E;border-radius:12px;padding:14px 16px;box-shadow:0 4px 16px rgba(22,33,30,.08)">
+          <span style="width:18px;height:18px;border-radius:50%;background:#2F8F5B;color:#FFFFFF;display:inline-flex;align-items:center;justify-content:center;font:600 11px/1 Inter,sans-serif;flex:none">✓</span>
+          <span style="font:500 14.5px/1.55 Inter,sans-serif;color:#FCFBF8;flex:1">Vitals saved · synced</span>
+          <button type="button" style="border:none;background:transparent;color:#8A9491;font:500 13px/1 Inter,sans-serif;cursor:pointer">Dismiss</button>
+        </div>
+        <div style="display:flex;gap:12px;align-items:center;background:#16211E;border-radius:12px;padding:14px 16px;box-shadow:0 4px 16px rgba(22,33,30,.08)">
+          <span style="width:18px;height:18px;border-radius:50%;background:#C07A22;color:#FFFFFF;display:inline-flex;align-items:center;justify-content:center;font:600 11px/1 Inter,sans-serif;flex:none">!</span>
+          <span style="font:500 14.5px/1.55 Inter,sans-serif;color:#FCFBF8;flex:1">VC-B7 falls below reorder level</span>
+          <button type="button" style="border:none;background:transparent;color:#FCFBF8;font:600 13px/1 Inter,sans-serif;cursor:pointer">Order</button>
+        </div>
+        <div style="display:flex;gap:12px;align-items:center;background:#16211E;border-radius:12px;padding:14px 16px;box-shadow:0 4px 16px rgba(22,33,30,.08)">
+          <span style="width:18px;height:18px;border-radius:50%;background:#C0453C;color:#FFFFFF;display:inline-flex;align-items:center;justify-content:center;font:600 11px/1 Inter,sans-serif;flex:none">✕</span>
+          <span style="font:500 14.5px/1.55 Inter,sans-serif;color:#FCFBF8;flex:1">Refund failed · PAY-88F21C</span>
+          <button type="button" style="border:none;background:transparent;color:#FCFBF8;font:600 13px/1 Inter,sans-serif;cursor:pointer">Retry</button>
+        </div>
+      </div>
+      <p style="font:400 13px/1.5 Inter,sans-serif;color:#8A9491;margin:0">Success toasts auto-dismiss after four seconds. Warnings and failures stay until acted on — a nurse who missed a stock warning is a cancelled session.</p>
+      <div style="border-top:1px solid #E8E6E0;padding-top:16px;display:flex;flex-direction:column;gap:10px">
+        <span style="font:500 11.5px/1.4 Inter,sans-serif;text-transform:uppercase;letter-spacing:0.08em;color:#8A9491">Optimistic then reverted</span>
+        <div style="border:1px solid #E8E6E0;background:#FFFFFF;border-radius:12px;padding:14px;display:flex;justify-content:space-between;align-items:center">
+          <div><span style="font:500 14.5px/1.55 Inter,sans-serif">Step 14 · Cannulate</span><div style="font:400 13px/1.5 Inter,sans-serif;color:#C0453C">Reverted — server rejected, step 13 not complete</div></div>
+          <span style="width:20px;height:20px;border-radius:6px;border:1.5px solid #C0453C;background:#FAEBEA;flex:none"></span>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+</div>
+
+</x-dc>
+<script type="text/x-dc" data-dc-script>
+class Component extends DCLogic {
+  renderVals() {
+    const done = {bg:'#2D6A5A', line:'none', fg:'#FFFFFF', mark:'✓', status:'Sent', statusFg:'#2F8F5B'};
+    const wait = {bg:'#FFFFFF', line:'1.5px solid #D6D3CB', fg:'#8A9491', mark:'', status:'Queued', statusFg:'#8A9491'};
+    const busy = {bg:'#EAF2EF', line:'1.5px solid #2D6A5A', fg:'#22513F', mark:'', status:'Uploading', statusFg:'#2D6A5A'};
+    const fail = {bg:'#FAEBEA', line:'1.5px solid #C0453C', fg:'#C0453C', mark:'✕', status:'Rejected', statusFg:'#C0453C'};
+
+    return {
+      skeletonRows: [
+        {a:'62%', b:'40%', c:'70%'},
+        {a:'48%', b:'34%', c:'56%'},
+        {a:'70%', b:'44%', c:'62%'},
+        {a:'54%', b:'30%', c:'48%'},
+        {a:'58%', b:'38%', c:'66%'}
+      ],
+
+      skeletonBars: [{label:'44%'}, {label:'32%'}, {label:'52%'}],
+
+      empties: [
+        {kind:'First run', title:'No sessions yet', body:'Once a physician approves a protocol, your sessions appear here with their full timeline.', btn:'Take the health quiz', btnBg:'#2D6A5A', btnFg:'#FFFFFF', btnLine:'#2D6A5A'},
+        {kind:'Filtered to nothing', title:'No batches match', body:'You are filtering to quarantined batches expiring within 7 days. There are none — which is the answer you wanted.', btn:'Clear filters', btnBg:'#FFFFFF', btnFg:'#16211E', btnLine:'#D6D3CB'},
+        {kind:'Cleared queue', title:'Nothing left to approve', body:'All 12 submissions are reviewed. The next one arrives with a notification, usually within the hour.', btn:'View approved today', btnBg:'#FFFFFF', btnFg:'#16211E', btnLine:'#D6D3CB'},
+        {kind:'Not permitted', title:'You cannot view this record', body:'Clinical records are limited to the patient, the reviewing physician and the attending nurse. Your access attempt is logged.', btn:'Request access', btnBg:'#FFFFFF', btnFg:'#16211E', btnLine:'#D6D3CB'}
+      ],
+
+      queued: [
+        {label:'Step 11 · Vial seals inspected', time:'10:01', ...wait},
+        {label:'Step 12 · Baseline vitals', time:'10:06', ...wait},
+        {label:'Step 13 · Consent captured', time:'10:09', ...wait},
+        {label:'Observation · cool sensation', time:'10:22', ...wait},
+        {label:'Photo · cannula site', time:'10:28', ...wait}
+      ],
+
+      syncing: [
+        {label:'Step 11 · Vial seals inspected', time:'10:01', ...done},
+        {label:'Step 12 · Baseline vitals', time:'10:06', ...done},
+        {label:'Step 13 · Consent captured', time:'10:09', ...done},
+        {label:'Observation · cool sensation', time:'10:22', ...busy},
+        {label:'Adverse event note · AE-0219', time:'10:31', ...fail}
+      ]
+    };
+  }
+}
+
+</script>
+</body>
+</html>

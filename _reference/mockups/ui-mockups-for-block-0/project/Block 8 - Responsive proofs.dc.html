@@ -1,0 +1,268 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<meta name="design_doc_mode" content="canvas">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Sans:wght@400;500;600;700&family=Inter:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+html,body{margin:0;padding:0}
+body{background:#EFEDE8;color:#16211E;font-family:Inter,system-ui,sans-serif;-webkit-font-smoothing:antialiased}
+*{box-sizing:border-box}
+a{color:#2D6A5A;text-decoration:none}
+a:hover{color:#22513F;text-decoration:underline}
+</style>
+</helmet>
+
+<div style="padding:48px;display:flex;flex-direction:column;gap:56px">
+
+<div style="display:flex;flex-direction:column;gap:8px;max-width:70ch">
+  <span style="font:500 11.5px/1.4 Inter,sans-serif;text-transform:uppercase;letter-spacing:0.08em;color:#8A9491">Block 8 · Responsive proofs</span>
+  <h1 style="font:700 34px/1.15 'Instrument Sans',Inter,sans-serif;letter-spacing:-0.02em;margin:0">Responsive proofs</h1>
+  <p style="font:400 16px/1.6 Inter,sans-serif;color:#4A5654;margin:0;text-wrap:pretty">Two screens shown at three representative widths — the ones where the layout actually changes shape — plus the rules that govern the bands in between. A data table becomes a stack of cards rather than a horizontal scroll, because a nurse reading a dose on a phone should never have to swipe to find the number.</p>
+</div>
+
+<!-- BREAKPOINTS -->
+<section style="display:flex;flex-direction:column;gap:12px">
+  <div style="display:flex;align-items:baseline;gap:12px"><span style="font:500 13px/1.5 'IBM Plex Mono',monospace;color:#8A9491">8.1</span><span style="font:600 18px/1.3 'Instrument Sans',Inter,sans-serif">Breakpoints and what changes at each</span></div>
+  <div style="width:1440px;background:#FCFBF8;border:1px solid #D6D3CB;border-radius:16px;overflow:hidden">
+    <div style="display:grid;grid-template-columns:1fr 1fr 1.2fr 1.4fr;background:#F6F5F1;border-bottom:1px solid #E8E6E0">
+      <div style="padding:10px 20px;font:500 11.5px/1.4 Inter,sans-serif;text-transform:uppercase;letter-spacing:0.08em;color:#8A9491">Breakpoint</div>
+      <div style="padding:10px 12px;font:500 11.5px/1.4 Inter,sans-serif;text-transform:uppercase;letter-spacing:0.08em;color:#8A9491">Navigation</div>
+      <div style="padding:10px 12px;font:500 11.5px/1.4 Inter,sans-serif;text-transform:uppercase;letter-spacing:0.08em;color:#8A9491">Tables</div>
+      <div style="padding:10px 20px;font:500 11.5px/1.4 Inter,sans-serif;text-transform:uppercase;letter-spacing:0.08em;color:#8A9491">Layout</div>
+    </div>
+    <sc-for list="{{ breakpoints }}" as="b" hint-placeholder-count="5">
+      <div style="display:grid;grid-template-columns:1fr 1fr 1.2fr 1.4fr;align-items:center;border-bottom:1px solid #E8E6E0">
+        <div style="padding:14px 20px;display:flex;flex-direction:column"><span style="font:500 14.5px/1.55 'IBM Plex Mono',monospace">{{ b.range }}</span><span style="font:400 13px/1.5 Inter,sans-serif;color:#8A9491">{{ b.name }}</span></div>
+        <div style="padding:14px 12px;font:400 14.5px/1.55 Inter,sans-serif;color:#4A5654">{{ b.nav }}</div>
+        <div style="padding:14px 12px;font:400 14.5px/1.55 Inter,sans-serif;color:#4A5654">{{ b.table }}</div>
+        <div style="padding:14px 20px;font:400 14.5px/1.55 Inter,sans-serif;color:#4A5654">{{ b.layout }}</div>
+      </div>
+    </sc-for>
+  </div>
+</section>
+
+<!-- 8.2 BATCH TABLE AT THREE WIDTHS -->
+<section style="display:flex;flex-direction:column;gap:12px">
+  <div style="display:flex;align-items:baseline;gap:12px"><span style="font:500 13px/1.5 'IBM Plex Mono',monospace;color:#8A9491">8.2</span><span style="font:600 18px/1.3 'Instrument Sans',Inter,sans-serif">Batch table — 1440 → 834 → 390</span></div>
+  <div style="display:flex;gap:24px;align-items:flex-start;flex-wrap:wrap">
+
+    <div style="display:flex;flex-direction:column;gap:10px">
+      <span style="font:400 13px/1.5 'IBM Plex Mono',monospace;color:#8A9491">1440 · full table, six columns</span>
+      <div style="width:900px;background:#FCFBF8;border:1px solid #D6D3CB;border-radius:16px;padding:20px">
+        <div style="border:1px solid #E8E6E0;border-radius:12px;background:#FFFFFF;overflow:hidden">
+          <div style="display:grid;grid-template-columns:1fr 1.3fr 1.1fr 0.8fr 1.1fr 1fr;background:#F6F5F1;border-bottom:1px solid #E8E6E0">
+            <div style="padding:9px 16px;font:500 11.5px/1.4 Inter,sans-serif;text-transform:uppercase;letter-spacing:0.08em;color:#8A9491">Batch</div>
+            <div style="padding:9px 10px;font:500 11.5px/1.4 Inter,sans-serif;text-transform:uppercase;letter-spacing:0.08em;color:#8A9491">Product</div>
+            <div style="padding:9px 10px;font:500 11.5px/1.4 Inter,sans-serif;text-transform:uppercase;letter-spacing:0.08em;color:#8A9491">Expiry</div>
+            <div style="padding:9px 10px;text-align:right;font:500 11.5px/1.4 Inter,sans-serif;text-transform:uppercase;letter-spacing:0.08em;color:#8A9491">Units</div>
+            <div style="padding:9px 10px;font:500 11.5px/1.4 Inter,sans-serif;text-transform:uppercase;letter-spacing:0.08em;color:#8A9491">Stock</div>
+            <div style="padding:9px 16px;font:500 11.5px/1.4 Inter,sans-serif;text-transform:uppercase;letter-spacing:0.08em;color:#8A9491">Status</div>
+          </div>
+          <sc-for list="{{ batches }}" as="b" hint-placeholder-count="4">
+            <div style="display:grid;grid-template-columns:1fr 1.3fr 1.1fr 0.8fr 1.1fr 1fr;align-items:center;border-bottom:1px solid #E8E6E0">
+              <div style="padding:12px 16px;font:500 14.5px/1.55 'IBM Plex Mono',monospace">{{ b.no }}</div>
+              <div style="padding:12px 10px;font:400 14.5px/1.55 Inter,sans-serif">{{ b.product }}</div>
+              <div style="padding:12px 10px;display:flex;flex-direction:column"><span style="font:400 14.5px/1.55 'IBM Plex Mono',monospace">{{ b.expiry }}</span><span style="font:400 13px/1.5 'IBM Plex Mono',monospace;color:{{ b.color }}">{{ b.days }}</span></div>
+              <div style="padding:12px 10px;text-align:right;font:500 14.5px/1.55 'IBM Plex Mono',monospace">{{ b.units }}</div>
+              <div style="padding:12px 10px"><div style="height:6px;border-radius:2px;background:#F6F5F1;position:relative;overflow:hidden"><div style="position:absolute;top:0;bottom:0;left:0;width:{{ b.pct }};background:{{ b.color }}"></div></div></div>
+              <div style="padding:12px 16px"><span style="display:inline-flex;align-items:center;gap:6px;border-radius:999px;padding:3px 9px;font:500 13px/1.4 Inter,sans-serif;background:{{ b.soft }};color:{{ b.color }};border:1px solid {{ b.color }}"><span style="width:5px;height:5px;border-radius:50%;background:{{ b.color }}"></span>{{ b.status }}</span></div>
+            </div>
+          </sc-for>
+        </div>
+      </div>
+    </div>
+
+    <div style="display:flex;flex-direction:column;gap:10px">
+      <span style="font:400 13px/1.5 'IBM Plex Mono',monospace;color:#8A9491">834 · four columns, stock bar folds under batch</span>
+      <div style="width:480px;background:#FCFBF8;border:1px solid #D6D3CB;border-radius:16px;padding:20px">
+        <div style="border:1px solid #E8E6E0;border-radius:12px;background:#FFFFFF;overflow:hidden">
+          <div style="display:grid;grid-template-columns:1.4fr 1fr 0.7fr 1fr;background:#F6F5F1;border-bottom:1px solid #E8E6E0">
+            <div style="padding:9px 14px;font:500 11.5px/1.4 Inter,sans-serif;text-transform:uppercase;letter-spacing:0.08em;color:#8A9491">Batch</div>
+            <div style="padding:9px 8px;font:500 11.5px/1.4 Inter,sans-serif;text-transform:uppercase;letter-spacing:0.08em;color:#8A9491">Expiry</div>
+            <div style="padding:9px 8px;text-align:right;font:500 11.5px/1.4 Inter,sans-serif;text-transform:uppercase;letter-spacing:0.08em;color:#8A9491">Units</div>
+            <div style="padding:9px 14px;font:500 11.5px/1.4 Inter,sans-serif;text-transform:uppercase;letter-spacing:0.08em;color:#8A9491">Status</div>
+          </div>
+          <sc-for list="{{ batches }}" as="b" hint-placeholder-count="4">
+            <div style="display:grid;grid-template-columns:1.4fr 1fr 0.7fr 1fr;align-items:center;border-bottom:1px solid #E8E6E0">
+              <div style="padding:12px 14px;display:flex;flex-direction:column;gap:6px">
+                <span style="font:500 14.5px/1.55 'IBM Plex Mono',monospace">{{ b.no }}</span>
+                <span style="font:400 13px/1.5 Inter,sans-serif;color:#8A9491">{{ b.product }}</span>
+                <div style="height:5px;border-radius:2px;background:#F6F5F1;position:relative;overflow:hidden"><div style="position:absolute;top:0;bottom:0;left:0;width:{{ b.pct }};background:{{ b.color }}"></div></div>
+              </div>
+              <div style="padding:12px 8px;display:flex;flex-direction:column"><span style="font:400 13px/1.5 'IBM Plex Mono',monospace">{{ b.expiry }}</span><span style="font:400 13px/1.5 'IBM Plex Mono',monospace;color:{{ b.color }}">{{ b.days }}</span></div>
+              <div style="padding:12px 8px;text-align:right;font:500 14.5px/1.55 'IBM Plex Mono',monospace">{{ b.units }}</div>
+              <div style="padding:12px 14px"><span style="display:inline-flex;align-items:center;gap:5px;border-radius:999px;padding:3px 8px;font:500 13px/1.4 Inter,sans-serif;background:{{ b.soft }};color:{{ b.color }};border:1px solid {{ b.color }}"><span style="width:5px;height:5px;border-radius:50%;background:{{ b.color }}"></span>{{ b.status }}</span></div>
+            </div>
+          </sc-for>
+        </div>
+      </div>
+    </div>
+
+    <div style="display:flex;flex-direction:column;gap:10px">
+      <span style="font:400 13px/1.5 'IBM Plex Mono',monospace;color:#8A9491">390 · cards, never horizontal scroll</span>
+      <div style="width:390px;background:#FCFBF8;border:1px solid #D6D3CB;border-radius:28px;padding:20px">
+        <div style="display:flex;flex-direction:column;gap:12px">
+          <sc-for list="{{ batches }}" as="b" hint-placeholder-count="4">
+            <div style="border:1px solid #E8E6E0;background:#FFFFFF;border-radius:12px;padding:16px">
+              <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:12px">
+                <div><span style="font:500 16px/1.4 'IBM Plex Mono',monospace">{{ b.no }}</span><div style="font:400 13px/1.5 Inter,sans-serif;color:#8A9491">{{ b.product }}</div></div>
+                <span style="display:inline-flex;align-items:center;gap:5px;border-radius:999px;padding:3px 9px;font:500 13px/1.4 Inter,sans-serif;background:{{ b.soft }};color:{{ b.color }};border:1px solid {{ b.color }};flex:none"><span style="width:5px;height:5px;border-radius:50%;background:{{ b.color }}"></span>{{ b.status }}</span>
+              </div>
+              <div style="display:flex;justify-content:space-between;margin-top:12px;padding-top:12px;border-top:1px solid #E8E6E0">
+                <div style="display:flex;flex-direction:column"><span style="font:500 11.5px/1.4 Inter,sans-serif;text-transform:uppercase;letter-spacing:0.08em;color:#8A9491">Units</span><span style="font:500 16px/1.4 'IBM Plex Mono',monospace">{{ b.units }}</span></div>
+                <div style="display:flex;flex-direction:column;align-items:flex-end"><span style="font:500 11.5px/1.4 Inter,sans-serif;text-transform:uppercase;letter-spacing:0.08em;color:#8A9491">Expiry</span><span style="font:500 16px/1.4 'IBM Plex Mono',monospace">{{ b.expiry }}</span><span style="font:400 13px/1.5 'IBM Plex Mono',monospace;color:{{ b.color }}">{{ b.days }}</span></div>
+              </div>
+              <div style="height:6px;border-radius:2px;background:#F6F5F1;position:relative;overflow:hidden;margin-top:12px"><div style="position:absolute;top:0;bottom:0;left:0;width:{{ b.pct }};background:{{ b.color }}"></div></div>
+            </div>
+          </sc-for>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- 8.3 PUBLIC HOME AT THREE WIDTHS -->
+<section style="display:flex;flex-direction:column;gap:12px">
+  <div style="display:flex;align-items:baseline;gap:12px"><span style="font:500 13px/1.5 'IBM Plex Mono',monospace;color:#8A9491">8.3</span><span style="font:600 18px/1.3 'Instrument Sans',Inter,sans-serif">Public hero — 1280 → 834 → 390</span></div>
+  <div style="display:flex;gap:24px;align-items:flex-start;flex-wrap:wrap">
+
+    <div style="display:flex;flex-direction:column;gap:10px">
+      <span style="font:400 13px/1.5 'IBM Plex Mono',monospace;color:#8A9491">1280 · two columns, stats inline</span>
+      <div style="width:820px;background:#FCFBF8;border:1px solid #D6D3CB;border-radius:16px;overflow:hidden">
+        <div style="display:flex;align-items:center;gap:24px;padding:14px 28px;border-bottom:1px solid #E8E6E0">
+          <div style="display:flex;gap:9px;align-items:center"><div style="width:20px;height:20px;border:1px solid #C5DCD4;border-radius:7px;background:#EAF2EF;position:relative;overflow:hidden"><div style="position:absolute;left:0;right:0;bottom:0;height:62%;background:#2D6A5A"></div></div><span style="font:600 14.5px/1 'Instrument Sans',Inter,sans-serif">NutriDrip</span></div>
+          <div style="display:flex;gap:18px"><span style="font:500 13px/1.5 Inter,sans-serif">Drips</span><span style="font:500 13px/1.5 Inter,sans-serif;color:#4A5654">How it works</span><span style="font:500 13px/1.5 Inter,sans-serif;color:#4A5654">Pricing</span><span style="font:500 13px/1.5 Inter,sans-serif;color:#4A5654">Safety</span></div>
+          <button type="button" style="margin-left:auto;min-height:40px;padding:0 14px;border-radius:8px;border:1px solid #2D6A5A;background:#2D6A5A;color:#FFFFFF;font:600 13px/1 Inter,sans-serif;cursor:pointer">Take the quiz</button>
+        </div>
+        <div style="display:grid;grid-template-columns:1.05fr 0.95fr;gap:28px;padding:36px 28px;align-items:center">
+          <div>
+            <h2 style="font:700 40px/1.08 'Instrument Sans',Inter,sans-serif;letter-spacing:-0.03em;margin:0 0 14px;max-width:18ch;text-wrap:pretty">IV nutrient therapy, at home, with a doctor in the loop.</h2>
+            <p style="font:400 16px/1.6 Inter,sans-serif;color:#4A5654;margin:0 0 20px;max-width:48ch">Answer a 16-point quiz, get a physician-reviewed protocol, and have a nurse administer it in your own home.</p>
+            <div style="display:flex;gap:10px"><button type="button" style="min-height:44px;padding:0 18px;border-radius:8px;border:1px solid #2D6A5A;background:#2D6A5A;color:#FFFFFF;font:600 14.5px/1 Inter,sans-serif;cursor:pointer">Take the quiz</button><button type="button" style="min-height:44px;padding:0 18px;border-radius:8px;border:1px solid #D6D3CB;background:#FFFFFF;font:600 14.5px/1 Inter,sans-serif;cursor:pointer">Browse drips</button></div>
+            <div style="display:flex;gap:28px;margin-top:24px;padding-top:18px;border-top:1px solid #E8E6E0">
+              <sc-for list="{{ heroStats }}" as="s" hint-placeholder-count="3">
+                <div style="display:flex;flex-direction:column;gap:3px"><span style="font:500 22px/1.2 'IBM Plex Mono',monospace">{{ s.v }}</span><span style="font:400 13px/1.5 Inter,sans-serif;color:#8A9491">{{ s.l }}</span></div>
+              </sc-for>
+            </div>
+          </div>
+          <svg width="100%" height="260" viewBox="0 0 360 260" style="border-radius:14px;border:1px solid #D6D3CB" aria-hidden="true"><defs><pattern id="b8Stripe" width="8" height="8" patternTransform="rotate(45)" patternUnits="userSpaceOnUse"><rect width="4" height="8" fill="#E8E6E0"></rect></pattern></defs><rect width="360" height="260" fill="url(#b8Stripe)"></rect></svg>
+        </div>
+      </div>
+    </div>
+
+    <div style="display:flex;flex-direction:column;gap:10px">
+      <span style="font:400 13px/1.5 'IBM Plex Mono',monospace;color:#8A9491">834 · stacked, image first</span>
+      <div style="width:400px;background:#FCFBF8;border:1px solid #D6D3CB;border-radius:16px;overflow:hidden">
+        <div style="display:flex;align-items:center;gap:12px;padding:14px 20px;border-bottom:1px solid #E8E6E0">
+          <div style="display:flex;gap:9px;align-items:center"><div style="width:20px;height:20px;border:1px solid #C5DCD4;border-radius:7px;background:#EAF2EF;position:relative;overflow:hidden"><div style="position:absolute;left:0;right:0;bottom:0;height:62%;background:#2D6A5A"></div></div><span style="font:600 14.5px/1 'Instrument Sans',Inter,sans-serif">NutriDrip</span></div>
+          <button type="button" aria-label="Menu" style="margin-left:auto;width:44px;height:44px;border-radius:8px;border:1px solid #D6D3CB;background:#FFFFFF;font:400 16px/1 'IBM Plex Mono',monospace;color:#4A5654;cursor:pointer">≡</button>
+        </div>
+        <div style="padding:24px 20px;display:flex;flex-direction:column;gap:18px">
+          <svg width="100%" height="180" viewBox="0 0 360 180" style="border-radius:14px;border:1px solid #D6D3CB" aria-hidden="true"><rect width="360" height="180" fill="url(#b8Stripe)"></rect></svg>
+          <h2 style="font:700 32px/1.1 'Instrument Sans',Inter,sans-serif;letter-spacing:-0.02em;margin:0;text-wrap:pretty">IV nutrient therapy, at home, with a doctor in the loop.</h2>
+          <p style="font:400 16px/1.6 Inter,sans-serif;color:#4A5654;margin:0">Answer a 16-point quiz, get a physician-reviewed protocol, and have a nurse administer it at home.</p>
+          <div style="display:flex;flex-direction:column;gap:10px">
+            <button type="button" style="min-height:52px;border-radius:8px;border:1px solid #2D6A5A;background:#2D6A5A;color:#FFFFFF;font:600 16px/1 Inter,sans-serif;cursor:pointer">Take the quiz</button>
+            <button type="button" style="min-height:44px;border-radius:8px;border:1px solid #D6D3CB;background:#FFFFFF;font:600 14.5px/1 Inter,sans-serif;cursor:pointer">Browse drips</button>
+          </div>
+          <div style="display:flex;gap:24px;padding-top:16px;border-top:1px solid #E8E6E0;flex-wrap:wrap">
+            <sc-for list="{{ heroStats }}" as="s" hint-placeholder-count="3">
+              <div style="display:flex;flex-direction:column;gap:3px"><span style="font:500 20px/1.2 'IBM Plex Mono',monospace">{{ s.v }}</span><span style="font:400 13px/1.5 Inter,sans-serif;color:#8A9491">{{ s.l }}</span></div>
+            </sc-for>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div style="display:flex;flex-direction:column;gap:10px">
+      <span style="font:400 13px/1.5 'IBM Plex Mono',monospace;color:#8A9491">390 · sticky CTA at the bottom</span>
+      <div style="width:390px;height:700px;background:#FCFBF8;border:1px solid #D6D3CB;border-radius:28px;overflow:hidden;display:flex;flex-direction:column">
+        <div style="display:flex;justify-content:space-between;padding:14px 22px 6px;font:500 13px/1.5 'IBM Plex Mono',monospace;color:#16211E"><span>9:41</span><span>▮▮▮ ◔</span></div>
+        <div style="display:flex;align-items:center;gap:12px;padding:10px 22px 14px;border-bottom:1px solid #E8E6E0">
+          <div style="display:flex;gap:9px;align-items:center"><div style="width:20px;height:20px;border:1px solid #C5DCD4;border-radius:7px;background:#EAF2EF;position:relative;overflow:hidden"><div style="position:absolute;left:0;right:0;bottom:0;height:62%;background:#2D6A5A"></div></div><span style="font:600 14.5px/1 'Instrument Sans',Inter,sans-serif">NutriDrip</span></div>
+          <button type="button" aria-label="Menu" style="margin-left:auto;width:44px;height:44px;border-radius:8px;border:1px solid #D6D3CB;background:#FFFFFF;font:400 16px/1 'IBM Plex Mono',monospace;color:#4A5654;cursor:pointer">≡</button>
+        </div>
+        <div style="padding:20px 22px;display:flex;flex-direction:column;gap:16px;flex:1;overflow:hidden">
+          <svg width="100%" height="150" viewBox="0 0 346 150" style="border-radius:14px;border:1px solid #D6D3CB" aria-hidden="true"><rect width="346" height="150" fill="url(#b8Stripe)"></rect></svg>
+          <h2 style="font:700 28px/1.12 'Instrument Sans',Inter,sans-serif;letter-spacing:-0.02em;margin:0;text-wrap:pretty">IV nutrient therapy, at home, with a doctor in the loop.</h2>
+          <p style="font:400 14.5px/1.55 Inter,sans-serif;color:#4A5654;margin:0">Answer a 16-point quiz, get a physician-reviewed protocol, and have a nurse administer it at home.</p>
+          <div style="display:flex;flex-direction:column;gap:12px;padding-top:14px;border-top:1px solid #E8E6E0">
+            <sc-for list="{{ heroStats }}" as="s" hint-placeholder-count="3">
+              <div style="display:flex;justify-content:space-between;align-items:baseline"><span style="font:400 14.5px/1.55 Inter,sans-serif;color:#4A5654">{{ s.l }}</span><span style="font:500 16px/1.4 'IBM Plex Mono',monospace">{{ s.v }}</span></div>
+            </sc-for>
+          </div>
+        </div>
+        <div style="border-top:1px solid #E8E6E0;background:#FFFFFF;padding:14px 22px 24px;display:flex;flex-direction:column;gap:8px">
+          <button type="button" style="min-height:52px;border-radius:8px;border:1px solid #2D6A5A;background:#2D6A5A;color:#FFFFFF;font:600 16px/1 Inter,sans-serif;cursor:pointer">Take the quiz · 3 min</button>
+          <span style="font:400 13px/1.5 Inter,sans-serif;color:#8A9491;text-align:center">Free. No card needed until a doctor approves.</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- 8.4 RULES -->
+<section style="display:flex;flex-direction:column;gap:12px">
+  <div style="display:flex;align-items:baseline;gap:12px"><span style="font:500 13px/1.5 'IBM Plex Mono',monospace;color:#8A9491">8.4</span><span style="font:600 18px/1.3 'Instrument Sans',Inter,sans-serif">Rules that apply everywhere</span></div>
+  <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:20px;width:1440px">
+    <sc-for list="{{ rules }}" as="r" hint-placeholder-count="6">
+      <div style="background:#FCFBF8;border:1px solid #D6D3CB;border-radius:16px;padding:24px;display:flex;flex-direction:column;gap:10px">
+        <span style="font:500 11.5px/1.4 Inter,sans-serif;text-transform:uppercase;letter-spacing:0.08em;color:#8A9491">{{ r.kind }}</span>
+        <span style="font:600 18px/1.3 'Instrument Sans',Inter,sans-serif">{{ r.title }}</span>
+        <p style="font:400 14.5px/1.55 Inter,sans-serif;color:#4A5654;margin:0;text-wrap:pretty">{{ r.body }}</p>
+      </div>
+    </sc-for>
+  </div>
+</section>
+
+</div>
+
+</x-dc>
+<script type="text/x-dc" data-dc-script>
+class Component extends DCLogic {
+  renderVals() {
+    return {
+      breakpoints: [
+        {range:'≥1440', name:'Desktop wide', nav:'Sidebar 240px, expanded', table:'All columns, sticky header', layout:'Three-pane review screens'},
+        {range:'1024–1439', name:'Desktop', nav:'Sidebar collapses to 64px icons', table:'Secondary columns drop', layout:'Two panes, aside below'},
+        {range:'834–1023', name:'Tablet', nav:'Drawer behind a menu button', table:'Four columns, detail folds into cell', layout:'Single column, cards side by side'},
+        {range:'600–833', name:'Large phone', nav:'Bottom tab bar, max 5 items', table:'Card list', layout:'Single column'},
+        {range:'≤599', name:'Phone', nav:'Bottom tab bar, sticky primary CTA', table:'Card list, key number first', layout:'Single column, 22px gutters'}
+      ],
+
+      batches: [
+        {no:'VC-B7', product:'Ascorbic acid 7.5 g', expiry:'26 Sep 2026', days:'12 days left', units:'42', pct:'18%', status:'Expiring', color:'#C07A22', soft:'#FBF1E1'},
+        {no:'VC-B9', product:'Ascorbic acid 7.5 g', expiry:'28 Feb 2027', days:'167 days left', units:'240', pct:'77%', status:'Healthy', color:'#2F8F5B', soft:'#E9F5EE'},
+        {no:'MG-A2', product:'Magnesium sulphate', expiry:'22 Nov 2026', days:'69 days left', units:'14', pct:'14%', status:'Quarantined', color:'#C0453C', soft:'#FAEBEA'},
+        {no:'SL-F8', product:'Saline 0.9% 500 ml', expiry:'11 Jun 2027', days:'270 days left', units:'182', pct:'88%', status:'Healthy', color:'#2F8F5B', soft:'#E9F5EE'}
+      ],
+
+      heroStats: [
+        {v:'4.9', l:'avg. nurse rating'},
+        {v:'2 hr', l:'typical review time'},
+        {v:'14', l:'zones in Bengaluru'}
+      ],
+
+      rules: [
+        {kind:'Tables', title:'Cards, not horizontal scroll', body:'Below 834px every table becomes a card list with the number that matters set first. A dose or a unit count should never sit off-screen.'},
+        {kind:'Targets', title:'44px minimum, 56px for nurses', body:'Patient and admin surfaces hold to 44px. The nurse app raises everything to 56px because it is used standing, one-handed, in gloves.'},
+        {kind:'Type', title:'Body never below 14.5px', body:'Clinical data stays in Plex Mono at 14.5px or larger at every width. Labels shrink to 11.5px caps; nothing else does.'},
+        {kind:'Primary action', title:'Sticky on phones', body:'On phone widths the single primary action pins to the bottom with the price or consequence beside it, so the commitment is always visible.'},
+        {kind:'Alerts', title:'Never truncated', body:'Clinical warnings wrap to as many lines as they need at every width. A truncated allergy conflict is a safety failure, not a layout one.'},
+        {kind:'Navigation', title:'Five items, then a drawer', body:'Bottom bars cap at five. Roles with more surfaces get the sixth item onward inside a drawer, ordered by how often ops actually open them.'}
+      ]
+    };
+  }
+}
+
+</script>
+</body>
+</html>

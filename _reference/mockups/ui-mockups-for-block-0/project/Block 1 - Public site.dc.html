@@ -1,0 +1,410 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<meta name="design_doc_mode" content="canvas">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Sans:wght@400;500;600;700&family=Inter:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+html,body{margin:0;padding:0}
+body{background:#EFEDE8;color:#16211E;font-family:Inter,system-ui,sans-serif;-webkit-font-smoothing:antialiased}
+*{box-sizing:border-box}
+a{color:#2D6A5A;text-decoration:none}
+a:hover{color:#22513F;text-decoration:underline}
+</style>
+</helmet>
+
+<div style="padding:48px;display:flex;flex-direction:column;gap:56px">
+
+<div style="display:flex;flex-direction:column;gap:8px;max-width:70ch">
+  <span style="font:500 11.5px/1.4 Inter,sans-serif;text-transform:uppercase;letter-spacing:0.08em;color:#8A9491">Block 1 · Public site · 1280px desktop</span>
+  <h1 style="font:700 34px/1.15 'Instrument Sans',Inter,sans-serif;letter-spacing:-0.02em;margin:0">Public site</h1>
+  <p style="font:400 16px/1.6 Inter,sans-serif;color:#4A5654;margin:0;text-wrap:pretty">Five screens. The site's job is to make a regulated medical service feel calm and legible, then hand the visitor to the quiz. Photography is striped placeholder — real imagery drops into the same slots.</p>
+</div>
+
+<!-- ===== 1. HOME ===== -->
+<section style="display:flex;flex-direction:column;gap:12px">
+  <div style="display:flex;align-items:baseline;gap:12px"><span style="font:500 13px/1.5 'IBM Plex Mono',monospace;color:#8A9491">1.1</span><span style="font:600 18px/1.3 'Instrument Sans',Inter,sans-serif">Home</span></div>
+  <div style="width:1280px;background:#FCFBF8;border:1px solid #D6D3CB;border-radius:16px;overflow:hidden">
+
+    <div style="display:flex;align-items:center;gap:32px;padding:18px 40px;border-bottom:1px solid #E8E6E0;background:#FCFBF8">
+      <div style="display:flex;gap:10px;align-items:center">
+        <div style="width:24px;height:24px;border:1px solid #C5DCD4;border-radius:8px;background:#EAF2EF;position:relative;overflow:hidden"><div style="position:absolute;left:0;right:0;bottom:0;height:62%;background:#2D6A5A"></div></div>
+        <span style="font:600 16px/1 'Instrument Sans',Inter,sans-serif">NutriDrip</span>
+      </div>
+      <div style="display:flex;gap:26px;align-items:center">
+        <span style="font:500 14.5px/1.55 Inter,sans-serif;color:#16211E">Drips</span>
+        <span style="font:500 14.5px/1.55 Inter,sans-serif;color:#4A5654">How it works</span>
+        <span style="font:500 14.5px/1.55 Inter,sans-serif;color:#4A5654">Pricing</span>
+        <span style="font:500 14.5px/1.55 Inter,sans-serif;color:#4A5654">Safety</span>
+        <span style="font:500 14.5px/1.55 Inter,sans-serif;color:#4A5654">For clinics</span>
+      </div>
+      <div style="margin-left:auto;display:flex;gap:10px;align-items:center">
+        <span style="font:500 13px/1.5 'IBM Plex Mono',monospace;color:#4A5654">Bengaluru ▾</span>
+        <button type="button" style="min-height:44px;padding:0 16px;border-radius:8px;border:1px solid #D6D3CB;background:#FFFFFF;font:600 14.5px/1 Inter,sans-serif;cursor:pointer">Sign in</button>
+        <button type="button" style="min-height:44px;padding:0 18px;border-radius:8px;border:1px solid #2D6A5A;background:#2D6A5A;color:#FFFFFF;font:600 14.5px/1 Inter,sans-serif;cursor:pointer">Take the quiz</button>
+      </div>
+    </div>
+
+    <div style="display:grid;grid-template-columns:1.05fr 0.95fr;gap:48px;padding:64px 40px;align-items:center">
+      <div>
+        <span style="display:inline-flex;align-items:center;gap:8px;border:1px solid #C5DCD4;background:#EAF2EF;color:#22513F;border-radius:999px;padding:6px 12px;font:500 13px/1.4 Inter,sans-serif">Physician-approved · nurse-administered</span>
+        <h2 style="font:700 52px/1.06 'Instrument Sans',Inter,sans-serif;letter-spacing:-0.03em;margin:20px 0 18px;max-width:18ch;text-wrap:pretty">IV nutrient therapy, at home, with a doctor in the loop.</h2>
+        <p style="font:400 18px/1.6 Inter,sans-serif;color:#4A5654;margin:0 0 28px;max-width:52ch;text-wrap:pretty">Answer a 16-point health quiz, get a protocol reviewed by a registered physician, and have a nurse administer it in your own home. No walk-in, no guesswork.</p>
+        <div style="display:flex;gap:12px;flex-wrap:wrap">
+          <button type="button" style="min-height:52px;padding:0 24px;border-radius:8px;border:1px solid #2D6A5A;background:#2D6A5A;color:#FFFFFF;font:600 16px/1 Inter,sans-serif;cursor:pointer">Take the health quiz · 3 min</button>
+          <button type="button" style="min-height:52px;padding:0 24px;border-radius:8px;border:1px solid #D6D3CB;background:#FFFFFF;font:600 16px/1 Inter,sans-serif;cursor:pointer">Browse drips</button>
+        </div>
+        <div style="display:flex;gap:40px;margin-top:36px;padding-top:24px;border-top:1px solid #E8E6E0">
+          <div style="display:flex;flex-direction:column;gap:4px"><span style="font:500 26px/1.2 'IBM Plex Mono',monospace">4.9</span><span style="font:400 13px/1.5 Inter,sans-serif;color:#8A9491">avg. nurse rating</span></div>
+          <div style="display:flex;flex-direction:column;gap:4px"><span style="font:500 26px/1.2 'IBM Plex Mono',monospace">2 hr</span><span style="font:400 13px/1.5 Inter,sans-serif;color:#8A9491">typical review time</span></div>
+          <div style="display:flex;flex-direction:column;gap:4px"><span style="font:500 26px/1.2 'IBM Plex Mono',monospace">14</span><span style="font:400 13px/1.5 Inter,sans-serif;color:#8A9491">zones served in Bengaluru</span></div>
+        </div>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:14px">
+        <svg width="100%" height="360" viewBox="0 0 520 360" style="border-radius:16px;border:1px solid #D6D3CB" aria-hidden="true"><defs><pattern id="b1Stripe" width="8" height="8" patternTransform="rotate(45)" patternUnits="userSpaceOnUse"><rect width="4" height="8" fill="#E8E6E0"></rect></pattern></defs><rect width="520" height="360" fill="url(#b1Stripe)"></rect></svg>
+        <span style="font:400 13px/1.5 Inter,sans-serif;color:#8A9491">Placeholder — nurse setting up a drip in a patient's living room.</span>
+      </div>
+    </div>
+
+    <div style="padding:0 40px 56px">
+      <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:16px">
+        <sc-for list="{{ steps }}" as="s" hint-placeholder-count="4">
+          <div style="border:1px solid #E8E6E0;border-radius:12px;background:#FFFFFF;padding:20px">
+            <span style="font:500 13px/1.5 'IBM Plex Mono',monospace;color:#8A9491">{{ s.n }}</span>
+            <h3 style="font:600 18px/1.3 'Instrument Sans',Inter,sans-serif;margin:8px 0 6px">{{ s.title }}</h3>
+            <p style="font:400 14.5px/1.55 Inter,sans-serif;color:#4A5654;margin:0">{{ s.body }}</p>
+          </div>
+        </sc-for>
+      </div>
+    </div>
+
+    <div style="padding:56px 40px;background:#FFFFFF;border-top:1px solid #E8E6E0">
+      <div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:24px">
+        <h3 style="font:600 30px/1.2 'Instrument Sans',Inter,sans-serif;letter-spacing:-0.02em;margin:0">Popular drips</h3>
+        <span style="font:500 14.5px/1.55 Inter,sans-serif;color:#2D6A5A">All 9 drips →</span>
+      </div>
+      <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:16px">
+        <sc-for list="{{ drips }}" as="d" hint-placeholder-count="3">
+          <div style="border:1px solid #E8E6E0;border-radius:16px;background:#FCFBF8;overflow:hidden;display:flex">
+            <div style="width:10px;background:#F6F5F1;position:relative;flex:none"><div style="position:absolute;left:0;right:0;bottom:0;height:{{ d.fill }};background:#E08A4C"></div></div>
+            <div style="padding:20px;flex:1">
+              <span style="font:500 11.5px/1.4 Inter,sans-serif;text-transform:uppercase;letter-spacing:0.08em;color:#8A9491">{{ d.cat }}</span>
+              <h4 style="font:600 22px/1.3 'Instrument Sans',Inter,sans-serif;letter-spacing:-0.02em;margin:4px 0 8px">{{ d.name }}</h4>
+              <p style="font:400 14.5px/1.55 Inter,sans-serif;color:#4A5654;margin:0 0 16px">{{ d.body }}</p>
+              <div style="display:flex;gap:20px;padding-top:14px;border-top:1px solid #E8E6E0">
+                <div style="display:flex;flex-direction:column"><span style="font:500 11.5px/1.4 Inter,sans-serif;text-transform:uppercase;letter-spacing:0.08em;color:#8A9491">Price</span><span style="font:500 16px/1.4 'IBM Plex Mono',monospace">{{ d.price }}</span></div>
+                <div style="display:flex;flex-direction:column"><span style="font:500 11.5px/1.4 Inter,sans-serif;text-transform:uppercase;letter-spacing:0.08em;color:#8A9491">Duration</span><span style="font:500 16px/1.4 'IBM Plex Mono',monospace">{{ d.mins }}</span></div>
+              </div>
+            </div>
+          </div>
+        </sc-for>
+      </div>
+    </div>
+
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:40px;padding:56px 40px;border-top:1px solid #E8E6E0">
+      <div>
+        <h3 style="font:600 30px/1.2 'Instrument Sans',Inter,sans-serif;letter-spacing:-0.02em;margin:0 0 14px">Where the safety actually sits</h3>
+        <p style="font:400 16px/1.6 Inter,sans-serif;color:#4A5654;margin:0 0 20px;max-width:52ch;text-wrap:pretty">Every session is bounded by a 29-step checklist the nurse cannot skip, and out-of-range vitals stop the infusion before it starts.</p>
+        <div style="display:flex;flex-direction:column;gap:12px">
+          <sc-for list="{{ safety }}" as="f" hint-placeholder-count="4">
+            <div style="display:flex;gap:12px;align-items:flex-start">
+              <span style="width:20px;height:20px;border-radius:6px;background:#EAF2EF;border:1px solid #C5DCD4;color:#22513F;display:inline-flex;align-items:center;justify-content:center;font:600 11px/1 Inter,sans-serif;flex:none;margin-top:2px">✓</span>
+              <span style="font:400 14.5px/1.55 Inter,sans-serif;color:#16211E">{{ f }}</span>
+            </div>
+          </sc-for>
+        </div>
+      </div>
+      <div style="border:1px solid #C5DCD4;background:#EAF2EF;border-radius:16px;padding:28px">
+        <span style="font:500 11.5px/1.4 Inter,sans-serif;text-transform:uppercase;letter-spacing:0.08em;color:#22513F">Not for everyone</span>
+        <p style="font:400 16px/1.6 Inter,sans-serif;color:#16211E;margin:12px 0 16px;text-wrap:pretty">IV therapy is unsuitable during pregnancy, in renal or cardiac failure, and with certain drug interactions. The quiz screens for these and a physician can decline.</p>
+        <span style="font:500 14.5px/1.55 Inter,sans-serif;color:#22513F">Read the full contraindication list →</span>
+      </div>
+    </div>
+
+    <div style="padding:32px 40px;background:#16211E;display:flex;justify-content:space-between;gap:32px;flex-wrap:wrap">
+      <div style="display:flex;flex-direction:column;gap:6px">
+        <span style="font:600 16px/1 'Instrument Sans',Inter,sans-serif;color:#FCFBF8">NutriDrip Health Pvt. Ltd.</span>
+        <span style="font:400 13px/1.5 Inter,sans-serif;color:#8A9491">Clinical establishment reg. <span style="font-family:'IBM Plex Mono',monospace">KA/CEA/2024/11872</span></span>
+        <span style="font:400 13px/1.5 Inter,sans-serif;color:#8A9491">Not a substitute for emergency care. In an emergency call 108.</span>
+      </div>
+      <div style="display:flex;gap:48px">
+        <div style="display:flex;flex-direction:column;gap:7px"><span style="font:500 11.5px/1.4 Inter,sans-serif;text-transform:uppercase;letter-spacing:0.08em;color:#8A9491">Service</span><span style="font:400 13px/1.5 Inter,sans-serif;color:#FCFBF8">Drips</span><span style="font:400 13px/1.5 Inter,sans-serif;color:#FCFBF8">Pricing</span><span style="font:400 13px/1.5 Inter,sans-serif;color:#FCFBF8">Zones</span></div>
+        <div style="display:flex;flex-direction:column;gap:7px"><span style="font:500 11.5px/1.4 Inter,sans-serif;text-transform:uppercase;letter-spacing:0.08em;color:#8A9491">Legal</span><span style="font:400 13px/1.5 Inter,sans-serif;color:#FCFBF8">Terms</span><span style="font:400 13px/1.5 Inter,sans-serif;color:#FCFBF8">Privacy</span><span style="font:400 13px/1.5 Inter,sans-serif;color:#FCFBF8">Grievance officer</span></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ===== 1.2 CATALOGUE ===== -->
+<section style="display:flex;flex-direction:column;gap:12px">
+  <div style="display:flex;align-items:baseline;gap:12px"><span style="font:500 13px/1.5 'IBM Plex Mono',monospace;color:#8A9491">1.2</span><span style="font:600 18px/1.3 'Instrument Sans',Inter,sans-serif">Drip catalogue — filtered</span></div>
+  <div style="width:1280px;background:#FCFBF8;border:1px solid #D6D3CB;border-radius:16px;overflow:hidden">
+    <div style="padding:32px 40px 24px;border-bottom:1px solid #E8E6E0">
+      <h2 style="font:700 40px/1.1 'Instrument Sans',Inter,sans-serif;letter-spacing:-0.02em;margin:0 0 10px">Nine drips</h2>
+      <p style="font:400 16px/1.6 Inter,sans-serif;color:#4A5654;margin:0;max-width:60ch">Each one is a fixed formulation. A physician may adjust doses for you after reviewing the quiz — the price shown is the base.</p>
+    </div>
+    <div style="display:grid;grid-template-columns:248px 1fr">
+      <aside style="border-right:1px solid #E8E6E0;padding:24px;display:flex;flex-direction:column;gap:24px">
+        <div style="display:flex;flex-direction:column;gap:10px">
+          <span style="font:500 11.5px/1.4 Inter,sans-serif;text-transform:uppercase;letter-spacing:0.08em;color:#8A9491">Goal</span>
+          <sc-for list="{{ goals }}" as="g" hint-placeholder-count="6">
+            <div style="display:flex;align-items:center;gap:10px;min-height:32px">
+              <span style="width:18px;height:18px;border-radius:5px;background:{{ g.bg }};border:1.5px solid {{ g.line }};display:inline-flex;align-items:center;justify-content:center;color:#FFFFFF;font:600 11px/1 Inter,sans-serif;flex:none">{{ g.mark }}</span>
+              <span style="font:400 14.5px/1.55 Inter,sans-serif;color:#16211E;flex:1">{{ g.label }}</span>
+              <span style="font:400 13px/1.5 'IBM Plex Mono',monospace;color:#8A9491">{{ g.count }}</span>
+            </div>
+          </sc-for>
+        </div>
+        <div style="display:flex;flex-direction:column;gap:10px;padding-top:20px;border-top:1px solid #E8E6E0">
+          <span style="font:500 11.5px/1.4 Inter,sans-serif;text-transform:uppercase;letter-spacing:0.08em;color:#8A9491">Price up to</span>
+          <div style="height:6px;border-radius:999px;background:#F6F5F1;position:relative"><div style="position:absolute;top:0;bottom:0;left:0;width:64%;background:#2D6A5A;border-radius:999px"></div><span style="position:absolute;top:-7px;left:calc(64% - 10px);width:20px;height:20px;border-radius:50%;background:#FFFFFF;border:2px solid #2D6A5A"></span></div>
+          <div style="display:flex;justify-content:space-between"><span style="font:400 13px/1.5 'IBM Plex Mono',monospace;color:#8A9491">₹4,000</span><span style="font:500 13px/1.5 'IBM Plex Mono',monospace;color:#16211E">₹12,000</span></div>
+        </div>
+        <div style="display:flex;flex-direction:column;gap:10px;padding-top:20px;border-top:1px solid #E8E6E0">
+          <span style="font:500 11.5px/1.4 Inter,sans-serif;text-transform:uppercase;letter-spacing:0.08em;color:#8A9491">Availability</span>
+          <div style="display:flex;align-items:center;gap:12px"><span style="width:44px;height:26px;border-radius:999px;background:#2D6A5A;position:relative;flex:none"><span style="position:absolute;top:3px;left:21px;width:20px;height:20px;border-radius:50%;background:#FFFFFF"></span></span><span style="font:400 14.5px/1.55 Inter,sans-serif">Available today only</span></div>
+        </div>
+      </aside>
+      <div style="padding:24px">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px">
+          <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
+            <span style="display:inline-flex;align-items:center;gap:7px;background:#EAF2EF;border:1px solid #C5DCD4;color:#22513F;border-radius:999px;padding:5px 10px;font:500 13px/1 Inter,sans-serif">Energy ×</span>
+            <span style="display:inline-flex;align-items:center;gap:7px;background:#EAF2EF;border:1px solid #C5DCD4;color:#22513F;border-radius:999px;padding:5px 10px;font:500 13px/1 Inter,sans-serif">Available today ×</span>
+            <span style="font:400 13px/1.5 Inter,sans-serif;color:#8A9491">4 of 9 drips</span>
+          </div>
+          <span style="font:500 13px/1.5 Inter,sans-serif;color:#4A5654">Sort: Recommended ▾</span>
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px">
+          <sc-for list="{{ catalogue }}" as="c" hint-placeholder-count="4">
+            <div style="border:1px solid #E8E6E0;border-radius:16px;background:#FFFFFF;overflow:hidden;display:flex">
+              <div style="width:10px;background:#F6F5F1;position:relative;flex:none"><div style="position:absolute;left:0;right:0;bottom:0;height:{{ c.fill }};background:#E08A4C"></div></div>
+              <div style="padding:20px;flex:1">
+                <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:12px">
+                  <div><span style="font:500 11.5px/1.4 Inter,sans-serif;text-transform:uppercase;letter-spacing:0.08em;color:#8A9491">{{ c.cat }}</span><h4 style="font:600 22px/1.3 'Instrument Sans',Inter,sans-serif;letter-spacing:-0.02em;margin:4px 0 0">{{ c.name }}</h4></div>
+                  <span style="display:inline-flex;align-items:center;gap:6px;border-radius:999px;padding:4px 10px;font:500 13px/1.4 Inter,sans-serif;background:{{ c.soft }};color:{{ c.color }};border:1px solid {{ c.color }};flex:none"><span style="width:6px;height:6px;border-radius:50%;background:{{ c.color }};display:inline-block"></span>{{ c.status }}</span>
+                </div>
+                <p style="font:400 14.5px/1.55 Inter,sans-serif;color:#4A5654;margin:10px 0 14px">{{ c.body }}</p>
+                <div style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:14px">
+                  <sc-for list="{{ c.ings }}" as="i" hint-placeholder-count="3">
+                    <span style="border:1px solid #E8E6E0;background:#F6F5F1;border-radius:999px;padding:4px 9px;font:400 13px/1.4 'IBM Plex Mono',monospace;color:#4A5654">{{ i }}</span>
+                  </sc-for>
+                </div>
+                <div style="display:flex;justify-content:space-between;align-items:center;padding-top:14px;border-top:1px solid #E8E6E0">
+                  <div style="display:flex;gap:18px">
+                    <span style="font:500 16px/1.4 'IBM Plex Mono',monospace">{{ c.price }}</span>
+                    <span style="font:400 16px/1.4 'IBM Plex Mono',monospace;color:#8A9491">{{ c.mins }}</span>
+                  </div>
+                  <button type="button" style="min-height:44px;padding:0 16px;border-radius:8px;border:1px solid #D6D3CB;background:#FFFFFF;font:600 13px/1 Inter,sans-serif;cursor:pointer">View</button>
+                </div>
+              </div>
+            </div>
+          </sc-for>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ===== 1.3 DRIP DETAIL ===== -->
+<section style="display:flex;flex-direction:column;gap:12px">
+  <div style="display:flex;align-items:baseline;gap:12px"><span style="font:500 13px/1.5 'IBM Plex Mono',monospace;color:#8A9491">1.3</span><span style="font:600 18px/1.3 'Instrument Sans',Inter,sans-serif">Drip detail — full formulation disclosure</span></div>
+  <div style="width:1280px;background:#FCFBF8;border:1px solid #D6D3CB;border-radius:16px;overflow:hidden">
+    <div style="display:grid;grid-template-columns:1fr 400px">
+      <div style="padding:40px">
+        <div style="display:flex;gap:7px;align-items:center;font:400 13px/1.5 Inter,sans-serif;color:#8A9491;margin-bottom:16px"><span>Drips</span><span>/</span><span>Energy</span><span>/</span><span style="color:#16211E">Myers' Revive</span></div>
+        <h2 style="font:700 40px/1.1 'Instrument Sans',Inter,sans-serif;letter-spacing:-0.02em;margin:0 0 14px">Myers' Revive</h2>
+        <p style="font:400 18px/1.6 Inter,sans-serif;color:#4A5654;margin:0 0 28px;max-width:56ch;text-wrap:pretty">The classic Myers' cocktail with a magnesium-forward balance. Most often chosen after long-haul travel, a heavy work stretch, or a run of poor sleep.</p>
+        <svg width="100%" height="260" viewBox="0 0 760 260" style="border-radius:16px;border:1px solid #D6D3CB;margin-bottom:32px" aria-hidden="true"><rect width="760" height="260" fill="url(#b1Stripe)"></rect></svg>
+
+        <h3 style="font:600 22px/1.3 'Instrument Sans',Inter,sans-serif;margin:0 0 6px">Every ingredient, every dose</h3>
+        <p style="font:400 14.5px/1.55 Inter,sans-serif;color:#4A5654;margin:0 0 16px">Doses shown are the base protocol. A physician may raise or lower any line after reviewing your quiz and labs.</p>
+        <div style="border:1px solid #E8E6E0;border-radius:12px;background:#FFFFFF;overflow:hidden">
+          <div style="display:grid;grid-template-columns:1.6fr 0.9fr 1fr 1.1fr;background:#F6F5F1;border-bottom:1px solid #E8E6E0">
+            <div style="padding:10px 16px;font:500 11.5px/1.4 Inter,sans-serif;text-transform:uppercase;letter-spacing:0.08em;color:#8A9491">Ingredient</div>
+            <div style="padding:10px 12px;text-align:right;font:500 11.5px/1.4 Inter,sans-serif;text-transform:uppercase;letter-spacing:0.08em;color:#8A9491">Dose</div>
+            <div style="padding:10px 12px;font:500 11.5px/1.4 Inter,sans-serif;text-transform:uppercase;letter-spacing:0.08em;color:#8A9491">Of session max</div>
+            <div style="padding:10px 16px;font:500 11.5px/1.4 Inter,sans-serif;text-transform:uppercase;letter-spacing:0.08em;color:#8A9491">Role</div>
+          </div>
+          <sc-for list="{{ formula }}" as="f" hint-placeholder-count="6">
+            <div style="display:grid;grid-template-columns:1.6fr 0.9fr 1fr 1.1fr;align-items:center;border-bottom:1px solid #E8E6E0">
+              <div style="padding:13px 16px;font:400 14.5px/1.55 Inter,sans-serif">{{ f.name }}</div>
+              <div style="padding:13px 12px;text-align:right;font:500 14.5px/1.55 'IBM Plex Mono',monospace;font-variant-numeric:tabular-nums">{{ f.dose }}</div>
+              <div style="padding:13px 12px"><div style="height:6px;border-radius:999px;background:#F6F5F1;position:relative;overflow:hidden"><div style="position:absolute;top:0;bottom:0;left:0;width:{{ f.pct }};background:#2D6A5A"></div></div></div>
+              <div style="padding:13px 16px;font:400 13px/1.5 Inter,sans-serif;color:#4A5654">{{ f.role }}</div>
+            </div>
+          </sc-for>
+          <div style="display:flex;justify-content:space-between;padding:13px 16px;background:#FCFBF8"><span style="font:500 14.5px/1.55 Inter,sans-serif">Carrier</span><span style="font:500 14.5px/1.55 'IBM Plex Mono',monospace">0.9% saline · 500 ml</span></div>
+        </div>
+
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-top:24px">
+          <div style="border:1px solid #C07A22;background:#FBF1E1;border-radius:12px;padding:18px">
+            <span style="font:600 14.5px/1.55 Inter,sans-serif">Common, mild</span>
+            <p style="font:400 14.5px/1.55 Inter,sans-serif;color:#4A5654;margin:6px 0 0">A cool sensation along the arm, a metallic taste, mild bruising at the cannula site.</p>
+          </div>
+          <div style="border:1px solid #C0453C;background:#FAEBEA;border-radius:12px;padding:18px">
+            <span style="font:600 14.5px/1.55 Inter,sans-serif">Rare, serious</span>
+            <p style="font:400 14.5px/1.55 Inter,sans-serif;color:#4A5654;margin:6px 0 0">Allergic reaction, phlebitis, fluid overload. The nurse carries an anaphylaxis kit and stops at the first sign.</p>
+          </div>
+        </div>
+      </div>
+
+      <aside style="border-left:1px solid #E8E6E0;background:#FFFFFF;padding:32px;display:flex;flex-direction:column;gap:20px">
+        <div>
+          <div style="display:flex;align-items:baseline;gap:10px"><span style="font:500 34px/1.1 'IBM Plex Mono',monospace">₹8,400</span><span style="font:400 14.5px/1.55 Inter,sans-serif;color:#8A9491">per session</span></div>
+          <span style="font:400 13px/1.5 Inter,sans-serif;color:#8A9491">₹600 home visit fee · GST extra</span>
+        </div>
+        <div style="display:flex;flex-direction:column;gap:12px;padding:18px 0;border-top:1px solid #E8E6E0;border-bottom:1px solid #E8E6E0">
+          <div style="display:flex;justify-content:space-between"><span style="font:400 14.5px/1.55 Inter,sans-serif;color:#4A5654">Duration</span><span style="font:500 14.5px/1.55 'IBM Plex Mono',monospace">45 min</span></div>
+          <div style="display:flex;justify-content:space-between"><span style="font:400 14.5px/1.55 Inter,sans-serif;color:#4A5654">Volume</span><span style="font:500 14.5px/1.55 'IBM Plex Mono',monospace">500 ml</span></div>
+          <div style="display:flex;justify-content:space-between"><span style="font:400 14.5px/1.55 Inter,sans-serif;color:#4A5654">Suggested course</span><span style="font:500 14.5px/1.55 'IBM Plex Mono',monospace">4 sessions</span></div>
+        </div>
+        <div style="border:1px solid #C5DCD4;background:#EAF2EF;border-radius:12px;padding:16px">
+          <span style="font:600 14.5px/1.55 Inter,sans-serif">You can't buy this directly</span>
+          <p style="font:400 14.5px/1.55 Inter,sans-serif;color:#4A5654;margin:6px 0 0">Take the quiz first. A physician reviews it and either approves this protocol, adjusts it, or recommends something else.</p>
+        </div>
+        <button type="button" style="min-height:52px;border-radius:8px;border:1px solid #2D6A5A;background:#2D6A5A;color:#FFFFFF;font:600 16px/1 Inter,sans-serif;cursor:pointer">Start the quiz</button>
+        <button type="button" style="min-height:44px;border-radius:8px;border:1px solid #D6D3CB;background:#FFFFFF;font:600 14.5px/1 Inter,sans-serif;cursor:pointer">Compare with 3 similar drips</button>
+        <div style="display:flex;flex-direction:column;gap:10px;margin-top:auto;padding-top:20px;border-top:1px solid #E8E6E0">
+          <span style="font:500 11.5px/1.4 Inter,sans-serif;text-transform:uppercase;letter-spacing:0.08em;color:#8A9491">Availability in your zone</span>
+          <div style="display:flex;gap:10px;align-items:center"><span style="width:8px;height:8px;border-radius:50%;background:#2F8F5B"></span><span style="font:400 14.5px/1.55 Inter,sans-serif">14 prepared today · Koramangala</span></div>
+          <span style="font:400 13px/1.5 Inter,sans-serif;color:#8A9491">Earliest slot 14 Sep 2026, 10:30 AM</span>
+        </div>
+      </aside>
+    </div>
+  </div>
+</section>
+
+<!-- ===== 1.4 PRICING / 1.5 FAQ ===== -->
+<section style="display:flex;flex-direction:column;gap:12px">
+  <div style="display:flex;align-items:baseline;gap:12px"><span style="font:500 13px/1.5 'IBM Plex Mono',monospace;color:#8A9491">1.4 · 1.5</span><span style="font:600 18px/1.3 'Instrument Sans',Inter,sans-serif">Pricing and packages · FAQ</span></div>
+  <div style="display:flex;gap:24px;align-items:flex-start">
+    <div style="width:760px;flex:none;background:#FCFBF8;border:1px solid #D6D3CB;border-radius:16px;padding:40px">
+      <h2 style="font:700 40px/1.1 'Instrument Sans',Inter,sans-serif;letter-spacing:-0.02em;margin:0 0 10px">Pricing</h2>
+      <p style="font:400 16px/1.6 Inter,sans-serif;color:#4A5654;margin:0 0 28px;max-width:56ch">Packages lower the per-session price and lock it for six months. Nothing is charged until a physician approves your protocol.</p>
+      <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:16px">
+        <sc-for list="{{ plans }}" as="p" hint-placeholder-count="3">
+          <div style="border:1px solid {{ p.line }};background:{{ p.bg }};border-radius:16px;padding:24px;display:flex;flex-direction:column;gap:14px">
+<div style="display:flex;flex-direction:column;gap:4px">
+              <span style="font:500 11.5px/1.4 Inter,sans-serif;text-transform:uppercase;letter-spacing:0.08em;color:{{ p.tagFg }};white-space:nowrap;min-height:16px">{{ p.tag }}</span>
+              <span style="font:600 18px/1.3 'Instrument Sans',Inter,sans-serif;white-space:nowrap">{{ p.name }}</span>
+            </div>
+            <div style="display:flex;flex-direction:column;gap:2px">
+              <span style="font:500 30px/1.1 'IBM Plex Mono',monospace">{{ p.per }}</span>
+              <span style="font:400 13px/1.5 Inter,sans-serif;color:#8A9491">per session · {{ p.total }} total</span>
+            </div>
+            <div style="height:5px;border-radius:999px;background:#FFFFFF;position:relative;overflow:hidden;border:1px solid #E8E6E0"><div style="position:absolute;top:0;bottom:0;left:0;width:{{ p.save }};background:#2D6A5A"></div></div>
+            <span style="font:400 13px/1.5 Inter,sans-serif;color:#4A5654">{{ p.saveLabel }}</span>
+            <button type="button" style="min-height:44px;border-radius:8px;border:1px solid {{ p.btnLine }};background:{{ p.btnBg }};color:{{ p.btnFg }};font:600 14.5px/1 Inter,sans-serif;cursor:pointer;margin-top:auto">Choose {{ p.name }}</button>
+          </div>
+        </sc-for>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:10px;margin-top:24px;padding-top:20px;border-top:1px solid #E8E6E0">
+        <div style="display:flex;justify-content:space-between"><span style="font:400 14.5px/1.55 Inter,sans-serif;color:#4A5654">Home visit fee (per session)</span><span style="font:500 14.5px/1.55 'IBM Plex Mono',monospace">₹600</span></div>
+        <div style="display:flex;justify-content:space-between"><span style="font:400 14.5px/1.55 Inter,sans-serif;color:#4A5654">Physician review</span><span style="font:500 14.5px/1.55 'IBM Plex Mono',monospace">Free</span></div>
+        <div style="display:flex;justify-content:space-between"><span style="font:400 14.5px/1.55 Inter,sans-serif;color:#4A5654">Cancellation under 4 hours</span><span style="font:500 14.5px/1.55 'IBM Plex Mono',monospace">₹500</span></div>
+        <div style="display:flex;justify-content:space-between"><span style="font:400 14.5px/1.55 Inter,sans-serif;color:#4A5654">GST</span><span style="font:500 14.5px/1.55 'IBM Plex Mono',monospace">18%</span></div>
+      </div>
+    </div>
+
+    <div style="width:472px;flex:none;background:#FCFBF8;border:1px solid #D6D3CB;border-radius:16px;padding:32px">
+      <h2 style="font:600 30px/1.2 'Instrument Sans',Inter,sans-serif;letter-spacing:-0.02em;margin:0 0 20px">Questions people actually ask</h2>
+      <div style="display:flex;flex-direction:column">
+        <sc-for list="{{ faq }}" as="q" hint-placeholder-count="6">
+          <div style="border-bottom:1px solid #E8E6E0;padding:16px 0">
+            <div style="display:flex;justify-content:space-between;gap:16px;align-items:flex-start">
+              <span style="font:{{ q.font }};color:#16211E">{{ q.q }}</span>
+              <span style="font:400 16px/1 'IBM Plex Mono',monospace;color:#8A9491;flex:none">{{ q.mark }}</span>
+            </div>
+            <p style="font:400 14.5px/1.55 Inter,sans-serif;color:#4A5654;margin:{{ q.margin }};display:{{ q.show }}">{{ q.a }}</p>
+          </div>
+        </sc-for>
+      </div>
+      <div style="display:flex;gap:12px;margin-top:24px;align-items:center">
+        <button type="button" style="min-height:44px;padding:0 16px;border-radius:8px;border:1px solid #2D6A5A;background:#2D6A5A;color:#FFFFFF;font:600 14.5px/1 Inter,sans-serif;cursor:pointer">WhatsApp us</button>
+        <span style="font:400 13px/1.5 Inter,sans-serif;color:#8A9491">Mon–Sat, 8 AM – 8 PM IST</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+</div>
+
+</x-dc>
+<script type="text/x-dc" data-dc-script>
+class Component extends DCLogic {
+  renderVals() {
+    return {
+      steps: [
+        {n:'01', title:'Take the quiz', body:'16 nutrient markers, your history, medication and allergies. Three minutes.'},
+        {n:'02', title:'Physician reviews', body:'A registered doctor approves, adjusts or declines the protocol. Usually within two hours.'},
+        {n:'03', title:'Nurse arrives', body:'Council-registered, carrying a sealed kit and the batch you were prescribed.'},
+        {n:'04', title:'Session report', body:'Vitals, doses, batch numbers and aftercare notes land in your account.'}
+      ],
+      drips: [
+        {cat:'Energy', name:"Myers' Revive", body:'B-complex, magnesium and ascorbic acid in a saline carrier.', price:'₹8,400', mins:'45 min', fill:'64%'},
+        {cat:'Immunity', name:'Immune Shield', body:'High-dose vitamin C with zinc and selenium.', price:'₹9,200', mins:'60 min', fill:'48%'},
+        {cat:'Skin', name:'Glow Protocol', body:'Glutathione with vitamin C, given as a slow push.', price:'₹11,000', mins:'50 min', fill:'34%'}
+      ],
+      safety: [
+        'Every protocol carries a named physician and a council registration number.',
+        'A 29-step checklist gates the session; mandatory steps cannot be skipped.',
+        'Out-of-range vitals block the infusion and escalate to the physician.',
+        'Batch numbers are recorded per session, so any recall can be traced to the patient.'
+      ],
+      goals: (() => {
+        const on = {bg:'#2D6A5A', line:'#2D6A5A', mark:'✓'};
+        const off = {bg:'#FFFFFF', line:'#D6D3CB', mark:''};
+        return [
+          {label:'Energy', count:'3', ...on},
+          {label:'Immunity', count:'2', ...off},
+          {label:'Skin & hair', count:'2', ...off},
+          {label:'Hydration', count:'1', ...off},
+          {label:'Athletic recovery', count:'1', ...off},
+          {label:'Post-viral', count:'2', ...off}
+        ];
+      })(),
+      catalogue: [
+        {cat:'Energy', name:"Myers' Revive", body:'Magnesium-forward Myers\u2019 cocktail. The default first drip.', price:'₹8,400', mins:'45 min', fill:'64%', status:'Available', color:'#2F8F5B', soft:'#E9F5EE', ings:['Ascorbic acid 7,500 mg','Mg sulphate 1,000 mg','B-complex 2 ml']},
+        {cat:'Energy', name:'Deep Recharge', body:'Adds L-carnitine and taurine for sustained fatigue.', price:'₹10,600', mins:'60 min', fill:'72%', status:'Available', color:'#2F8F5B', soft:'#E9F5EE', ings:['L-carnitine 2,000 mg','Taurine 1,000 mg','B12 1,000 mcg']},
+        {cat:'Energy', name:'Jetlag Reset', body:'Lower volume, faster run, built around travel days.', price:'₹6,800', mins:'30 min', fill:'42%', status:'2 left today', color:'#C07A22', soft:'#FBF1E1', ings:['Ascorbic acid 5,000 mg','Electrolytes','B6 100 mg']},
+        {cat:'Energy', name:'Iron Restore', body:'Iron sucrose for confirmed deficiency. Requires recent labs.', price:'₹9,800', mins:'90 min', fill:'28%', status:'Labs required', color:'#45699B', soft:'#EBF0F7', ings:['Iron sucrose 200 mg','Ascorbic acid 1,000 mg']}
+      ],
+      formula: [
+        {name:'Ascorbic acid (vitamin C)', dose:'7,500 mg', pct:'62%', role:'Antioxidant load'},
+        {name:'Magnesium sulphate', dose:'1,000 mg', pct:'83%', role:'Muscle and sleep'},
+        {name:'B-complex', dose:'2 ml', pct:'50%', role:'Energy metabolism'},
+        {name:'Cyanocobalamin (B12)', dose:'1,000 mcg', pct:'40%', role:'Nerve and blood'},
+        {name:'Calcium gluconate', dose:'500 mg', pct:'33%', role:'Electrolyte balance'},
+        {name:'Pyridoxine (B6)', dose:'100 mg', pct:'25%', role:'Cofactor'}
+      ],
+      plans: [
+        {name:'Single', per:'₹8,400', total:'₹8,400', save:'0%', saveLabel:'No commitment. Pay per session.', tag:'', tagFg:'#8A9491', bg:'#FFFFFF', line:'#E8E6E0', btnBg:'#FFFFFF', btnFg:'#16211E', btnLine:'#D6D3CB'},
+        {name:'Course of 4', per:'₹7,560', total:'₹30,240', save:'10%', saveLabel:'Save 10%. Price locked for 6 months.', tag:'Most chosen', tagFg:'#22513F', bg:'#EAF2EF', line:'#C5DCD4', btnBg:'#2D6A5A', btnFg:'#FFFFFF', btnLine:'#2D6A5A'},
+        {name:'Course of 8', per:'₹6,720', total:'₹53,760', save:'20%', saveLabel:'Save 20%. Includes two follow-up reviews.', tag:'', tagFg:'#8A9491', bg:'#FFFFFF', line:'#E8E6E0', btnBg:'#FFFFFF', btnFg:'#16211E', btnLine:'#D6D3CB'}
+      ],
+      faq: (() => {
+        const open = {mark:'−', show:'block', margin:'12px 0 0', font:"600 16px/1.4 'Instrument Sans',Inter,sans-serif"};
+        const shut = {mark:'+', show:'none', margin:'0', font:'500 14.5px/1.55 Inter,sans-serif'};
+        return [
+          {q:'Does a real doctor look at my quiz?', a:'Yes. A registered physician reads every submission and either approves the protocol, changes the doses, or declines. Their name and council registration number appear on your session report.', ...open},
+          {q:'What if the nurse finds something wrong?', a:'', ...shut},
+          {q:'Can I cancel or reschedule?', a:'', ...shut},
+          {q:'Do you serve my pincode?', a:'', ...shut},
+          {q:'Is this covered by insurance?', a:'', ...shut},
+          {q:'What happens to my health data?', a:'', ...shut}
+        ];
+      })()
+    };
+  }
+}
+
+</script>
+</body>
+</html>

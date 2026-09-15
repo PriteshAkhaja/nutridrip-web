@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<meta name="design_doc_mode" content="canvas">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Sans:wght@400;500;600;700&family=Inter:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+html,body{margin:0;padding:0}
+body{background:#EFEDE8;color:#16211E;font-family:Inter,system-ui,sans-serif;-webkit-font-smoothing:antialiased}
+*{box-sizing:border-box}
+a{color:#2D6A5A;text-decoration:none}
+a:hover{color:#22513F;text-decoration:underline}
+</style>
+</helmet>
+
+<div style="display:flex;flex-direction:column">
+
+  <div style="padding:64px 48px 40px;border-bottom:1px solid #D6D3CB;display:flex;flex-direction:column;gap:20px">
+    <div style="display:flex;gap:14px;align-items:baseline">
+      <div style="width:26px;height:26px;border:1px solid #C5DCD4;border-radius:8px;background:#EAF2EF;position:relative;overflow:hidden;flex:none">
+        <div style="position:absolute;left:0;right:0;bottom:0;height:62%;background:#2D6A5A"></div>
+      </div>
+      <span style="font:600 15px/1 'Instrument Sans',Inter,sans-serif;letter-spacing:-0.01em">NutriDrip</span>
+      <span style="font:500 11.5px/1.4 Inter,sans-serif;text-transform:uppercase;letter-spacing:0.08em;color:#8A9491">Complete pack · blocks 0–8 · developer handoff</span>
+    </div>
+    <h1 style="font:700 40px/1.1 'Instrument Sans',Inter,sans-serif;letter-spacing:-0.02em;margin:0;max-width:24ch">Every screen in the pack, in reading order.</h1>
+    <p style="font:400 16px/1.6 Inter,sans-serif;color:#4A5654;margin:0;max-width:70ch;text-wrap:pretty">Design system first, then the public site, the three role apps, inventory, admin, and finally the state and responsive proofs. Each section below is the same file that block was reviewed in, so any edit made here or there stays in sync.</p>
+    <div style="display:flex;flex-wrap:wrap;gap:10px">
+      <sc-for list="{{ toc }}" as="t" hint-placeholder-count="9">
+        <div style="border:1px solid #D6D3CB;background:#FCFBF8;border-radius:999px;padding:7px 14px;display:flex;gap:9px;align-items:baseline">
+          <span style="font:500 13px/1.4 'IBM Plex Mono',monospace;color:#8A9491">{{ t.n }}</span>
+          <span style="font:500 13px/1.4 Inter,sans-serif;color:#16211E">{{ t.label }}</span>
+        </div>
+      </sc-for>
+    </div>
+  </div>
+
+  <dc-import name="NutriDrip Design System" hint-size="100%,2400px"></dc-import>
+  <dc-import name="Block 1 - Public site" hint-size="100%,3200px"></dc-import>
+  <dc-import name="Block 2 - Patient app" hint-size="100%,2200px"></dc-import>
+  <dc-import name="Block 3 - Doctor console" hint-size="100%,2600px"></dc-import>
+  <dc-import name="Block 4 - Nurse app" hint-size="100%,2200px"></dc-import>
+  <dc-import name="Block 5 - Inventory" hint-size="100%,2600px"></dc-import>
+  <dc-import name="Block 6 - Clinic and admin" hint-size="100%,2600px"></dc-import>
+  <dc-import name="Block 7 - States" hint-size="100%,2200px"></dc-import>
+  <dc-import name="Block 8 - Responsive proofs" hint-size="100%,2400px"></dc-import>
+
+</div>
+
+</x-dc>
+<script type="text/x-dc" data-dc-script>
+class Component extends DCLogic {
+  renderVals() {
+    return {
+      toc: [
+        {n:'00', label:'Design system'},
+        {n:'01', label:'Public site'},
+        {n:'02', label:'Patient app'},
+        {n:'03', label:'Doctor console'},
+        {n:'04', label:'Nurse app'},
+        {n:'05', label:'Inventory'},
+        {n:'06', label:'Clinic & admin'},
+        {n:'07', label:'States'},
+        {n:'08', label:'Responsive proofs'}
+      ]
+    };
+  }
+}
+
+</script>
+</body>
+</html>

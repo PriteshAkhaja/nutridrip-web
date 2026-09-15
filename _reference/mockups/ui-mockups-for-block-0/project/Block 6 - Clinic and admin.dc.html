@@ -1,0 +1,389 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<meta name="design_doc_mode" content="canvas">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Sans:wght@400;500;600;700&family=Inter:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+html,body{margin:0;padding:0}
+body{background:#EFEDE8;color:#16211E;font-family:Inter,system-ui,sans-serif;-webkit-font-smoothing:antialiased}
+*{box-sizing:border-box}
+a{color:#2D6A5A;text-decoration:none}
+a:hover{color:#22513F;text-decoration:underline}
+</style>
+</helmet>
+
+<div style="padding:48px;display:flex;flex-direction:column;gap:56px">
+
+<div style="display:flex;flex-direction:column;gap:8px;max-width:70ch">
+  <span style="font:500 11.5px/1.4 Inter,sans-serif;text-transform:uppercase;letter-spacing:0.08em;color:#8A9491">Block 6 · Clinic ops, sub-admin and platform admin · 1440px</span>
+  <h1 style="font:700 34px/1.15 'Instrument Sans',Inter,sans-serif;letter-spacing:-0.02em;margin:0">Clinic & admin</h1>
+  <p style="font:400 16px/1.6 Inter,sans-serif;color:#4A5654;margin:0;text-wrap:pretty">Three roles share one shell and differ only in what the nav contains and what a row lets you do. Clinic ops runs the day; the sub-admin owns one city; the platform admin holds the switches that change other people's permissions, which is why those screens read as ledgers rather than dashboards.</p>
+</div>
+
+<!-- 6.1 CLINIC OPS -->
+<section style="display:flex;flex-direction:column;gap:12px">
+  <div style="display:flex;align-items:baseline;gap:12px"><span style="font:500 13px/1.5 'IBM Plex Mono',monospace;color:#8A9491">6.1</span><span style="font:600 18px/1.3 'Instrument Sans',Inter,sans-serif">Clinic operations — today's board</span></div>
+  <div style="width:1440px;background:#FCFBF8;border:1px solid #D6D3CB;border-radius:16px;overflow:hidden;display:grid;grid-template-columns:236px 1fr">
+    <aside style="border-right:1px solid #E8E6E0;padding:18px 14px;display:flex;flex-direction:column;gap:22px">
+      <div style="display:flex;gap:10px;align-items:center;padding:0 6px">
+        <div style="width:22px;height:22px;border:1px solid #C5DCD4;border-radius:7px;background:#EAF2EF;position:relative;overflow:hidden"><div style="position:absolute;left:0;right:0;bottom:0;height:62%;background:#2D6A5A"></div></div>
+        <span style="font:600 14.5px/1 'Instrument Sans',Inter,sans-serif">NutriDrip</span>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:2px">
+        <span style="font:500 11.5px/1.4 Inter,sans-serif;text-transform:uppercase;letter-spacing:0.08em;color:#8A9491;padding:0 6px 6px">Clinic ops · Koramangala</span>
+        <sc-for list="{{ navOps }}" as="n" hint-placeholder-count="7">
+          <div style="display:flex;align-items:center;gap:10px;min-height:44px;padding:0 10px;border-radius:8px;background:{{ n.bg }};color:{{ n.fg }};font:{{ n.font }};cursor:pointer">
+            <span style="width:6px;height:6px;border-radius:2px;background:{{ n.dot }};flex:none"></span>
+            <span>{{ n.label }}</span>
+            <span style="margin-left:auto;font:500 13px/1 'IBM Plex Mono',monospace;color:{{ n.badgeFg }}">{{ n.badge }}</span>
+          </div>
+        </sc-for>
+      </div>
+      <div style="margin-top:auto;border-top:1px solid #E8E6E0;padding:14px 10px;display:flex;flex-direction:column;gap:5px">
+        <span style="font:500 14.5px/1.55 Inter,sans-serif">D. Fernandes</span>
+        <span style="font:400 13px/1.5 Inter,sans-serif;color:#4A5654">Operations lead</span>
+      </div>
+    </aside>
+
+    <div>
+      <div style="display:flex;align-items:center;gap:16px;padding:16px 28px;border-bottom:1px solid #E8E6E0;background:#FFFFFF">
+        <div>
+          <span style="font:600 22px/1.3 'Instrument Sans',Inter,sans-serif;letter-spacing:-0.02em">Today</span>
+          <div style="font:400 13px/1.5 Inter,sans-serif;color:#8A9491">Sunday 14 September 2026 · 28 sessions · 6 nurses on shift</div>
+        </div>
+        <div style="margin-left:auto;display:flex;gap:10px;align-items:center">
+          <button type="button" style="min-height:44px;padding:0 16px;border-radius:8px;border:1px solid #D6D3CB;background:#FFFFFF;font:600 14.5px/1 Inter,sans-serif;cursor:pointer">Shift roster</button>
+          <button type="button" style="min-height:44px;padding:0 16px;border-radius:8px;border:1px solid #2D6A5A;background:#2D6A5A;color:#FFFFFF;font:600 14.5px/1 Inter,sans-serif;cursor:pointer">Assign nurse</button>
+        </div>
+      </div>
+
+      <div style="padding:24px 28px 20px;display:grid;grid-template-columns:repeat(5,1fr);gap:16px">
+        <sc-for list="{{ opsStats }}" as="st" hint-placeholder-count="5">
+          <div style="border:1px solid #E8E6E0;border-radius:12px;background:#FFFFFF;padding:18px 20px;display:flex;flex-direction:column;gap:12px">
+            <span style="font:500 11.5px/1.4 Inter,sans-serif;text-transform:uppercase;letter-spacing:0.08em;color:#8A9491">{{ st.label }}</span>
+            <span style="font:500 26px/1.1 'IBM Plex Mono',monospace;font-variant-numeric:tabular-nums">{{ st.value }}</span>
+            <div style="height:4px;border-radius:999px;background:#F6F5F1;position:relative;overflow:hidden"><div style="position:absolute;top:0;bottom:0;left:0;width:{{ st.pct }};background:{{ st.color }}"></div></div>
+            <span style="font:400 13px/1.5 Inter,sans-serif;color:#4A5654">{{ st.note }}</span>
+          </div>
+        </sc-for>
+      </div>
+
+      <div style="padding:0 28px 28px;display:grid;grid-template-columns:1fr 400px;gap:20px;align-items:start">
+        <div style="border:1px solid #E8E6E0;border-radius:16px;background:#FFFFFF;overflow:hidden">
+          <div style="padding:16px 20px;border-bottom:1px solid #E8E6E0;display:flex;justify-content:space-between;align-items:center">
+            <span style="font:600 18px/1.3 'Instrument Sans',Inter,sans-serif">Session board</span>
+            <div style="display:inline-flex;background:#F6F5F1;border:1px solid #E8E6E0;border-radius:8px;padding:3px;gap:3px">
+              <button type="button" style="min-height:36px;padding:0 12px;border-radius:6px;border:1px solid #E8E6E0;background:#FFFFFF;font:600 13px/1 Inter,sans-serif;cursor:pointer">All</button>
+              <button type="button" style="min-height:36px;padding:0 12px;border-radius:6px;border:1px solid transparent;background:transparent;font:500 13px/1 Inter,sans-serif;color:#4A5654;cursor:pointer">Unassigned</button>
+              <button type="button" style="min-height:36px;padding:0 12px;border-radius:6px;border:1px solid transparent;background:transparent;font:500 13px/1 Inter,sans-serif;color:#4A5654;cursor:pointer">At risk</button>
+            </div>
+          </div>
+          <div style="display:grid;grid-template-columns:0.9fr 1.2fr 1.2fr 1.2fr 1.1fr 0.9fr;background:#F6F5F1;border-bottom:1px solid #E8E6E0">
+            <div style="padding:10px 20px;font:500 11.5px/1.4 Inter,sans-serif;text-transform:uppercase;letter-spacing:0.08em;color:#8A9491">Time</div>
+            <div style="padding:10px 12px;font:500 11.5px/1.4 Inter,sans-serif;text-transform:uppercase;letter-spacing:0.08em;color:#8A9491">Patient</div>
+            <div style="padding:10px 12px;font:500 11.5px/1.4 Inter,sans-serif;text-transform:uppercase;letter-spacing:0.08em;color:#8A9491">Drip</div>
+            <div style="padding:10px 12px;font:500 11.5px/1.4 Inter,sans-serif;text-transform:uppercase;letter-spacing:0.08em;color:#8A9491">Nurse</div>
+            <div style="padding:10px 12px;font:500 11.5px/1.4 Inter,sans-serif;text-transform:uppercase;letter-spacing:0.08em;color:#8A9491">Status</div>
+            <div style="padding:10px 20px;font:500 11.5px/1.4 Inter,sans-serif;text-transform:uppercase;letter-spacing:0.08em;color:#8A9491">Action</div>
+          </div>
+          <sc-for list="{{ board }}" as="b" hint-placeholder-count="7">
+            <div style="display:grid;grid-template-columns:0.9fr 1.2fr 1.2fr 1.2fr 1.1fr 0.9fr;align-items:center;border-bottom:1px solid #E8E6E0;background:{{ b.rowBg }}">
+              <div style="padding:14px 20px;font:500 14.5px/1.55 'IBM Plex Mono',monospace">{{ b.time }}</div>
+              <div style="padding:14px 12px;display:flex;flex-direction:column"><span style="font:500 14.5px/1.55 Inter,sans-serif">{{ b.patient }}</span><span style="font:400 13px/1.5 Inter,sans-serif;color:#8A9491">{{ b.zone }}</span></div>
+              <div style="padding:14px 12px;font:400 14.5px/1.55 Inter,sans-serif">{{ b.drip }}</div>
+              <div style="padding:14px 12px;font:{{ b.nurseFont }};color:{{ b.nurseFg }}">{{ b.nurse }}</div>
+              <div style="padding:14px 12px"><span style="display:inline-flex;align-items:center;gap:6px;border-radius:999px;padding:4px 10px;font:500 13px/1.4 Inter,sans-serif;background:{{ b.soft }};color:{{ b.color }};border:1px solid {{ b.color }}"><span style="width:6px;height:6px;border-radius:50%;background:{{ b.color }}"></span>{{ b.status }}</span></div>
+              <div style="padding:14px 20px"><button type="button" style="min-height:40px;padding:0 12px;border-radius:8px;border:1px solid {{ b.btnLine }};background:{{ b.btnBg }};color:{{ b.btnFg }};font:600 13px/1 Inter,sans-serif;cursor:pointer">{{ b.btn }}</button></div>
+            </div>
+          </sc-for>
+        </div>
+
+        <div style="display:flex;flex-direction:column;gap:16px">
+          <div style="border:1px solid #C0453C;background:#FAEBEA;border-radius:12px;padding:16px">
+            <div style="display:flex;gap:12px">
+              <span style="width:20px;height:20px;border-radius:50%;background:#C0453C;color:#FFFFFF;display:inline-flex;align-items:center;justify-content:center;font:600 12px/1 Inter,sans-serif;flex:none">!</span>
+              <div><span style="font:600 14.5px/1.55 Inter,sans-serif">2 sessions unassigned within 3 hours</span><p style="font:400 14.5px/1.55 Inter,sans-serif;color:#4A5654;margin:3px 0 0">Both in HSR. Nurse Vinay is free from 2 PM.</p></div>
+            </div>
+            <button type="button" style="min-height:44px;width:100%;margin-top:12px;border-radius:8px;border:1px solid #C0453C;background:#C0453C;color:#FFFFFF;font:600 14.5px/1 Inter,sans-serif;cursor:pointer">Auto-assign both</button>
+          </div>
+          <div style="border:1px solid #E8E6E0;border-radius:16px;background:#FFFFFF;padding:20px">
+            <span style="font:500 11.5px/1.4 Inter,sans-serif;text-transform:uppercase;letter-spacing:0.08em;color:#8A9491">Nurse utilisation today</span>
+            <div style="display:flex;flex-direction:column;gap:14px;margin-top:16px">
+              <sc-for list="{{ nurses }}" as="n" hint-placeholder-count="6">
+                <div>
+                  <div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:6px">
+                    <span style="font:400 14.5px/1.55 Inter,sans-serif">{{ n.name }}</span>
+                    <span style="display:flex;gap:8px;align-items:baseline"><span style="font:400 13px/1.5 Inter,sans-serif;color:#8A9491">{{ n.zone }}</span><span style="font:500 13px/1.5 'IBM Plex Mono',monospace">{{ n.load }}</span></span>
+                  </div>
+                  <div style="height:6px;border-radius:2px;background:#F6F5F1;position:relative;overflow:hidden"><div style="position:absolute;top:0;bottom:0;left:0;width:{{ n.pct }};background:{{ n.color }}"></div></div>
+                </div>
+              </sc-for>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- 6.2 SUB-ADMIN -->
+<section style="display:flex;flex-direction:column;gap:12px">
+  <div style="display:flex;align-items:baseline;gap:12px"><span style="font:500 13px/1.5 'IBM Plex Mono',monospace;color:#8A9491">6.2</span><span style="font:600 18px/1.3 'Instrument Sans',Inter,sans-serif">Sub-admin — city performance and pricing</span></div>
+  <div style="width:1440px;background:#FCFBF8;border:1px solid #D6D3CB;border-radius:16px;padding:28px;display:flex;flex-direction:column;gap:20px">
+    <div style="display:flex;align-items:flex-start;gap:16px">
+      <div><span style="font:600 22px/1.3 'Instrument Sans',Inter,sans-serif;letter-spacing:-0.02em">Bengaluru</span><div style="font:400 13px/1.5 Inter,sans-serif;color:#8A9491">3 hubs · 14 zones · 21 nurses · September to date</div></div>
+      <div style="margin-left:auto;display:flex;gap:10px;align-items:center">
+        <span style="font:400 13px/1.5 'IBM Plex Mono',monospace;color:#8A9491">01 – 14 Sep 2026</span>
+        <button type="button" style="min-height:44px;padding:0 16px;border-radius:8px;border:1px solid #D6D3CB;background:#FFFFFF;font:600 14.5px/1 Inter,sans-serif;cursor:pointer">Export CSV</button>
+      </div>
+    </div>
+
+    <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:16px">
+      <sc-for list="{{ cityStats }}" as="st" hint-placeholder-count="4">
+        <div style="border:1px solid #E8E6E0;border-radius:12px;background:#FFFFFF;padding:20px;display:flex;flex-direction:column;gap:12px">
+          <span style="font:500 11.5px/1.4 Inter,sans-serif;text-transform:uppercase;letter-spacing:0.08em;color:#8A9491">{{ st.label }}</span>
+          <span style="font:500 30px/1.1 'IBM Plex Mono',monospace;font-variant-numeric:tabular-nums">{{ st.value }}</span>
+          <div style="height:4px;border-radius:999px;background:#F6F5F1;position:relative;overflow:hidden"><div style="position:absolute;top:0;bottom:0;left:0;width:{{ st.pct }};background:{{ st.color }}"></div></div>
+          <span style="font:400 13px/1.5 Inter,sans-serif;color:{{ st.noteFg }}">{{ st.note }}</span>
+        </div>
+      </sc-for>
+    </div>
+
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px;align-items:start">
+      <div style="border:1px solid #E8E6E0;border-radius:16px;background:#FFFFFF;padding:24px">
+        <div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:18px">
+          <span style="font:600 18px/1.3 'Instrument Sans',Inter,sans-serif">Sessions by zone</span>
+          <span style="font:400 13px/1.5 Inter,sans-serif;color:#8A9491">completed · cancelled</span>
+        </div>
+        <div style="display:flex;flex-direction:column;gap:14px">
+          <sc-for list="{{ zones }}" as="z" hint-placeholder-count="7">
+            <div>
+              <div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:6px">
+                <span style="font:400 14.5px/1.55 Inter,sans-serif">{{ z.name }}</span>
+                <span style="display:flex;gap:10px;align-items:baseline"><span style="font:500 14.5px/1.55 'IBM Plex Mono',monospace">{{ z.done }}</span><span style="font:400 13px/1.5 'IBM Plex Mono',monospace;color:#C0453C">{{ z.cancelled }}</span></span>
+              </div>
+              <div style="display:flex;gap:3px;height:8px">
+                <div style="width:{{ z.donePct }};background:#2D6A5A;border-radius:2px"></div>
+                <div style="width:{{ z.cancelPct }};background:#C0453C;border-radius:2px"></div>
+                <div style="flex:1;background:#F6F5F1;border-radius:2px"></div>
+              </div>
+            </div>
+          </sc-for>
+        </div>
+      </div>
+
+      <div style="border:1px solid #E8E6E0;border-radius:16px;background:#FFFFFF;overflow:hidden">
+        <div style="padding:16px 20px;border-bottom:1px solid #E8E6E0;display:flex;justify-content:space-between;align-items:center">
+          <span style="font:600 18px/1.3 'Instrument Sans',Inter,sans-serif">City pricing overrides</span>
+          <span style="font:500 13px/1.5 Inter,sans-serif;color:#C07A22">2 pending approval</span>
+        </div>
+        <div style="display:grid;grid-template-columns:1.4fr 1fr 1fr 1fr;background:#F6F5F1;border-bottom:1px solid #E8E6E0">
+          <div style="padding:10px 20px;font:500 11.5px/1.4 Inter,sans-serif;text-transform:uppercase;letter-spacing:0.08em;color:#8A9491">Drip</div>
+          <div style="padding:10px 12px;text-align:right;font:500 11.5px/1.4 Inter,sans-serif;text-transform:uppercase;letter-spacing:0.08em;color:#8A9491">National</div>
+          <div style="padding:10px 12px;text-align:right;font:500 11.5px/1.4 Inter,sans-serif;text-transform:uppercase;letter-spacing:0.08em;color:#8A9491">Bengaluru</div>
+          <div style="padding:10px 20px;font:500 11.5px/1.4 Inter,sans-serif;text-transform:uppercase;letter-spacing:0.08em;color:#8A9491">State</div>
+        </div>
+        <sc-for list="{{ pricing }}" as="p" hint-placeholder-count="6">
+          <div style="display:grid;grid-template-columns:1.4fr 1fr 1fr 1fr;align-items:center;border-bottom:1px solid #E8E6E0">
+            <div style="padding:14px 20px;font:400 14.5px/1.55 Inter,sans-serif">{{ p.name }}</div>
+            <div style="padding:14px 12px;text-align:right;font:400 14.5px/1.55 'IBM Plex Mono',monospace;color:#8A9491">{{ p.national }}</div>
+            <div style="padding:14px 12px;text-align:right;font:500 14.5px/1.55 'IBM Plex Mono',monospace;color:{{ p.color }}">{{ p.city }}</div>
+            <div style="padding:14px 20px"><span style="font:500 13px/1.5 Inter,sans-serif;color:{{ p.color }}">{{ p.state }}</span></div>
+          </div>
+        </sc-for>
+        <div style="padding:14px 20px;background:#FCFBF8"><span style="font:400 13px/1.5 Inter,sans-serif;color:#8A9491">Overrides above ±15% need platform admin approval.</span></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- 6.3 PLATFORM ADMIN -->
+<section style="display:flex;flex-direction:column;gap:12px">
+  <div style="display:flex;align-items:baseline;gap:12px"><span style="font:500 13px/1.5 'IBM Plex Mono',monospace;color:#8A9491">6.3 · 6.4</span><span style="font:600 18px/1.3 'Instrument Sans',Inter,sans-serif">Platform admin — roles & permissions · audit log</span></div>
+  <div style="display:flex;gap:24px;align-items:flex-start">
+    <div style="width:860px;flex:none;background:#FCFBF8;border:1px solid #D6D3CB;border-radius:16px;padding:28px;display:flex;flex-direction:column;gap:20px">
+      <div style="display:flex;align-items:flex-start;gap:16px">
+        <div><span style="font:600 22px/1.3 'Instrument Sans',Inter,sans-serif;letter-spacing:-0.02em">Roles & permissions</span><div style="font:400 13px/1.5 Inter,sans-serif;color:#8A9491">Changes take effect at next sign-in and are logged against your name</div></div>
+        <button type="button" style="margin-left:auto;min-height:44px;padding:0 16px;border-radius:8px;border:1px solid #2D6A5A;background:#2D6A5A;color:#FFFFFF;font:600 14.5px/1 Inter,sans-serif;cursor:pointer">Invite user</button>
+      </div>
+      <div style="border:1px solid #E8E6E0;border-radius:16px;background:#FFFFFF;overflow:hidden">
+        <div style="display:grid;grid-template-columns:1.6fr repeat(5,1fr);background:#F6F5F1;border-bottom:1px solid #E8E6E0">
+          <div style="padding:10px 20px;font:500 11.5px/1.4 Inter,sans-serif;text-transform:uppercase;letter-spacing:0.08em;color:#8A9491">Capability</div>
+          <sc-for list="{{ roleCols }}" as="c" hint-placeholder-count="5">
+            <div style="padding:10px 10px;text-align:center;font:500 11.5px/1.4 Inter,sans-serif;text-transform:uppercase;letter-spacing:0.08em;color:#8A9491">{{ c }}</div>
+          </sc-for>
+        </div>
+        <sc-for list="{{ perms }}" as="p" hint-placeholder-count="8">
+          <div style="display:grid;grid-template-columns:1.6fr repeat(5,1fr);align-items:center;border-bottom:1px solid #E8E6E0">
+            <div style="padding:13px 20px;display:flex;flex-direction:column"><span style="font:500 14.5px/1.55 Inter,sans-serif">{{ p.name }}</span><span style="font:400 13px/1.5 Inter,sans-serif;color:#8A9491">{{ p.note }}</span></div>
+            <sc-for list="{{ p.cells }}" as="c" hint-placeholder-count="5">
+              <div style="padding:13px 10px;display:flex;justify-content:center">
+                <span style="width:22px;height:22px;border-radius:6px;background:{{ c.bg }};border:{{ c.line }};color:{{ c.fg }};display:inline-flex;align-items:center;justify-content:center;font:600 12px/1 Inter,sans-serif">{{ c.mark }}</span>
+              </div>
+            </sc-for>
+          </div>
+        </sc-for>
+      </div>
+      <div style="border:1px solid #C07A22;background:#FBF1E1;border-radius:12px;padding:16px;display:flex;gap:12px;align-items:flex-start">
+        <span style="width:20px;height:20px;border-radius:50%;background:#C07A22;color:#FFFFFF;display:inline-flex;align-items:center;justify-content:center;font:600 12px/1 Inter,sans-serif;flex:none">!</span>
+        <div><span style="font:600 14.5px/1.55 Inter,sans-serif">Dose approval cannot be delegated</span><p style="font:400 14.5px/1.55 Inter,sans-serif;color:#4A5654;margin:2px 0 0">Only a registered physician may approve or modify a protocol. This row is fixed for every role and cannot be edited here.</p></div>
+      </div>
+    </div>
+
+    <div style="width:556px;flex:none;background:#FCFBF8;border:1px solid #D6D3CB;border-radius:16px;padding:28px;display:flex;flex-direction:column;gap:18px">
+      <div>
+        <span style="font:600 22px/1.3 'Instrument Sans',Inter,sans-serif;letter-spacing:-0.02em">Audit log</span>
+        <div style="font:400 13px/1.5 Inter,sans-serif;color:#8A9491">Immutable · retained 7 years · exportable for inspection</div>
+      </div>
+      <div style="display:flex;gap:8px;flex-wrap:wrap">
+        <span style="display:inline-flex;align-items:center;gap:7px;background:#EAF2EF;border:1px solid #C5DCD4;color:#22513F;border-radius:999px;padding:5px 10px;font:500 13px/1 Inter,sans-serif">Clinical events ×</span>
+        <span style="border:1px solid #D6D3CB;background:#FFFFFF;border-radius:999px;padding:5px 10px;font:400 13px/1 Inter,sans-serif;color:#4A5654">Permissions</span>
+        <span style="border:1px solid #D6D3CB;background:#FFFFFF;border-radius:999px;padding:5px 10px;font:400 13px/1 Inter,sans-serif;color:#4A5654">Pricing</span>
+        <span style="border:1px solid #D6D3CB;background:#FFFFFF;border-radius:999px;padding:5px 10px;font:400 13px/1 Inter,sans-serif;color:#4A5654">Inventory</span>
+      </div>
+      <div style="display:flex;flex-direction:column">
+        <sc-for list="{{ audit }}" as="a" hint-placeholder-count="7">
+          <div style="display:flex;gap:14px;padding:14px 0;border-bottom:1px solid #E8E6E0">
+            <div style="display:flex;flex-direction:column;align-items:center;flex:none;width:16px;padding-top:4px">
+              <span style="width:8px;height:8px;border-radius:50%;background:{{ a.dot }}"></span>
+            </div>
+            <div style="flex:1">
+              <div style="display:flex;justify-content:space-between;gap:12px;align-items:baseline">
+                <span style="font:500 14.5px/1.55 Inter,sans-serif">{{ a.action }}</span>
+                <span style="font:400 13px/1.5 'IBM Plex Mono',monospace;color:#8A9491;flex:none">{{ a.time }}</span>
+              </div>
+              <p style="font:400 14.5px/1.55 Inter,sans-serif;color:#4A5654;margin:3px 0 0">{{ a.detail }}</p>
+              <div style="font:400 13px/1.5 'IBM Plex Mono',monospace;color:#8A9491;margin-top:4px">{{ a.who }}</div>
+            </div>
+          </div>
+        </sc-for>
+      </div>
+      <button type="button" style="min-height:44px;border-radius:8px;border:1px solid #D6D3CB;background:#FFFFFF;font:600 14.5px/1 Inter,sans-serif;cursor:pointer">Load older entries</button>
+    </div>
+  </div>
+</section>
+
+</div>
+
+</x-dc>
+<script type="text/x-dc" data-dc-script>
+class Component extends DCLogic {
+  renderVals() {
+    const yes = {bg:'#2D6A5A', line:'none', fg:'#FFFFFF', mark:'✓'};
+    const no = {bg:'#FFFFFF', line:'1.5px solid #E8E6E0', fg:'#8A9491', mark:''};
+    const fixed = {bg:'#F6F5F1', line:'1.5px dashed #4A5654', fg:'#4A5654', mark:'✓'};
+
+    return {
+      navOps: (() => {
+        const on = {bg:'#EAF2EF', fg:'#22513F', font:'600 14.5px/1.55 Inter,sans-serif', dot:'#2D6A5A', badgeFg:'#22513F'};
+        const off = {bg:'transparent', fg:'#4A5654', font:'500 14.5px/1.55 Inter,sans-serif', dot:'#D6D3CB', badgeFg:'#8A9491'};
+        return [
+          {label:'Today', badge:'28', ...on},
+          {label:'Schedule', badge:'', ...off},
+          {label:'Nurses', badge:'21', ...off},
+          {label:'Patients', badge:'', ...off},
+          {label:'Escalations', badge:'2', ...off, badgeFg:'#C0453C'},
+          {label:'Inventory', badge:'', ...off},
+          {label:'Reports', badge:'', ...off}
+        ];
+      })(),
+
+      opsStats: [
+        {label:'Sessions today', value:'28', pct:'62%', color:'#2D6A5A', note:'17 done · 11 to go'},
+        {label:'Unassigned', value:'2', pct:'18%', color:'#C0453C', note:'Both within 3 hours'},
+        {label:'Nurses on shift', value:'6', pct:'75%', color:'#2D6A5A', note:'1 on standby'},
+        {label:'Cancellations', value:'3', pct:'22%', color:'#C07A22', note:'2 patient, 1 no nurse'},
+        {label:'Revenue today', value:'₹2,64,800', pct:'68%', color:'#2D6A5A', note:'68% of daily target'}
+      ],
+
+      board: (() => {
+        const assigned = {nurseFont:'400 14.5px/1.55 Inter,sans-serif', nurseFg:'#16211E', rowBg:'#FFFFFF', btnBg:'#FFFFFF', btnFg:'#16211E', btnLine:'#D6D3CB', btn:'Open'};
+        const un = {nurseFont:'500 14.5px/1.55 Inter,sans-serif', nurseFg:'#C0453C', rowBg:'#FAEBEA', btnBg:'#2D6A5A', btnFg:'#FFFFFF', btnLine:'#2D6A5A', btn:'Assign'};
+        return [
+          {time:'08:00', patient:'S. Krishnan', zone:'HSR sector 2', drip:'Immune Shield', nurse:'A. Rao', status:'Completed', color:'#2F8F5B', soft:'#E9F5EE', ...assigned},
+          {time:'09:30', patient:'M. Joseph', zone:'Indiranagar', drip:'Jetlag Reset', nurse:'V. Kumar', status:'Completed', color:'#2F8F5B', soft:'#E9F5EE', ...assigned},
+          {time:'10:00', patient:'R. Mehta', zone:'Koramangala 8th', drip:"Myers' Revive", nurse:'A. Rao', status:'In progress', color:'#2D6A5A', soft:'#EAF2EF', ...assigned},
+          {time:'11:30', patient:'F. Khan', zone:'Jayanagar', drip:'Immune Shield', nurse:'S. Menon', status:'En route', color:'#45699B', soft:'#EBF0F7', ...assigned},
+          {time:'13:30', patient:'A. Bhatt', zone:'Ejipura', drip:'Jetlag Reset', nurse:'Unassigned', status:'Needs nurse', color:'#C0453C', soft:'#FAEBEA', ...un},
+          {time:'15:00', patient:'T. Ramesh', zone:'HSR sector 6', drip:'Deep Recharge', nurse:'Unassigned', status:'Needs nurse', color:'#C0453C', soft:'#FAEBEA', ...un},
+          {time:'16:00', patient:'N. Iyer', zone:'Indiranagar', drip:'Deep Recharge', nurse:'V. Kumar', status:'Scheduled', color:'#45699B', soft:'#EBF0F7', ...assigned}
+        ];
+      })(),
+
+      nurses: [
+        {name:'A. Rao', zone:'Koramangala', load:'4 / 5', pct:'80%', color:'#2D6A5A'},
+        {name:'V. Kumar', zone:'Indiranagar', load:'5 / 5', pct:'100%', color:'#C07A22'},
+        {name:'S. Menon', zone:'Jayanagar', load:'3 / 5', pct:'60%', color:'#2D6A5A'},
+        {name:'P. Das', zone:'HSR', load:'2 / 5', pct:'40%', color:'#2D6A5A'},
+        {name:'L. George', zone:'Whitefield', load:'1 / 5', pct:'20%', color:'#2D6A5A'},
+        {name:'K. Suresh', zone:'Standby', load:'0 / 5', pct:'0%', color:'#8A9491'}
+      ],
+
+      cityStats: [
+        {label:'Sessions MTD', value:'384', pct:'71%', color:'#2D6A5A', note:'71% of monthly target', noteFg:'#4A5654'},
+        {label:'Revenue MTD', value:'₹18,42,600', pct:'71%', color:'#2D6A5A', note:'Avg ₹4,798 per session', noteFg:'#4A5654'},
+        {label:'Cancellation rate', value:'6.2%', pct:'31%', color:'#C07A22', note:'Up from 4.8% in August', noteFg:'#C07A22'},
+        {label:'Adverse events', value:'2', pct:'8%', color:'#C0453C', note:'0.52% of sessions', noteFg:'#4A5654'}
+      ],
+
+      zones: [
+        {name:'Koramangala', done:'86', cancelled:'4', donePct:'62%', cancelPct:'4%'},
+        {name:'Indiranagar', done:'74', cancelled:'6', donePct:'54%', cancelPct:'6%'},
+        {name:'HSR Layout', done:'68', cancelled:'3', donePct:'49%', cancelPct:'3%'},
+        {name:'Jayanagar', done:'52', cancelled:'5', donePct:'38%', cancelPct:'5%'},
+        {name:'Whitefield', done:'44', cancelled:'2', donePct:'32%', cancelPct:'2%'},
+        {name:'Hebbal', done:'38', cancelled:'3', donePct:'27%', cancelPct:'3%'},
+        {name:'Electronic City', done:'22', cancelled:'1', donePct:'16%', cancelPct:'1%'}
+      ],
+
+      pricing: (() => {
+        const same = {color:'#4A5654', state:'At national'};
+        const up = {color:'#2F8F5B', state:'+8% approved'};
+        const pending = {color:'#C07A22', state:'Pending approval'};
+        return [
+          {name:"Myers' Revive", national:'₹8,400', city:'₹8,400', ...same},
+          {name:'Immune Shield', national:'₹9,200', city:'₹9,936', ...up},
+          {name:'Glow Protocol', national:'₹11,000', city:'₹12,650', ...pending},
+          {name:'Deep Recharge', national:'₹10,600', city:'₹10,600', ...same},
+          {name:'Jetlag Reset', national:'₹6,800', city:'₹7,344', ...up},
+          {name:'Iron Restore', national:'₹9,800', city:'₹11,270', ...pending}
+        ];
+      })(),
+
+      roleCols: ['Patient', 'Nurse', 'Doctor', 'Ops', 'Sub-admin'],
+
+      perms: [
+        {name:'Approve or modify doses', note:'Physician only, by law', cells:[{...no}, {...no}, {...fixed}, {...no}, {...no}]},
+        {name:'View patient clinical record', note:'Full quiz, labs, history', cells:[{...yes}, {...yes}, {...yes}, {...no}, {...no}]},
+        {name:'Run a session checklist', note:'', cells:[{...no}, {...yes}, {...no}, {...no}, {...no}]},
+        {name:'Assign nurses', note:'', cells:[{...no}, {...no}, {...no}, {...yes}, {...yes}]},
+        {name:'Dispose or quarantine batches', note:'Two-person rule above ₹50,000', cells:[{...no}, {...no}, {...yes}, {...yes}, {...yes}]},
+        {name:'Change city pricing', note:'±15% without escalation', cells:[{...no}, {...no}, {...no}, {...no}, {...yes}]},
+        {name:'Issue refunds', note:'Up to ₹25,000', cells:[{...no}, {...no}, {...no}, {...yes}, {...yes}]},
+        {name:'Edit roles & permissions', note:'Platform admin only', cells:[{...no}, {...no}, {...no}, {...no}, {...no}]}
+      ],
+
+      audit: [
+        {action:'Batch quarantined', detail:'MG-A2 held pending adverse event determination. 14 units frozen.', who:'R. Kulkarni · KSPC-77401 · 10.2.14.88', time:'13 Sep, 12:04', dot:'#C0453C'},
+        {action:'Protocol modified then approved', detail:'ND-4417 · magnesium 1,000 mg → 600 mg, B12 1,000 → 1,500 mcg.', who:'Dr M. Iyer · KMC-48211', time:'13 Sep, 11:58', dot:'#C07A22'},
+        {action:'Adverse event logged', detail:'AE-0219 · moderate · infusion stopped at 00:12:40.', who:'A. Rao, RN · KSNC-2019-88431', time:'13 Sep, 11:42', dot:'#C0453C'},
+        {action:'Refund issued', detail:'ND-4131 · ₹10,620 · reason: no nurse available in zone.', who:'D. Fernandes · ops', time:'12 Sep, 18:20', dot:'#45699B'},
+        {action:'Pricing override requested', detail:'Glow Protocol · Bengaluru · ₹11,000 → ₹12,650 (+15%).', who:'S. Nagaraj · sub-admin', time:'12 Sep, 16:02', dot:'#C07A22'},
+        {action:'Permission changed', detail:'Ops role granted "Issue refunds up to ₹25,000".', who:'Platform admin · 10.2.14.02', time:'11 Sep, 09:14', dot:'#45699B'},
+        {action:'Stock received', detail:'VC-B9 · 240 vials · Aurex Pharma · invoice AX-88412.', who:'R. Kulkarni · KSPC-77401', time:'10 Sep, 08:36', dot:'#2F8F5B'}
+      ]
+    };
+  }
+}
+
+</script>
+</body>
+</html>

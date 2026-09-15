@@ -1,0 +1,250 @@
+@import "tailwindcss";
+
+/* Everything below lives inside a cascade layer on purpose. Unlayered CSS
+   outranks every layered rule regardless of specificity, so an unlayered
+   `a { color }` silently beats `text-white` and a link-styled button renders
+   its label in the same colour as its own background. */
+
+/* ==========================================================================
+   NutriDrip Design System v0.3 — black, white, and clinical blue.
+
+   The public identity is stark white and near-black with a single accent:
+   the cyan-teal the previous NutriDrip site was built on, darkened just far
+   enough that white button labels clear AA on it. Neutrals lean a few degrees
+   toward it — cool rather than warm — so they read as chosen.
+
+   Clinical colours (safe / caution / critical / info) are NOT part of that
+   identity and are deliberately untouched — recolouring an out-of-range vital
+   to suit a brand would be unsafe. Apricot likewise stays on the vitality
+   ring, because that is a data colour, not decoration.
+   ========================================================================== */
+
+@theme {
+  /* Base — the white of the box, the greys that sit on it */
+  --color-paper: #FFFFFF;
+  --color-surface: #FFFFFF;
+  --color-surface-2: #F5F7F9;
+  --color-line: #E3E7EB;
+  --color-line-2: #CCD3DA;
+
+  /* Ink — near-black, never flat #000, with a trace of the accent in it */
+  --color-ink: #0A0C0E;
+  --color-ink-2: #434A50;
+  --color-ink-3: #6B7178;
+
+  /* The one accent — the old site's cyan-teal (#0B9EC8 there), darkened to
+     #0A7FA1 so white labels on it clear 4.60:1 rather than the original 3.12:1 */
+  --color-primary: #0A7FA1;
+  --color-primary-dark: #086780;
+  --color-primary-soft: #E4F6FC;
+  --color-primary-line: #B3E6F3;
+
+  /* The accent at 4.26:1 on the ink ground fails AA, so dark sections use a
+     lifted tint of the same hue rather than a different colour. */
+  --color-primary-on-dark: #7EE3F8;
+
+  /* Muted text has the same problem in reverse: --color-ink-3 is tuned for
+     white and manages only 3.98:1 on ink, so the footer and any dark band use
+     this instead. It clears AA for body text at 6.88:1. */
+  --color-ink-on-dark: #949A9F;
+
+  /* The page loader. It now FOLLOWS the brand rather than holding its own
+     blue.
+
+     It used to be pinned to a separate sky blue (#2E90DC) so that a move of
+     the brand could not recolour it by accident. In practice that produced the
+     opposite problem: the loader is the first thing anyone sees, and it was
+     visibly a different blue from the site it was loading. Matching by
+     reference rather than by copying two hex values means they cannot drift
+     apart again. To decouple them once more, put literals back here — nothing
+     else needs to change, because the loader only ever reads these three.
+
+     Contrast is better under the brand blue, not merely no worse:
+       fluid on the bag's headspace   4.14:1  (was 3.07:1, WCAG 1.4.11 wants 3:1)
+       fluid on white                 4.60:1  (was 3.42:1)
+       counter text on white          7.88:1  (was 4.96:1, 13px text wants 4.5:1) */
+  --color-loader: var(--color-primary);
+  --color-loader-soft: var(--color-primary-soft);
+  --color-loader-ink: var(--color-primary-text);
+
+  /* Apricot survives for one job only: the vitality ring. */
+  --color-accent: #E08A4C;
+  --color-accent-soft: #FDF0E4;
+
+  /* Clinical semantics — status only, never decoration.
+     Each has three jobs and needs three values: the hue itself for a dot, a
+     border or a bar; a pale ground; and a darker tint for TEXT. The hue is
+     tuned to read as a status at a glance, which leaves it short of 4.5:1 for
+     11.5px type — safe manages 3.61:1 on its own ground and caution 3.10:1 —
+     so small text uses the -text tint and the status colour stays exactly as
+     the design system set it. */
+  --color-safe: #2F8F5B;
+  --color-safe-soft: #E9F5EE;
+  --color-safe-text: #1B6039;
+  --color-caution: #C07A22;
+  --color-caution-soft: #FBF1E1;
+  --color-caution-text: #7D4E12;
+  --color-critical: #C0453C;
+  --color-critical-soft: #FAEBEA;
+  --color-critical-text: #8A2E28;
+  --color-info: #45699B;
+  --color-info-soft: #EBF0F7;
+  --color-info-text: #2F4A70;
+  --color-primary-text: #06596F;
+
+  /* Type */
+  --font-display: var(--font-instrument), "Instrument Sans", Inter, system-ui, sans-serif;
+  --font-sans: var(--font-inter), Inter, system-ui, sans-serif;
+  --font-mono: var(--font-plex-mono), "IBM Plex Mono", ui-monospace, monospace;
+
+  /* Radius */
+  --radius-sm: 8px;
+  --radius-md: 12px;
+  --radius-lg: 16px;
+  --radius-pill: 999px;
+
+  /* Elevation — only two. Cards never lift. */
+  --shadow-pop: 0 4px 16px rgba(10, 12, 14, 0.08);
+  --shadow-modal: 0 24px 64px rgba(10, 12, 14, 0.18);
+}
+
+:root {
+  --ease: cubic-bezier(0.22, 0.61, 0.36, 1);
+  --dur-fast: 150ms;
+  --dur-panel: 240ms;
+}
+
+/* --------------------------------------------------------------------------
+   Base — inside Tailwind's `base` layer on purpose. Unlayered rules outrank
+   every layered utility no matter their specificity, so an unlayered
+   `a { color }` would beat `text-white` on a link-styled button.
+   -------------------------------------------------------------------------- */
+@layer base {
+  * { box-sizing: border-box; }
+  html, body { margin: 0; padding: 0; }
+
+  body {
+    background: var(--color-paper);
+    color: var(--color-ink);
+    font-family: var(--font-sans);
+    -webkit-font-smoothing: antialiased;
+  }
+
+  /* Prose links only. Anything given its own colour — buttons, nav rows, rows
+     in a dark footer — sets it with a utility and must be allowed to win. */
+  a { color: var(--color-primary); text-decoration: none; }
+  a:hover { color: var(--color-primary-dark); text-decoration: underline; }
+
+  input, button, select, textarea { font-family: inherit; }
+}
+
+@layer components {
+  /* --------------------------------------------------------------------------
+     Type scale — exact specs from the design system sheet
+     -------------------------------------------------------------------------- */
+  .t-h1 { font: 700 40px/1.1 var(--font-display); letter-spacing: -0.02em; margin: 0; }
+  .t-h2 { font: 600 30px/1.2 var(--font-display); letter-spacing: -0.02em; margin: 0; }
+  .t-h3 { font: 600 22px/1.3 var(--font-display); letter-spacing: -0.02em; margin: 0; }
+  .t-body-lg { font: 400 16px/1.6 var(--font-sans); margin: 0; }
+  .t-body { font: 400 14.5px/1.55 var(--font-sans); margin: 0; }
+  .t-small { font: 400 13px/1.5 var(--font-sans); margin: 0; }
+  .t-micro {
+    font: 500 11.5px/1.4 var(--font-sans);
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--color-ink-3);
+  }
+  /* Every dose, vital, batch number, quantity, date and rupee figure */
+  .t-data {
+    font-family: var(--font-mono);
+    font-weight: 500;
+    font-variant-numeric: tabular-nums;
+  }
+
+  /* --------------------------------------------------------------------------
+     Surfaces
+     -------------------------------------------------------------------------- */
+  .card {
+    background: var(--color-surface);
+    border: 1px solid var(--color-line);
+    border-radius: var(--radius-lg);
+  }
+  .card-sm { border-radius: var(--radius-md); }
+}
+
+/* --------------------------------------------------------------------------
+   Motion
+   -------------------------------------------------------------------------- */
+/* --------------------------------------------------------------------------
+   Loader — the Fill primitive at page scale. The bag drains, the wordmark
+   fills, and the counter carries the real number, exactly as every other Fill
+   in the product does. It is drawn in light blue (--color-loader), by request.
+   -------------------------------------------------------------------------- */
+@keyframes ndDropFall {
+  0%   { transform: translateY(0) scaleY(0.7); opacity: 0 }
+  12%  { opacity: 1 }
+  85%  { opacity: 1 }
+  100% { transform: translateY(var(--nd-drop-distance, 120px)) scaleY(1.25); opacity: 0 }
+}
+@keyframes ndPulse {
+  0%, 100% { transform: scale(1); opacity: 0.55 }
+  50%      { transform: scale(1.9); opacity: 0 }
+}
+@keyframes ndFadeOut { to { opacity: 0; visibility: hidden } }
+@keyframes ndRise { from { opacity: 0; transform: translateY(8px) } to { opacity: 1; transform: none } }
+
+@keyframes ndShimmer { 0% { background-position: -200% 0 } 100% { background-position: 200% 0 } }
+@keyframes ndDrip {
+  0% { transform: translateY(-6px); opacity: 0 }
+  40% { opacity: 1 }
+  100% { transform: translateY(14px); opacity: 0 }
+}
+
+@layer components {
+  .skeleton {
+    background: linear-gradient(90deg, var(--color-surface-2) 25%, var(--color-line) 37%, var(--color-surface-2) 63%);
+    background-size: 400% 100%;
+    animation: ndShimmer 1.4s ease-in-out infinite;
+    border-radius: var(--radius-sm);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation: none !important; transition: none !important; }
+}
+
+/* --------------------------------------------------------------------------
+   Focus — visible, always
+   -------------------------------------------------------------------------- */
+@layer base {
+  :focus-visible {
+    outline: 2px solid var(--color-primary);
+    outline-offset: 2px;
+    border-radius: 4px;
+  }
+}
+
+@layer components {
+  /* Scrollable data containers never let the page scroll sideways */
+  .scroll-x { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+
+  /* A search field that carries its own Clear control hides the browser's, so
+     the two do not sit side by side. Applied by SearchBox, which every
+     URL-backed search uses. An input with no Clear of its own keeps the native
+     one, because otherwise there is nothing there to clear it with. */
+  .no-native-clear::-webkit-search-cancel-button {
+    -webkit-appearance: none;
+    appearance: none;
+  }
+}
+
+/* --------------------------------------------------------------------------
+   Print — the prescription slip and any report someone chooses to print
+   -------------------------------------------------------------------------- */
+@page { margin: 16mm; }
+@media print {
+  .no-print { display: none !important; }
+  body { background: #FFFFFF; }
+  .rx-page { box-shadow: none; }
+  a { color: inherit; text-decoration: none; }
+}

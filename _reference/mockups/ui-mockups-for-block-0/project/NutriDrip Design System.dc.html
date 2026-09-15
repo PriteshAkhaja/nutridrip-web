@@ -1,0 +1,1054 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet data-dc-atomics>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Sans:wght@400;500;600;700&family=Inter:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+html,body{margin:0;padding:0}
+body{background:#FCFBF8;color:#16211E;font-family:Inter,system-ui,sans-serif;-webkit-font-smoothing:antialiased}
+*{box-sizing:border-box}
+a{color:#2D6A5A;text-decoration:none}
+a:hover{color:#22513F;text-decoration:underline}
+input,button,select,textarea{font-family:inherit}
+@keyframes ndShimmer{0%{background-position:-200% 0}100%{background-position:200% 0}}
+@keyframes ndDrip{0%{transform:translateY(-6px);opacity:0}40%{opacity:1}100%{transform:translateY(14px);opacity:0}}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+</style>
+</helmet>
+
+<div style="max-width:1240px;margin:0 auto;padding:56px 32px 96px">
+
+<header style="border-bottom:1px solid #E8E6E0;padding-bottom:40px;margin-bottom:56px">
+  <div style="display:flex;gap:14px;align-items:baseline;margin-bottom:28px">
+    <div style="width:26px;height:26px;border:1px solid #C5DCD4;border-radius:8px;background:#EAF2EF;position:relative;overflow:hidden">
+      <div style="position:absolute;left:0;right:0;bottom:0;height:62%;background:#2D6A5A"></div>
+    </div>
+    <span style="font:600 15px/1 'Instrument Sans',Inter,sans-serif;letter-spacing:-0.01em">NutriDrip</span>
+    <span style="font:500 11.5px/1.4 Inter,sans-serif;text-transform:uppercase;letter-spacing:0.08em;color:#8A9491">Design System · v0.1 · Block 0</span>
+  </div>
+  <h1 style="font:700 40px/1.1 'Instrument Sans',Inter,sans-serif;letter-spacing:-0.02em;margin:0 0 20px;max-width:20ch">Everything here is a level between empty and full.</h1>
+  <p style="font:400 16px/1.6 Inter,sans-serif;color:#4A5654;margin:0;max-width:66ch;text-wrap:pretty">One primitive — the Fill — carries the whole product: a patient's vitality, sixteen nutrient risks, how much of an IV bag has run, how much of a batch remains, how far a nurse has gone through a twenty-nine step checklist. It never decorates. It always encodes a real quantity. Alongside it, one rule: clinical data is monospaced, prose is not.</p>
+  <div style="display:flex;flex-wrap:wrap;gap:32px;margin-top:32px">
+    <div style="display:flex;flex-direction:column;gap:6px"><span style="font:500 11.5px/1.4 Inter,sans-serif;text-transform:uppercase;letter-spacing:0.08em;color:#8A9491">Roles</span><span style="font:400 14.5px/1.55 Inter,sans-serif;color:#16211E">Patient · Doctor · Nurse · Clinic · Admin · Pharmacist</span></div>
+    <div style="display:flex;flex-direction:column;gap:6px"><span style="font:500 11.5px/1.4 Inter,sans-serif;text-transform:uppercase;letter-spacing:0.08em;color:#8A9491">Screens covered</span><span style="font:500 14.5px/1.55 'IBM Plex Mono',monospace;color:#16211E">72</span></div>
+    <div style="display:flex;flex-direction:column;gap:6px"><span style="font:500 11.5px/1.4 Inter,sans-serif;text-transform:uppercase;letter-spacing:0.08em;color:#8A9491">Locale</span><span style="font:400 14.5px/1.55 Inter,sans-serif;color:#16211E">India · ₹ lakh grouping · IST · 14 Sep 2026</span></div>
+  </div>
+</header>
+
+<!-- ============ COLOUR ============ -->
+<section style="margin-bottom:72px">
+  <div style="display:flex;align-items:baseline;gap:16px;margin-bottom:8px">
+    <span style="font:500 11.5px/1.4 'IBM Plex Mono',monospace;color:#8A9491">01</span>
+    <h2 style="font:600 30px/1.2 'Instrument Sans',Inter,sans-serif;letter-spacing:-0.02em;margin:0">Colour</h2>
+  </div>
+  <p style="font:400 14.5px/1.55 Inter,sans-serif;color:#4A5654;margin:0 0 28px;max-width:62ch">Warm paper, eucalyptus primary, apricot reserved for vitality. The four clinical hues are a controlled vocabulary — they appear only when something is genuinely safe, cautionary, critical or informational, and never without a word or mark beside them.</p>
+
+  <sc-for list="{{ paletteGroups }}" as="group" hint-placeholder-count="5">
+    <div style="margin-bottom:24px">
+      <div style="display:flex;align-items:baseline;gap:10px;margin-bottom:10px">
+        <span style="font:500 11.5px/1.4 Inter,sans-serif;text-transform:uppercase;letter-spacing:0.08em;color:#8A9491">{{ group.name }}</span>
+        <span style="font:400 13px/1.5 Inter,sans-serif;color:#8A9491">{{ group.note }}</span>
+      </div>
+      <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(184px,1fr));gap:12px">
+        <sc-for list="{{ group.swatches }}" as="s" hint-placeholder-count="4">
+          <div style="border:1px solid #E8E6E0;border-radius:12px;overflow:hidden;background:#FFFFFF">
+            <div style="height:64px;background:{{ s.hex }};border-bottom:1px solid #E8E6E0"></div>
+            <div style="padding:10px 12px 12px;display:flex;flex-direction:column;gap:3px">
+              <span style="font:500 13px/1.5 Inter,sans-serif;color:#16211E">{{ s.name }}</span>
+              <span style="font:400 13px/1.5 'IBM Plex Mono',monospace;color:#8A9491">{{ s.hex }}</span>
+              <span style="font:400 13px/1.5 Inter,sans-serif;color:#4A5654">{{ s.use }}</span>
+            </div>
+          </div>
+        </sc-for>
+      </div>
+    </div>
+  </sc-for>
+
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-top:8px">
+    <div style="border:1px solid #C5DCD4;background:#EAF2EF;border-radius:12px;padding:18px 20px">
+      <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px"><span style="width:16px;height:16px;border-radius:50%;background:#2D6A5A;display:inline-block"></span><span style="font:600 14.5px/1.5 Inter,sans-serif">Do</span></div>
+      <p style="font:400 14.5px/1.55 Inter,sans-serif;color:#4A5654;margin:0">Pair every colour with a word. <span style="font:500 13px/1.5 'IBM Plex Mono',monospace;color:#C0453C">SpO₂ 91%</span> reads as critical because it says <em>Below safe range</em>, not because it is red.</p>
+    </div>
+    <div style="border:1px solid #E8E6E0;background:#FFFFFF;border-radius:12px;padding:18px 20px">
+      <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px"><span style="width:16px;height:16px;border-radius:50%;border:2px solid #C0453C;display:inline-block"></span><span style="font:600 14.5px/1.5 Inter,sans-serif">Don't</span></div>
+      <p style="font:400 14.5px/1.55 Inter,sans-serif;color:#4A5654;margin:0">Never tint a card green because it is pleasant, or amber because it is a promotion. Clinical hues are reserved. Decoration uses paper, line and primary only.</p>
+    </div>
+  </div>
+</section>
+
+<!-- ============ TYPE ============ -->
+<section style="margin-bottom:72px">
+  <div style="display:flex;align-items:baseline;gap:16px;margin-bottom:8px">
+    <span style="font:500 11.5px/1.4 'IBM Plex Mono',monospace;color:#8A9491">02</span>
+    <h2 style="font:600 30px/1.2 'Instrument Sans',Inter,sans-serif;letter-spacing:-0.02em;margin:0">Type</h2>
+  </div>
+  <p style="font:400 14.5px/1.55 Inter,sans-serif;color:#4A5654;margin:0 0 28px;max-width:62ch">Instrument Sans sets headings tight. Inter carries prose. IBM Plex Mono carries every dose, vital, batch number, quantity, date and rupee figure — tabular, right-aligned in tables, so a misread dose has to work harder to happen.</p>
+
+  <div style="border:1px solid #E8E6E0;border-radius:16px;background:#FFFFFF;overflow:hidden;margin-bottom:20px">
+    <sc-for list="{{ typeScale }}" as="t" hint-placeholder-count="7">
+      <div style="display:flex;gap:24px;align-items:baseline;padding:16px 24px;border-bottom:1px solid #E8E6E0">
+        <div style="width:150px;flex:none;display:flex;flex-direction:column;gap:2px">
+          <span style="font:500 11.5px/1.4 Inter,sans-serif;text-transform:uppercase;letter-spacing:0.08em;color:#8A9491">{{ t.token }}</span>
+          <span style="font:400 13px/1.5 'IBM Plex Mono',monospace;color:#8A9491">{{ t.spec }}</span>
+        </div>
+        <div style="font:{{ t.font }};letter-spacing:{{ t.ls }};text-transform:{{ t.tt }};color:{{ t.color }};font-variant-numeric:tabular-nums">{{ t.sample }}</div>
+      </div>
+    </sc-for>
+  </div>
+
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px">
+    <div style="border:1px solid #E8E6E0;border-radius:12px;background:#FFFFFF;padding:20px">
+      <span style="font:500 11.5px/1.4 Inter,sans-serif;text-transform:uppercase;letter-spacing:0.08em;color:#8A9491">Prose in Inter</span>
+      <p style="font:400 14.5px/1.55 Inter,sans-serif;color:#16211E;margin:10px 0 0">Ascorbic acid is administered slowly after the base carrier is running clear. The nurse confirms the IV site before the additive is introduced.</p>
+    </div>
+    <div style="border:1px solid #E8E6E0;border-radius:12px;background:#FFFFFF;padding:20px">
+      <span style="font:500 11.5px/1.4 Inter,sans-serif;text-transform:uppercase;letter-spacing:0.08em;color:#8A9491">Clinical data in Plex Mono</span>
+      <div style="display:flex;flex-direction:column;gap:8px;margin-top:12px">
+        <div style="display:flex;justify-content:space-between;gap:16px"><span style="font:400 14.5px/1.55 Inter,sans-serif;color:#4A5654">Ascorbic acid</span><span style="font:500 14.5px/1.55 'IBM Plex Mono',monospace;font-variant-numeric:tabular-nums">7,500 mg</span></div>
+        <div style="display:flex;justify-content:space-between;gap:16px"><span style="font:400 14.5px/1.55 Inter,sans-serif;color:#4A5654">Batch</span><span style="font:500 14.5px/1.55 'IBM Plex Mono',monospace">VC-B7</span></div>
+        <div style="display:flex;justify-content:space-between;gap:16px"><span style="font:400 14.5px/1.55 Inter,sans-serif;color:#4A5654">Expiry</span><span style="font:500 14.5px/1.55 'IBM Plex Mono',monospace">14 Sep 2026</span></div>
+        <div style="display:flex;justify-content:space-between;gap:16px"><span style="font:400 14.5px/1.55 Inter,sans-serif;color:#4A5654">Session total</span><span style="font:500 14.5px/1.55 'IBM Plex Mono',monospace;font-variant-numeric:tabular-nums">₹1,24,500</span></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ SPACE / RADIUS / SHADOW / MOTION ============ -->
+<section style="margin-bottom:72px">
+  <div style="display:flex;align-items:baseline;gap:16px;margin-bottom:24px">
+    <span style="font:500 11.5px/1.4 'IBM Plex Mono',monospace;color:#8A9491">03</span>
+    <h2 style="font:600 30px/1.2 'Instrument Sans',Inter,sans-serif;letter-spacing:-0.02em;margin:0">Space, radius, elevation, motion</h2>
+  </div>
+  <div style="display:grid;grid-template-columns:1.3fr 1fr;gap:16px">
+    <div style="border:1px solid #E8E6E0;border-radius:12px;background:#FFFFFF;padding:20px">
+      <span style="font:500 11.5px/1.4 Inter,sans-serif;text-transform:uppercase;letter-spacing:0.08em;color:#8A9491">Spacing scale</span>
+      <div style="display:flex;align-items:flex-end;gap:12px;margin-top:16px">
+        <sc-for list="{{ spacing }}" as="sp" hint-placeholder-count="9">
+          <div style="display:flex;flex-direction:column;align-items:center;gap:6px">
+            <div style="width:{{ sp.px }};height:{{ sp.px }};background:#EAF2EF;border:1px solid #C5DCD4;border-radius:2px"></div>
+            <span style="font:400 13px/1.5 'IBM Plex Mono',monospace;color:#8A9491">{{ sp.label }}</span>
+          </div>
+        </sc-for>
+      </div>
+      <div style="display:flex;gap:16px;margin-top:28px">
+        <div style="flex:1;display:flex;flex-direction:column;gap:6px;align-items:center"><div style="width:100%;height:52px;background:#F6F5F1;border:1px solid #E8E6E0;border-radius:8px"></div><span style="font:400 13px/1.5 'IBM Plex Mono',monospace;color:#8A9491">sm 8</span></div>
+        <div style="flex:1;display:flex;flex-direction:column;gap:6px;align-items:center"><div style="width:100%;height:52px;background:#F6F5F1;border:1px solid #E8E6E0;border-radius:12px"></div><span style="font:400 13px/1.5 'IBM Plex Mono',monospace;color:#8A9491">md 12</span></div>
+        <div style="flex:1;display:flex;flex-direction:column;gap:6px;align-items:center"><div style="width:100%;height:52px;background:#F6F5F1;border:1px solid #E8E6E0;border-radius:16px"></div><span style="font:400 13px/1.5 'IBM Plex Mono',monospace;color:#8A9491">lg 16</span></div>
+        <div style="flex:1;display:flex;flex-direction:column;gap:6px;align-items:center"><div style="width:100%;height:52px;background:#F6F5F1;border:1px solid #E8E6E0;border-radius:999px"></div><span style="font:400 13px/1.5 'IBM Plex Mono',monospace;color:#8A9491">pill</span></div>
+      </div>
+    </div>
+    <div style="display:flex;flex-direction:column;gap:16px">
+      <div style="border:1px solid #E8E6E0;border-radius:12px;background:#FFFFFF;padding:20px">
+        <span style="font:500 11.5px/1.4 Inter,sans-serif;text-transform:uppercase;letter-spacing:0.08em;color:#8A9491">Elevation — only two</span>
+        <div style="display:flex;gap:14px;margin-top:16px">
+          <div style="flex:1;height:64px;border-radius:12px;background:#FFFFFF;box-shadow:0 4px 16px rgba(22,33,30,.08);display:flex;align-items:center;justify-content:center;font:400 13px/1.5 'IBM Plex Mono',monospace;color:#4A5654">pop</div>
+          <div style="flex:1;height:64px;border-radius:12px;background:#FFFFFF;box-shadow:0 24px 64px rgba(22,33,30,.18);display:flex;align-items:center;justify-content:center;font:400 13px/1.5 'IBM Plex Mono',monospace;color:#4A5654">modal</div>
+          <div style="flex:1;height:64px;border-radius:12px;background:#FFFFFF;border:1px solid #E8E6E0;display:flex;align-items:center;justify-content:center;font:400 13px/1.5 'IBM Plex Mono',monospace;color:#4A5654">card</div>
+        </div>
+        <p style="font:400 13px/1.5 Inter,sans-serif;color:#8A9491;margin:12px 0 0">Cards never lift. Only floating layers cast.</p>
+      </div>
+      <div style="border:1px solid #E8E6E0;border-radius:12px;background:#FFFFFF;padding:20px">
+        <span style="font:500 11.5px/1.4 Inter,sans-serif;text-transform:uppercase;letter-spacing:0.08em;color:#8A9491">Motion</span>
+        <div style="display:flex;flex-direction:column;gap:8px;margin-top:12px">
+          <div style="display:flex;justify-content:space-between"><span style="font:400 14.5px/1.55 Inter,sans-serif;color:#4A5654">Hover, state change</span><span style="font:500 14.5px/1.55 'IBM Plex Mono',monospace">150ms ease-out</span></div>
+          <div style="display:flex;justify-content:space-between"><span style="font:400 14.5px/1.55 Inter,sans-serif;color:#4A5654">Panels, sheets</span><span style="font:500 14.5px/1.55 'IBM Plex Mono',monospace">240ms ease-out</span></div>
+          <div style="display:flex;justify-content:space-between"><span style="font:400 14.5px/1.55 Inter,sans-serif;color:#4A5654">Reduced motion</span><span style="font:500 14.5px/1.55 'IBM Plex Mono',monospace">0ms</span></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ THE FILL FAMILY ============ -->
+<section style="margin-bottom:72px">
+  <div style="display:flex;align-items:baseline;gap:16px;margin-bottom:8px">
+    <span style="font:500 11.5px/1.4 'IBM Plex Mono',monospace;color:#8A9491">04</span>
+    <h2 style="font:600 30px/1.2 'Instrument Sans',Inter,sans-serif;letter-spacing:-0.02em;margin:0">The Fill family</h2>
+  </div>
+  <p style="font:400 14.5px/1.55 Inter,sans-serif;color:#4A5654;margin:0 0 28px;max-width:62ch">Five expressions of one idea, at five scales. Each carries a mono value, and each names what it measures.</p>
+
+  <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:16px">
+
+    <!-- FillBar -->
+    <div style="border:1px solid #E8E6E0;border-radius:16px;background:#FFFFFF;padding:24px">
+      <div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:20px">
+        <span style="font:600 18px/1.3 'Instrument Sans',Inter,sans-serif">FillBar</span>
+        <span style="font:400 13px/1.5 Inter,sans-serif;color:#8A9491">horizontal · threshold</span>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:18px">
+        <div>
+          <div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:7px"><span style="font:400 14.5px/1.55 Inter,sans-serif;color:#4A5654">Ascorbic acid</span><span style="font:500 14.5px/1.55 'IBM Plex Mono',monospace">7,500 mg</span></div>
+          <div style="height:6px;border-radius:999px;background:#F6F5F1;position:relative;overflow:hidden"><div style="position:absolute;inset:0 26% 0 0;background:#2D6A5A;border-radius:999px"></div></div>
+        </div>
+        <div>
+          <div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:7px"><span style="font:400 14.5px/1.55 Inter,sans-serif;color:#4A5654">Magnesium sulphate</span><span style="font:500 14.5px/1.55 'IBM Plex Mono',monospace">1,000 mg</span></div>
+          <div style="height:6px;border-radius:999px;background:#F6F5F1;position:relative">
+            <div style="position:absolute;top:0;bottom:0;left:0;width:72%;background:#2D6A5A;border-radius:999px"></div>
+            <div style="position:absolute;top:-4px;bottom:-4px;left:84%;width:1px;background:#4A5654"></div>
+          </div>
+          <div style="display:flex;justify-content:flex-end;margin-top:6px"><span style="font:400 13px/1.5 Inter,sans-serif;color:#8A9491">max per session <span style="font:400 13px/1.5 'IBM Plex Mono',monospace">1,200 mg</span></span></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- FillRing -->
+    <div style="border:1px solid #E8E6E0;border-radius:16px;background:#FFFFFF;padding:24px">
+      <div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:12px">
+        <span style="font:600 18px/1.3 'Instrument Sans',Inter,sans-serif">FillRing</span>
+        <span style="font:400 13px/1.5 Inter,sans-serif;color:#8A9491">vitality score</span>
+      </div>
+      <div style="display:flex;justify-content:center;padding:6px 0 4px">{{ ring }}</div>
+      <div style="display:flex;justify-content:center"><span style="font:400 13px/1.5 Inter,sans-serif;color:#8A9491">the only place apricot appears</span></div>
+    </div>
+
+    <!-- FillColumn -->
+    <div style="border:1px solid #E8E6E0;border-radius:16px;background:#FFFFFF;padding:24px">
+      <div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:20px">
+        <span style="font:600 18px/1.3 'Instrument Sans',Inter,sans-serif">FillColumn</span>
+        <span style="font:400 13px/1.5 Inter,sans-serif;color:#8A9491">IV bag remaining</span>
+      </div>
+      <div style="display:flex;gap:24px;align-items:center">
+        <div style="width:56px;height:132px;border:1px solid #C5DCD4;border-radius:10px 10px 16px 16px;background:#F6F5F1;position:relative;overflow:hidden">
+          <div style="position:absolute;left:0;right:0;bottom:0;height:42%;background:#2D6A5A"></div>
+          <div style="position:absolute;left:0;right:0;top:29%;height:1px;background:#D6D3CB"></div>
+          <div style="position:absolute;left:0;right:0;top:58%;height:1px;background:rgba(255,255,255,.35)"></div>
+        </div>
+        <div style="display:flex;flex-direction:column;gap:10px">
+          <div style="display:flex;flex-direction:column"><span style="font:500 11.5px/1.4 Inter,sans-serif;text-transform:uppercase;letter-spacing:0.08em;color:#8A9491">Remaining</span><span style="font:500 22px/1.3 'IBM Plex Mono',monospace">210 ml</span></div>
+          <div style="display:flex;flex-direction:column"><span style="font:500 11.5px/1.4 Inter,sans-serif;text-transform:uppercase;letter-spacing:0.08em;color:#8A9491">Rate</span><span style="font:500 14.5px/1.55 'IBM Plex Mono',monospace">140 ml/hr</span></div>
+          <div style="display:flex;flex-direction:column"><span style="font:500 11.5px/1.4 Inter,sans-serif;text-transform:uppercase;letter-spacing:0.08em;color:#8A9491">Elapsed</span><span style="font:500 14.5px/1.55 'IBM Plex Mono',monospace">00:41:12</span></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- FillSegments -->
+    <div style="border:1px solid #E8E6E0;border-radius:16px;background:#FFFFFF;padding:24px">
+      <div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:20px">
+        <span style="font:600 18px/1.3 'Instrument Sans',Inter,sans-serif">FillSegments</span>
+        <span style="font:400 13px/1.5 Inter,sans-serif;color:#8A9491">29-step checklist</span>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:14px">
+        <sc-for list="{{ phases }}" as="p" hint-placeholder-count="4">
+          <div>
+            <div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:7px">
+              <span style="font:400 14.5px/1.55 Inter,sans-serif;color:#4A5654">{{ p.name }}</span>
+              <span style="font:500 13px/1.5 'IBM Plex Mono',monospace;color:#8A9491">{{ p.count }}</span>
+            </div>
+            <div style="display:flex;gap:3px">
+              <sc-for list="{{ p.segs }}" as="seg" hint-placeholder-count="7">
+                <div style="flex:1;height:8px;border-radius:2px;background:{{ seg.color }}"></div>
+              </sc-for>
+            </div>
+          </div>
+        </sc-for>
+      </div>
+    </div>
+
+    <!-- FillDepleting -->
+    <div style="border:1px solid #E8E6E0;border-radius:16px;background:#FFFFFF;padding:24px">
+      <div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:20px">
+        <span style="font:600 18px/1.3 'Instrument Sans',Inter,sans-serif">FillDepleting</span>
+        <span style="font:400 13px/1.5 Inter,sans-serif;color:#8A9491">stock · days to expiry</span>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:18px">
+        <div>
+          <div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:7px"><span style="font:400 14.5px/1.55 Inter,sans-serif;color:#4A5654">VC-B9 · in date</span><span style="font:500 14.5px/1.55 'IBM Plex Mono',monospace">184 / 240 vials</span></div>
+          <div style="height:8px;border-radius:2px;background:#F6F5F1;position:relative;overflow:hidden"><div style="position:absolute;top:0;bottom:0;left:0;width:77%;background:#2F8F5B"></div><div style="position:absolute;top:0;bottom:0;left:25%;width:1px;background:#D6D3CB"></div></div>
+          <div style="display:flex;gap:6px;align-items:center;margin-top:7px"><span style="width:6px;height:6px;border-radius:50%;background:#2F8F5B;display:inline-block"></span><span style="font:400 13px/1.5 Inter,sans-serif;color:#4A5654">Healthy — reorder level <span style="font:400 13px/1.5 'IBM Plex Mono',monospace">60</span></span></div>
+        </div>
+        <div>
+          <div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:7px"><span style="font:400 14.5px/1.55 Inter,sans-serif;color:#4A5654">VC-B7 · expiry</span><span style="font:500 14.5px/1.55 'IBM Plex Mono',monospace">12 days</span></div>
+          <div style="height:8px;border-radius:2px;background:#FBF1E1;position:relative;overflow:hidden"><div style="position:absolute;top:0;bottom:0;left:0;width:13%;background:#C07A22"></div></div>
+          <div style="display:flex;gap:6px;align-items:center;margin-top:7px"><span style="width:6px;height:6px;border-radius:50%;background:#C07A22;display:inline-block"></span><span style="font:400 13px/1.5 Inter,sans-serif;color:#4A5654">Expiring — use first (FEFO)</span></div>
+        </div>
+      </div>
+    </div>
+
+    <div style="border:1px solid #E8E6E0;border-radius:16px;background:#F6F5F1;padding:24px;display:flex;flex-direction:column;justify-content:center;gap:10px">
+      <span style="font:500 11.5px/1.4 Inter,sans-serif;text-transform:uppercase;letter-spacing:0.08em;color:#8A9491">Rule</span>
+      <p style="font:400 16px/1.6 Inter,sans-serif;color:#16211E;margin:0;text-wrap:pretty">A Fill without a number is forbidden. If there is no quantity to show, use a hairline and whitespace instead.</p>
+    </div>
+  </div>
+</section>
+
+<!-- ============ BUTTONS + STATES ============ -->
+<section style="margin-bottom:72px">
+  <div style="display:flex;align-items:baseline;gap:16px;margin-bottom:24px">
+    <span style="font:500 11.5px/1.4 'IBM Plex Mono',monospace;color:#8A9491">05</span>
+    <h2 style="font:600 30px/1.2 'Instrument Sans',Inter,sans-serif;letter-spacing:-0.02em;margin:0">Buttons</h2>
+  </div>
+  <div style="border:1px solid #E8E6E0;border-radius:16px;background:#FFFFFF;overflow:hidden">
+    <div style="display:grid;grid-template-columns:120px repeat(6,minmax(0,1fr));background:#F6F5F1;border-bottom:1px solid #E8E6E0">
+      <div style="padding:10px 16px;font:500 11.5px/1.4 Inter,sans-serif;text-transform:uppercase;letter-spacing:0.08em;color:#8A9491">Variant</div>
+      <div style="padding:10px 12px;font:500 11.5px/1.4 Inter,sans-serif;text-transform:uppercase;letter-spacing:0.08em;color:#8A9491">Default</div>
+      <div style="padding:10px 12px;font:500 11.5px/1.4 Inter,sans-serif;text-transform:uppercase;letter-spacing:0.08em;color:#8A9491">Hover</div>
+      <div style="padding:10px 12px;font:500 11.5px/1.4 Inter,sans-serif;text-transform:uppercase;letter-spacing:0.08em;color:#8A9491">Focus</div>
+      <div style="padding:10px 12px;font:500 11.5px/1.4 Inter,sans-serif;text-transform:uppercase;letter-spacing:0.08em;color:#8A9491">Active</div>
+      <div style="padding:10px 12px;font:500 11.5px/1.4 Inter,sans-serif;text-transform:uppercase;letter-spacing:0.08em;color:#8A9491">Disabled</div>
+      <div style="padding:10px 12px;font:500 11.5px/1.4 Inter,sans-serif;text-transform:uppercase;letter-spacing:0.08em;color:#8A9491">Loading</div>
+    </div>
+
+    <div style="display:grid;grid-template-columns:120px repeat(6,minmax(0,1fr));align-items:center;border-bottom:1px solid #E8E6E0">
+      <div style="padding:16px;font:500 14.5px/1.55 Inter,sans-serif">Primary</div>
+      <div style="padding:12px"><button type="button" style="min-height:44px;padding:8px 10px;white-space:normal;border-radius:8px;border:1px solid #2D6A5A;background:#2D6A5A;color:#FFFFFF;font:600 13px/1.25 Inter,sans-serif;cursor:pointer;transition:all 150ms ease-out" style-hover="background:#22513F;border-color:#22513F">Book session</button></div>
+      <div style="padding:12px"><button type="button" style="min-height:44px;padding:8px 10px;white-space:normal;border-radius:8px;border:1px solid #22513F;background:#22513F;color:#FFFFFF;font:600 13px/1.25 Inter,sans-serif;cursor:pointer">Book session</button></div>
+      <div style="padding:12px"><button type="button" style="min-height:44px;padding:8px 10px;white-space:normal;border-radius:8px;border:1px solid #2D6A5A;background:#2D6A5A;color:#FFFFFF;font:600 13px/1.25 Inter,sans-serif;cursor:pointer;outline:2px solid #2D6A5A;outline-offset:2px">Book session</button></div>
+      <div style="padding:12px"><button type="button" style="min-height:44px;padding:8px 10px;white-space:normal;border-radius:8px;border:1px solid #22513F;background:#22513F;color:#FFFFFF;font:600 13px/1.25 Inter,sans-serif;cursor:pointer;transform:translateY(1px)">Book session</button></div>
+      <div style="padding:12px"><button type="button" disabled="disabled" style="min-height:44px;padding:8px 10px;white-space:normal;border-radius:8px;border:1px solid #E8E6E0;background:#F6F5F1;color:#8A9491;font:600 13px/1.25 Inter,sans-serif;cursor:not-allowed">Book session</button></div>
+      <div style="padding:12px 10px"><button type="button" style="min-height:44px;padding:8px 10px;white-space:normal;border-radius:8px;border:1px solid #2D6A5A;background:#2D6A5A;color:#FFFFFF;font:600 13px/1.25 Inter,sans-serif;cursor:progress;display:inline-flex;align-items:center;gap:9px"><span style="width:12px;height:12px;border-radius:50%;border:2px solid rgba(255,255,255,.4);border-top-color:#FFFFFF;display:inline-block"></span>Booking</button></div>
+    </div>
+
+    <div style="display:grid;grid-template-columns:120px repeat(6,minmax(0,1fr));align-items:center;border-bottom:1px solid #E8E6E0">
+      <div style="padding:16px;font:500 14.5px/1.55 Inter,sans-serif">Secondary</div>
+      <div style="padding:12px"><button type="button" style="min-height:44px;padding:8px 10px;white-space:normal;border-radius:8px;border:1px solid #D6D3CB;background:#FFFFFF;color:#16211E;font:600 13px/1.25 Inter,sans-serif;cursor:pointer;transition:all 150ms ease-out" style-hover="border-color:#2D6A5A;color:#2D6A5A">Reschedule</button></div>
+      <div style="padding:12px"><button type="button" style="min-height:44px;padding:8px 10px;white-space:normal;border-radius:8px;border:1px solid #2D6A5A;background:#FFFFFF;color:#2D6A5A;font:600 13px/1.25 Inter,sans-serif;cursor:pointer">Reschedule</button></div>
+      <div style="padding:12px"><button type="button" style="min-height:44px;padding:8px 10px;white-space:normal;border-radius:8px;border:1px solid #D6D3CB;background:#FFFFFF;color:#16211E;font:600 13px/1.25 Inter,sans-serif;cursor:pointer;outline:2px solid #2D6A5A;outline-offset:2px">Reschedule</button></div>
+      <div style="padding:12px"><button type="button" style="min-height:44px;padding:8px 10px;white-space:normal;border-radius:8px;border:1px solid #2D6A5A;background:#EAF2EF;color:#22513F;font:600 13px/1.25 Inter,sans-serif;cursor:pointer">Reschedule</button></div>
+      <div style="padding:12px"><button type="button" disabled="disabled" style="min-height:44px;padding:8px 10px;white-space:normal;border-radius:8px;border:1px solid #E8E6E0;background:#FFFFFF;color:#8A9491;font:600 13px/1.25 Inter,sans-serif;cursor:not-allowed">Reschedule</button></div>
+      <div style="padding:12px 10px"><button type="button" style="min-height:44px;padding:8px 10px;white-space:normal;border-radius:8px;border:1px solid #D6D3CB;background:#FFFFFF;color:#4A5654;font:600 13px/1.25 Inter,sans-serif;display:inline-flex;align-items:center;gap:9px"><span style="width:12px;height:12px;border-radius:50%;border:2px solid #E8E6E0;border-top-color:#2D6A5A;display:inline-block"></span>Checking</button></div>
+    </div>
+
+    <div style="display:grid;grid-template-columns:120px repeat(6,minmax(0,1fr));align-items:center;border-bottom:1px solid #E8E6E0">
+      <div style="padding:16px;font:500 14.5px/1.55 Inter,sans-serif">Ghost</div>
+      <div style="padding:12px"><button type="button" style="min-height:44px;padding:8px 10px;white-space:normal;border-radius:8px;border:1px solid transparent;background:transparent;color:#2D6A5A;font:600 13px/1.25 Inter,sans-serif;cursor:pointer;transition:all 150ms ease-out" style-hover="background:#EAF2EF">View plan</button></div>
+      <div style="padding:12px"><button type="button" style="min-height:44px;padding:8px 10px;white-space:normal;border-radius:8px;border:1px solid transparent;background:#EAF2EF;color:#22513F;font:600 13px/1.25 Inter,sans-serif;cursor:pointer">View plan</button></div>
+      <div style="padding:12px"><button type="button" style="min-height:44px;padding:8px 10px;white-space:normal;border-radius:8px;border:1px solid transparent;background:transparent;color:#2D6A5A;font:600 13px/1.25 Inter,sans-serif;cursor:pointer;outline:2px solid #2D6A5A;outline-offset:2px">View plan</button></div>
+      <div style="padding:12px"><button type="button" style="min-height:44px;padding:8px 10px;white-space:normal;border-radius:8px;border:1px solid transparent;background:#C5DCD4;color:#22513F;font:600 13px/1.25 Inter,sans-serif;cursor:pointer">View plan</button></div>
+      <div style="padding:12px"><button type="button" disabled="disabled" style="min-height:44px;padding:8px 10px;white-space:normal;border-radius:8px;border:1px solid transparent;background:transparent;color:#8A9491;font:600 13px/1.25 Inter,sans-serif;cursor:not-allowed">View plan</button></div>
+      <div style="padding:12px"><span style="font:400 13px/1.5 Inter,sans-serif;color:#8A9491">n/a</span></div>
+    </div>
+
+    <div style="display:grid;grid-template-columns:120px repeat(6,minmax(0,1fr));align-items:center">
+      <div style="padding:16px;font:500 14.5px/1.55 Inter,sans-serif">Danger</div>
+      <div style="padding:12px"><button type="button" style="min-height:44px;padding:8px 10px;white-space:normal;border-radius:8px;border:1px solid #C0453C;background:#FFFFFF;color:#C0453C;font:600 13px/1.25 Inter,sans-serif;cursor:pointer;transition:all 150ms ease-out" style-hover="background:#C0453C;color:#FFFFFF">Cancel session</button></div>
+      <div style="padding:12px"><button type="button" style="min-height:44px;padding:8px 10px;white-space:normal;border-radius:8px;border:1px solid #C0453C;background:#C0453C;color:#FFFFFF;font:600 13px/1.25 Inter,sans-serif;cursor:pointer">Cancel session</button></div>
+      <div style="padding:12px"><button type="button" style="min-height:44px;padding:8px 10px;white-space:normal;border-radius:8px;border:1px solid #C0453C;background:#FFFFFF;color:#C0453C;font:600 13px/1.25 Inter,sans-serif;cursor:pointer;outline:2px solid #2D6A5A;outline-offset:2px">Cancel session</button></div>
+      <div style="padding:12px"><button type="button" style="min-height:44px;padding:8px 10px;white-space:normal;border-radius:8px;border:1px solid #C0453C;background:#FAEBEA;color:#C0453C;font:600 13px/1.25 Inter,sans-serif;cursor:pointer">Cancel session</button></div>
+      <div style="padding:12px"><button type="button" disabled="disabled" style="min-height:44px;padding:8px 10px;white-space:normal;border-radius:8px;border:1px solid #E8E6E0;background:#FFFFFF;color:#8A9491;font:600 13px/1.25 Inter,sans-serif;cursor:not-allowed">Cancel session</button></div>
+      <div style="padding:12px"><span style="font:400 13px/1.5 Inter,sans-serif;color:#8A9491">n/a</span></div>
+    </div>
+  </div>
+  <div style="display:flex;flex-wrap:wrap;gap:12px;align-items:center;margin-top:16px">
+    <button type="button" style="min-height:44px;height:36px;padding:0 14px;border-radius:8px;border:1px solid #2D6A5A;background:#2D6A5A;color:#FFFFFF;font:600 13px/1 Inter,sans-serif;cursor:pointer">Small 36 · 44 target</button>
+    <button type="button" style="min-height:44px;padding:8px 10px;white-space:normal;border-radius:8px;border:1px solid #2D6A5A;background:#2D6A5A;color:#FFFFFF;font:600 13px/1.25 Inter,sans-serif;cursor:pointer">Medium 44</button>
+    <button type="button" style="min-height:52px;padding:0 24px;border-radius:8px;border:1px solid #2D6A5A;background:#2D6A5A;color:#FFFFFF;font:600 16px/1 Inter,sans-serif;cursor:pointer">Large 52</button>
+    <button type="button" aria-label="More" style="width:44px;height:44px;border-radius:8px;border:1px solid #D6D3CB;background:#FFFFFF;color:#4A5654;font:500 16px/1 'IBM Plex Mono',monospace;cursor:pointer">⋯</button>
+    <span style="font:400 13px/1.5 Inter,sans-serif;color:#8A9491">Focus rings are never removed — 2px primary, 2px offset.</span>
+  </div>
+</section>
+
+<!-- ============ FORM CONTROLS ============ -->
+<section style="margin-bottom:72px">
+  <div style="display:flex;align-items:baseline;gap:16px;margin-bottom:24px">
+    <span style="font:500 11.5px/1.4 'IBM Plex Mono',monospace;color:#8A9491">06</span>
+    <h2 style="font:600 30px/1.2 'Instrument Sans',Inter,sans-serif;letter-spacing:-0.02em;margin:0">Inputs</h2>
+  </div>
+  <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(320px,1fr));gap:16px">
+
+    <div style="border:1px solid #E8E6E0;border-radius:16px;background:#FFFFFF;padding:24px;display:flex;flex-direction:column;gap:18px">
+      <span style="font:500 11.5px/1.4 Inter,sans-serif;text-transform:uppercase;letter-spacing:0.08em;color:#8A9491">Text field — four states</span>
+      <label style="display:flex;flex-direction:column;gap:7px;min-width:0"><span style="font:500 14.5px/1.55 Inter,sans-serif">Full name</span><input type="text" placeholder="As per ID" style="min-height:44px;width:100%;padding:0 14px;border-radius:8px;border:1px solid #D6D3CB;background:#FFFFFF;font:400 14.5px/1 Inter,sans-serif;color:#16211E;transition:border-color 150ms ease-out" style-focus="border-color:#2D6A5A;outline:2px solid #2D6A5A;outline-offset:2px"><span style="font:400 13px/1.5 Inter,sans-serif;color:#8A9491">Used on the prescription.</span></label>
+      <label style="display:flex;flex-direction:column;gap:7px;min-width:0"><span style="font:500 14.5px/1.55 Inter,sans-serif">Mobile <span style="color:#C0453C">*</span></span><input type="text" value="+91 98•• ••4471" style="min-height:44px;width:100%;padding:0 14px;border-radius:8px;border:1px solid #2D6A5A;background:#FFFFFF;font:500 14.5px/1 'IBM Plex Mono',monospace;color:#16211E;outline:2px solid #2D6A5A;outline-offset:2px"></label>
+      <label style="display:flex;flex-direction:column;gap:7px;min-width:0"><span style="font:500 14.5px/1.55 Inter,sans-serif">Pincode <span style="color:#C0453C">*</span></span><input type="text" value="560103" style="min-height:44px;width:100%;padding:0 14px;border-radius:8px;border:1px solid #C0453C;background:#FAEBEA;font:500 14.5px/1 'IBM Plex Mono',monospace;color:#16211E"><span style="display:flex;gap:6px;align-items:center;font:400 13px/1.5 Inter,sans-serif;color:#C0453C"><span style="width:14px;height:14px;border-radius:50%;border:1.5px solid #C0453C;display:inline-flex;align-items:center;justify-content:center;font:600 10px/1 Inter,sans-serif">!</span>We don't serve this pincode yet. Nearest serviceable: 560102.</span></label>
+      <label style="display:flex;flex-direction:column;gap:7px;min-width:0"><span style="font:500 14.5px/1.55 Inter,sans-serif;color:#8A9491">Referring physician</span><input type="text" value="Not applicable" disabled="disabled" style="min-height:44px;width:100%;padding:0 14px;border-radius:8px;border:1px solid #E8E6E0;background:#F6F5F1;font:400 14.5px/1 Inter,sans-serif;color:#8A9491"></label>
+      <span style="font:400 13px/1.5 Inter,sans-serif;color:#8A9491">Validation fires on blur, never on keystroke.</span>
+    </div>
+
+    <div style="border:1px solid #E8E6E0;border-radius:16px;background:#FFFFFF;padding:24px;display:flex;flex-direction:column;gap:22px">
+      <span style="font:500 11.5px/1.4 Inter,sans-serif;text-transform:uppercase;letter-spacing:0.08em;color:#8A9491">OTP · stepper · segmented · toggle</span>
+      <div style="display:flex;flex-direction:column;gap:9px">
+        <span style="font:500 14.5px/1.55 Inter,sans-serif">Enter the 6-digit code</span>
+        <div style="display:flex;gap:8px">
+          <input type="text" value="4" style="width:44px;height:52px;text-align:center;border-radius:8px;border:1px solid #D6D3CB;background:#FFFFFF;font:500 18px/1 'IBM Plex Mono',monospace">
+          <input type="text" value="1" style="width:44px;height:52px;text-align:center;border-radius:8px;border:1px solid #D6D3CB;background:#FFFFFF;font:500 18px/1 'IBM Plex Mono',monospace">
+          <input type="text" value="9" style="width:44px;height:52px;text-align:center;border-radius:8px;border:1px solid #D6D3CB;background:#FFFFFF;font:500 18px/1 'IBM Plex Mono',monospace">
+          <input type="text" value="" style="width:44px;height:52px;text-align:center;border-radius:8px;border:1px solid #2D6A5A;background:#FFFFFF;font:500 18px/1 'IBM Plex Mono',monospace;outline:2px solid #2D6A5A;outline-offset:2px">
+          <input type="text" value="" style="width:44px;height:52px;text-align:center;border-radius:8px;border:1px solid #D6D3CB;background:#FFFFFF;font:500 18px/1 'IBM Plex Mono',monospace">
+          <input type="text" value="" style="width:44px;height:52px;text-align:center;border-radius:8px;border:1px solid #D6D3CB;background:#FFFFFF;font:500 18px/1 'IBM Plex Mono',monospace">
+        </div>
+        <div style="display:flex;justify-content:space-between;align-items:baseline"><span style="font:400 13px/1.5 Inter,sans-serif;color:#8A9491">Sent to +91 98•• ••4471</span><span style="font:400 13px/1.5 'IBM Plex Mono',monospace;color:#8A9491">Resend in 0:24</span></div>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:9px">
+        <span style="font:500 14.5px/1.55 Inter,sans-serif">Sessions</span>
+        <div style="display:inline-flex;align-items:center;border:1px solid #D6D3CB;border-radius:8px;overflow:hidden;width:fit-content">
+          <button type="button" aria-label="Decrease" style="width:44px;height:44px;border:none;border-right:1px solid #E8E6E0;background:#FFFFFF;font:400 18px/1 'IBM Plex Mono',monospace;color:#4A5654;cursor:pointer">−</button>
+          <span style="width:56px;text-align:center;font:500 14.5px/1 'IBM Plex Mono',monospace">4</span>
+          <button type="button" aria-label="Increase" style="width:44px;height:44px;border:none;border-left:1px solid #E8E6E0;background:#FFFFFF;font:400 18px/1 'IBM Plex Mono',monospace;color:#4A5654;cursor:pointer">+</button>
+        </div>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:9px">
+        <span style="font:500 14.5px/1.55 Inter,sans-serif">Location type</span>
+        <div style="display:inline-flex;background:#F6F5F1;border:1px solid #E8E6E0;border-radius:8px;padding:3px;gap:3px;width:fit-content">
+          <button type="button" style="min-height:38px;padding:0 14px;border-radius:6px;border:1px solid #E8E6E0;background:#FFFFFF;font:600 13px/1 Inter,sans-serif;color:#16211E;cursor:pointer">Home</button>
+          <button type="button" style="min-height:38px;padding:0 14px;border-radius:6px;border:1px solid transparent;background:transparent;font:500 13px/1 Inter,sans-serif;color:#4A5654;cursor:pointer">Office</button>
+          <button type="button" style="min-height:38px;padding:0 14px;border-radius:6px;border:1px solid transparent;background:transparent;font:500 13px/1 Inter,sans-serif;color:#4A5654;cursor:pointer">Hotel</button>
+          <button type="button" style="min-height:38px;padding:0 14px;border-radius:6px;border:1px solid transparent;background:transparent;font:500 13px/1 Inter,sans-serif;color:#4A5654;cursor:pointer">Clinic</button>
+        </div>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:12px">
+        <div style="display:flex;align-items:center;gap:12px">
+          <span style="width:44px;height:26px;border-radius:999px;background:#2D6A5A;position:relative;flex:none"><span style="position:absolute;top:3px;left:21px;width:20px;height:20px;border-radius:50%;background:#FFFFFF"></span></span>
+          <span style="font:400 14.5px/1.55 Inter,sans-serif">WhatsApp updates on</span>
+        </div>
+        <div style="display:flex;align-items:center;gap:12px">
+          <span style="width:44px;height:26px;border-radius:999px;background:#D6D3CB;position:relative;flex:none"><span style="position:absolute;top:3px;left:3px;width:20px;height:20px;border-radius:50%;background:#FFFFFF"></span></span>
+          <span style="font:400 14.5px/1.55 Inter,sans-serif;color:#4A5654">Marketing email off</span>
+        </div>
+        <div style="display:flex;align-items:center;gap:12px">
+          <span style="width:18px;height:18px;border-radius:5px;background:#2D6A5A;display:inline-flex;align-items:center;justify-content:center;color:#FFFFFF;font:600 11px/1 Inter,sans-serif;flex:none">✓</span>
+          <span style="font:400 14.5px/1.55 Inter,sans-serif">I confirm the protocol was read aloud</span>
+        </div>
+        <div style="display:flex;align-items:center;gap:12px">
+          <span style="width:18px;height:18px;border-radius:50%;border:5px solid #2D6A5A;background:#FFFFFF;display:inline-block;flex:none"></span>
+          <span style="font:400 14.5px/1.55 Inter,sans-serif">Mobile OTP</span>
+        </div>
+      </div>
+    </div>
+
+    <div style="border:1px solid #E8E6E0;border-radius:16px;background:#FFFFFF;padding:24px;display:flex;flex-direction:column;gap:22px">
+      <span style="font:500 11.5px/1.4 Inter,sans-serif;text-transform:uppercase;letter-spacing:0.08em;color:#8A9491">Tokens · slots · dropzone</span>
+      <div style="display:flex;flex-direction:column;gap:9px">
+        <span style="font:500 14.5px/1.55 Inter,sans-serif">Known allergies</span>
+        <div style="border:1px solid #D6D3CB;border-radius:8px;padding:8px;display:flex;flex-wrap:wrap;gap:8px;align-items:center;min-height:44px">
+          <span style="display:inline-flex;align-items:center;gap:7px;background:#FAEBEA;border:1px solid #C0453C;color:#C0453C;border-radius:999px;padding:5px 10px;font:500 13px/1 Inter,sans-serif">Sulfa drugs <span style="cursor:pointer">×</span></span>
+          <span style="display:inline-flex;align-items:center;gap:7px;background:#FAEBEA;border:1px solid #C0453C;color:#C0453C;border-radius:999px;padding:5px 10px;font:500 13px/1 Inter,sans-serif">Iodine <span style="cursor:pointer">×</span></span>
+          <input type="text" placeholder="Add allergy…" style="flex:1;min-width:110px;border:none;outline:none;font:400 14.5px/1 Inter,sans-serif;padding:8px 4px">
+        </div>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:9px">
+        <span style="font:500 14.5px/1.55 Inter,sans-serif">Time slot · 14 Sep 2026</span>
+        <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px">
+          <button type="button" style="min-height:44px;border-radius:8px;border:1px solid #D6D3CB;background:#FFFFFF;font:500 13px/1 'IBM Plex Mono',monospace;color:#16211E;cursor:pointer">08:00 AM</button>
+          <button type="button" style="min-height:44px;border-radius:8px;border:1px solid #2D6A5A;background:#EAF2EF;font:500 13px/1 'IBM Plex Mono',monospace;color:#22513F;cursor:pointer">10:30 AM</button>
+          <button type="button" title="No nurse available in your zone" disabled="disabled" style="min-height:44px;border-radius:8px;border:1px dashed #E8E6E0;background:#F6F5F1;font:500 13px/1 'IBM Plex Mono',monospace;color:#8A9491;cursor:not-allowed;text-decoration:line-through">12:00 PM</button>
+          <button type="button" style="min-height:44px;border-radius:8px;border:1px solid #D6D3CB;background:#FFFFFF;font:500 13px/1 'IBM Plex Mono',monospace;color:#16211E;cursor:pointer">02:00 PM</button>
+          <button type="button" title="Fully booked" disabled="disabled" style="min-height:44px;border-radius:8px;border:1px dashed #E8E6E0;background:#F6F5F1;font:500 13px/1 'IBM Plex Mono',monospace;color:#8A9491;cursor:not-allowed;text-decoration:line-through">04:30 PM</button>
+          <button type="button" style="min-height:44px;border-radius:8px;border:1px solid #D6D3CB;background:#FFFFFF;font:500 13px/1 'IBM Plex Mono',monospace;color:#16211E;cursor:pointer">07:00 PM</button>
+        </div>
+        <span style="font:400 13px/1.5 Inter,sans-serif;color:#8A9491">Unavailable slots stay visible and carry their reason.</span>
+      </div>
+      <div style="border:1px dashed #C5DCD4;border-radius:12px;background:#FCFBF8;padding:24px;display:flex;flex-direction:column;align-items:center;gap:8px;text-align:center">
+        <svg width="52" height="34" viewBox="0 0 52 34" aria-hidden="true"><defs><pattern id="ndStripe" width="6" height="6" patternTransform="rotate(45)" patternUnits="userSpaceOnUse"><rect width="3" height="6" fill="#E8E6E0"></rect></pattern></defs><rect x="0.5" y="0.5" width="51" height="33" rx="6" fill="url(#ndStripe)" stroke="#D6D3CB"></rect></svg>
+        <span style="font:500 14.5px/1.55 Inter,sans-serif">Drop lab reports here</span>
+        <span style="font:400 13px/1.5 Inter,sans-serif;color:#8A9491">PDF, JPG, PNG · up to 10 MB each</span>
+        <button type="button" style="min-height:44px;padding:0 16px;border-radius:8px;border:1px solid #D6D3CB;background:#FFFFFF;font:600 13px/1 Inter,sans-serif;cursor:pointer">Choose files</button>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ DATA DISPLAY ============ -->
+<section style="margin-bottom:72px">
+  <div style="display:flex;align-items:baseline;gap:16px;margin-bottom:24px">
+    <span style="font:500 11.5px/1.4 'IBM Plex Mono',monospace;color:#8A9491">07</span>
+    <h2 style="font:600 30px/1.2 'Instrument Sans',Inter,sans-serif;letter-spacing:-0.02em;margin:0">Data display</h2>
+  </div>
+
+  <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin-bottom:16px">
+    <sc-for list="{{ stats }}" as="st" hint-placeholder-count="4">
+      <div style="border:1px solid #E8E6E0;border-radius:12px;background:#FFFFFF;padding:18px 20px;display:flex;flex-direction:column;gap:12px">
+        <span style="font:500 11.5px/1.4 Inter,sans-serif;text-transform:uppercase;letter-spacing:0.08em;color:#8A9491">{{ st.label }}</span>
+        <span style="font:500 30px/1.1 'IBM Plex Mono',monospace;font-variant-numeric:tabular-nums">{{ st.value }}</span>
+        <div style="height:4px;border-radius:999px;background:#F6F5F1;position:relative;overflow:hidden"><div style="position:absolute;top:0;bottom:0;left:0;width:{{ st.pct }};background:{{ st.color }}"></div></div>
+        <span style="font:400 13px/1.5 Inter,sans-serif;color:#4A5654">{{ st.note }}</span>
+      </div>
+    </sc-for>
+  </div>
+
+  <div style="border:1px solid #E8E6E0;border-radius:16px;background:#FFFFFF;overflow:hidden;margin-bottom:16px">
+    <div style="display:flex;justify-content:space-between;align-items:center;padding:16px 20px;border-bottom:1px solid #E8E6E0">
+      <span style="font:600 18px/1.3 'Instrument Sans',Inter,sans-serif">Batch lots — Vitamin C (Ascorbic acid)</span>
+      <span style="font:400 13px/1.5 Inter,sans-serif;color:#8A9491">Sortable · sticky header · row expand · stacks below 768px</span>
+    </div>
+    <div style="display:grid;grid-template-columns:1.1fr 1fr 0.9fr 1.2fr 0.9fr;background:#F6F5F1;border-bottom:1px solid #E8E6E0">
+      <div style="padding:10px 20px;font:500 11.5px/1.4 Inter,sans-serif;text-transform:uppercase;letter-spacing:0.08em;color:#8A9491">Batch no. ↓</div>
+      <div style="padding:10px 12px;font:500 11.5px/1.4 Inter,sans-serif;text-transform:uppercase;letter-spacing:0.08em;color:#8A9491">Expiry</div>
+      <div style="padding:10px 12px;text-align:right;font:500 11.5px/1.4 Inter,sans-serif;text-transform:uppercase;letter-spacing:0.08em;color:#8A9491">Units</div>
+      <div style="padding:10px 12px;font:500 11.5px/1.4 Inter,sans-serif;text-transform:uppercase;letter-spacing:0.08em;color:#8A9491">Stock vs reorder</div>
+      <div style="padding:10px 20px;font:500 11.5px/1.4 Inter,sans-serif;text-transform:uppercase;letter-spacing:0.08em;color:#8A9491">Status</div>
+    </div>
+    <sc-for list="{{ batches }}" as="b" hint-placeholder-count="4">
+      <div style="display:grid;grid-template-columns:1.1fr 1fr 0.9fr 1.2fr 0.9fr;align-items:center;border-bottom:1px solid #E8E6E0">
+        <div style="padding:14px 20px;font:500 14.5px/1.55 'IBM Plex Mono',monospace">{{ b.no }}</div>
+        <div style="padding:14px 12px;display:flex;flex-direction:column"><span style="font:400 14.5px/1.55 'IBM Plex Mono',monospace">{{ b.expiry }}</span><span style="font:400 13px/1.5 'IBM Plex Mono',monospace;color:{{ b.color }}">{{ b.days }}</span></div>
+        <div style="padding:14px 12px;text-align:right;font:500 14.5px/1.55 'IBM Plex Mono',monospace;font-variant-numeric:tabular-nums">{{ b.units }}</div>
+        <div style="padding:14px 12px"><div style="height:6px;border-radius:2px;background:#F6F5F1;position:relative;overflow:hidden"><div style="position:absolute;top:0;bottom:0;left:0;width:{{ b.pct }};background:{{ b.color }}"></div></div></div>
+        <div style="padding:14px 20px"><span style="display:inline-flex;align-items:center;gap:6px;border-radius:999px;padding:4px 10px;font:500 13px/1.4 Inter,sans-serif;background:{{ b.soft }};color:{{ b.color }};border:1px solid {{ b.color }}"><span style="width:6px;height:6px;border-radius:50%;background:{{ b.color }};display:inline-block"></span>{{ b.status }}</span></div>
+      </div>
+    </sc-for>
+    <div style="padding:14px 20px;display:flex;justify-content:space-between;align-items:center;background:#FCFBF8">
+      <span style="font:400 13px/1.5 Inter,sans-serif;color:#8A9491">4 of 12 batches</span>
+      <div style="display:flex;gap:6px">
+        <button type="button" style="min-width:36px;height:36px;border-radius:8px;border:1px solid #D6D3CB;background:#FFFFFF;font:500 13px/1 'IBM Plex Mono',monospace;cursor:pointer">‹</button>
+        <button type="button" style="min-width:36px;height:36px;border-radius:8px;border:1px solid #2D6A5A;background:#2D6A5A;color:#FFFFFF;font:500 13px/1 'IBM Plex Mono',monospace;cursor:pointer">1</button>
+        <button type="button" style="min-width:36px;height:36px;border-radius:8px;border:1px solid #D6D3CB;background:#FFFFFF;font:500 13px/1 'IBM Plex Mono',monospace;cursor:pointer">2</button>
+        <button type="button" style="min-width:36px;height:36px;border-radius:8px;border:1px solid #D6D3CB;background:#FFFFFF;font:500 13px/1 'IBM Plex Mono',monospace;cursor:pointer">3</button>
+        <button type="button" style="min-width:36px;height:36px;border-radius:8px;border:1px solid #D6D3CB;background:#FFFFFF;font:500 13px/1 'IBM Plex Mono',monospace;cursor:pointer">›</button>
+      </div>
+    </div>
+  </div>
+
+  <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:16px">
+    <div style="border:1px solid #E8E6E0;border-radius:16px;background:#FFFFFF;padding:24px">
+      <span style="font:500 11.5px/1.4 Inter,sans-serif;text-transform:uppercase;letter-spacing:0.08em;color:#8A9491">Status pills — the full lifecycle</span>
+      <div style="display:flex;flex-wrap:wrap;gap:8px;margin-top:16px">
+        <sc-for list="{{ pills }}" as="p" hint-placeholder-count="12">
+          <span style="display:inline-flex;align-items:center;gap:6px;border-radius:999px;padding:5px 11px;font:500 13px/1.4 Inter,sans-serif;background:{{ p.soft }};color:{{ p.color }};border:1px solid {{ p.line }}"><span style="width:6px;height:6px;border-radius:50%;background:{{ p.color }};display:inline-block"></span>{{ p.label }}</span>
+        </sc-for>
+      </div>
+    </div>
+
+    <div style="border:1px solid #E8E6E0;border-radius:16px;background:#FFFFFF;padding:24px">
+      <span style="font:500 11.5px/1.4 Inter,sans-serif;text-transform:uppercase;letter-spacing:0.08em;color:#8A9491">Skeleton — matches its layout</span>
+      <div style="display:flex;flex-direction:column;gap:14px;margin-top:16px">
+        <div style="display:flex;gap:12px;align-items:center">
+          <div style="width:44px;height:44px;border-radius:8px;background:linear-gradient(90deg,#F6F5F1 25%,#EFEDE8 50%,#F6F5F1 75%);background-size:200% 100%;animation:ndShimmer 1.4s linear infinite"></div>
+          <div style="flex:1;display:flex;flex-direction:column;gap:7px">
+            <div style="height:12px;width:56%;border-radius:4px;background:linear-gradient(90deg,#F6F5F1 25%,#EFEDE8 50%,#F6F5F1 75%);background-size:200% 100%;animation:ndShimmer 1.4s linear infinite"></div>
+            <div style="height:10px;width:34%;border-radius:4px;background:linear-gradient(90deg,#F6F5F1 25%,#EFEDE8 50%,#F6F5F1 75%);background-size:200% 100%;animation:ndShimmer 1.4s linear infinite"></div>
+          </div>
+        </div>
+        <div style="height:6px;border-radius:999px;background:linear-gradient(90deg,#F6F5F1 25%,#EFEDE8 50%,#F6F5F1 75%);background-size:200% 100%;animation:ndShimmer 1.4s linear infinite"></div>
+        <div style="height:6px;width:72%;border-radius:999px;background:linear-gradient(90deg,#F6F5F1 25%,#EFEDE8 50%,#F6F5F1 75%);background-size:200% 100%;animation:ndShimmer 1.4s linear infinite"></div>
+      </div>
+    </div>
+
+    <div style="border:1px solid #E8E6E0;border-radius:16px;background:#FFFFFF;padding:24px;display:flex;flex-direction:column;align-items:center;text-align:center;gap:12px;justify-content:center">
+      <svg width="88" height="56" viewBox="0 0 88 56" aria-hidden="true"><rect x="0.5" y="0.5" width="87" height="55" rx="10" fill="url(#ndStripe)" stroke="#E8E6E0"></rect><rect x="30" y="16" width="28" height="24" rx="5" fill="#FCFBF8" stroke="#D6D3CB"></rect></svg>
+      <span style="font:600 18px/1.3 'Instrument Sans',Inter,sans-serif">No sessions yet</span>
+      <p style="font:400 14.5px/1.55 Inter,sans-serif;color:#4A5654;margin:0;max-width:34ch">Once a physician approves a protocol, your sessions appear here with their full timeline.</p>
+      <button type="button" style="min-height:44px;padding:0 18px;border-radius:8px;border:1px solid #2D6A5A;background:#2D6A5A;color:#FFFFFF;font:600 14.5px/1 Inter,sans-serif;cursor:pointer">Take the health quiz</button>
+    </div>
+  </div>
+</section>
+
+<!-- ============ FEEDBACK ============ -->
+<section style="margin-bottom:72px">
+  <div style="display:flex;align-items:baseline;gap:16px;margin-bottom:24px">
+    <span style="font:500 11.5px/1.4 'IBM Plex Mono',monospace;color:#8A9491">08</span>
+    <h2 style="font:600 30px/1.2 'Instrument Sans',Inter,sans-serif;letter-spacing:-0.02em;margin:0">Feedback</h2>
+  </div>
+  <div style="display:grid;grid-template-columns:1.15fr 1fr;gap:16px">
+    <div style="display:flex;flex-direction:column;gap:12px">
+      <div style="border:1px solid #45699B;background:#EBF0F7;border-radius:12px;padding:14px 16px;display:flex;gap:12px">
+        <span style="width:20px;height:20px;border-radius:50%;background:#45699B;color:#FFFFFF;display:inline-flex;align-items:center;justify-content:center;font:600 12px/1 Inter,sans-serif;flex:none">i</span>
+        <div><span style="font:600 14.5px/1.55 Inter,sans-serif;color:#16211E">Awaiting physician review</span><p style="font:400 14.5px/1.55 Inter,sans-serif;color:#4A5654;margin:2px 0 0">Usually within 2 hours. You'll get a WhatsApp message when it's approved.</p></div>
+      </div>
+      <div style="border:1px solid #C07A22;background:#FBF1E1;border-radius:12px;padding:14px 16px;display:flex;gap:12px">
+        <span style="width:20px;height:20px;border-radius:50%;background:#C07A22;color:#FFFFFF;display:inline-flex;align-items:center;justify-content:center;font:600 12px/1 Inter,sans-serif;flex:none">!</span>
+        <div><span style="font:600 14.5px/1.55 Inter,sans-serif;color:#16211E">Editing history triggers re-review</span><p style="font:400 14.5px/1.55 Inter,sans-serif;color:#4A5654;margin:2px 0 0">Session ND-4417 on 14 Sep 2026 is pending approval. Changes here send it back to the physician.</p></div>
+      </div>
+      <div style="border:1px solid #C0453C;background:#FAEBEA;border-radius:12px;padding:16px;display:flex;gap:12px">
+        <span style="width:20px;height:20px;border-radius:50%;background:#C0453C;color:#FFFFFF;display:inline-flex;align-items:center;justify-content:center;font:600 12px/1 Inter,sans-serif;flex:none">✕</span>
+        <div style="flex:1">
+          <span style="font:600 16px/1.4 Inter,sans-serif;color:#16211E">Allergy conflict — do not proceed</span>
+          <p style="font:400 14.5px/1.55 Inter,sans-serif;color:#4A5654;margin:2px 0 12px">Patient allergy <strong>Sulfa drugs</strong> matches protocol ingredient <span style="font:500 14.5px/1.55 'IBM Plex Mono',monospace">Sulfamethoxazole 400 mg</span>.</p>
+          <div style="display:flex;gap:10px;flex-wrap:wrap">
+            <button type="button" style="min-height:44px;padding:0 16px;border-radius:8px;border:1px solid #C0453C;background:#C0453C;color:#FFFFFF;font:600 14.5px/1 Inter,sans-serif;cursor:pointer">Escalate to physician</button>
+            <button type="button" style="min-height:44px;padding:0 16px;border-radius:8px;border:1px solid #D6D3CB;background:#FFFFFF;font:600 14.5px/1 Inter,sans-serif;cursor:pointer">Log adverse event</button>
+          </div>
+        </div>
+      </div>
+      <div style="border:1px solid #2F8F5B;background:#E9F5EE;border-radius:12px;padding:14px 16px;display:flex;gap:12px">
+        <span style="width:20px;height:20px;border-radius:50%;background:#2F8F5B;color:#FFFFFF;display:inline-flex;align-items:center;justify-content:center;font:600 12px/1 Inter,sans-serif;flex:none">✓</span>
+        <div><span style="font:600 14.5px/1.55 Inter,sans-serif;color:#16211E">Protocol approved</span><p style="font:400 14.5px/1.55 Inter,sans-serif;color:#4A5654;margin:2px 0 0">Dr Meera Iyer · <span style="font:500 14.5px/1.55 'IBM Plex Mono',monospace">KMC-48211</span> · 12 Sep 2026, 4:18 PM IST</p></div>
+      </div>
+      <div style="display:flex;gap:12px;align-items:center;background:#16211E;border-radius:12px;padding:14px 16px;box-shadow:0 4px 16px rgba(22,33,30,.08);width:fit-content">
+        <span style="width:18px;height:18px;border-radius:50%;background:#2F8F5B;color:#FFFFFF;display:inline-flex;align-items:center;justify-content:center;font:600 11px/1 Inter,sans-serif">✓</span>
+        <span style="font:500 14.5px/1.55 Inter,sans-serif;color:#FCFBF8">Vitals saved · synced</span>
+        <button type="button" style="border:none;background:transparent;color:#8A9491;font:500 13px/1 Inter,sans-serif;cursor:pointer">Dismiss</button>
+      </div>
+    </div>
+
+    <div style="border:1px solid #E8E6E0;border-radius:16px;background:#F6F5F1;padding:28px;display:flex;flex-direction:column;gap:16px;align-items:center;justify-content:center">
+      <span style="font:500 11.5px/1.4 Inter,sans-serif;text-transform:uppercase;letter-spacing:0.08em;color:#8A9491">Typed confirmation — irreversible</span>
+      <div style="background:#FFFFFF;border-radius:16px;box-shadow:0 24px 64px rgba(22,33,30,.18);padding:24px;width:100%;max-width:400px">
+        <h3 style="font:600 22px/1.3 'Instrument Sans',Inter,sans-serif;letter-spacing:-0.02em;margin:0 0 10px">Dispose batch VC-B7?</h3>
+        <p style="font:400 14.5px/1.55 Inter,sans-serif;color:#4A5654;margin:0 0 8px">This writes off <span style="font:500 14.5px/1.55 'IBM Plex Mono',monospace">42 vials</span> at a cost of <span style="font:500 14.5px/1.55 'IBM Plex Mono',monospace">₹1,24,500</span>. It cannot be undone and is recorded in the audit log.</p>
+        <label style="display:flex;flex-direction:column;gap:7px;margin:16px 0 18px;min-width:0"><span style="font:500 14.5px/1.55 Inter,sans-serif">Type <span style="font:500 14.5px/1.55 'IBM Plex Mono',monospace">VC-B7</span> to confirm</span><input type="text" placeholder="Batch number" style="min-height:44px;width:100%;padding:0 14px;border-radius:8px;border:1px solid #D6D3CB;font:500 14.5px/1 'IBM Plex Mono',monospace"></label>
+        <div style="display:flex;gap:10px;justify-content:flex-end">
+          <button type="button" style="min-height:44px;padding:0 16px;border-radius:8px;border:1px solid #D6D3CB;background:#FFFFFF;font:600 14.5px/1 Inter,sans-serif;cursor:pointer">Keep batch</button>
+          <button type="button" disabled="disabled" style="min-height:44px;padding:0 16px;border-radius:8px;border:1px solid #E8E6E0;background:#F6F5F1;color:#8A9491;font:600 14.5px/1 Inter,sans-serif;cursor:not-allowed">Dispose</button>
+        </div>
+      </div>
+      <div style="display:flex;align-items:center;gap:10px">
+        <span style="background:#16211E;color:#FCFBF8;border-radius:8px;padding:7px 10px;font:400 13px/1.4 Inter,sans-serif">Whole-vial maths, not pooled</span>
+        <span style="font:400 13px/1.5 Inter,sans-serif;color:#8A9491">Tooltip</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ NAVIGATION ============ -->
+<section style="margin-bottom:72px">
+  <div style="display:flex;align-items:baseline;gap:16px;margin-bottom:24px">
+    <span style="font:500 11.5px/1.4 'IBM Plex Mono',monospace;color:#8A9491">09</span>
+    <h2 style="font:600 30px/1.2 'Instrument Sans',Inter,sans-serif;letter-spacing:-0.02em;margin:0">App shell</h2>
+  </div>
+  <div style="border:1px solid #E8E6E0;border-radius:16px;overflow:hidden;background:#FFFFFF">
+    <div style="display:grid;grid-template-columns:240px 1fr;min-height:420px">
+      <aside style="background:#FCFBF8;border-right:1px solid #E8E6E0;padding:18px 14px;display:flex;flex-direction:column;gap:22px">
+        <div style="display:flex;gap:10px;align-items:center;padding:0 6px">
+          <div style="width:22px;height:22px;border:1px solid #C5DCD4;border-radius:7px;background:#EAF2EF;position:relative;overflow:hidden"><div style="position:absolute;left:0;right:0;bottom:0;height:62%;background:#2D6A5A"></div></div>
+          <span style="font:600 14.5px/1 'Instrument Sans',Inter,sans-serif">NutriDrip</span>
+          <span style="margin-left:auto;font:400 13px/1 'IBM Plex Mono',monospace;color:#8A9491;cursor:pointer">‹‹</span>
+        </div>
+        <div style="display:flex;flex-direction:column;gap:2px">
+          <span style="font:500 11.5px/1.4 Inter,sans-serif;text-transform:uppercase;letter-spacing:0.08em;color:#8A9491;padding:0 6px 6px">Pharmacist view</span>
+          <sc-for list="{{ nav }}" as="n" hint-placeholder-count="7">
+            <div style="display:flex;align-items:center;gap:10px;min-height:44px;padding:0 10px;border-radius:8px;background:{{ n.bg }};color:{{ n.fg }};font:{{ n.font }};cursor:pointer">
+              <span style="width:6px;height:6px;border-radius:2px;background:{{ n.dot }};display:inline-block;flex:none"></span>
+              <span>{{ n.label }}</span>
+              <span style="margin-left:auto;font:500 13px/1 'IBM Plex Mono',monospace;color:{{ n.badgeFg }}">{{ n.badge }}</span>
+            </div>
+          </sc-for>
+        </div>
+        <div style="margin-top:auto;padding:12px 10px;border-top:1px solid #E8E6E0;display:flex;flex-direction:column;gap:6px">
+          <span style="font:500 11.5px/1.4 Inter,sans-serif;text-transform:uppercase;letter-spacing:0.08em;color:#8A9491">Same shell, filtered nav</span>
+          <span style="font:400 13px/1.5 Inter,sans-serif;color:#4A5654">Sub-admin, pharmacist and ops share this chrome — only the items change.</span>
+        </div>
+      </aside>
+      <div style="display:flex;flex-direction:column">
+        <div style="display:flex;align-items:center;gap:16px;padding:14px 24px;border-bottom:1px solid #E8E6E0;background:#FFFFFF">
+          <div style="display:flex;flex-direction:column;gap:3px">
+            <div style="display:flex;gap:7px;align-items:center;font:400 13px/1.5 Inter,sans-serif;color:#8A9491"><span>Inventory</span><span>/</span><span style="color:#16211E">Availability</span></div>
+            <span style="font:600 22px/1.3 'Instrument Sans',Inter,sans-serif;letter-spacing:-0.02em">Availability calculator</span>
+          </div>
+          <div style="margin-left:auto;display:flex;align-items:center;gap:12px">
+            <input type="search" placeholder="Search products, batches…" style="min-height:40px;width:230px;padding:0 14px;border-radius:8px;border:1px solid #D6D3CB;background:#FCFBF8;font:400 13px/1 Inter,sans-serif">
+            <button type="button" aria-label="Notifications" style="width:44px;height:44px;border-radius:8px;border:1px solid #E8E6E0;background:#FFFFFF;position:relative;cursor:pointer;font:400 16px/1 Inter,sans-serif;color:#4A5654">◔<span style="position:absolute;top:6px;right:6px;min-width:18px;height:18px;border-radius:999px;background:#C0453C;color:#FFFFFF;font:500 11.5px/18px 'IBM Plex Mono',monospace;text-align:center">7</span></button>
+            <div style="display:flex;align-items:center;gap:9px;padding-left:12px;border-left:1px solid #E8E6E0"><span style="width:32px;height:32px;border-radius:8px;background:#EAF2EF;color:#22513F;display:inline-flex;align-items:center;justify-content:center;font:600 13px/1 Inter,sans-serif">RK</span><span style="font:500 14.5px/1.55 Inter,sans-serif">R. Kulkarni</span></div>
+          </div>
+        </div>
+        <div style="display:flex;gap:0;border-bottom:1px solid #E8E6E0;padding:0 24px;background:#FFFFFF">
+          <span style="padding:12px 0;margin-right:24px;border-bottom:2px solid #2D6A5A;font:600 14.5px/1.55 Inter,sans-serif;color:#16211E">Calculator</span>
+          <span style="padding:12px 0;margin-right:24px;border-bottom:2px solid transparent;font:500 14.5px/1.55 Inter,sans-serif;color:#4A5654">Products</span>
+          <span style="padding:12px 0;margin-right:24px;border-bottom:2px solid transparent;font:500 14.5px/1.55 Inter,sans-serif;color:#4A5654">Batches</span>
+          <span style="padding:12px 0;border-bottom:2px solid transparent;font:500 14.5px/1.55 Inter,sans-serif;color:#4A5654">Alerts <span style="font:500 13px/1 'IBM Plex Mono',monospace;color:#C0453C">7</span></span>
+        </div>
+        <div style="padding:24px;background:#FCFBF8;flex:1">
+          <div style="border:1px solid #E8E6E0;border-radius:16px;background:#FFFFFF;padding:24px">
+            <span style="font:500 11.5px/1.4 Inter,sans-serif;text-transform:uppercase;letter-spacing:0.08em;color:#8A9491">AvailabilityResult — the two-number readout</span>
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin:16px 0 20px">
+              <div style="border:1px solid #C5DCD4;background:#EAF2EF;border-radius:12px;padding:18px 20px">
+                <span style="font:500 11.5px/1.4 Inter,sans-serif;text-transform:uppercase;letter-spacing:0.08em;color:#22513F">Realistic · whole-vial, FEFO</span>
+                <div style="font:500 40px/1.1 'IBM Plex Mono',monospace;color:#16211E;margin-top:8px">14</div>
+                <span style="font:400 13px/1.5 Inter,sans-serif;color:#4A5654">drips can actually be prepared today</span>
+              </div>
+              <div style="border:1px solid #E8E6E0;background:#F6F5F1;border-radius:12px;padding:18px 20px">
+                <span style="font:500 11.5px/1.4 Inter,sans-serif;text-transform:uppercase;letter-spacing:0.08em;color:#8A9491">Theoretical · pooled</span>
+                <div style="font:500 40px/1.1 'IBM Plex Mono',monospace;color:#4A5654;margin-top:8px">19</div>
+                <span style="font:400 13px/1.5 Inter,sans-serif;color:#4A5654">if partial vials could be combined</span>
+              </div>
+            </div>
+            <div style="border:1px solid #C07A22;background:#FBF1E1;border-radius:12px;padding:16px 18px;display:flex;gap:14px;align-items:flex-start">
+              <span style="width:20px;height:20px;border-radius:50%;background:#C07A22;color:#FFFFFF;display:inline-flex;align-items:center;justify-content:center;font:600 12px/1 Inter,sans-serif;flex:none">!</span>
+              <div style="flex:1">
+                <span style="font:600 14.5px/1.55 Inter,sans-serif">Bottleneck — Glutathione</span>
+                <p style="font:400 14.5px/1.55 Inter,sans-serif;color:#4A5654;margin:2px 0 10px">Only <span style="font:500 14.5px/1.55 'IBM Plex Mono',monospace">14 vials</span> in date. Wastage at maximum: <span style="font:500 14.5px/1.55 'IBM Plex Mono',monospace">600 mg</span> ≈ <span style="font:500 14.5px/1.55 'IBM Plex Mono',monospace">₹4,200</span>.</p>
+                <div style="height:6px;border-radius:2px;background:#FFFFFF;position:relative;overflow:hidden"><div style="position:absolute;top:0;bottom:0;left:0;width:26%;background:#C07A22"></div></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div style="display:flex;border-top:1px solid #E8E6E0;background:#FFFFFF">
+      <sc-for list="{{ tabs }}" as="t" hint-placeholder-count="5">
+        <div style="flex:1;min-height:56px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;border-top:2px solid {{ t.line }}">
+          <span style="width:8px;height:8px;border-radius:2px;background:{{ t.dot }};display:inline-block"></span>
+          <span style="font:{{ t.font }};color:{{ t.fg }}">{{ t.label }}</span>
+        </div>
+      </sc-for>
+    </div>
+    <div style="padding:10px 20px;background:#F6F5F1;border-top:1px solid #E8E6E0"><span style="font:400 13px/1.5 Inter,sans-serif;color:#8A9491">Sidebar 240px → 64px icons → drawer below 1024 → this bottom bar below 768, capped at 5 items.</span></div>
+  </div>
+</section>
+
+<!-- ============ DOMAIN COMPONENTS ============ -->
+<section style="margin-bottom:40px">
+  <div style="display:flex;align-items:baseline;gap:16px;margin-bottom:8px">
+    <span style="font:500 11.5px/1.4 'IBM Plex Mono',monospace;color:#8A9491">10</span>
+    <h2 style="font:600 30px/1.2 'Instrument Sans',Inter,sans-serif;letter-spacing:-0.02em;margin:0">Domain components</h2>
+  </div>
+  <p style="font:400 14.5px/1.55 Inter,sans-serif;color:#4A5654;margin:0 0 28px;max-width:62ch">These twelve are the product. Everything above exists to serve them.</p>
+
+  <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(330px,1fr));gap:16px;align-items:start">
+
+    <!-- DripCard -->
+    <div style="border:1px solid #E8E6E0;border-radius:16px;background:#FFFFFF;overflow:hidden">
+      <div style="display:flex;gap:0">
+        <div style="width:10px;background:#F6F5F1;position:relative;flex:none"><div style="position:absolute;left:0;right:0;bottom:0;height:64%;background:#E08A4C"></div></div>
+        <div style="padding:20px;flex:1">
+          <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:12px">
+            <div>
+              <span style="font:500 11.5px/1.4 Inter,sans-serif;text-transform:uppercase;letter-spacing:0.08em;color:#8A9491">Energy</span>
+              <h3 style="font:600 22px/1.3 'Instrument Sans',Inter,sans-serif;letter-spacing:-0.02em;margin:4px 0 0">Myers' Revive</h3>
+            </div>
+            <span style="display:inline-flex;align-items:center;gap:6px;border-radius:999px;padding:4px 10px;font:500 13px/1.4 Inter,sans-serif;background:#E9F5EE;color:#2F8F5B;border:1px solid #2F8F5B;flex:none"><span style="width:6px;height:6px;border-radius:50%;background:#2F8F5B;display:inline-block"></span>Available</span>
+          </div>
+          <p style="font:400 14.5px/1.55 Inter,sans-serif;color:#4A5654;margin:10px 0 16px">B-complex, magnesium and ascorbic acid in a saline carrier. Common after travel or a heavy work stretch.</p>
+          <div style="display:flex;gap:24px;padding-top:14px;border-top:1px solid #E8E6E0">
+            <div style="display:flex;flex-direction:column"><span style="font:500 11.5px/1.4 Inter,sans-serif;text-transform:uppercase;letter-spacing:0.08em;color:#8A9491">Price</span><span style="font:500 18px/1.3 'IBM Plex Mono',monospace">₹8,400</span></div>
+            <div style="display:flex;flex-direction:column"><span style="font:500 11.5px/1.4 Inter,sans-serif;text-transform:uppercase;letter-spacing:0.08em;color:#8A9491">Duration</span><span style="font:500 18px/1.3 'IBM Plex Mono',monospace">45 min</span></div>
+            <div style="display:flex;flex-direction:column"><span style="font:500 11.5px/1.4 Inter,sans-serif;text-transform:uppercase;letter-spacing:0.08em;color:#8A9491">Volume</span><span style="font:500 18px/1.3 'IBM Plex Mono',monospace">500 ml</span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- VitalityScore + top risks -->
+    <div style="border:1px solid #E8E6E0;border-radius:16px;background:#FFFFFF;padding:24px">
+      <span style="font:500 11.5px/1.4 Inter,sans-serif;text-transform:uppercase;letter-spacing:0.08em;color:#8A9491">VitalityScore</span>
+      <div style="display:flex;gap:24px;align-items:center;margin-top:14px">
+        {{ ringSmall }}
+        <div style="flex:1;display:flex;flex-direction:column;gap:12px">
+          <span style="font:500 11.5px/1.4 Inter,sans-serif;text-transform:uppercase;letter-spacing:0.08em;color:#8A9491">Top 3 risk areas</span>
+          <div>
+            <div style="display:flex;justify-content:space-between;margin-bottom:5px"><span style="font:400 14.5px/1.55 Inter,sans-serif">Vitamin D</span><span style="font:500 13px/1.5 'IBM Plex Mono',monospace;color:#C0453C">18%</span></div>
+            <div style="height:5px;border-radius:999px;background:#F6F5F1;position:relative;overflow:hidden"><div style="position:absolute;top:0;bottom:0;left:0;width:18%;background:#C0453C"></div></div>
+          </div>
+          <div>
+            <div style="display:flex;justify-content:space-between;margin-bottom:5px"><span style="font:400 14.5px/1.55 Inter,sans-serif">Iron</span><span style="font:500 13px/1.5 'IBM Plex Mono',monospace;color:#C07A22">42%</span></div>
+            <div style="height:5px;border-radius:999px;background:#F6F5F1;position:relative;overflow:hidden"><div style="position:absolute;top:0;bottom:0;left:0;width:42%;background:#C07A22"></div></div>
+          </div>
+          <div>
+            <div style="display:flex;justify-content:space-between;margin-bottom:5px"><span style="font:400 14.5px/1.55 Inter,sans-serif">Magnesium</span><span style="font:500 13px/1.5 'IBM Plex Mono',monospace;color:#C07A22">51%</span></div>
+            <div style="height:5px;border-radius:999px;background:#F6F5F1;position:relative;overflow:hidden"><div style="position:absolute;top:0;bottom:0;left:0;width:51%;background:#C07A22"></div></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- NurseCard -->
+    <div style="border:1px solid #E8E6E0;border-radius:16px;background:#FFFFFF;padding:20px">
+      <span style="font:500 11.5px/1.4 Inter,sans-serif;text-transform:uppercase;letter-spacing:0.08em;color:#8A9491">NurseCard</span>
+      <div style="display:flex;gap:16px;margin-top:14px">
+        <svg width="64" height="64" viewBox="0 0 64 64" style="flex:none;border-radius:12px" aria-hidden="true"><rect width="64" height="64" rx="12" fill="url(#ndStripe)"></rect></svg>
+        <div style="flex:1">
+          <div style="display:flex;justify-content:space-between;align-items:baseline"><span style="font:600 18px/1.3 'Instrument Sans',Inter,sans-serif">Anjali Rao, RN</span><span style="font:500 14.5px/1.55 'IBM Plex Mono',monospace">4.9</span></div>
+          <div style="display:flex;flex-direction:column;gap:3px;margin-top:6px">
+            <span style="font:400 13px/1.5 Inter,sans-serif;color:#4A5654">Council reg. <span style="font:500 13px/1.5 'IBM Plex Mono',monospace;color:#16211E">KSNC-2019-88431</span></span>
+            <span style="font:400 13px/1.5 Inter,sans-serif;color:#4A5654">4.2 km away · ETA <span style="font:500 13px/1.5 'IBM Plex Mono',monospace;color:#16211E">18 min</span></span>
+          </div>
+          <div style="display:flex;gap:8px;margin-top:12px">
+            <button type="button" style="min-height:44px;padding:0 14px;border-radius:8px;border:1px solid #2D6A5A;background:#2D6A5A;color:#FFFFFF;font:600 13px/1 Inter,sans-serif;cursor:pointer">Call (masked)</button>
+            <button type="button" style="min-height:44px;padding:0 14px;border-radius:8px;border:1px solid #D6D3CB;background:#FFFFFF;font:600 13px/1 Inter,sans-serif;cursor:pointer">Track</button>
+          </div>
+        </div>
+      </div>
+      <p style="font:400 13px/1.5 Inter,sans-serif;color:#8A9491;margin:14px 0 0">Photo is a placeholder — drop the real nurse portraits in here.</p>
+    </div>
+
+    <!-- VitalsInput out of range -->
+    <div style="border:1px solid #E8E6E0;border-radius:16px;background:#FFFFFF;padding:24px">
+      <span style="font:500 11.5px/1.4 Inter,sans-serif;text-transform:uppercase;letter-spacing:0.08em;color:#8A9491">VitalsInput — out of range blocks progress</span>
+      <div style="display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:14px;margin-top:16px">
+        <label style="display:flex;flex-direction:column;gap:6px;min-width:0"><span style="font:500 14.5px/1.55 Inter,sans-serif">BP</span><input type="text" value="122/78" style="min-height:44px;width:100%;padding:0 12px;border-radius:8px;border:1px solid #D6D3CB;font:500 14.5px/1 'IBM Plex Mono',monospace"><span style="font:400 13px/1.5 'IBM Plex Mono',monospace;color:#8A9491">90/60 – 140/90</span></label>
+        <label style="display:flex;flex-direction:column;gap:6px;min-width:0"><span style="font:500 14.5px/1.55 Inter,sans-serif">HR</span><input type="text" value="74" style="min-height:44px;width:100%;padding:0 12px;border-radius:8px;border:1px solid #D6D3CB;font:500 14.5px/1 'IBM Plex Mono',monospace"><span style="font:400 13px/1.5 'IBM Plex Mono',monospace;color:#8A9491">60 – 100 bpm</span></label>
+        <label style="display:flex;flex-direction:column;gap:6px;min-width:0"><span style="font:500 14.5px/1.55 Inter,sans-serif">SpO₂</span><input type="text" value="91" style="min-height:44px;width:100%;padding:0 12px;border-radius:8px;border:1px solid #C0453C;background:#FAEBEA;font:500 14.5px/1 'IBM Plex Mono',monospace"><span style="font:400 13px/1.5 'IBM Plex Mono',monospace;color:#C0453C">Below 95% — out of range</span></label>
+        <label style="display:flex;flex-direction:column;gap:6px;min-width:0"><span style="font:500 14.5px/1.55 Inter,sans-serif">Temp</span><input type="text" value="98.4" style="min-height:44px;width:100%;padding:0 12px;border-radius:8px;border:1px solid #D6D3CB;font:500 14.5px/1 'IBM Plex Mono',monospace"><span style="font:400 13px/1.5 'IBM Plex Mono',monospace;color:#8A9491">97.0 – 99.5 °F</span></label>
+      </div>
+      <div style="border:1px solid #C0453C;background:#FAEBEA;border-radius:12px;padding:14px 16px;margin-top:16px;display:flex;gap:12px;align-items:center">
+        <span style="width:20px;height:20px;border-radius:50%;background:#C0453C;color:#FFFFFF;display:inline-flex;align-items:center;justify-content:center;font:600 12px/1 Inter,sans-serif;flex:none">✕</span>
+        <span style="font:500 14.5px/1.55 Inter,sans-serif;flex:1">Cannot start infusion with SpO₂ out of range.</span>
+        <button type="button" style="min-height:44px;padding:0 14px;border-radius:8px;border:1px solid #C0453C;background:#C0453C;color:#FFFFFF;font:600 13px/1 Inter,sans-serif;cursor:pointer;flex:none">Escalate</button>
+      </div>
+    </div>
+
+    <!-- ChecklistStep -->
+    <div style="border:1px solid #E8E6E0;border-radius:16px;background:#FFFFFF;padding:24px">
+      <span style="font:500 11.5px/1.4 Inter,sans-serif;text-transform:uppercase;letter-spacing:0.08em;color:#8A9491">ChecklistStep · offline + sync</span>
+      <div style="display:flex;align-items:center;gap:10px;margin:14px 0;padding:9px 12px;border:1px solid #C07A22;background:#FBF1E1;border-radius:8px">
+        <span style="width:8px;height:8px;border-radius:50%;background:#C07A22;display:inline-block"></span>
+        <span style="font:500 13px/1.5 Inter,sans-serif;color:#16211E">Offline — 3 steps queued, will sync</span>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:10px">
+        <div style="border:1px solid #E8E6E0;border-radius:12px;padding:14px;display:flex;gap:12px;background:#FCFBF8">
+          <span style="width:20px;height:20px;border-radius:6px;background:#2D6A5A;color:#FFFFFF;display:inline-flex;align-items:center;justify-content:center;font:600 11px/1 Inter,sans-serif;flex:none">✓</span>
+          <div><span style="font:500 14.5px/1.55 Inter,sans-serif;color:#4A5654;text-decoration:line-through">Verify patient identity and booking ID</span><div style="font:400 13px/1.5 'IBM Plex Mono',monospace;color:#8A9491">ND-4417 · 09:58 AM IST</div></div>
+        </div>
+        <div style="border:1px solid #2D6A5A;border-radius:12px;padding:16px;background:#FFFFFF">
+          <div style="display:flex;gap:12px">
+            <span style="width:20px;height:20px;border-radius:6px;border:1.5px solid #2D6A5A;display:inline-block;flex:none"></span>
+            <div style="flex:1">
+              <div style="display:flex;gap:8px;align-items:baseline;flex-wrap:wrap">
+                <span style="font:600 16px/1.4 Inter,sans-serif">Record baseline vitals</span>
+                <span style="border-radius:999px;padding:2px 8px;font:500 11.5px/1.4 Inter,sans-serif;text-transform:uppercase;letter-spacing:0.08em;background:#FAEBEA;color:#C0453C;border:1px solid #C0453C">Mandatory</span>
+              </div>
+              <p style="font:400 14.5px/1.55 Inter,sans-serif;color:#4A5654;margin:6px 0 12px">BP, HR, SpO₂, temperature and weight before any cannulation. Out-of-range values block the next step.</p>
+              <button type="button" style="min-height:44px;padding:0 16px;border-radius:8px;border:1px solid #2D6A5A;background:#2D6A5A;color:#FFFFFF;font:600 14.5px/1 Inter,sans-serif;cursor:pointer">Open vitals</button>
+            </div>
+          </div>
+        </div>
+        <div style="border:1px solid #E8E6E0;border-radius:12px;padding:14px;display:flex;gap:12px">
+          <span style="width:20px;height:20px;border-radius:6px;border:1.5px solid #D6D3CB;display:inline-block;flex:none"></span>
+          <span style="font:400 14.5px/1.55 Inter,sans-serif;color:#8A9491">Confirm consent signature captured</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- PriceSummary -->
+    <div style="border:1px solid #E8E6E0;border-radius:16px;background:#FFFFFF;padding:24px">
+      <span style="font:500 11.5px/1.4 Inter,sans-serif;text-transform:uppercase;letter-spacing:0.08em;color:#8A9491">PriceSummary</span>
+      <div style="display:flex;flex-direction:column;gap:10px;margin-top:16px">
+        <div style="display:flex;justify-content:space-between;gap:16px"><span style="font:400 14.5px/1.55 Inter,sans-serif;color:#4A5654">Myers' Revive × 4 sessions</span><span style="font:500 14.5px/1.55 'IBM Plex Mono',monospace;font-variant-numeric:tabular-nums">₹33,600</span></div>
+        <div style="display:flex;justify-content:space-between;gap:16px"><span style="font:400 14.5px/1.55 Inter,sans-serif;color:#4A5654">Add-on · Glutathione push</span><span style="font:500 14.5px/1.55 'IBM Plex Mono',monospace;font-variant-numeric:tabular-nums">₹6,000</span></div>
+        <div style="display:flex;justify-content:space-between;gap:16px"><span style="font:400 14.5px/1.55 Inter,sans-serif;color:#4A5654">Home visit fee × 4</span><span style="font:500 14.5px/1.55 'IBM Plex Mono',monospace;font-variant-numeric:tabular-nums">₹2,400</span></div>
+        <div style="display:flex;justify-content:space-between;gap:16px"><span style="font:400 14.5px/1.55 Inter,sans-serif;color:#2F8F5B">Package discount · 10%</span><span style="font:500 14.5px/1.55 'IBM Plex Mono',monospace;color:#2F8F5B;font-variant-numeric:tabular-nums">−₹4,200</span></div>
+        <div style="display:flex;justify-content:space-between;gap:16px;padding-top:10px;border-top:1px solid #E8E6E0"><span style="font:400 14.5px/1.55 Inter,sans-serif;color:#4A5654">GST · 18%</span><span style="font:500 14.5px/1.55 'IBM Plex Mono',monospace;font-variant-numeric:tabular-nums">₹6,804</span></div>
+        <div style="display:flex;justify-content:space-between;gap:16px;padding-top:12px;border-top:1px solid #D6D3CB;align-items:baseline"><span style="font:600 16px/1.4 Inter,sans-serif">Total payable</span><span style="font:500 22px/1.3 'IBM Plex Mono',monospace;font-variant-numeric:tabular-nums">₹44,604</span></div>
+      </div>
+    </div>
+
+    <!-- SessionTimeline -->
+    <div style="border:1px solid #E8E6E0;border-radius:16px;background:#FFFFFF;padding:24px">
+      <span style="font:500 11.5px/1.4 Inter,sans-serif;text-transform:uppercase;letter-spacing:0.08em;color:#8A9491">SessionTimeline</span>
+      <div style="display:flex;flex-direction:column;margin-top:16px">
+        <sc-for list="{{ timeline }}" as="tl" hint-placeholder-count="6">
+          <div style="display:flex;gap:14px">
+            <div style="display:flex;flex-direction:column;align-items:center;flex:none;width:20px">
+              <span style="width:{{ tl.dotSize }};height:{{ tl.dotSize }};border-radius:50%;background:{{ tl.dotBg }};border:2px solid {{ tl.dotLine }};display:inline-block"></span>
+              <span style="flex:1;width:1px;background:{{ tl.line }};min-height:26px"></span>
+            </div>
+            <div style="padding-bottom:16px">
+              <div style="font:{{ tl.font }};color:{{ tl.fg }}">{{ tl.label }}</div>
+              <div style="font:400 13px/1.5 'IBM Plex Mono',monospace;color:#8A9491">{{ tl.time }}</div>
+            </div>
+          </div>
+        </sc-for>
+      </div>
+    </div>
+
+    <!-- ConsentBlock -->
+    <div style="border:1px solid #E8E6E0;border-radius:16px;background:#FFFFFF;padding:24px">
+      <span style="font:500 11.5px/1.4 Inter,sans-serif;text-transform:uppercase;letter-spacing:0.08em;color:#8A9491">ConsentBlock</span>
+      <div style="border:1px solid #E8E6E0;border-radius:8px;background:#FCFBF8;padding:14px;margin-top:14px;max-height:104px;overflow:auto">
+        <p style="font:400 13px/1.5 Inter,sans-serif;color:#4A5654;margin:0">I understand that intravenous nutrient therapy is administered on the prescription of a registered medical practitioner, that a cannula will be placed in a peripheral vein, and that reactions including bruising, phlebitis, light-headedness and, rarely, allergic response are possible. I confirm the ingredient list and doses were read to me. I may stop the infusion at any point.</p>
+      </div>
+      <label style="display:flex;flex-direction:column;gap:7px;margin-top:14px;min-width:0"><span style="font:500 14.5px/1.55 Inter,sans-serif">Type your full name as signature</span><input type="text" value="Rohan Mehta" style="min-height:44px;width:100%;padding:0 14px;border-radius:8px;border:1px solid #2D6A5A;font:500 16px/1 'IBM Plex Mono',monospace"></label>
+      <div style="display:flex;gap:10px;align-items:flex-start;margin-top:14px">
+        <span style="width:18px;height:18px;border-radius:5px;background:#2D6A5A;display:inline-flex;align-items:center;justify-content:center;color:#FFFFFF;font:600 11px/1 Inter,sans-serif;flex:none;margin-top:2px">✓</span>
+        <span style="font:400 14.5px/1.55 Inter,sans-serif">I give informed consent for this session.</span>
+      </div>
+      <div style="font:400 13px/1.5 'IBM Plex Mono',monospace;color:#8A9491;margin-top:12px">Captured 14 Sep 2026, 10:02 AM IST · device NUR-118</div>
+    </div>
+
+    <!-- NutrientBars -->
+    <div style="border:1px solid #E8E6E0;border-radius:16px;background:#FFFFFF;padding:24px;grid-column:1 / -1">
+      <div style="display:flex;justify-content:space-between;align-items:baseline;flex-wrap:wrap;gap:12px">
+        <span style="font:500 11.5px/1.4 Inter,sans-serif;text-transform:uppercase;letter-spacing:0.08em;color:#8A9491">NutrientBars — 16 levels in 7 categories</span>
+        <div style="display:flex;gap:16px">
+          <span style="display:flex;gap:6px;align-items:center;font:400 13px/1.5 Inter,sans-serif;color:#4A5654"><span style="width:8px;height:8px;border-radius:2px;background:#C0453C"></span>Critical</span>
+          <span style="display:flex;gap:6px;align-items:center;font:400 13px/1.5 Inter,sans-serif;color:#4A5654"><span style="width:8px;height:8px;border-radius:2px;background:#C07A22"></span>Low</span>
+          <span style="display:flex;gap:6px;align-items:center;font:400 13px/1.5 Inter,sans-serif;color:#4A5654"><span style="width:8px;height:8px;border-radius:2px;background:#2F8F5B"></span>Adequate</span>
+        </div>
+      </div>
+      <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:24px;margin-top:20px">
+        <sc-for list="{{ nutrientGroups }}" as="g" hint-placeholder-count="7">
+          <div>
+            <div style="font:500 11.5px/1.4 Inter,sans-serif;text-transform:uppercase;letter-spacing:0.08em;color:#8A9491;padding-bottom:10px;border-bottom:1px solid #E8E6E0">{{ g.name }}</div>
+            <div style="display:flex;flex-direction:column;gap:12px;margin-top:12px">
+              <sc-for list="{{ g.items }}" as="it" hint-placeholder-count="3">
+                <div>
+                  <div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:5px">
+                    <span style="font:400 14.5px/1.55 Inter,sans-serif;color:#16211E">{{ it.name }}</span>
+                    <span style="display:flex;gap:8px;align-items:baseline"><span style="font:400 13px/1.5 Inter,sans-serif;color:{{ it.color }}">{{ it.risk }}</span><span style="font:500 13px/1.5 'IBM Plex Mono',monospace;font-variant-numeric:tabular-nums">{{ it.pct }}</span></span>
+                  </div>
+                  <div style="height:5px;border-radius:999px;background:#F6F5F1;position:relative;overflow:hidden"><div style="position:absolute;top:0;bottom:0;left:0;width:{{ it.pct }};background:{{ it.color }}"></div></div>
+                </div>
+              </sc-for>
+            </div>
+          </div>
+        </sc-for>
+      </div>
+    </div>
+  </div>
+</section>
+
+<footer style="border-top:1px solid #E8E6E0;padding-top:28px;display:flex;justify-content:space-between;gap:24px;flex-wrap:wrap">
+  <p style="font:400 14.5px/1.55 Inter,sans-serif;color:#4A5654;margin:0;max-width:56ch">Block 0 of 8. Next, in order: public site, patient, doctor, nurse, inventory, clinic + admin, then states and responsive proofs.</p>
+  <span style="font:400 13px/1.5 'IBM Plex Mono',monospace;color:#8A9491">NutriDrip · design system v0.1</span>
+</footer>
+
+</div>
+
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;vitalityScore&quot;:{&quot;editor&quot;:&quot;range&quot;,&quot;default&quot;:62,&quot;min&quot;:0,&quot;max&quot;:100,&quot;step&quot;:1,&quot;tsType&quot;:&quot;number&quot;,&quot;section&quot;:&quot;Fill demos&quot;}}">
+class Component extends DCLogic {
+  ring(score, size, stroke, showRisk) {
+    const r = (size - stroke) / 2, c = 2 * Math.PI * r, dash = (score / 100) * c;
+    const E = React.createElement;
+    return E('div', {style:{position:'relative',width:size,height:size,flex:'none'}},
+      E('svg', {width:size, height:size, viewBox:`0 0 ${size} ${size}`, style:{transform:'rotate(-90deg)'}},
+        E('circle', {cx:size/2, cy:size/2, r, fill:'none', stroke:'#F6F5F1', strokeWidth:stroke}),
+        E('circle', {cx:size/2, cy:size/2, r, fill:'none', stroke:'#E08A4C', strokeWidth:stroke, strokeLinecap:'round', strokeDasharray:`${dash} ${c}`})
+      ),
+      E('div', {style:{position:'absolute',inset:0,display:'flex',flexDirection:'column',alignItems:'center',justifyContent:'center',gap:2}},
+        E('span', {style:{font:`500 ${Math.round(size*0.26)}px/1 'IBM Plex Mono',monospace`,color:'#16211E'}}, score),
+        showRisk ? E('span', {style:{font:'500 11.5px/1.4 Inter,sans-serif',textTransform:'uppercase',letterSpacing:'0.08em',color:'#8A9491'}}, 'Vitality') : null
+      )
+    );
+  }
+
+  renderVals() {
+    const score = this.props.vitalityScore ?? 62;
+    const seg = (n, done, color) => Array.from({length:n}, (_,i) => ({color: i < done ? color : '#F6F5F1'}));
+    const risk = (name, pct) => ({
+      name, pct: pct + '%',
+      risk: pct < 35 ? 'Critical' : pct < 60 ? 'Low' : 'Adequate',
+      color: pct < 35 ? '#C0453C' : pct < 60 ? '#C07A22' : '#2F8F5B'
+    });
+
+    return {
+      ring: this.ring(score, 132, 12, true),
+      ringSmall: this.ring(score, 104, 10, true),
+
+      paletteGroups: [
+        {name:'Base', note:'paper, surfaces, hairlines', swatches:[
+          {name:'paper', hex:'#FCFBF8', use:'App background'},
+          {name:'surface', hex:'#FFFFFF', use:'Cards, panels'},
+          {name:'surface-2', hex:'#F6F5F1', use:'Table headers, subtle fills'},
+          {name:'line', hex:'#E8E6E0', use:'1px hairline borders'},
+          {name:'line-2', hex:'#D6D3CB', use:'Stronger dividers, inputs'}
+        ]},
+        {name:'Ink', note:'never pure black', swatches:[
+          {name:'ink', hex:'#16211E', use:'Primary text'},
+          {name:'ink-2', hex:'#4A5654', use:'Secondary text'},
+          {name:'ink-3', hex:'#8A9491', use:'Labels, placeholders'}
+        ]},
+        {name:'Primary — eucalyptus', note:'actions, the Fill', swatches:[
+          {name:'primary', hex:'#2D6A5A', use:'Buttons, fills, links'},
+          {name:'primary-dark', hex:'#22513F', use:'Hover, active'},
+          {name:'primary-soft', hex:'#EAF2EF', use:'Tinted backgrounds'},
+          {name:'primary-line', hex:'#C5DCD4', use:'Tinted borders'}
+        ]},
+        {name:'Accent — apricot', note:'vitality and energy only', swatches:[
+          {name:'accent', hex:'#E08A4C', use:'FillRing, hero motif'},
+          {name:'accent-soft', hex:'#FDF0E4', use:'Rare tinted panel'}
+        ]},
+        {name:'Clinical semantics', note:'status only, never decoration', swatches:[
+          {name:'safe', hex:'#2F8F5B', use:'In range, healthy, approved'},
+          {name:'safe-soft', hex:'#E9F5EE', use:'Safe alert ground'},
+          {name:'caution', hex:'#C07A22', use:'Expiring, low, SLA amber'},
+          {name:'caution-soft', hex:'#FBF1E1', use:'Caution alert ground'},
+          {name:'critical', hex:'#C0453C', use:'Out of range, expired, blocked'},
+          {name:'critical-soft', hex:'#FAEBEA', use:'Critical alert ground'},
+          {name:'info', hex:'#45699B', use:'Pending, informational'},
+          {name:'info-soft', hex:'#EBF0F7', use:'Info alert ground'}
+        ]}
+      ],
+
+      typeScale: [
+        {token:'h1 / display', spec:'40px · 1.1 · −0.02em', sample:'Feel like yourself again', font:"700 40px/1.1 'Instrument Sans',Inter,sans-serif", ls:'-0.02em', tt:'none', color:'#16211E'},
+        {token:'h2', spec:'30px · 1.2', sample:'Approvals queue', font:"600 30px/1.2 'Instrument Sans',Inter,sans-serif", ls:'-0.02em', tt:'none', color:'#16211E'},
+        {token:'h3', spec:'22px · 1.3', sample:"Myers' Revive", font:"600 22px/1.3 'Instrument Sans',Inter,sans-serif", ls:'-0.02em', tt:'none', color:'#16211E'},
+        {token:'body-lg', spec:'16px · 1.6', sample:'A physician reviews every protocol before a nurse is dispatched.', font:'400 16px/1.6 Inter,sans-serif', ls:'0', tt:'none', color:'#16211E'},
+        {token:'body', spec:'14.5px · 1.55', sample:'Ascorbic acid is added once the carrier runs clear.', font:'400 14.5px/1.55 Inter,sans-serif', ls:'0', tt:'none', color:'#16211E'},
+        {token:'small', spec:'13px · 1.5', sample:'Cancellation within 4 hours carries a ₹500 fee.', font:'400 13px/1.5 Inter,sans-serif', ls:'0', tt:'none', color:'#4A5654'},
+        {token:'micro', spec:'11.5px · 0.08em · caps', sample:'Pending physician review', font:'500 11.5px/1.4 Inter,sans-serif', ls:'0.08em', tt:'uppercase', color:'#8A9491'},
+        {token:'data', spec:'IBM Plex Mono · tabular', sample:'7,500 mg · 122/78 · VC-B7 · ₹1,24,500 · 14 Sep 2026', font:"500 16px/1.5 'IBM Plex Mono',monospace", ls:'0', tt:'none', color:'#16211E'}
+      ],
+
+      spacing: [4,8,12,16,24,32,48,64,96].map(n => ({px: n + 'px', label: String(n)})),
+
+      phases: [
+        {name:'Pre-session', count:'11 / 11', segs: seg(11, 11, '#2D6A5A')},
+        {name:'Preparation', count:'5 / 7', segs: seg(7, 5, '#2D6A5A')},
+        {name:'During infusion', count:'0 / 4', segs: seg(4, 0, '#2D6A5A')},
+        {name:'Post-session', count:'0 / 7', segs: seg(7, 0, '#2D6A5A')}
+      ],
+
+      stats: [
+        {label:'Pending approvals', value:'12', pct:'34%', color:'#C07A22', note:'3 breaching SLA in under 1 hr'},
+        {label:'Sessions today', value:'28', pct:'62%', color:'#2D6A5A', note:'17 completed, 11 scheduled'},
+        {label:'Batches expiring ≤30d', value:'7', pct:'18%', color:'#C0453C', note:'₹2,86,400 at risk'},
+        {label:'Revenue this month', value:'₹18,42,600', pct:'71%', color:'#2D6A5A', note:'71% of target'}
+      ],
+
+      batches: [
+        {no:'VC-B7', expiry:'14 Sep 2026', days:'12 days left', units:'42', pct:'13%', status:'Expiring', color:'#C07A22', soft:'#FBF1E1'},
+        {no:'VC-B9', expiry:'28 Feb 2027', days:'184 days left', units:'240', pct:'77%', status:'Healthy', color:'#2F8F5B', soft:'#E9F5EE'},
+        {no:'VC-B4', expiry:'02 Aug 2026', days:'Expired 30 days ago', units:'18', pct:'0%', status:'Expired', color:'#C0453C', soft:'#FAEBEA'},
+        {no:'VC-C1', expiry:'11 Jan 2027', days:'132 days left', units:'26', pct:'22%', status:'Low', color:'#C07A22', soft:'#FBF1E1'}
+      ],
+
+      pills: [
+        {label:'Draft', color:'#4A5654', soft:'#F6F5F1', line:'#D6D3CB'},
+        {label:'Awaiting review', color:'#45699B', soft:'#EBF0F7', line:'#45699B'},
+        {label:'Approved', color:'#2F8F5B', soft:'#E9F5EE', line:'#2F8F5B'},
+        {label:'Modified', color:'#C07A22', soft:'#FBF1E1', line:'#C07A22'},
+        {label:'Rejected', color:'#C0453C', soft:'#FAEBEA', line:'#C0453C'},
+        {label:'Nurse assigned', color:'#45699B', soft:'#EBF0F7', line:'#45699B'},
+        {label:'En route', color:'#45699B', soft:'#EBF0F7', line:'#45699B'},
+        {label:'In progress', color:'#2D6A5A', soft:'#EAF2EF', line:'#C5DCD4'},
+        {label:'Completed', color:'#2F8F5B', soft:'#E9F5EE', line:'#2F8F5B'},
+        {label:'Cancelled', color:'#4A5654', soft:'#F6F5F1', line:'#D6D3CB'},
+        {label:'Refund pending', color:'#C07A22', soft:'#FBF1E1', line:'#C07A22'},
+        {label:'Adverse event', color:'#C0453C', soft:'#FAEBEA', line:'#C0453C'},
+        {label:'Confirmed', color:'#2F8F5B', soft:'#E9F5EE', line:'#2F8F5B'},
+        {label:'Dispatched', color:'#2D6A5A', soft:'#EAF2EF', line:'#C5DCD4'},
+        {label:'Quarantined', color:'#C0453C', soft:'#FAEBEA', line:'#C0453C'},
+        {label:'Out of stock', color:'#C0453C', soft:'#FAEBEA', line:'#C0453C'}
+      ],
+
+      nav: (() => {
+        const on = {bg:'#EAF2EF', fg:'#22513F', font:'600 14.5px/1.55 Inter,sans-serif', dot:'#2D6A5A', badgeFg:'#22513F'};
+        const off = {bg:'transparent', fg:'#4A5654', font:'500 14.5px/1.55 Inter,sans-serif', dot:'#D6D3CB', badgeFg:'#8A9491'};
+        return [
+          {label:'Availability', badge:'', ...on},
+          {label:'Products & batches', badge:'412', ...off},
+          {label:'Drip builder', badge:'', ...off},
+          {label:'Preparation orders', badge:'9', ...off},
+          {label:'Alerts', badge:'7', ...off, badgeFg:'#C0453C'},
+          {label:'Reports', badge:'', ...off},
+          {label:'Recall trace', badge:'', ...off}
+        ];
+      })(),
+
+      tabs: [
+        {label:'Today', line:'#2D6A5A', dot:'#2D6A5A', fg:'#16211E', font:'600 11.5px/1.4 Inter,sans-serif'},
+        {label:'Orders', line:'transparent', dot:'#D6D3CB', fg:'#4A5654', font:'500 11.5px/1.4 Inter,sans-serif'},
+        {label:'Checklist', line:'transparent', dot:'#D6D3CB', fg:'#4A5654', font:'500 11.5px/1.4 Inter,sans-serif'},
+        {label:'Schedule', line:'transparent', dot:'#D6D3CB', fg:'#4A5654', font:'500 11.5px/1.4 Inter,sans-serif'},
+        {label:'Kit', line:'transparent', dot:'#D6D3CB', fg:'#4A5654', font:'500 11.5px/1.4 Inter,sans-serif'}
+      ],
+
+      timeline: (() => {
+        const done = {dotSize:'10px', dotBg:'#2D6A5A', dotLine:'#2D6A5A', line:'#C5DCD4', fg:'#4A5654', font:'500 14.5px/1.55 Inter,sans-serif'};
+        const now = {dotSize:'14px', dotBg:'#E08A4C', dotLine:'#FDF0E4', line:'#E8E6E0', fg:'#16211E', font:"600 16px/1.4 'Instrument Sans',Inter,sans-serif"};
+        const next = {dotSize:'10px', dotBg:'#FFFFFF', dotLine:'#D6D3CB', line:'#E8E6E0', fg:'#8A9491', font:'400 14.5px/1.55 Inter,sans-serif'};
+        return [
+          {label:'Booked', time:'12 Sep 2026, 3:41 PM', ...done},
+          {label:'Physician approved', time:'12 Sep 2026, 4:18 PM', ...done},
+          {label:'Nurse en route', time:'ETA 18 min · 4.2 km', ...now},
+          {label:'Consent & vitals', time:'—', ...next},
+          {label:'Infusion', time:'45 min expected', ...next},
+          {label:'Aftercare & report', time:'—', ...next}
+        ];
+      })(),
+
+      nutrientGroups: [
+        {name:'Vitamins', items:[risk('Vitamin C', 68), risk('Vitamin D', 18), risk('Vitamin B12', 44), risk('Folate', 72)]},
+        {name:'Minerals', items:[risk('Magnesium', 51), risk('Zinc', 63), risk('Iron', 42), risk('Selenium', 79)]},
+        {name:'Amino acids', items:[risk('Glutathione', 38), risk('Taurine', 66)]},
+        {name:'Hydration', items:[risk('Electrolyte balance', 57)]},
+        {name:'Metabolic', items:[risk('B-complex load', 49), risk('L-carnitine', 71)]},
+        {name:'Antioxidants', items:[risk('Alpha-lipoic acid', 33)]},
+        {name:'Immunity', items:[risk('Vitamin A', 74), risk('Copper', 81)]}
+      ]
+    };
+  }
+}
+
+</script>
+</body>
+</html>

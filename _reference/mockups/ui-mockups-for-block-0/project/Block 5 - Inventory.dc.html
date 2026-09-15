@@ -1,0 +1,445 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<meta name="design_doc_mode" content="canvas">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Sans:wght@400;500;600;700&family=Inter:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+html,body{margin:0;padding:0}
+body{background:#EFEDE8;color:#16211E;font-family:Inter,system-ui,sans-serif;-webkit-font-smoothing:antialiased}
+*{box-sizing:border-box}
+a{color:#2D6A5A;text-decoration:none}
+a:hover{color:#22513F;text-decoration:underline}
+</style>
+</helmet>
+
+<div style="padding:48px;display:flex;flex-direction:column;gap:56px">
+
+<div style="display:flex;flex-direction:column;gap:8px;max-width:70ch">
+  <span style="font:500 11.5px/1.4 Inter,sans-serif;text-transform:uppercase;letter-spacing:0.08em;color:#8A9491">Block 5 · Inventory & pharmacist · 1440px</span>
+  <h1 style="font:700 34px/1.15 'Instrument Sans',Inter,sans-serif;letter-spacing:-0.02em;margin:0">Inventory</h1>
+  <p style="font:400 16px/1.6 Inter,sans-serif;color:#4A5654;margin:0;text-wrap:pretty">The hard idea in this block is that stock does not divide evenly. A vial opened for one patient cannot be pooled into the next, so the honest answer to "how many drips can we run today" is always lower than the arithmetic. Every screen here shows both numbers and names the bottleneck.</p>
+</div>
+
+<!-- 5.1 AVAILABILITY -->
+<section style="display:flex;flex-direction:column;gap:12px">
+  <div style="display:flex;align-items:baseline;gap:12px"><span style="font:500 13px/1.5 'IBM Plex Mono',monospace;color:#8A9491">5.1</span><span style="font:600 18px/1.3 'Instrument Sans',Inter,sans-serif">Availability calculator</span></div>
+  <div style="width:1440px;background:#FCFBF8;border:1px solid #D6D3CB;border-radius:16px;overflow:hidden;display:grid;grid-template-columns:236px 1fr">
+    <aside style="border-right:1px solid #E8E6E0;padding:18px 14px;display:flex;flex-direction:column;gap:22px">
+      <div style="display:flex;gap:10px;align-items:center;padding:0 6px">
+        <div style="width:22px;height:22px;border:1px solid #C5DCD4;border-radius:7px;background:#EAF2EF;position:relative;overflow:hidden"><div style="position:absolute;left:0;right:0;bottom:0;height:62%;background:#2D6A5A"></div></div>
+        <span style="font:600 14.5px/1 'Instrument Sans',Inter,sans-serif">NutriDrip</span>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:2px">
+        <span style="font:500 11.5px/1.4 Inter,sans-serif;text-transform:uppercase;letter-spacing:0.08em;color:#8A9491;padding:0 6px 6px">Pharmacist</span>
+        <sc-for list="{{ nav }}" as="n" hint-placeholder-count="7">
+          <div style="display:flex;align-items:center;gap:10px;min-height:44px;padding:0 10px;border-radius:8px;background:{{ n.bg }};color:{{ n.fg }};font:{{ n.font }};cursor:pointer">
+            <span style="width:6px;height:6px;border-radius:2px;background:{{ n.dot }};flex:none"></span>
+            <span>{{ n.label }}</span>
+            <span style="margin-left:auto;font:500 13px/1 'IBM Plex Mono',monospace;color:{{ n.badgeFg }}">{{ n.badge }}</span>
+          </div>
+        </sc-for>
+      </div>
+      <div style="margin-top:auto;border-top:1px solid #E8E6E0;padding:14px 10px;display:flex;flex-direction:column;gap:5px">
+        <span style="font:500 14.5px/1.55 Inter,sans-serif">R. Kulkarni</span>
+        <span style="font:400 13px/1.5 'IBM Plex Mono',monospace;color:#8A9491">KSPC-77401</span>
+        <span style="font:400 13px/1.5 Inter,sans-serif;color:#4A5654">Koramangala hub</span>
+      </div>
+    </aside>
+
+    <div>
+      <div style="display:flex;align-items:center;gap:16px;padding:16px 28px;border-bottom:1px solid #E8E6E0;background:#FFFFFF">
+        <div>
+          <div style="display:flex;gap:7px;align-items:center;font:400 13px/1.5 Inter,sans-serif;color:#8A9491"><span>Inventory</span><span>/</span><span style="color:#16211E">Availability</span></div>
+          <span style="font:600 22px/1.3 'Instrument Sans',Inter,sans-serif;letter-spacing:-0.02em">Availability calculator</span>
+        </div>
+        <div style="margin-left:auto;display:flex;gap:12px;align-items:center">
+          <span style="font:400 13px/1.5 'IBM Plex Mono',monospace;color:#8A9491">Recalculated 2 min ago</span>
+          <button type="button" style="min-height:44px;padding:0 16px;border-radius:8px;border:1px solid #D6D3CB;background:#FFFFFF;font:600 14.5px/1 Inter,sans-serif;cursor:pointer">Refresh</button>
+        </div>
+      </div>
+
+      <div style="padding:24px 28px;display:grid;grid-template-columns:1fr 400px;gap:24px;align-items:start">
+        <div style="display:flex;flex-direction:column;gap:16px">
+          <div style="border:1px solid #E8E6E0;border-radius:16px;background:#FFFFFF;padding:24px">
+            <div style="display:flex;justify-content:space-between;align-items:baseline">
+              <span style="font:600 18px/1.3 'Instrument Sans',Inter,sans-serif">Myers' Revive</span>
+              <span style="font:400 13px/1.5 Inter,sans-serif;color:#8A9491">whole-vial maths · FEFO batch order</span>
+            </div>
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin:18px 0 20px">
+              <div style="border:1px solid #C5DCD4;background:#EAF2EF;border-radius:12px;padding:20px">
+                <span style="font:500 11.5px/1.4 Inter,sans-serif;text-transform:uppercase;letter-spacing:0.08em;color:#22513F">Realistic</span>
+                <div style="font:500 44px/1.05 'IBM Plex Mono',monospace;margin-top:8px">14</div>
+                <span style="font:400 13px/1.5 Inter,sans-serif;color:#4A5654">drips can actually be prepared today</span>
+              </div>
+              <div style="border:1px solid #E8E6E0;background:#F6F5F1;border-radius:12px;padding:20px">
+                <span style="font:500 11.5px/1.4 Inter,sans-serif;text-transform:uppercase;letter-spacing:0.08em;color:#8A9491">Theoretical · pooled</span>
+                <div style="font:500 44px/1.05 'IBM Plex Mono',monospace;color:#4A5654;margin-top:8px">19</div>
+                <span style="font:400 13px/1.5 Inter,sans-serif;color:#4A5654">if partial vials could be combined</span>
+              </div>
+            </div>
+            <div style="border:1px solid #C07A22;background:#FBF1E1;border-radius:12px;padding:16px 18px;display:flex;gap:14px;align-items:flex-start">
+              <span style="width:20px;height:20px;border-radius:50%;background:#C07A22;color:#FFFFFF;display:inline-flex;align-items:center;justify-content:center;font:600 12px/1 Inter,sans-serif;flex:none">!</span>
+              <div style="flex:1">
+                <span style="font:600 14.5px/1.55 Inter,sans-serif">Bottleneck — Magnesium sulphate</span>
+                <p style="font:400 14.5px/1.55 Inter,sans-serif;color:#4A5654;margin:3px 0 10px">Only <span style="font:500 14.5px/1.55 'IBM Plex Mono',monospace">14 vials</span> in date. Wastage at maximum: <span style="font:500 14.5px/1.55 'IBM Plex Mono',monospace">600 mg</span> ≈ <span style="font:500 14.5px/1.55 'IBM Plex Mono',monospace">₹4,200</span>.</p>
+                <div style="height:6px;border-radius:2px;background:#FFFFFF;position:relative;overflow:hidden"><div style="position:absolute;top:0;bottom:0;left:0;width:26%;background:#C07A22"></div></div>
+              </div>
+            </div>
+          </div>
+
+          <div style="border:1px solid #E8E6E0;border-radius:16px;background:#FFFFFF;overflow:hidden">
+            <div style="padding:16px 20px;border-bottom:1px solid #E8E6E0"><span style="font:600 18px/1.3 'Instrument Sans',Inter,sans-serif">Per ingredient</span></div>
+            <div style="display:grid;grid-template-columns:1.5fr 0.9fr 0.8fr 1.2fr 0.9fr;background:#F6F5F1;border-bottom:1px solid #E8E6E0">
+              <div style="padding:10px 20px;font:500 11.5px/1.4 Inter,sans-serif;text-transform:uppercase;letter-spacing:0.08em;color:#8A9491">Ingredient</div>
+              <div style="padding:10px 12px;text-align:right;font:500 11.5px/1.4 Inter,sans-serif;text-transform:uppercase;letter-spacing:0.08em;color:#8A9491">Per drip</div>
+              <div style="padding:10px 12px;text-align:right;font:500 11.5px/1.4 Inter,sans-serif;text-transform:uppercase;letter-spacing:0.08em;color:#8A9491">In date</div>
+              <div style="padding:10px 12px;font:500 11.5px/1.4 Inter,sans-serif;text-transform:uppercase;letter-spacing:0.08em;color:#8A9491">Supports</div>
+              <div style="padding:10px 20px;text-align:right;font:500 11.5px/1.4 Inter,sans-serif;text-transform:uppercase;letter-spacing:0.08em;color:#8A9491">Waste</div>
+            </div>
+            <sc-for list="{{ ingredients }}" as="i" hint-placeholder-count="6">
+              <div style="display:grid;grid-template-columns:1.5fr 0.9fr 0.8fr 1.2fr 0.9fr;align-items:center;border-bottom:1px solid #E8E6E0;background:{{ i.rowBg }}">
+                <div style="padding:14px 20px;display:flex;flex-direction:column"><span style="font:500 14.5px/1.55 Inter,sans-serif">{{ i.name }}</span><span style="font:400 13px/1.5 'IBM Plex Mono',monospace;color:#8A9491">{{ i.batches }}</span></div>
+                <div style="padding:14px 12px;text-align:right;font:500 14.5px/1.55 'IBM Plex Mono',monospace">{{ i.per }}</div>
+                <div style="padding:14px 12px;text-align:right;font:500 14.5px/1.55 'IBM Plex Mono',monospace">{{ i.stock }}</div>
+                <div style="padding:14px 12px;display:flex;flex-direction:column;gap:6px">
+                  <span style="font:500 14.5px/1.55 'IBM Plex Mono',monospace;color:{{ i.color }}">{{ i.supports }}</span>
+                  <div style="height:5px;border-radius:2px;background:#F6F5F1;position:relative;overflow:hidden"><div style="position:absolute;top:0;bottom:0;left:0;width:{{ i.pct }};background:{{ i.color }}"></div></div>
+                </div>
+                <div style="padding:14px 20px;text-align:right;font:500 14.5px/1.55 'IBM Plex Mono',monospace;color:{{ i.wasteFg }}">{{ i.waste }}</div>
+              </div>
+            </sc-for>
+          </div>
+        </div>
+
+        <aside style="display:flex;flex-direction:column;gap:16px">
+          <div style="border:1px solid #E8E6E0;border-radius:16px;background:#FFFFFF;padding:20px">
+            <span style="font:500 11.5px/1.4 Inter,sans-serif;text-transform:uppercase;letter-spacing:0.08em;color:#8A9491">Assumptions</span>
+            <div style="display:flex;flex-direction:column;gap:16px;margin-top:16px">
+              <div style="display:flex;align-items:center;gap:12px">
+                <span style="width:44px;height:26px;border-radius:999px;background:#2D6A5A;position:relative;flex:none"><span style="position:absolute;top:3px;left:21px;width:20px;height:20px;border-radius:50%;background:#FFFFFF"></span></span>
+                <div><span style="font:500 14.5px/1.55 Inter,sans-serif">Whole vials only</span><div style="font:400 13px/1.5 Inter,sans-serif;color:#8A9491">No pooling across patients</div></div>
+              </div>
+              <div style="display:flex;align-items:center;gap:12px">
+                <span style="width:44px;height:26px;border-radius:999px;background:#2D6A5A;position:relative;flex:none"><span style="position:absolute;top:3px;left:21px;width:20px;height:20px;border-radius:50%;background:#FFFFFF"></span></span>
+                <div><span style="font:500 14.5px/1.55 Inter,sans-serif">FEFO</span><div style="font:400 13px/1.5 Inter,sans-serif;color:#8A9491">First expiring, first out</div></div>
+              </div>
+              <div style="display:flex;align-items:center;gap:12px">
+                <span style="width:44px;height:26px;border-radius:999px;background:#D6D3CB;position:relative;flex:none"><span style="position:absolute;top:3px;left:3px;width:20px;height:20px;border-radius:50%;background:#FFFFFF"></span></span>
+                <div><span style="font:500 14.5px/1.55 Inter,sans-serif;color:#4A5654">Include quarantined</span><div style="font:400 13px/1.5 Inter,sans-serif;color:#8A9491">MG-A2 is under review</div></div>
+              </div>
+              <label style="display:flex;flex-direction:column;gap:7px;min-width:0;padding-top:14px;border-top:1px solid #E8E6E0">
+                <span style="font:500 14.5px/1.55 Inter,sans-serif">Expiry horizon</span>
+                <input type="text" value="30 days" style="min-height:44px;width:100%;padding:0 14px;border-radius:8px;border:1px solid #D6D3CB;background:#FFFFFF;font:500 14.5px/1 'IBM Plex Mono',monospace">
+              </label>
+            </div>
+          </div>
+          <div style="border:1px solid #E8E6E0;border-radius:16px;background:#FFFFFF;padding:20px">
+            <span style="font:500 11.5px/1.4 Inter,sans-serif;text-transform:uppercase;letter-spacing:0.08em;color:#8A9491">Across all 9 drips</span>
+            <div style="display:flex;flex-direction:column;gap:14px;margin-top:16px">
+              <sc-for list="{{ allDrips }}" as="d" hint-placeholder-count="5">
+                <div>
+                  <div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:6px">
+                    <span style="font:400 14.5px/1.55 Inter,sans-serif">{{ d.name }}</span>
+                    <span style="display:flex;gap:8px;align-items:baseline"><span style="font:500 14.5px/1.55 'IBM Plex Mono',monospace">{{ d.real }}</span><span style="font:400 13px/1.5 'IBM Plex Mono',monospace;color:#8A9491">/ {{ d.theory }}</span></span>
+                  </div>
+                  <div style="height:6px;border-radius:2px;background:#F6F5F1;position:relative;overflow:hidden">
+                    <div style="position:absolute;top:0;bottom:0;left:0;width:{{ d.theoryPct }};background:#E8E6E0"></div>
+                    <div style="position:absolute;top:0;bottom:0;left:0;width:{{ d.realPct }};background:{{ d.color }}"></div>
+                  </div>
+                </div>
+              </sc-for>
+            </div>
+          </div>
+        </aside>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- 5.2 BATCHES -->
+<section style="display:flex;flex-direction:column;gap:12px">
+  <div style="display:flex;align-items:baseline;gap:12px"><span style="font:500 13px/1.5 'IBM Plex Mono',monospace;color:#8A9491">5.2</span><span style="font:600 18px/1.3 'Instrument Sans',Inter,sans-serif">Batches — expiry-first, with disposal</span></div>
+  <div style="width:1440px;background:#FCFBF8;border:1px solid #D6D3CB;border-radius:16px;padding:28px;display:flex;flex-direction:column;gap:20px">
+    <div style="display:flex;align-items:center;gap:16px">
+      <div><span style="font:600 22px/1.3 'Instrument Sans',Inter,sans-serif;letter-spacing:-0.02em">Products & batches</span><div style="font:400 13px/1.5 Inter,sans-serif;color:#8A9491">412 batches · 38 products · Koramangala hub</div></div>
+      <div style="margin-left:auto;display:flex;gap:10px;align-items:center">
+        <div style="display:inline-flex;background:#F6F5F1;border:1px solid #E8E6E0;border-radius:8px;padding:3px;gap:3px">
+          <button type="button" style="min-height:38px;padding:0 14px;border-radius:6px;border:1px solid #E8E6E0;background:#FFFFFF;font:600 13px/1 Inter,sans-serif;cursor:pointer">Expiring first</button>
+          <button type="button" style="min-height:38px;padding:0 14px;border-radius:6px;border:1px solid transparent;background:transparent;font:500 13px/1 Inter,sans-serif;color:#4A5654;cursor:pointer">By product</button>
+          <button type="button" style="min-height:38px;padding:0 14px;border-radius:6px;border:1px solid transparent;background:transparent;font:500 13px/1 Inter,sans-serif;color:#4A5654;cursor:pointer">Quarantined</button>
+        </div>
+        <button type="button" style="min-height:44px;padding:0 16px;border-radius:8px;border:1px solid #2D6A5A;background:#2D6A5A;color:#FFFFFF;font:600 14.5px/1 Inter,sans-serif;cursor:pointer">Receive stock</button>
+      </div>
+    </div>
+
+    <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:16px">
+      <sc-for list="{{ stats }}" as="st" hint-placeholder-count="4">
+        <div style="border:1px solid #E8E6E0;border-radius:12px;background:#FFFFFF;padding:18px 20px;display:flex;flex-direction:column;gap:12px">
+          <span style="font:500 11.5px/1.4 Inter,sans-serif;text-transform:uppercase;letter-spacing:0.08em;color:#8A9491">{{ st.label }}</span>
+          <span style="font:500 30px/1.1 'IBM Plex Mono',monospace;font-variant-numeric:tabular-nums">{{ st.value }}</span>
+          <div style="height:4px;border-radius:999px;background:#F6F5F1;position:relative;overflow:hidden"><div style="position:absolute;top:0;bottom:0;left:0;width:{{ st.pct }};background:{{ st.color }}"></div></div>
+          <span style="font:400 13px/1.5 Inter,sans-serif;color:#4A5654">{{ st.note }}</span>
+        </div>
+      </sc-for>
+    </div>
+
+    <div style="display:grid;grid-template-columns:1fr 420px;gap:20px;align-items:start">
+      <div style="border:1px solid #E8E6E0;border-radius:16px;background:#FFFFFF;overflow:hidden">
+        <div style="display:grid;grid-template-columns:1.3fr 1.4fr 1.1fr 0.9fr 1.3fr 1fr;background:#F6F5F1;border-bottom:1px solid #E8E6E0">
+          <div style="padding:10px 20px;font:500 11.5px/1.4 Inter,sans-serif;text-transform:uppercase;letter-spacing:0.08em;color:#8A9491">Batch</div>
+          <div style="padding:10px 12px;font:500 11.5px/1.4 Inter,sans-serif;text-transform:uppercase;letter-spacing:0.08em;color:#8A9491">Product</div>
+          <div style="padding:10px 12px;font:500 11.5px/1.4 Inter,sans-serif;text-transform:uppercase;letter-spacing:0.08em;color:#8A9491">Expiry ↑</div>
+          <div style="padding:10px 12px;text-align:right;font:500 11.5px/1.4 Inter,sans-serif;text-transform:uppercase;letter-spacing:0.08em;color:#8A9491">Units</div>
+          <div style="padding:10px 12px;font:500 11.5px/1.4 Inter,sans-serif;text-transform:uppercase;letter-spacing:0.08em;color:#8A9491">Stock vs reorder</div>
+          <div style="padding:10px 20px;font:500 11.5px/1.4 Inter,sans-serif;text-transform:uppercase;letter-spacing:0.08em;color:#8A9491">Status</div>
+        </div>
+        <sc-for list="{{ batches }}" as="b" hint-placeholder-count="7">
+          <div style="display:grid;grid-template-columns:1.3fr 1.4fr 1.1fr 0.9fr 1.3fr 1fr;align-items:center;border-bottom:1px solid #E8E6E0">
+            <div style="padding:14px 20px;font:500 14.5px/1.55 'IBM Plex Mono',monospace">{{ b.no }}</div>
+            <div style="padding:14px 12px;display:flex;flex-direction:column"><span style="font:400 14.5px/1.55 Inter,sans-serif">{{ b.product }}</span><span style="font:400 13px/1.5 Inter,sans-serif;color:#8A9491">{{ b.supplier }}</span></div>
+            <div style="padding:14px 12px;display:flex;flex-direction:column"><span style="font:400 14.5px/1.55 'IBM Plex Mono',monospace">{{ b.expiry }}</span><span style="font:400 13px/1.5 'IBM Plex Mono',monospace;color:{{ b.color }}">{{ b.days }}</span></div>
+            <div style="padding:14px 12px;text-align:right;font:500 14.5px/1.55 'IBM Plex Mono',monospace;font-variant-numeric:tabular-nums">{{ b.units }}</div>
+            <div style="padding:14px 12px"><div style="height:6px;border-radius:2px;background:#F6F5F1;position:relative;overflow:hidden"><div style="position:absolute;top:0;bottom:0;left:0;width:{{ b.pct }};background:{{ b.color }}"></div><div style="position:absolute;top:0;bottom:0;left:25%;width:1px;background:#D6D3CB"></div></div></div>
+            <div style="padding:14px 20px"><span style="display:inline-flex;align-items:center;gap:6px;border-radius:999px;padding:4px 10px;font:500 13px/1.4 Inter,sans-serif;background:{{ b.soft }};color:{{ b.color }};border:1px solid {{ b.color }}"><span style="width:6px;height:6px;border-radius:50%;background:{{ b.color }}"></span>{{ b.status }}</span></div>
+          </div>
+        </sc-for>
+        <div style="padding:14px 20px;display:flex;justify-content:space-between;align-items:center;background:#FCFBF8">
+          <span style="font:400 13px/1.5 Inter,sans-serif;color:#8A9491">7 of 412 batches</span>
+          <div style="display:flex;gap:6px">
+            <button type="button" style="min-width:36px;height:36px;border-radius:8px;border:1px solid #D6D3CB;background:#FFFFFF;font:500 13px/1 'IBM Plex Mono',monospace;cursor:pointer">‹</button>
+            <button type="button" style="min-width:36px;height:36px;border-radius:8px;border:1px solid #2D6A5A;background:#2D6A5A;color:#FFFFFF;font:500 13px/1 'IBM Plex Mono',monospace;cursor:pointer">1</button>
+            <button type="button" style="min-width:36px;height:36px;border-radius:8px;border:1px solid #D6D3CB;background:#FFFFFF;font:500 13px/1 'IBM Plex Mono',monospace;cursor:pointer">2</button>
+            <button type="button" style="min-width:36px;height:36px;border-radius:8px;border:1px solid #D6D3CB;background:#FFFFFF;font:500 13px/1 'IBM Plex Mono',monospace;cursor:pointer">›</button>
+          </div>
+        </div>
+      </div>
+
+      <div style="display:flex;flex-direction:column;gap:16px">
+        <div style="border:1px solid #E8E6E0;border-radius:16px;background:#FFFFFF;padding:24px;box-shadow:0 4px 16px rgba(22,33,30,.08)">
+          <h3 style="font:600 22px/1.3 'Instrument Sans',Inter,sans-serif;letter-spacing:-0.02em;margin:0 0 10px">Dispose batch VC-B4?</h3>
+          <p style="font:400 14.5px/1.55 Inter,sans-serif;color:#4A5654;margin:0">This writes off <span style="font:500 14.5px/1.55 'IBM Plex Mono',monospace">18 vials</span> at a cost of <span style="font:500 14.5px/1.55 'IBM Plex Mono',monospace">₹53,400</span>. It cannot be undone and is recorded in the audit log.</p>
+          <label style="display:flex;flex-direction:column;gap:7px;margin:16px 0 18px;min-width:0"><span style="font:500 14.5px/1.55 Inter,sans-serif">Type <span style="font:500 14.5px/1.55 'IBM Plex Mono',monospace">VC-B4</span> to confirm</span><input type="text" placeholder="Batch number" style="min-height:44px;width:100%;padding:0 14px;border-radius:8px;border:1px solid #D6D3CB;font:500 14.5px/1 'IBM Plex Mono',monospace"></label>
+          <div style="display:flex;gap:10px;justify-content:flex-end">
+            <button type="button" style="min-height:44px;padding:0 16px;border-radius:8px;border:1px solid #D6D3CB;background:#FFFFFF;font:600 14.5px/1 Inter,sans-serif;cursor:pointer">Keep batch</button>
+            <button type="button" disabled="disabled" style="min-height:44px;padding:0 16px;border-radius:8px;border:1px solid #E8E6E0;background:#F6F5F1;color:#8A9491;font:600 14.5px/1 Inter,sans-serif;cursor:not-allowed">Dispose</button>
+          </div>
+        </div>
+        <div style="border:1px solid #E8E6E0;border-radius:16px;background:#FFFFFF;padding:20px">
+          <span style="font:500 11.5px/1.4 Inter,sans-serif;text-transform:uppercase;letter-spacing:0.08em;color:#8A9491">Value at risk · next 30 days</span>
+          <div style="font:500 30px/1.1 'IBM Plex Mono',monospace;margin:10px 0 14px">₹2,86,400</div>
+          <div style="display:flex;flex-direction:column;gap:12px">
+            <sc-for list="{{ atRisk }}" as="r" hint-placeholder-count="3">
+              <div>
+                <div style="display:flex;justify-content:space-between;margin-bottom:5px"><span style="font:400 14.5px/1.55 Inter,sans-serif">{{ r.name }}</span><span style="font:500 14.5px/1.55 'IBM Plex Mono',monospace">{{ r.value }}</span></div>
+                <div style="height:5px;border-radius:2px;background:#F6F5F1;position:relative;overflow:hidden"><div style="position:absolute;top:0;bottom:0;left:0;width:{{ r.pct }};background:{{ r.color }}"></div></div>
+              </div>
+            </sc-for>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- 5.3 DRIP BUILDER + 5.4 RECALL -->
+<section style="display:flex;flex-direction:column;gap:12px">
+  <div style="display:flex;align-items:baseline;gap:12px"><span style="font:500 13px/1.5 'IBM Plex Mono',monospace;color:#8A9491">5.3 · 5.4</span><span style="font:600 18px/1.3 'Instrument Sans',Inter,sans-serif">Drip builder · recall trace</span></div>
+  <div style="display:flex;gap:24px;align-items:flex-start">
+    <div style="width:860px;flex:none;background:#FCFBF8;border:1px solid #D6D3CB;border-radius:16px;padding:28px">
+      <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:20px">
+        <div><span style="font:600 22px/1.3 'Instrument Sans',Inter,sans-serif;letter-spacing:-0.02em">Drip builder</span><div style="font:400 13px/1.5 Inter,sans-serif;color:#8A9491">New formulation · draft, needs physician sign-off</div></div>
+        <div style="display:flex;gap:10px">
+          <button type="button" style="min-height:44px;padding:0 16px;border-radius:8px;border:1px solid #D6D3CB;background:#FFFFFF;font:600 14.5px/1 Inter,sans-serif;cursor:pointer">Save draft</button>
+          <button type="button" style="min-height:44px;padding:0 16px;border-radius:8px;border:1px solid #2D6A5A;background:#2D6A5A;color:#FFFFFF;font:600 14.5px/1 Inter,sans-serif;cursor:pointer">Send for approval</button>
+        </div>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 300px;gap:20px;align-items:start">
+        <div style="display:flex;flex-direction:column;gap:14px">
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px">
+            <label style="display:flex;flex-direction:column;gap:7px;min-width:0"><span style="font:500 14.5px/1.55 Inter,sans-serif">Name</span><input type="text" value="Post-Viral Recovery" style="min-height:44px;width:100%;padding:0 14px;border-radius:8px;border:1px solid #D6D3CB;background:#FFFFFF;font:400 14.5px/1 Inter,sans-serif"></label>
+            <label style="display:flex;flex-direction:column;gap:7px;min-width:0"><span style="font:500 14.5px/1.55 Inter,sans-serif">Category</span><input type="text" value="Post-viral" style="min-height:44px;width:100%;padding:0 14px;border-radius:8px;border:1px solid #D6D3CB;background:#FFFFFF;font:400 14.5px/1 Inter,sans-serif"></label>
+          </div>
+          <div style="border:1px solid #E8E6E0;border-radius:12px;background:#FFFFFF;overflow:hidden">
+            <div style="display:grid;grid-template-columns:1.6fr 1fr 1.1fr 0.8fr;background:#F6F5F1;border-bottom:1px solid #E8E6E0">
+              <div style="padding:10px 16px;font:500 11.5px/1.4 Inter,sans-serif;text-transform:uppercase;letter-spacing:0.08em;color:#8A9491">Ingredient</div>
+              <div style="padding:10px 12px;text-align:right;font:500 11.5px/1.4 Inter,sans-serif;text-transform:uppercase;letter-spacing:0.08em;color:#8A9491">Dose</div>
+              <div style="padding:10px 12px;font:500 11.5px/1.4 Inter,sans-serif;text-transform:uppercase;letter-spacing:0.08em;color:#8A9491">Of max</div>
+              <div style="padding:10px 16px;text-align:right;font:500 11.5px/1.4 Inter,sans-serif;text-transform:uppercase;letter-spacing:0.08em;color:#8A9491">Cost</div>
+            </div>
+            <sc-for list="{{ builder }}" as="b" hint-placeholder-count="5">
+              <div style="display:grid;grid-template-columns:1.6fr 1fr 1.1fr 0.8fr;align-items:center;border-bottom:1px solid #E8E6E0;background:{{ b.rowBg }}">
+                <div style="padding:13px 16px;font:400 14.5px/1.55 Inter,sans-serif">{{ b.name }}</div>
+                <div style="padding:13px 12px;text-align:right;font:500 14.5px/1.55 'IBM Plex Mono',monospace">{{ b.dose }}</div>
+                <div style="padding:13px 12px"><div style="height:6px;border-radius:999px;background:#F6F5F1;position:relative"><div style="position:absolute;top:0;bottom:0;left:0;width:{{ b.pct }};background:{{ b.color }};border-radius:999px"></div><div style="position:absolute;top:-4px;bottom:-4px;left:84%;width:1px;background:#4A5654"></div></div></div>
+                <div style="padding:13px 16px;text-align:right;font:500 14.5px/1.55 'IBM Plex Mono',monospace">{{ b.cost }}</div>
+              </div>
+            </sc-for>
+            <div style="padding:12px 16px;display:flex;justify-content:space-between;align-items:center;background:#FCFBF8">
+              <button type="button" style="min-height:40px;padding:0 14px;border-radius:8px;border:1px dashed #C5DCD4;background:#FFFFFF;color:#2D6A5A;font:600 13px/1 Inter,sans-serif;cursor:pointer">+ Add ingredient</button>
+              <span style="font:400 13px/1.5 Inter,sans-serif;color:#8A9491">Vertical line marks the per-session ceiling.</span>
+            </div>
+          </div>
+          <div style="border:1px solid #C0453C;background:#FAEBEA;border-radius:12px;padding:14px 16px;display:flex;gap:12px;align-items:flex-start">
+            <span style="width:20px;height:20px;border-radius:50%;background:#C0453C;color:#FFFFFF;display:inline-flex;align-items:center;justify-content:center;font:600 12px/1 Inter,sans-serif;flex:none">✕</span>
+            <div><span style="font:600 14.5px/1.55 Inter,sans-serif">Zinc exceeds the session ceiling</span><p style="font:400 14.5px/1.55 Inter,sans-serif;color:#4A5654;margin:2px 0 0">30 mg against a ceiling of 25 mg. Lower the dose or route this through a physician exception.</p></div>
+          </div>
+        </div>
+        <aside style="display:flex;flex-direction:column;gap:14px">
+          <div style="border:1px solid #E8E6E0;border-radius:12px;background:#FFFFFF;padding:18px">
+            <span style="font:500 11.5px/1.4 Inter,sans-serif;text-transform:uppercase;letter-spacing:0.08em;color:#8A9491">Unit economics</span>
+            <div style="display:flex;flex-direction:column;gap:10px;margin-top:14px">
+              <div style="display:flex;justify-content:space-between"><span style="font:400 14.5px/1.55 Inter,sans-serif;color:#4A5654">Ingredient cost</span><span style="font:500 14.5px/1.55 'IBM Plex Mono',monospace">₹3,180</span></div>
+              <div style="display:flex;justify-content:space-between"><span style="font:400 14.5px/1.55 Inter,sans-serif;color:#4A5654">Consumables</span><span style="font:500 14.5px/1.55 'IBM Plex Mono',monospace">₹420</span></div>
+              <div style="display:flex;justify-content:space-between"><span style="font:400 14.5px/1.55 Inter,sans-serif;color:#4A5654">Nurse time</span><span style="font:500 14.5px/1.55 'IBM Plex Mono',monospace">₹1,100</span></div>
+              <div style="display:flex;justify-content:space-between;padding-top:10px;border-top:1px solid #E8E6E0"><span style="font:600 14.5px/1.55 Inter,sans-serif">Suggested price</span><span style="font:500 18px/1.4 'IBM Plex Mono',monospace">₹9,400</span></div>
+              <div style="display:flex;justify-content:space-between"><span style="font:400 14.5px/1.55 Inter,sans-serif;color:#2F8F5B">Margin</span><span style="font:500 14.5px/1.55 'IBM Plex Mono',monospace;color:#2F8F5B">51%</span></div>
+            </div>
+          </div>
+          <div style="border:1px solid #E8E6E0;border-radius:12px;background:#FFFFFF;padding:18px">
+            <span style="font:500 11.5px/1.4 Inter,sans-serif;text-transform:uppercase;letter-spacing:0.08em;color:#8A9491">Can we make it today?</span>
+            <div style="display:flex;align-items:baseline;gap:10px;margin-top:10px"><span style="font:500 30px/1.1 'IBM Plex Mono',monospace">6</span><span style="font:400 13px/1.5 Inter,sans-serif;color:#4A5654">with current stock</span></div>
+            <div style="height:6px;border-radius:2px;background:#F6F5F1;position:relative;overflow:hidden;margin-top:12px"><div style="position:absolute;top:0;bottom:0;left:0;width:32%;background:#C07A22"></div></div>
+            <span style="font:400 13px/1.5 Inter,sans-serif;color:#4A5654;display:block;margin-top:9px">Zinc is the constraint.</span>
+          </div>
+        </aside>
+      </div>
+    </div>
+
+    <div style="width:556px;flex:none;background:#FCFBF8;border:1px solid #D6D3CB;border-radius:16px;padding:28px;display:flex;flex-direction:column;gap:18px">
+      <div>
+        <span style="font:600 22px/1.3 'Instrument Sans',Inter,sans-serif;letter-spacing:-0.02em">Recall trace · MG-A2</span>
+        <div style="font:400 13px/1.5 Inter,sans-serif;color:#8A9491">Quarantined 13 Sep after AE-0219</div>
+      </div>
+      <div style="border:1px solid #C0453C;background:#FAEBEA;border-radius:12px;padding:16px">
+        <div style="display:flex;justify-content:space-between;align-items:baseline">
+          <span style="font:600 16px/1.4 Inter,sans-serif">31 patients received this batch</span>
+          <span style="font:500 14.5px/1.55 'IBM Plex Mono',monospace;color:#C0453C">7 Aug – 13 Sep</span>
+        </div>
+        <p style="font:400 14.5px/1.55 Inter,sans-serif;color:#4A5654;margin:6px 0 0">One adverse event reported. Notification drafts are ready for the physician to review before sending.</p>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px">
+        <div style="border:1px solid #E8E6E0;border-radius:12px;background:#FFFFFF;padding:16px"><span style="font:500 11.5px/1.4 Inter,sans-serif;text-transform:uppercase;letter-spacing:0.08em;color:#8A9491">Units used</span><div style="font:500 26px/1.2 'IBM Plex Mono',monospace;margin-top:6px">31</div></div>
+        <div style="border:1px solid #E8E6E0;border-radius:12px;background:#FFFFFF;padding:16px"><span style="font:500 11.5px/1.4 Inter,sans-serif;text-transform:uppercase;letter-spacing:0.08em;color:#8A9491">Units held</span><div style="font:500 26px/1.2 'IBM Plex Mono',monospace;margin-top:6px">14</div></div>
+      </div>
+      <div style="border:1px solid #E8E6E0;border-radius:16px;background:#FFFFFF;overflow:hidden">
+        <div style="display:grid;grid-template-columns:1.2fr 1fr 1fr;background:#F6F5F1;border-bottom:1px solid #E8E6E0">
+          <div style="padding:10px 16px;font:500 11.5px/1.4 Inter,sans-serif;text-transform:uppercase;letter-spacing:0.08em;color:#8A9491">Patient</div>
+          <div style="padding:10px 12px;font:500 11.5px/1.4 Inter,sans-serif;text-transform:uppercase;letter-spacing:0.08em;color:#8A9491">Session</div>
+          <div style="padding:10px 16px;font:500 11.5px/1.4 Inter,sans-serif;text-transform:uppercase;letter-spacing:0.08em;color:#8A9491">Notified</div>
+        </div>
+        <sc-for list="{{ recall }}" as="r" hint-placeholder-count="5">
+          <div style="display:grid;grid-template-columns:1.2fr 1fr 1fr;align-items:center;border-bottom:1px solid #E8E6E0">
+            <div style="padding:13px 16px;font:400 14.5px/1.55 Inter,sans-serif">{{ r.name }}</div>
+            <div style="padding:13px 12px;font:400 13px/1.5 'IBM Plex Mono',monospace;color:#4A5654">{{ r.session }}</div>
+            <div style="padding:13px 16px"><span style="display:inline-flex;align-items:center;gap:6px;border-radius:999px;padding:3px 9px;font:500 13px/1.4 Inter,sans-serif;background:{{ r.soft }};color:{{ r.color }};border:1px solid {{ r.color }}"><span style="width:5px;height:5px;border-radius:50%;background:{{ r.color }}"></span>{{ r.status }}</span></div>
+          </div>
+        </sc-for>
+      </div>
+      <div style="display:flex;gap:10px">
+        <button type="button" style="flex:1;min-height:44px;border-radius:8px;border:1px solid #D6D3CB;background:#FFFFFF;font:600 14.5px/1 Inter,sans-serif;cursor:pointer">Export list</button>
+        <button type="button" style="flex:1;min-height:44px;border-radius:8px;border:1px solid #C0453C;background:#C0453C;color:#FFFFFF;font:600 14.5px/1 Inter,sans-serif;cursor:pointer">Send notifications</button>
+      </div>
+    </div>
+  </div>
+</section>
+
+</div>
+
+</x-dc>
+<script type="text/x-dc" data-dc-script>
+class Component extends DCLogic {
+  renderVals() {
+    return {
+      nav: (() => {
+        const on = {bg:'#EAF2EF', fg:'#22513F', font:'600 14.5px/1.55 Inter,sans-serif', dot:'#2D6A5A', badgeFg:'#22513F'};
+        const off = {bg:'transparent', fg:'#4A5654', font:'500 14.5px/1.55 Inter,sans-serif', dot:'#D6D3CB', badgeFg:'#8A9491'};
+        return [
+          {label:'Availability', badge:'', ...on},
+          {label:'Products & batches', badge:'412', ...off},
+          {label:'Drip builder', badge:'', ...off},
+          {label:'Preparation orders', badge:'9', ...off},
+          {label:'Alerts', badge:'7', ...off, badgeFg:'#C0453C'},
+          {label:'Reports', badge:'', ...off},
+          {label:'Recall trace', badge:'', ...off}
+        ];
+      })(),
+
+      ingredients: [
+        {name:'Ascorbic acid 7.5 g', batches:'VC-B9, VC-C1', per:'1 vial', stock:'240', supports:'240', pct:'100%', color:'#2F8F5B', waste:'0 mg', wasteFg:'#4A5654', rowBg:'#FFFFFF'},
+        {name:'Magnesium sulphate 1 g', batches:'MG-B4 (MG-A2 held)', per:'1 vial', stock:'14', supports:'14', pct:'12%', color:'#C07A22', waste:'600 mg', wasteFg:'#C07A22', rowBg:'#FBF1E1'},
+        {name:'B-complex 2 ml', batches:'BC-A7, BC-A8', per:'1 amp', stock:'96', supports:'96', pct:'62%', color:'#2F8F5B', waste:'0 ml', wasteFg:'#4A5654', rowBg:'#FFFFFF'},
+        {name:'Cyanocobalamin 1 mg', batches:'B12-C2', per:'2 amp', stock:'58', supports:'29', pct:'34%', color:'#2F8F5B', waste:'0 mcg', wasteFg:'#4A5654', rowBg:'#FFFFFF'},
+        {name:'Calcium gluconate', batches:'CA-D1', per:'1 amp', stock:'71', supports:'71', pct:'54%', color:'#2F8F5B', waste:'0 mg', wasteFg:'#4A5654', rowBg:'#FFFFFF'},
+        {name:'Saline 500 ml', batches:'SL-F8, SL-F9', per:'1 bag', stock:'182', supports:'182', pct:'88%', color:'#2F8F5B', waste:'0 ml', wasteFg:'#4A5654', rowBg:'#FFFFFF'}
+      ],
+
+      allDrips: [
+        {name:"Myers' Revive", real:'14', theory:'19', realPct:'56%', theoryPct:'76%', color:'#C07A22'},
+        {name:'Immune Shield', real:'22', theory:'24', realPct:'88%', theoryPct:'96%', color:'#2F8F5B'},
+        {name:'Deep Recharge', real:'9', theory:'13', realPct:'36%', theoryPct:'52%', color:'#C07A22'},
+        {name:'Glow Protocol', real:'0', theory:'4', realPct:'0%', theoryPct:'16%', color:'#C0453C'},
+        {name:'Jetlag Reset', real:'18', theory:'20', realPct:'72%', theoryPct:'80%', color:'#2F8F5B'}
+      ],
+
+      stats: [
+        {label:'Batches expiring ≤30d', value:'7', pct:'18%', color:'#C0453C', note:'₹2,86,400 at risk'},
+        {label:'Below reorder level', value:'11', pct:'32%', color:'#C07A22', note:'4 purchase orders drafted'},
+        {label:'Quarantined', value:'1', pct:'6%', color:'#C0453C', note:'MG-A2 · awaiting determination'},
+        {label:'Stock value on hand', value:'₹41,90,200', pct:'74%', color:'#2D6A5A', note:'74% of ceiling'}
+      ],
+
+      batches: [
+        {no:'VC-B4', product:'Ascorbic acid 7.5 g', supplier:'Aurex Pharma', expiry:'02 Aug 2026', days:'Expired 30 days ago', units:'18', pct:'0%', status:'Expired', color:'#C0453C', soft:'#FAEBEA'},
+        {no:'GL-D3', product:'Glutathione 600 mg', supplier:'Medivance', expiry:'09 Sep 2026', days:'Expired 5 days ago', units:'0', pct:'0%', status:'Out of stock', color:'#C0453C', soft:'#FAEBEA'},
+        {no:'MG-A2', product:'Magnesium sulphate 1 g', supplier:'Aurex Pharma', expiry:'22 Nov 2026', days:'69 days left', units:'14', pct:'14%', status:'Quarantined', color:'#C0453C', soft:'#FAEBEA'},
+        {no:'VC-B7', product:'Ascorbic acid 7.5 g', supplier:'Aurex Pharma', expiry:'26 Sep 2026', days:'12 days left', units:'42', pct:'18%', status:'Expiring', color:'#C07A22', soft:'#FBF1E1'},
+        {no:'ZN-C4', product:'Zinc sulphate 10 mg', supplier:'Nutriline', expiry:'14 Oct 2026', days:'30 days left', units:'26', pct:'22%', status:'Low', color:'#C07A22', soft:'#FBF1E1'},
+        {no:'VC-B9', product:'Ascorbic acid 7.5 g', supplier:'Aurex Pharma', expiry:'28 Feb 2027', days:'167 days left', units:'240', pct:'77%', status:'Healthy', color:'#2F8F5B', soft:'#E9F5EE'},
+        {no:'SL-F8', product:'Saline 0.9% 500 ml', supplier:'Baxen', expiry:'11 Jun 2027', days:'270 days left', units:'182', pct:'88%', status:'Healthy', color:'#2F8F5B', soft:'#E9F5EE'}
+      ],
+
+      atRisk: [
+        {name:'Ascorbic acid (VC-B7)', value:'₹1,24,500', pct:'44%', color:'#C07A22'},
+        {name:'Glutathione (GL-D3)', value:'₹98,600', pct:'34%', color:'#C0453C'},
+        {name:'Zinc sulphate (ZN-C4)', value:'₹63,300', pct:'22%', color:'#C07A22'}
+      ],
+
+      builder: (() => {
+        const ok = {color:'#2D6A5A', rowBg:'#FFFFFF'};
+        const over = {color:'#C0453C', rowBg:'#FAEBEA'};
+        return [
+          {name:'Ascorbic acid', dose:'5,000 mg', pct:'42%', cost:'₹980', ...ok},
+          {name:'Zinc sulphate', dose:'30 mg', pct:'96%', cost:'₹640', ...over},
+          {name:'Selenium', dose:'100 mcg', pct:'50%', cost:'₹520', ...ok},
+          {name:'B-complex', dose:'2 ml', pct:'50%', cost:'₹410', ...ok},
+          {name:'Saline carrier', dose:'500 ml', pct:'62%', cost:'₹630', ...ok}
+        ];
+      })(),
+
+      recall: (() => {
+        const sent = {status:'Notified', color:'#2F8F5B', soft:'#E9F5EE'};
+        const draft = {status:'Draft', color:'#C07A22', soft:'#FBF1E1'};
+        const ae = {status:'Adverse event', color:'#C0453C', soft:'#FAEBEA'};
+        return [
+          {name:'S. Krishnan', session:'ND-4402 · 13 Sep', ...ae},
+          {name:'R. Mehta', session:'ND-4417 · 14 Sep', ...draft},
+          {name:'A. Bhatt', session:'ND-4390 · 11 Sep', ...sent},
+          {name:'N. Iyer', session:'ND-4361 · 08 Sep', ...sent},
+          {name:'P. Nair', session:'ND-4344 · 06 Sep', ...sent}
+        ];
+      })()
+    };
+  }
+}
+
+</script>
+</body>
+</html>

@@ -1,0 +1,434 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<meta name="design_doc_mode" content="canvas">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Sans:wght@400;500;600;700&family=Inter:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+html,body{margin:0;padding:0}
+body{background:#EFEDE8;color:#16211E;font-family:Inter,system-ui,sans-serif;-webkit-font-smoothing:antialiased}
+*{box-sizing:border-box}
+a{color:#2D6A5A;text-decoration:none}
+a:hover{color:#22513F;text-decoration:underline}
+</style>
+</helmet>
+
+<div style="padding:48px;display:flex;flex-direction:column;gap:48px">
+
+<div style="display:flex;flex-direction:column;gap:8px;max-width:70ch">
+  <span style="font:500 11.5px/1.4 Inter,sans-serif;text-transform:uppercase;letter-spacing:0.08em;color:#8A9491">Block 4 · Nurse app · 390 × 844 · one-handed, gloved, often offline</span>
+  <h1 style="font:700 34px/1.15 'Instrument Sans',Inter,sans-serif;letter-spacing:-0.02em;margin:0">Nurse app</h1>
+  <p style="font:400 16px/1.6 Inter,sans-serif;color:#4A5654;margin:0;text-wrap:pretty">Designed for a person standing in someone's living room with one free hand. Targets are 56px here rather than 44. Everything writes locally first and syncs when signal returns — the offline banner is a permanent fixture, not an error state.</p>
+</div>
+
+<div style="display:flex;gap:24px;flex-wrap:wrap">
+
+  <!-- 4.1 TODAY -->
+  <div style="display:flex;flex-direction:column;gap:10px">
+    <span style="font:500 13px/1.5 'IBM Plex Mono',monospace;color:#8A9491">4.1 · Today's route</span>
+    <div style="width:390px;height:844px;background:#FCFBF8;border:1px solid #D6D3CB;border-radius:28px;overflow:hidden;display:flex;flex-direction:column">
+      <div style="display:flex;justify-content:space-between;padding:14px 22px 6px;font:500 13px/1.5 'IBM Plex Mono',monospace;color:#16211E"><span>9:41</span><span>▮▮▮ ◔</span></div>
+      <div style="padding:20px 22px 14px;display:flex;justify-content:space-between;align-items:flex-start">
+        <div>
+          <h2 style="font:700 26px/1.2 'Instrument Sans',Inter,sans-serif;letter-spacing:-0.02em;margin:0">Sun 14 Sep</h2>
+          <span style="font:400 13px/1.5 Inter,sans-serif;color:#8A9491">3 sessions · Koramangala zone</span>
+        </div>
+        <span style="width:40px;height:40px;border-radius:10px;background:#EAF2EF;color:#22513F;display:inline-flex;align-items:center;justify-content:center;font:600 13px/1 Inter,sans-serif">AR</span>
+      </div>
+      <div style="padding:0 22px 14px">
+        <div style="border:1px solid #E8E6E0;background:#FFFFFF;border-radius:12px;padding:14px 16px;display:flex;gap:18px">
+          <div style="display:flex;flex-direction:column"><span style="font:500 11.5px/1.4 Inter,sans-serif;text-transform:uppercase;letter-spacing:0.08em;color:#8A9491">Done</span><span style="font:500 22px/1.2 'IBM Plex Mono',monospace">1</span></div>
+          <div style="display:flex;flex-direction:column"><span style="font:500 11.5px/1.4 Inter,sans-serif;text-transform:uppercase;letter-spacing:0.08em;color:#8A9491">Left</span><span style="font:500 22px/1.2 'IBM Plex Mono',monospace">2</span></div>
+          <div style="display:flex;flex-direction:column;flex:1"><span style="font:500 11.5px/1.4 Inter,sans-serif;text-transform:uppercase;letter-spacing:0.08em;color:#8A9491">Kit stock</span><span style="font:500 22px/1.2 'IBM Plex Mono',monospace;color:#C0453C">1 low · 1 out</span></div>
+        </div>
+      </div>
+      <div style="padding:0 22px;display:flex;flex-direction:column;gap:12px;flex:1;overflow:hidden">
+        <sc-for list="{{ route }}" as="r" hint-placeholder-count="4">
+          <div style="border:1.5px solid {{ r.line }};background:{{ r.bg }};border-radius:14px;padding:16px;display:flex;flex-direction:column;gap:12px">
+            <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:12px">
+              <div>
+                <span style="font:500 13px/1.5 'IBM Plex Mono',monospace;color:#8A9491">{{ r.time }}</span>
+                <div style="font:600 18px/1.3 'Instrument Sans',Inter,sans-serif;margin-top:2px">{{ r.name }}</div>
+                <div style="font:400 13px/1.5 Inter,sans-serif;color:#4A5654">{{ r.where }}</div>
+              </div>
+              <span style="display:inline-flex;align-items:center;gap:6px;border-radius:999px;padding:4px 10px;font:500 13px/1.4 Inter,sans-serif;background:{{ r.pillBg }};color:{{ r.pillFg }};border:1px solid {{ r.pillFg }};flex:none"><span style="width:6px;height:6px;border-radius:50%;background:{{ r.pillFg }}"></span>{{ r.status }}</span>
+            </div>
+            <div style="display:flex;justify-content:space-between;align-items:center;padding-top:12px;border-top:1px solid #E8E6E0">
+              <div style="display:flex;flex-direction:column"><span style="font:400 13px/1.5 Inter,sans-serif;color:#8A9491">{{ r.drip }}</span><span style="font:400 13px/1.5 'IBM Plex Mono',monospace;color:#8A9491">{{ r.batch }}</span></div>
+              <button type="button" style="min-height:{{ r.btnH }};padding:0 18px;border-radius:8px;border:1px solid {{ r.btnLine }};background:{{ r.btnBg }};color:{{ r.btnFg }};font:600 14.5px/1 Inter,sans-serif;cursor:pointer">{{ r.btn }}</button>
+            </div>
+          </div>
+        </sc-for>
+      </div>
+      <div style="display:flex;border-top:1px solid #E8E6E0;background:#FFFFFF;flex:none">
+        <sc-for list="{{ tabs }}" as="t" hint-placeholder-count="5">
+          <div style="flex:1;min-height:64px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:5px;border-top:2px solid {{ t.line }}">
+            <span style="width:8px;height:8px;border-radius:2px;background:{{ t.dot }}"></span>
+            <span style="font:{{ t.font }};color:{{ t.fg }}">{{ t.label }}</span>
+          </div>
+        </sc-for>
+      </div>
+    </div>
+  </div>
+
+  <!-- 4.2 CHECKLIST -->
+  <div style="display:flex;flex-direction:column;gap:10px">
+    <span style="font:500 13px/1.5 'IBM Plex Mono',monospace;color:#8A9491">4.2 · Checklist · offline, 3 queued</span>
+    <div style="width:390px;height:844px;background:#FCFBF8;border:1px solid #D6D3CB;border-radius:28px;overflow:hidden;display:flex;flex-direction:column">
+      <div style="display:flex;justify-content:space-between;padding:14px 22px 6px;font:500 13px/1.5 'IBM Plex Mono',monospace;color:#16211E"><span>10:04</span><span>▮▮▯ ◔</span></div>
+      <div style="padding:10px 22px 0"><div style="border:1px solid #C07A22;background:#FBF1E1;border-radius:8px;padding:9px 12px;display:flex;align-items:center;gap:10px"><span style="width:8px;height:8px;border-radius:50%;background:#C07A22;flex:none"></span><span style="font:500 13px/1.5 Inter,sans-serif">Offline — 3 steps queued, will sync</span></div></div>
+      <div style="padding:14px 22px;border-bottom:1px solid #E8E6E0">
+        <div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:10px">
+          <span style="font:600 18px/1.3 'Instrument Sans',Inter,sans-serif">R. Mehta · ND-4417</span>
+          <span style="font:500 14.5px/1.55 'IBM Plex Mono',monospace">16/29</span>
+        </div>
+        <div style="display:flex;flex-direction:column;gap:9px">
+          <sc-for list="{{ phases }}" as="p" hint-placeholder-count="4">
+            <div>
+              <div style="display:flex;justify-content:space-between;margin-bottom:5px"><span style="font:400 13px/1.5 Inter,sans-serif;color:#4A5654">{{ p.name }}</span><span style="font:500 13px/1.5 'IBM Plex Mono',monospace;color:#8A9491">{{ p.count }}</span></div>
+              <div style="display:flex;gap:3px">
+                <sc-for list="{{ p.segs }}" as="s" hint-placeholder-count="7">
+                  <div style="flex:1;height:7px;border-radius:2px;background:{{ s.color }}"></div>
+                </sc-for>
+              </div>
+            </div>
+          </sc-for>
+        </div>
+      </div>
+      <div style="padding:16px 22px;display:flex;flex-direction:column;gap:12px;flex:1;overflow:hidden">
+        <sc-for list="{{ steps }}" as="st" hint-placeholder-count="4">
+          <div style="border:{{ st.border }};background:{{ st.bg }};border-radius:14px;padding:{{ st.pad }}">
+            <div style="display:flex;gap:14px">
+              <span style="width:24px;height:24px;border-radius:7px;background:{{ st.boxBg }};border:{{ st.boxLine }};color:#FFFFFF;display:inline-flex;align-items:center;justify-content:center;font:600 12px/1 Inter,sans-serif;flex:none">{{ st.mark }}</span>
+              <div style="flex:1">
+                <div style="display:flex;gap:8px;align-items:baseline;flex-wrap:wrap">
+                  <span style="font:{{ st.font }};color:{{ st.fg }};text-decoration:{{ st.strike }}">{{ st.label }}</span>
+                  <span style="border-radius:999px;padding:2px 8px;font:500 11.5px/1.4 Inter,sans-serif;text-transform:uppercase;letter-spacing:0.08em;background:{{ st.tagBg }};color:{{ st.tagFg }};border:1px solid {{ st.tagLine }};display:{{ st.tagShow }}">{{ st.tag }}</span>
+                </div>
+                <p style="font:400 14.5px/1.55 Inter,sans-serif;color:#4A5654;margin:6px 0 0;display:{{ st.bodyShow }}">{{ st.body }}</p>
+                <div style="font:400 13px/1.5 'IBM Plex Mono',monospace;color:#8A9491;margin-top:4px;display:{{ st.stampShow }}">{{ st.stamp }}</div>
+                <button type="button" style="min-height:56px;width:100%;margin-top:14px;border-radius:8px;border:1px solid #2D6A5A;background:#2D6A5A;color:#FFFFFF;font:600 16px/1 Inter,sans-serif;cursor:pointer;display:{{ st.btnShow }}">{{ st.btn }}</button>
+              </div>
+            </div>
+          </div>
+        </sc-for>
+      </div>
+    </div>
+  </div>
+
+  <!-- 4.3 VITALS -->
+  <div style="display:flex;flex-direction:column;gap:10px">
+    <span style="font:500 13px/1.5 'IBM Plex Mono',monospace;color:#8A9491">4.3 · Vitals · SpO₂ blocks progress</span>
+    <div style="width:390px;height:844px;background:#FCFBF8;border:1px solid #D6D3CB;border-radius:28px;overflow:hidden;display:flex;flex-direction:column">
+      <div style="display:flex;justify-content:space-between;padding:14px 22px 6px;font:500 13px/1.5 'IBM Plex Mono',monospace;color:#16211E"><span>10:06</span><span>▮▮▯ ◔</span></div>
+      <div style="padding:14px 22px;border-bottom:1px solid #E8E6E0;display:flex;align-items:center;gap:12px">
+        <span style="font:400 20px/1 'IBM Plex Mono',monospace;color:#4A5654">←</span>
+        <div><span style="font:600 18px/1.3 'Instrument Sans',Inter,sans-serif">Baseline vitals</span><div style="font:400 13px/1.5 'IBM Plex Mono',monospace;color:#8A9491">Step 12 of 29 · mandatory</div></div>
+      </div>
+      <div style="padding:20px 22px;display:flex;flex-direction:column;gap:16px;flex:1;overflow:hidden">
+        <sc-for list="{{ vitals }}" as="v" hint-placeholder-count="5">
+          <label style="display:flex;flex-direction:column;gap:7px;min-width:0">
+            <div style="display:flex;justify-content:space-between;align-items:baseline">
+              <span style="font:500 14.5px/1.55 Inter,sans-serif">{{ v.name }}</span>
+              <span style="font:400 13px/1.5 'IBM Plex Mono',monospace;color:{{ v.hintFg }}">{{ v.hint }}</span>
+            </div>
+            <input type="text" value="{{ v.value }}" style="min-height:56px;width:100%;padding:0 16px;border-radius:10px;border:1.5px solid {{ v.line }};background:{{ v.bg }};font:500 20px/1 'IBM Plex Mono',monospace;color:#16211E">
+          </label>
+        </sc-for>
+        <div style="border:1px solid #C0453C;background:#FAEBEA;border-radius:12px;padding:16px">
+          <div style="display:flex;gap:12px">
+            <span style="width:20px;height:20px;border-radius:50%;background:#C0453C;color:#FFFFFF;display:inline-flex;align-items:center;justify-content:center;font:600 12px/1 Inter,sans-serif;flex:none">✕</span>
+            <div><span style="font:600 14.5px/1.55 Inter,sans-serif">Cannot start infusion</span><p style="font:400 14.5px/1.55 Inter,sans-serif;color:#4A5654;margin:3px 0 0">SpO₂ 91% is below the 95% floor. Recheck on the other hand, then escalate if it holds.</p></div>
+          </div>
+        </div>
+      </div>
+      <div style="border-top:1px solid #E8E6E0;background:#FFFFFF;padding:14px 22px 24px;display:flex;flex-direction:column;gap:10px">
+        <button type="button" style="min-height:56px;border-radius:8px;border:1px solid #C0453C;background:#C0453C;color:#FFFFFF;font:600 16px/1 Inter,sans-serif;cursor:pointer">Escalate to physician</button>
+        <button type="button" style="min-height:56px;border-radius:8px;border:1px solid #D6D3CB;background:#FFFFFF;font:600 16px/1 Inter,sans-serif;cursor:pointer">Recheck SpO₂</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 4.4 CONSENT -->
+  <div style="display:flex;flex-direction:column;gap:10px">
+    <span style="font:500 13px/1.5 'IBM Plex Mono',monospace;color:#8A9491">4.4 · Consent capture</span>
+    <div style="width:390px;height:844px;background:#FCFBF8;border:1px solid #D6D3CB;border-radius:28px;overflow:hidden;display:flex;flex-direction:column">
+      <div style="display:flex;justify-content:space-between;padding:14px 22px 6px;font:500 13px/1.5 'IBM Plex Mono',monospace;color:#16211E"><span>10:01</span><span>▮▮▯ ◔</span></div>
+      <div style="padding:14px 22px;border-bottom:1px solid #E8E6E0;display:flex;align-items:center;gap:12px">
+        <span style="font:400 20px/1 'IBM Plex Mono',monospace;color:#4A5654">←</span>
+        <div><span style="font:600 18px/1.3 'Instrument Sans',Inter,sans-serif">Informed consent</span><div style="font:400 13px/1.5 'IBM Plex Mono',monospace;color:#8A9491">Step 9 of 29 · mandatory</div></div>
+      </div>
+      <div style="padding:20px 22px;display:flex;flex-direction:column;gap:16px;flex:1;overflow:hidden">
+        <div style="border:1px solid #C5DCD4;background:#EAF2EF;border-radius:12px;padding:14px">
+          <span style="font:600 14.5px/1.55 Inter,sans-serif">Read this aloud</span>
+          <p style="font:400 13px/1.5 Inter,sans-serif;color:#4A5654;margin:4px 0 0">The patient must hear the ingredient list and the risks before signing.</p>
+        </div>
+        <div style="border:1px solid #E8E6E0;background:#FFFFFF;border-radius:12px;padding:16px;max-height:190px;overflow:auto">
+          <p style="font:400 14.5px/1.55 Inter,sans-serif;color:#16211E;margin:0">I understand that intravenous nutrient therapy is administered on the prescription of a registered medical practitioner, that a cannula will be placed in a peripheral vein, and that reactions including bruising, phlebitis, light-headedness and, rarely, allergic response are possible. I confirm the ingredient list and doses were read to me. I may stop the infusion at any point.</p>
+        </div>
+        <div style="border:1px solid #E8E6E0;background:#FFFFFF;border-radius:12px;padding:16px">
+          <span style="font:500 11.5px/1.4 Inter,sans-serif;text-transform:uppercase;letter-spacing:0.08em;color:#8A9491">Today's doses, as approved</span>
+          <div style="display:flex;flex-direction:column;gap:8px;margin-top:12px">
+            <sc-for list="{{ approved }}" as="a" hint-placeholder-count="4">
+              <div style="display:flex;justify-content:space-between;gap:12px"><span style="font:400 14.5px/1.55 Inter,sans-serif;color:#4A5654">{{ a.name }}</span><span style="font:500 14.5px/1.55 'IBM Plex Mono',monospace">{{ a.dose }}</span></div>
+            </sc-for>
+          </div>
+        </div>
+        <label style="display:flex;flex-direction:column;gap:7px;min-width:0">
+          <span style="font:500 14.5px/1.55 Inter,sans-serif">Patient types full name</span>
+          <input type="text" value="Rohan Mehta" style="min-height:56px;width:100%;padding:0 16px;border-radius:10px;border:1.5px solid #2D6A5A;background:#FFFFFF;font:500 20px/1 'IBM Plex Mono',monospace">
+        </label>
+        <div style="display:flex;gap:12px;align-items:flex-start">
+          <span style="width:24px;height:24px;border-radius:7px;background:#2D6A5A;display:inline-flex;align-items:center;justify-content:center;color:#FFFFFF;font:600 12px/1 Inter,sans-serif;flex:none">✓</span>
+          <span style="font:400 14.5px/1.55 Inter,sans-serif">I read the protocol and risks aloud, and the patient consented.</span>
+        </div>
+      </div>
+      <div style="border-top:1px solid #E8E6E0;background:#FFFFFF;padding:14px 22px 24px">
+        <button type="button" style="min-height:56px;width:100%;border-radius:8px;border:1px solid #2D6A5A;background:#2D6A5A;color:#FFFFFF;font:600 16px/1 Inter,sans-serif;cursor:pointer">Capture consent</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div style="display:flex;gap:24px;flex-wrap:wrap">
+
+  <!-- 4.5 INFUSION MONITOR -->
+  <div style="display:flex;flex-direction:column;gap:10px">
+    <span style="font:500 13px/1.5 'IBM Plex Mono',monospace;color:#8A9491">4.5 · Infusion monitor</span>
+    <div style="width:390px;height:844px;background:#FCFBF8;border:1px solid #D6D3CB;border-radius:28px;overflow:hidden;display:flex;flex-direction:column">
+      <div style="display:flex;justify-content:space-between;padding:14px 22px 6px;font:500 13px/1.5 'IBM Plex Mono',monospace;color:#16211E"><span>10:43</span><span>▮▮▯ ◔</span></div>
+      <div style="padding:18px 22px 14px;display:flex;justify-content:space-between;align-items:center">
+        <div><span style="font:600 18px/1.3 'Instrument Sans',Inter,sans-serif">Infusing</span><div style="font:400 13px/1.5 'IBM Plex Mono',monospace;color:#8A9491">R. Mehta · ND-4417</div></div>
+        <span style="display:inline-flex;align-items:center;gap:6px;border-radius:999px;padding:4px 10px;font:500 13px/1.4 Inter,sans-serif;background:#EAF2EF;color:#2D6A5A;border:1px solid #C5DCD4"><span style="width:6px;height:6px;border-radius:50%;background:#2D6A5A"></span>Running</span>
+      </div>
+      <div style="padding:0 22px;display:flex;flex-direction:column;gap:16px;flex:1;overflow:hidden">
+        <div style="border:1px solid #E8E6E0;background:#FFFFFF;border-radius:16px;padding:20px;display:flex;gap:22px;align-items:center">
+          <div style="width:72px;height:170px;border:1px solid #C5DCD4;border-radius:12px 12px 20px 20px;background:#F6F5F1;position:relative;overflow:hidden;flex:none">
+            <div style="position:absolute;left:0;right:0;bottom:0;height:42%;background:#2D6A5A"></div>
+            <div style="position:absolute;left:0;right:0;top:29%;height:1px;background:#D6D3CB"></div>
+            <div style="position:absolute;left:0;right:0;top:58%;height:1px;background:rgba(255,255,255,.35)"></div>
+          </div>
+          <div style="display:flex;flex-direction:column;gap:14px">
+            <div style="display:flex;flex-direction:column"><span style="font:500 11.5px/1.4 Inter,sans-serif;text-transform:uppercase;letter-spacing:0.08em;color:#8A9491">Remaining</span><span style="font:500 30px/1.1 'IBM Plex Mono',monospace">210 ml</span></div>
+            <div style="display:flex;flex-direction:column"><span style="font:500 11.5px/1.4 Inter,sans-serif;text-transform:uppercase;letter-spacing:0.08em;color:#8A9491">Rate</span><span style="font:500 16px/1.4 'IBM Plex Mono',monospace">140 ml/hr</span></div>
+            <div style="display:flex;flex-direction:column"><span style="font:500 11.5px/1.4 Inter,sans-serif;text-transform:uppercase;letter-spacing:0.08em;color:#8A9491">Elapsed</span><span style="font:500 16px/1.4 'IBM Plex Mono',monospace">00:41:12</span></div>
+          </div>
+        </div>
+        <div style="border:1px solid #C07A22;background:#FBF1E1;border-radius:12px;padding:14px 16px;display:flex;gap:12px;align-items:center">
+          <span style="width:20px;height:20px;border-radius:50%;background:#C07A22;color:#FFFFFF;display:inline-flex;align-items:center;justify-content:center;font:600 12px/1 Inter,sans-serif;flex:none">!</span>
+          <span style="font:500 14.5px/1.55 Inter,sans-serif;flex:1">20-minute vitals check due</span>
+          <button type="button" style="min-height:44px;padding:0 14px;border-radius:8px;border:1px solid #C07A22;background:#FFFFFF;color:#C07A22;font:600 13px/1 Inter,sans-serif;cursor:pointer;flex:none">Record</button>
+        </div>
+        <div style="border:1px solid #E8E6E0;background:#FFFFFF;border-radius:12px;padding:18px">
+          <span style="font:500 11.5px/1.4 Inter,sans-serif;text-transform:uppercase;letter-spacing:0.08em;color:#8A9491">Observations log</span>
+          <div style="display:flex;flex-direction:column;gap:10px;margin-top:12px">
+            <sc-for list="{{ obs }}" as="o" hint-placeholder-count="3">
+              <div style="display:flex;gap:12px;align-items:baseline"><span style="font:400 13px/1.5 'IBM Plex Mono',monospace;color:#8A9491;flex:none">{{ o.t }}</span><span style="font:400 14.5px/1.55 Inter,sans-serif;color:#16211E">{{ o.text }}</span></div>
+            </sc-for>
+          </div>
+          <button type="button" style="min-height:44px;width:100%;margin-top:14px;border-radius:8px;border:1px solid #D6D3CB;background:#FFFFFF;font:600 14.5px/1 Inter,sans-serif;cursor:pointer">Add observation</button>
+        </div>
+      </div>
+      <div style="border-top:1px solid #E8E6E0;background:#FFFFFF;padding:14px 22px 24px;display:flex;flex-direction:column;gap:10px">
+        <button type="button" style="min-height:56px;border-radius:8px;border:1px solid #C0453C;background:#C0453C;color:#FFFFFF;font:600 16px/1 Inter,sans-serif;cursor:pointer">Stop infusion — adverse event</button>
+        <button type="button" style="min-height:56px;border-radius:8px;border:1px solid #2D6A5A;background:#FFFFFF;color:#2D6A5A;font:600 16px/1 Inter,sans-serif;cursor:pointer">Mark complete</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 4.6 ADVERSE EVENT -->
+  <div style="display:flex;flex-direction:column;gap:10px">
+    <span style="font:500 13px/1.5 'IBM Plex Mono',monospace;color:#8A9491">4.6 · Log adverse event</span>
+    <div style="width:390px;height:844px;background:#FCFBF8;border:1px solid #D6D3CB;border-radius:28px;overflow:hidden;display:flex;flex-direction:column">
+      <div style="display:flex;justify-content:space-between;padding:14px 22px 6px;font:500 13px/1.5 'IBM Plex Mono',monospace;color:#16211E"><span>10:55</span><span>▮▮▯ ◔</span></div>
+      <div style="padding:14px 22px;background:#FAEBEA;border-bottom:1px solid #C0453C">
+        <span style="font:600 18px/1.3 'Instrument Sans',Inter,sans-serif">Infusion stopped at 00:12:40</span>
+        <div style="font:400 13px/1.5 Inter,sans-serif;color:#4A5654">Log what happened. This reaches the physician immediately.</div>
+      </div>
+      <div style="padding:18px 22px;display:flex;flex-direction:column;gap:18px;flex:1;overflow:hidden">
+        <div style="display:flex;flex-direction:column;gap:9px">
+          <span style="font:500 14.5px/1.55 Inter,sans-serif">Severity</span>
+          <div style="display:flex;gap:8px">
+            <button type="button" style="flex:1;min-height:56px;border-radius:10px;border:1px solid #D6D3CB;background:#FFFFFF;font:600 14.5px/1 Inter,sans-serif;cursor:pointer">Mild</button>
+            <button type="button" style="flex:1;min-height:56px;border-radius:10px;border:1.5px solid #C07A22;background:#FBF1E1;color:#16211E;font:600 14.5px/1 Inter,sans-serif;cursor:pointer">Moderate</button>
+            <button type="button" style="flex:1;min-height:56px;border-radius:10px;border:1px solid #D6D3CB;background:#FFFFFF;font:600 14.5px/1 Inter,sans-serif;cursor:pointer">Severe</button>
+          </div>
+        </div>
+        <div style="display:flex;flex-direction:column;gap:9px">
+          <span style="font:500 14.5px/1.55 Inter,sans-serif">What did you see?</span>
+          <div style="display:flex;flex-wrap:wrap;gap:8px">
+            <sc-for list="{{ symptoms }}" as="s" hint-placeholder-count="8">
+              <span style="border:1.5px solid {{ s.line }};background:{{ s.bg }};color:{{ s.fg }};border-radius:999px;padding:11px 14px;font:{{ s.font }}">{{ s.label }}</span>
+            </sc-for>
+          </div>
+        </div>
+        <div style="display:flex;flex-direction:column;gap:9px">
+          <span style="font:500 14.5px/1.55 Inter,sans-serif">Action taken</span>
+          <div style="display:flex;flex-direction:column;gap:10px">
+            <sc-for list="{{ actions }}" as="a" hint-placeholder-count="4">
+              <div style="display:flex;gap:12px;align-items:center;min-height:44px">
+                <span style="width:24px;height:24px;border-radius:7px;background:{{ a.bg }};border:{{ a.line }};color:#FFFFFF;display:inline-flex;align-items:center;justify-content:center;font:600 12px/1 Inter,sans-serif;flex:none">{{ a.mark }}</span>
+                <span style="font:400 14.5px/1.55 Inter,sans-serif">{{ a.label }}</span>
+              </div>
+            </sc-for>
+          </div>
+        </div>
+        <label style="display:flex;flex-direction:column;gap:7px;min-width:0">
+          <span style="font:500 14.5px/1.55 Inter,sans-serif">Notes</span>
+          <textarea rows="3" style="width:100%;padding:12px;border-radius:10px;border:1px solid #D6D3CB;background:#FFFFFF;font:400 14.5px/1.55 Inter,sans-serif;resize:vertical">Flushing across chest and neck, light-headed on sitting up. Settled in four minutes after stopping.</textarea>
+        </label>
+      </div>
+      <div style="border-top:1px solid #E8E6E0;background:#FFFFFF;padding:14px 22px 24px">
+        <button type="button" style="min-height:56px;width:100%;border-radius:8px;border:1px solid #C0453C;background:#C0453C;color:#FFFFFF;font:600 16px/1 Inter,sans-serif;cursor:pointer">Submit & alert physician</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 4.7 KIT -->
+  <div style="display:flex;flex-direction:column;gap:10px">
+    <span style="font:500 13px/1.5 'IBM Plex Mono',monospace;color:#8A9491">4.7 · My kit</span>
+    <div style="width:390px;height:844px;background:#FCFBF8;border:1px solid #D6D3CB;border-radius:28px;overflow:hidden;display:flex;flex-direction:column">
+      <div style="display:flex;justify-content:space-between;padding:14px 22px 6px;font:500 13px/1.5 'IBM Plex Mono',monospace;color:#16211E"><span>9:41</span><span>▮▮▮ ◔</span></div>
+      <div style="padding:18px 22px 14px">
+        <h2 style="font:700 26px/1.2 'Instrument Sans',Inter,sans-serif;letter-spacing:-0.02em;margin:0">My kit</h2>
+        <span style="font:400 13px/1.5 Inter,sans-serif;color:#8A9491">Checked out 14 Sep, 7:20 AM · Koramangala hub</span>
+      </div>
+      <div style="padding:0 22px;display:flex;flex-direction:column;gap:12px;flex:1;overflow:hidden">
+        <sc-for list="{{ kit }}" as="k" hint-placeholder-count="6">
+          <div style="border:1px solid {{ k.line }};background:{{ k.bg }};border-radius:12px;padding:16px">
+            <div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:9px">
+              <div><span style="font:500 14.5px/1.55 Inter,sans-serif">{{ k.name }}</span><div style="font:400 13px/1.5 'IBM Plex Mono',monospace;color:#8A9491">{{ k.batch }}</div></div>
+              <span style="font:500 16px/1.4 'IBM Plex Mono',monospace">{{ k.qty }}</span>
+            </div>
+            <div style="height:7px;border-radius:2px;background:#F6F5F1;position:relative;overflow:hidden"><div style="position:absolute;top:0;bottom:0;left:0;width:{{ k.pct }};background:{{ k.color }}"></div></div>
+            <div style="display:flex;gap:7px;align-items:center;margin-top:9px"><span style="width:6px;height:6px;border-radius:50%;background:{{ k.color }};flex:none"></span><span style="font:400 13px/1.5 Inter,sans-serif;color:#4A5654">{{ k.note }}</span></div>
+          </div>
+        </sc-for>
+      </div>
+      <div style="border-top:1px solid #E8E6E0;background:#FFFFFF;padding:14px 22px 24px;display:flex;flex-direction:column;gap:10px">
+        <button type="button" style="min-height:56px;border-radius:8px;border:1px solid #2D6A5A;background:#2D6A5A;color:#FFFFFF;font:600 16px/1 Inter,sans-serif;cursor:pointer">Request restock</button>
+        <span style="font:400 13px/1.5 Inter,sans-serif;color:#8A9491;text-align:center">Hub restocks twice daily, 7 AM and 3 PM.</span>
+      </div>
+    </div>
+  </div>
+</div>
+
+</div>
+
+</x-dc>
+<script type="text/x-dc" data-dc-script>
+class Component extends DCLogic {
+  renderVals() {
+    const seg = (n, done) => Array.from({length:n}, (_,i) => ({color: i < done ? '#2D6A5A' : '#F6F5F1'}));
+
+    return {
+      tabs: [
+        {label:'Today', line:'#2D6A5A', dot:'#2D6A5A', fg:'#16211E', font:'600 11.5px/1.4 Inter,sans-serif'},
+        {label:'Checklist', line:'transparent', dot:'#D6D3CB', fg:'#4A5654', font:'500 11.5px/1.4 Inter,sans-serif'},
+        {label:'Schedule', line:'transparent', dot:'#D6D3CB', fg:'#4A5654', font:'500 11.5px/1.4 Inter,sans-serif'},
+        {label:'Kit', line:'transparent', dot:'#D6D3CB', fg:'#4A5654', font:'500 11.5px/1.4 Inter,sans-serif'},
+        {label:'Me', line:'transparent', dot:'#D6D3CB', fg:'#4A5654', font:'500 11.5px/1.4 Inter,sans-serif'}
+      ],
+
+      route: [
+        {time:'08:00 – 08:50', name:'S. Krishnan', where:'HSR Layout, sector 2', drip:'Immune Shield', batch:'VC-B9 · ZN-C4', status:'Completed', pillBg:'#E9F5EE', pillFg:'#2F8F5B', line:'#E8E6E0', bg:'#FFFFFF', btn:'Report', btnBg:'#FFFFFF', btnFg:'#16211E', btnLine:'#D6D3CB', btnH:'44px'},
+        {time:'10:00 – 10:58', name:'R. Mehta', where:'Koramangala 8th Block', drip:"Myers' Revive", batch:'VC-B9 · MG-A2', status:'In progress', pillBg:'#EAF2EF', pillFg:'#2D6A5A', line:'#2D6A5A', bg:'#FFFFFF', btn:'Open checklist', btnBg:'#2D6A5A', btnFg:'#FFFFFF', btnLine:'#2D6A5A', btnH:'56px'},
+        {time:'13:30 – 14:20', name:'A. Bhatt', where:'Ejipura, 12th cross', drip:'Jetlag Reset', batch:'VC-B7 · EL-B1', status:'Kit low', pillBg:'#FBF1E1', pillFg:'#C07A22', line:'#E8E6E0', bg:'#FFFFFF', btn:'Prepare', btnBg:'#FFFFFF', btnFg:'#16211E', btnLine:'#D6D3CB', btnH:'44px'},
+      ],
+
+      phases: [
+        {name:'Pre-session', count:'11 / 11', segs: seg(11, 11)},
+        {name:'Preparation', count:'5 / 7', segs: seg(7, 5)},
+        {name:'During infusion', count:'0 / 4', segs: seg(4, 0)},
+        {name:'Post-session', count:'0 / 7', segs: seg(7, 0)}
+      ],
+
+      steps: (() => {
+        const done = {
+          border:'1px solid #E8E6E0', bg:'#FCFBF8', pad:'14px', boxBg:'#2D6A5A', boxLine:'none', mark:'✓',
+          font:'500 14.5px/1.55 Inter,sans-serif', fg:'#4A5654', strike:'line-through',
+          tagShow:'none', tag:'', tagBg:'transparent', tagFg:'#8A9491', tagLine:'transparent',
+          bodyShow:'none', body:'', stampShow:'block', btnShow:'none', btn:''
+        };
+        const current = {
+          border:'1.5px solid #2D6A5A', bg:'#FFFFFF', pad:'18px', boxBg:'#FFFFFF', boxLine:'1.5px solid #2D6A5A', mark:'',
+          font:"600 18px/1.3 'Instrument Sans',Inter,sans-serif", fg:'#16211E', strike:'none',
+          tagShow:'inline-block', tag:'Mandatory', tagBg:'#FAEBEA', tagFg:'#C0453C', tagLine:'#C0453C',
+          bodyShow:'block', stampShow:'none', stamp:'', btnShow:'block'
+        };
+        const todo = {
+          border:'1px solid #E8E6E0', bg:'#FFFFFF', pad:'14px', boxBg:'#FFFFFF', boxLine:'1.5px solid #D6D3CB', mark:'',
+          font:'400 14.5px/1.55 Inter,sans-serif', fg:'#8A9491', strike:'none',
+          tagShow:'none', tag:'', tagBg:'transparent', tagFg:'#8A9491', tagLine:'transparent',
+          bodyShow:'none', body:'', stampShow:'none', stamp:'', btnShow:'none', btn:''
+        };
+        return [
+          {label:'Verify patient identity and booking ID', stamp:'ND-4417 · 09:58 AM · queued', ...done},
+          {label:'Inspect vial seals and expiry dates', stamp:'VC-B9, MG-A2 · 10:01 AM · queued', ...done},
+          {label:'Record baseline vitals', body:'BP, HR, SpO₂, temperature and weight before any cannulation. Out-of-range values block the next step.', btn:'Open vitals', ...current},
+          {label:'Prime the line and check for air', ...todo}
+        ];
+      })(),
+
+      vitals: (() => {
+        const ok = {line:'#D6D3CB', bg:'#FFFFFF', hintFg:'#8A9491'};
+        const bad = {line:'#C0453C', bg:'#FAEBEA', hintFg:'#C0453C'};
+        return [
+          {name:'Blood pressure', value:'122/78', hint:'90/60 – 140/90', ...ok},
+          {name:'Heart rate', value:'74', hint:'60 – 100 bpm', ...ok},
+          {name:'SpO₂', value:'91', hint:'Below 95% — out of range', ...bad},
+          {name:'Temperature', value:'98.4', hint:'97.0 – 99.5 °F', ...ok}
+        ];
+      })(),
+
+      approved: [
+        {name:'Ascorbic acid', dose:'7,500 mg'},
+        {name:'Magnesium sulphate', dose:'600 mg'},
+        {name:'B-complex', dose:'2 ml'},
+        {name:'Cyanocobalamin', dose:'1,500 mcg'}
+      ],
+
+      obs: [
+        {t:'10:12', text:'Site clean, no swelling. Patient comfortable.'},
+        {t:'10:36', text:'Reported mild cool sensation along the arm. Rate reduced to 140 ml/hr.'}
+      ],
+
+      symptoms: (() => {
+        const on = {line:'#C0453C', bg:'#FAEBEA', fg:'#C0453C', font:'600 14.5px/1 Inter,sans-serif'};
+        const off = {line:'#D6D3CB', bg:'#FFFFFF', fg:'#16211E', font:'400 14.5px/1 Inter,sans-serif'};
+        return [
+          {label:'Flushing', ...on}, {label:'Light-headed', ...on}, {label:'Nausea', ...off},
+          {label:'Rash', ...off}, {label:'Breathlessness', ...off}
+        ];
+      })(),
+
+      actions: (() => {
+        const on = {bg:'#2D6A5A', line:'none', mark:'✓'};
+        const off = {bg:'#FFFFFF', line:'1.5px solid #D6D3CB', mark:''};
+        return [
+          {label:'Stopped the infusion', ...on},
+          {label:'Saline flush given', ...on},
+          {label:'Patient laid flat, legs raised', ...on}
+        ];
+      })(),
+
+      kit: [
+        {name:'Ascorbic acid 7.5 g', batch:'VC-B9', qty:'6 vials', pct:'75%', color:'#2F8F5B', note:'Enough for today', line:'#E8E6E0', bg:'#FFFFFF'},
+        {name:'Magnesium sulphate', batch:'MG-A2', qty:'2 vials', pct:'25%', color:'#C07A22', note:'Restock before the 4 PM session', line:'#C07A22', bg:'#FBF1E1'},
+        {name:'Glutathione 600 mg', batch:'GL-D3', qty:'0 vials', pct:'0%', color:'#C0453C', note:'Out — cannot run Glow Protocol', line:'#C0453C', bg:'#FAEBEA'},
+        {name:'Anaphylaxis kit', batch:'AK-2026-04', qty:'1 sealed', pct:'100%', color:'#2F8F5B', note:'Seal intact · expires 04 Apr 2027', line:'#E8E6E0', bg:'#FFFFFF'}
+      ]
+    };
+  }
+}
+
+</script>
+</body>
+</html>

@@ -1,0 +1,445 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<meta name="design_doc_mode" content="canvas">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Sans:wght@400;500;600;700&family=Inter:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+html,body{margin:0;padding:0}
+body{background:#EFEDE8;color:#16211E;font-family:Inter,system-ui,sans-serif;-webkit-font-smoothing:antialiased}
+*{box-sizing:border-box}
+a{color:#2D6A5A;text-decoration:none}
+a:hover{color:#22513F;text-decoration:underline}
+</style>
+</helmet>
+
+<div style="padding:48px;display:flex;flex-direction:column;gap:56px">
+
+<div style="display:flex;flex-direction:column;gap:8px;max-width:70ch">
+  <span style="font:500 11.5px/1.4 Inter,sans-serif;text-transform:uppercase;letter-spacing:0.08em;color:#8A9491">Block 3 · Doctor console · 1440px</span>
+  <h1 style="font:700 34px/1.15 'Instrument Sans',Inter,sans-serif;letter-spacing:-0.02em;margin:0">Doctor console</h1>
+  <p style="font:400 16px/1.6 Inter,sans-serif;color:#4A5654;margin:0;text-wrap:pretty">The physician's whole job is triage under time pressure: read a quiz, decide, sign. The queue sorts by SLA, not by arrival. Dose editing is where the interface is most careful — every change is diffed against the base protocol before it can be signed.</p>
+</div>
+
+<!-- ===== 3.1 APPROVALS QUEUE ===== -->
+<section style="display:flex;flex-direction:column;gap:12px">
+  <div style="display:flex;align-items:baseline;gap:12px"><span style="font:500 13px/1.5 'IBM Plex Mono',monospace;color:#8A9491">3.1</span><span style="font:600 18px/1.3 'Instrument Sans',Inter,sans-serif">Approvals queue</span></div>
+  <div style="width:1440px;background:#FCFBF8;border:1px solid #D6D3CB;border-radius:16px;overflow:hidden;display:grid;grid-template-columns:236px 1fr">
+    <aside style="background:#FCFBF8;border-right:1px solid #E8E6E0;padding:18px 14px;display:flex;flex-direction:column;gap:22px">
+      <div style="display:flex;gap:10px;align-items:center;padding:0 6px">
+        <div style="width:22px;height:22px;border:1px solid #C5DCD4;border-radius:7px;background:#EAF2EF;position:relative;overflow:hidden"><div style="position:absolute;left:0;right:0;bottom:0;height:62%;background:#2D6A5A"></div></div>
+        <span style="font:600 14.5px/1 'Instrument Sans',Inter,sans-serif">NutriDrip</span>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:2px">
+        <span style="font:500 11.5px/1.4 Inter,sans-serif;text-transform:uppercase;letter-spacing:0.08em;color:#8A9491;padding:0 6px 6px">Physician</span>
+        <sc-for list="{{ nav }}" as="n" hint-placeholder-count="6">
+          <div style="display:flex;align-items:center;gap:10px;min-height:44px;padding:0 10px;border-radius:8px;background:{{ n.bg }};color:{{ n.fg }};font:{{ n.font }};cursor:pointer">
+            <span style="width:6px;height:6px;border-radius:2px;background:{{ n.dot }};flex:none"></span>
+            <span>{{ n.label }}</span>
+            <span style="margin-left:auto;font:500 13px/1 'IBM Plex Mono',monospace;color:{{ n.badgeFg }}">{{ n.badge }}</span>
+          </div>
+        </sc-for>
+      </div>
+      <div style="margin-top:auto;border-top:1px solid #E8E6E0;padding:14px 10px;display:flex;flex-direction:column;gap:5px">
+        <span style="font:500 14.5px/1.55 Inter,sans-serif">Dr Meera Iyer</span>
+        <span style="font:400 13px/1.5 'IBM Plex Mono',monospace;color:#8A9491">KMC-48211</span>
+        <span style="font:400 13px/1.5 Inter,sans-serif;color:#4A5654">Internal medicine</span>
+      </div>
+    </aside>
+
+    <div>
+      <div style="display:flex;align-items:center;gap:20px;padding:16px 28px;border-bottom:1px solid #E8E6E0;background:#FFFFFF">
+        <div>
+          <span style="font:600 22px/1.3 'Instrument Sans',Inter,sans-serif;letter-spacing:-0.02em">Approvals</span>
+          <div style="font:400 13px/1.5 Inter,sans-serif;color:#8A9491">14 Sep 2026 · sorted by time to SLA breach</div>
+        </div>
+        <div style="margin-left:auto;display:flex;gap:12px;align-items:center">
+          <input type="search" placeholder="Patient, session ID…" style="min-height:40px;width:240px;padding:0 14px;border-radius:8px;border:1px solid #D6D3CB;background:#FCFBF8;font:400 13px/1 Inter,sans-serif">
+          <button type="button" style="min-height:44px;padding:0 16px;border-radius:8px;border:1px solid #D6D3CB;background:#FFFFFF;font:600 14.5px/1 Inter,sans-serif;cursor:pointer">Filters</button>
+        </div>
+      </div>
+
+      <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:16px;padding:24px 28px 20px">
+        <sc-for list="{{ stats }}" as="st" hint-placeholder-count="4">
+          <div style="border:1px solid #E8E6E0;border-radius:12px;background:#FFFFFF;padding:18px 20px;display:flex;flex-direction:column;gap:12px">
+            <span style="font:500 11.5px/1.4 Inter,sans-serif;text-transform:uppercase;letter-spacing:0.08em;color:#8A9491">{{ st.label }}</span>
+            <span style="font:500 30px/1.1 'IBM Plex Mono',monospace;font-variant-numeric:tabular-nums">{{ st.value }}</span>
+            <div style="height:4px;border-radius:999px;background:#F6F5F1;position:relative;overflow:hidden"><div style="position:absolute;top:0;bottom:0;left:0;width:{{ st.pct }};background:{{ st.color }}"></div></div>
+            <span style="font:400 13px/1.5 Inter,sans-serif;color:#4A5654">{{ st.note }}</span>
+          </div>
+        </sc-for>
+      </div>
+
+      <div style="padding:0 28px 28px">
+        <div style="border:1px solid #E8E6E0;border-radius:16px;background:#FFFFFF;overflow:hidden">
+          <div style="display:grid;grid-template-columns:1.5fr 1.2fr 0.9fr 1.5fr 1fr 1fr;background:#F6F5F1;border-bottom:1px solid #E8E6E0">
+            <div style="padding:10px 20px;font:500 11.5px/1.4 Inter,sans-serif;text-transform:uppercase;letter-spacing:0.08em;color:#8A9491">Patient</div>
+            <div style="padding:10px 12px;font:500 11.5px/1.4 Inter,sans-serif;text-transform:uppercase;letter-spacing:0.08em;color:#8A9491">Requested drip</div>
+            <div style="padding:10px 12px;text-align:right;font:500 11.5px/1.4 Inter,sans-serif;text-transform:uppercase;letter-spacing:0.08em;color:#8A9491">Vitality</div>
+            <div style="padding:10px 12px;font:500 11.5px/1.4 Inter,sans-serif;text-transform:uppercase;letter-spacing:0.08em;color:#8A9491">Flags</div>
+            <div style="padding:10px 12px;font:500 11.5px/1.4 Inter,sans-serif;text-transform:uppercase;letter-spacing:0.08em;color:#8A9491">SLA ↑</div>
+            <div style="padding:10px 20px;font:500 11.5px/1.4 Inter,sans-serif;text-transform:uppercase;letter-spacing:0.08em;color:#8A9491">Action</div>
+          </div>
+          <sc-for list="{{ queue }}" as="q" hint-placeholder-count="6">
+            <div style="display:grid;grid-template-columns:1.5fr 1.2fr 0.9fr 1.5fr 1fr 1fr;align-items:center;border-bottom:1px solid #E8E6E0;background:{{ q.rowBg }}">
+              <div style="padding:14px 20px;display:flex;flex-direction:column">
+                <span style="font:500 14.5px/1.55 Inter,sans-serif">{{ q.name }}</span>
+                <span style="font:400 13px/1.5 'IBM Plex Mono',monospace;color:#8A9491">{{ q.meta }}</span>
+              </div>
+              <div style="padding:14px 12px;display:flex;flex-direction:column">
+                <span style="font:400 14.5px/1.55 Inter,sans-serif">{{ q.drip }}</span>
+                <span style="font:400 13px/1.5 'IBM Plex Mono',monospace;color:#8A9491">{{ q.slot }}</span>
+              </div>
+              <div style="padding:14px 12px;text-align:right;font:500 14.5px/1.55 'IBM Plex Mono',monospace;font-variant-numeric:tabular-nums">{{ q.score }}</div>
+              <div style="padding:14px 12px;display:flex;flex-wrap:wrap;gap:6px">
+                <sc-for list="{{ q.flags }}" as="f" hint-placeholder-count="2">
+                  <span style="display:inline-flex;align-items:center;gap:5px;border-radius:999px;padding:3px 9px;font:500 13px/1.4 Inter,sans-serif;background:{{ f.soft }};color:{{ f.color }};border:1px solid {{ f.color }}"><span style="width:5px;height:5px;border-radius:50%;background:{{ f.color }}"></span>{{ f.label }}</span>
+                </sc-for>
+              </div>
+              <div style="padding:14px 12px;display:flex;flex-direction:column;gap:6px">
+                <span style="font:500 14.5px/1.55 'IBM Plex Mono',monospace;color:{{ q.slaColor }}">{{ q.sla }}</span>
+                <div style="height:4px;border-radius:999px;background:#F6F5F1;position:relative;overflow:hidden"><div style="position:absolute;top:0;bottom:0;left:0;width:{{ q.slaPct }};background:{{ q.slaColor }}"></div></div>
+              </div>
+              <div style="padding:14px 20px"><button type="button" style="min-height:40px;padding:0 14px;border-radius:8px;border:1px solid {{ q.btnLine }};background:{{ q.btnBg }};color:{{ q.btnFg }};font:600 13px/1 Inter,sans-serif;cursor:pointer">{{ q.btn }}</button></div>
+            </div>
+          </sc-for>
+          <div style="padding:14px 20px;display:flex;justify-content:space-between;align-items:center;background:#FCFBF8">
+            <span style="font:400 13px/1.5 Inter,sans-serif;color:#8A9491">6 of 12 pending · 3 breaching within the hour</span>
+            <span style="font:500 13px/1.5 Inter,sans-serif;color:#2D6A5A">Open oldest →</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ===== 3.2 PATIENT REVIEW ===== -->
+<section style="display:flex;flex-direction:column;gap:12px">
+  <div style="display:flex;align-items:baseline;gap:12px"><span style="font:500 13px/1.5 'IBM Plex Mono',monospace;color:#8A9491">3.2</span><span style="font:600 18px/1.3 'Instrument Sans',Inter,sans-serif">Patient review — allergy conflict blocking approval</span></div>
+  <div style="width:1440px;background:#FCFBF8;border:1px solid #D6D3CB;border-radius:16px;overflow:hidden">
+    <div style="display:flex;align-items:center;gap:16px;padding:16px 28px;border-bottom:1px solid #E8E6E0;background:#FFFFFF">
+      <span style="font:400 20px/1 'IBM Plex Mono',monospace;color:#4A5654">←</span>
+      <div>
+        <span style="font:600 22px/1.3 'Instrument Sans',Inter,sans-serif;letter-spacing:-0.02em">Rohan Mehta</span>
+        <div style="font:400 13px/1.5 'IBM Plex Mono',monospace;color:#8A9491">34 y · M · 78 kg · ND-4417 · submitted 41 min ago</div>
+      </div>
+      <span style="display:inline-flex;align-items:center;gap:6px;border-radius:999px;padding:4px 10px;font:500 13px/1.4 Inter,sans-serif;background:#FAEBEA;color:#C0453C;border:1px solid #C0453C"><span style="width:6px;height:6px;border-radius:50%;background:#C0453C"></span>Allergy conflict</span>
+      <div style="margin-left:auto;display:flex;gap:10px">
+        <button type="button" style="min-height:44px;padding:0 16px;border-radius:8px;border:1px solid #C0453C;background:#FFFFFF;color:#C0453C;font:600 14.5px/1 Inter,sans-serif;cursor:pointer">Decline</button>
+        <button type="button" style="min-height:44px;padding:0 16px;border-radius:8px;border:1px solid #D6D3CB;background:#FFFFFF;font:600 14.5px/1 Inter,sans-serif;cursor:pointer">Request labs</button>
+        <button type="button" disabled="disabled" style="min-height:44px;padding:0 18px;border-radius:8px;border:1px solid #E8E6E0;background:#F6F5F1;color:#8A9491;font:600 14.5px/1 Inter,sans-serif;cursor:not-allowed">Approve & sign</button>
+      </div>
+    </div>
+
+    <div style="display:grid;grid-template-columns:1fr 1fr 400px;gap:0">
+      <div style="padding:24px;border-right:1px solid #E8E6E0;display:flex;flex-direction:column;gap:16px">
+        <div style="border:1px solid #C0453C;background:#FAEBEA;border-radius:12px;padding:16px">
+          <div style="display:flex;gap:12px">
+            <span style="width:20px;height:20px;border-radius:50%;background:#C0453C;color:#FFFFFF;display:inline-flex;align-items:center;justify-content:center;font:600 12px/1 Inter,sans-serif;flex:none">✕</span>
+            <div>
+              <span style="font:600 16px/1.4 Inter,sans-serif">Sulfa allergy vs. requested protocol</span>
+              <p style="font:400 14.5px/1.55 Inter,sans-serif;color:#4A5654;margin:4px 0 0">Patient-declared allergy <strong>Sulfa drugs</strong>. The requested drip carries <span style="font:500 14.5px/1.55 'IBM Plex Mono',monospace">Magnesium sulphate 1,000 mg</span>. Cross-reactivity is unlikely but must be acknowledged in writing before approval.</p>
+            </div>
+          </div>
+          <div style="display:flex;gap:10px;align-items:flex-start;margin-top:14px;padding-top:14px;border-top:1px solid rgba(192,69,60,.25)">
+            <span style="width:18px;height:18px;border-radius:5px;border:1.5px solid #C0453C;background:#FFFFFF;flex:none;margin-top:2px"></span>
+            <span style="font:400 14.5px/1.55 Inter,sans-serif">I have reviewed the allergy and consider this protocol safe to proceed.</span>
+          </div>
+        </div>
+
+        <div style="border:1px solid #E8E6E0;border-radius:12px;background:#FFFFFF;padding:20px">
+          <span style="font:500 11.5px/1.4 Inter,sans-serif;text-transform:uppercase;letter-spacing:0.08em;color:#8A9491">History & medication</span>
+          <div style="display:flex;flex-direction:column;gap:12px;margin-top:14px">
+            <sc-for list="{{ history }}" as="h" hint-placeholder-count="5">
+              <div style="display:flex;justify-content:space-between;gap:16px;align-items:baseline">
+                <span style="font:400 14.5px/1.55 Inter,sans-serif;color:#4A5654">{{ h.k }}</span>
+                <span style="font:{{ h.font }};color:{{ h.color }};text-align:right">{{ h.v }}</span>
+              </div>
+            </sc-for>
+          </div>
+        </div>
+
+        <div style="border:1px solid #E8E6E0;border-radius:12px;background:#FFFFFF;padding:20px">
+          <span style="font:500 11.5px/1.4 Inter,sans-serif;text-transform:uppercase;letter-spacing:0.08em;color:#8A9491">Recent labs · uploaded 10 Sep</span>
+          <div style="display:flex;flex-direction:column;gap:14px;margin-top:14px">
+            <sc-for list="{{ labs }}" as="l" hint-placeholder-count="4">
+              <div>
+                <div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:6px">
+                  <span style="font:400 14.5px/1.55 Inter,sans-serif">{{ l.name }}</span>
+                  <span style="display:flex;gap:10px;align-items:baseline"><span style="font:500 14.5px/1.55 'IBM Plex Mono',monospace;color:{{ l.color }}">{{ l.value }}</span><span style="font:400 13px/1.5 'IBM Plex Mono',monospace;color:#8A9491">{{ l.range }}</span></span>
+                </div>
+                <div style="height:6px;border-radius:999px;background:#F6F5F1;position:relative">
+                  <div style="position:absolute;top:0;bottom:0;left:{{ l.lo }};right:{{ l.hi }};background:#EAF2EF;border-radius:999px"></div>
+                  <span style="position:absolute;top:-4px;left:{{ l.at }};width:3px;height:14px;border-radius:2px;background:{{ l.color }}"></span>
+                </div>
+              </div>
+            </sc-for>
+          </div>
+        </div>
+      </div>
+
+      <div style="padding:24px;border-right:1px solid #E8E6E0;display:flex;flex-direction:column;gap:16px">
+        <div style="border:1px solid #E8E6E0;border-radius:12px;background:#FFFFFF;padding:20px">
+          <div style="display:flex;justify-content:space-between;align-items:baseline">
+            <span style="font:500 11.5px/1.4 Inter,sans-serif;text-transform:uppercase;letter-spacing:0.08em;color:#8A9491">Quiz — 16 markers</span>
+            <span style="font:500 14.5px/1.55 'IBM Plex Mono',monospace">62 / 100</span>
+          </div>
+          <div style="display:flex;flex-direction:column;gap:11px;margin-top:14px">
+            <sc-for list="{{ markers }}" as="m" hint-placeholder-count="8">
+              <div>
+                <div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:4px">
+                  <span style="font:400 14.5px/1.55 Inter,sans-serif">{{ m.name }}</span>
+                  <span style="display:flex;gap:8px;align-items:baseline"><span style="font:400 13px/1.5 Inter,sans-serif;color:{{ m.color }}">{{ m.risk }}</span><span style="font:500 13px/1.5 'IBM Plex Mono',monospace">{{ m.pct }}</span></span>
+                </div>
+                <div style="height:5px;border-radius:999px;background:#F6F5F1;position:relative;overflow:hidden"><div style="position:absolute;top:0;bottom:0;left:0;width:{{ m.pct }};background:{{ m.color }}"></div></div>
+              </div>
+            </sc-for>
+          </div>
+        </div>
+        <div style="border:1px solid #E8E6E0;border-radius:12px;background:#FFFFFF;padding:20px">
+          <span style="font:500 11.5px/1.4 Inter,sans-serif;text-transform:uppercase;letter-spacing:0.08em;color:#8A9491">Patient's own words</span>
+          <p style="font:400 14.5px/1.55 Inter,sans-serif;color:#16211E;margin:10px 0 0;text-wrap:pretty">"Waking up tired most days for about two months. Travel-heavy job, roughly six flights a month. Had a similar drip in Mumbai last year and it helped for a few weeks."</p>
+        </div>
+      </div>
+
+      <aside style="padding:24px;background:#FFFFFF;display:flex;flex-direction:column;gap:16px">
+        <div style="display:flex;justify-content:space-between;align-items:baseline">
+          <span style="font:500 11.5px/1.4 Inter,sans-serif;text-transform:uppercase;letter-spacing:0.08em;color:#8A9491">Protocol editor</span>
+          <span style="font:500 13px/1.5 Inter,sans-serif;color:#C07A22">2 changes</span>
+        </div>
+        <div style="display:flex;flex-direction:column;gap:14px">
+          <sc-for list="{{ doses }}" as="d" hint-placeholder-count="6">
+            <div style="border:1px solid {{ d.line }};background:{{ d.bg }};border-radius:12px;padding:14px">
+              <div style="display:flex;justify-content:space-between;align-items:baseline;gap:12px">
+                <span style="font:500 14.5px/1.55 Inter,sans-serif">{{ d.name }}</span>
+                <span style="font:500 13px/1.5 Inter,sans-serif;color:{{ d.tagFg }}">{{ d.tag }}</span>
+              </div>
+              <div style="display:flex;align-items:center;gap:10px;margin-top:10px">
+                <div style="display:inline-flex;align-items:center;border:1px solid #D6D3CB;border-radius:8px;overflow:hidden;background:#FFFFFF">
+                  <button type="button" aria-label="Decrease" style="width:36px;height:40px;border:none;border-right:1px solid #E8E6E0;background:#FFFFFF;font:400 16px/1 'IBM Plex Mono',monospace;color:#4A5654;cursor:pointer">−</button>
+                  <span style="min-width:88px;text-align:center;font:500 14.5px/1 'IBM Plex Mono',monospace">{{ d.dose }}</span>
+                  <button type="button" aria-label="Increase" style="width:36px;height:40px;border:none;border-left:1px solid #E8E6E0;background:#FFFFFF;font:400 16px/1 'IBM Plex Mono',monospace;color:#4A5654;cursor:pointer">+</button>
+                </div>
+                <span style="font:400 13px/1.5 'IBM Plex Mono',monospace;color:#8A9491">was {{ d.was }}</span>
+              </div>
+              <div style="height:6px;border-radius:999px;background:#F6F5F1;position:relative;margin-top:12px">
+                <div style="position:absolute;top:0;bottom:0;left:0;width:{{ d.pct }};background:{{ d.fill }};border-radius:999px"></div>
+                <div style="position:absolute;top:-4px;bottom:-4px;left:{{ d.max }};width:1px;background:#4A5654"></div>
+              </div>
+              <div style="display:flex;justify-content:flex-end;margin-top:6px"><span style="font:400 13px/1.5 Inter,sans-serif;color:#8A9491">session max <span style="font-family:'IBM Plex Mono',monospace">{{ d.maxLabel }}</span></span></div>
+            </div>
+          </sc-for>
+        </div>
+        <label style="display:flex;flex-direction:column;gap:7px;min-width:0">
+          <span style="font:500 14.5px/1.55 Inter,sans-serif">Note to nurse</span>
+          <textarea rows="3" style="width:100%;padding:10px 12px;border-radius:8px;border:1px solid #D6D3CB;background:#FFFFFF;font:400 14.5px/1.55 Inter,sans-serif;resize:vertical">Run the magnesium slowly. Recheck BP at 20 minutes.</textarea>
+        </label>
+        <div style="border:1px solid #E8E6E0;background:#F6F5F1;border-radius:12px;padding:14px">
+          <span style="font:500 11.5px/1.4 Inter,sans-serif;text-transform:uppercase;letter-spacing:0.08em;color:#8A9491">Signature</span>
+          <p style="font:400 13px/1.5 Inter,sans-serif;color:#4A5654;margin:8px 0 10px">Approving attaches your name and registration number to this protocol and releases it to scheduling.</p>
+          <span style="font:500 14.5px/1.55 'IBM Plex Mono',monospace">Dr Meera Iyer · KMC-48211</span>
+        </div>
+      </aside>
+    </div>
+  </div>
+</section>
+
+<!-- ===== 3.3 SCHEDULE + 3.4 ADVERSE ===== -->
+<section style="display:flex;flex-direction:column;gap:12px">
+  <div style="display:flex;align-items:baseline;gap:12px"><span style="font:500 13px/1.5 'IBM Plex Mono',monospace;color:#8A9491">3.3 · 3.4</span><span style="font:600 18px/1.3 'Instrument Sans',Inter,sans-serif">My schedule · adverse event review</span></div>
+  <div style="display:flex;gap:24px;align-items:flex-start">
+    <div style="width:840px;flex:none;background:#FCFBF8;border:1px solid #D6D3CB;border-radius:16px;padding:28px">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px">
+        <div><span style="font:600 22px/1.3 'Instrument Sans',Inter,sans-serif;letter-spacing:-0.02em">Week of 14 Sep</span><div style="font:400 13px/1.5 Inter,sans-serif;color:#8A9491">Review windows and teleconsults</div></div>
+        <div style="display:inline-flex;background:#F6F5F1;border:1px solid #E8E6E0;border-radius:8px;padding:3px;gap:3px">
+          <button type="button" style="min-height:38px;padding:0 14px;border-radius:6px;border:1px solid #E8E6E0;background:#FFFFFF;font:600 13px/1 Inter,sans-serif;cursor:pointer">Week</button>
+          <button type="button" style="min-height:38px;padding:0 14px;border-radius:6px;border:1px solid transparent;background:transparent;font:500 13px/1 Inter,sans-serif;color:#4A5654;cursor:pointer">Day</button>
+        </div>
+      </div>
+      <div style="border:1px solid #E8E6E0;border-radius:12px;background:#FFFFFF;overflow:hidden">
+        <div style="display:grid;grid-template-columns:64px repeat(6,1fr);background:#F6F5F1;border-bottom:1px solid #E8E6E0">
+          <div style="padding:9px 10px"></div>
+          <sc-for list="{{ weekdays }}" as="w" hint-placeholder-count="6">
+            <div style="padding:9px 10px;border-left:1px solid #E8E6E0;display:flex;flex-direction:column">
+              <span style="font:500 11.5px/1.4 Inter,sans-serif;text-transform:uppercase;letter-spacing:0.08em;color:#8A9491">{{ w.dow }}</span>
+              <span style="font:500 14.5px/1.4 'IBM Plex Mono',monospace;color:{{ w.fg }}">{{ w.n }}</span>
+            </div>
+          </sc-for>
+        </div>
+        <sc-for list="{{ slots }}" as="row" hint-placeholder-count="5">
+          <div style="display:grid;grid-template-columns:64px repeat(6,1fr);border-bottom:1px solid #E8E6E0;min-height:56px">
+            <div style="padding:8px 10px;font:400 13px/1.5 'IBM Plex Mono',monospace;color:#8A9491">{{ row.time }}</div>
+            <sc-for list="{{ row.cells }}" as="c" hint-placeholder-count="6">
+              <div style="border-left:1px solid #E8E6E0;padding:5px">
+                <div style="height:100%;border-radius:6px;background:{{ c.bg }};border:1px solid {{ c.line }};padding:{{ c.pad }};display:flex;flex-direction:column;gap:2px;justify-content:center">
+                  <span style="font:500 13px/1.3 Inter,sans-serif;color:{{ c.fg }}">{{ c.label }}</span>
+                  <span style="font:400 11.5px/1.3 'IBM Plex Mono',monospace;color:{{ c.sub }}">{{ c.count }}</span>
+                </div>
+              </div>
+            </sc-for>
+          </div>
+        </sc-for>
+      </div>
+    </div>
+
+    <div style="width:576px;flex:none;background:#FCFBF8;border:1px solid #D6D3CB;border-radius:16px;padding:28px;display:flex;flex-direction:column;gap:18px">
+      <div>
+        <span style="font:600 22px/1.3 'Instrument Sans',Inter,sans-serif;letter-spacing:-0.02em">Adverse event · AE-0219</span>
+        <div style="font:400 13px/1.5 Inter,sans-serif;color:#8A9491">Reported by nurse Anjali Rao · 13 Sep, 11:42 AM</div>
+      </div>
+      <div style="border:1px solid #C0453C;background:#FAEBEA;border-radius:12px;padding:16px">
+        <div style="display:flex;justify-content:space-between;align-items:baseline">
+          <span style="font:600 16px/1.4 Inter,sans-serif">Moderate — infusion stopped</span>
+          <span style="font:500 13px/1.5 'IBM Plex Mono',monospace;color:#C0453C">at 00:12:40</span>
+        </div>
+        <p style="font:400 14.5px/1.55 Inter,sans-serif;color:#4A5654;margin:8px 0 0">Patient reported flushing and light-headedness twelve minutes in. Infusion stopped, saline flush given, vitals stable within four minutes. No adrenaline required.</p>
+      </div>
+      <div style="border:1px solid #E8E6E0;border-radius:12px;background:#FFFFFF;padding:18px">
+        <span style="font:500 11.5px/1.4 Inter,sans-serif;text-transform:uppercase;letter-spacing:0.08em;color:#8A9491">Vitals at event</span>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:12px">
+          <div style="display:flex;justify-content:space-between"><span style="font:400 14.5px/1.55 Inter,sans-serif;color:#4A5654">BP</span><span style="font:500 14.5px/1.55 'IBM Plex Mono',monospace;color:#C07A22">98/62</span></div>
+          <div style="display:flex;justify-content:space-between"><span style="font:400 14.5px/1.55 Inter,sans-serif;color:#4A5654">HR</span><span style="font:500 14.5px/1.55 'IBM Plex Mono',monospace;color:#C07A22">104</span></div>
+          <div style="display:flex;justify-content:space-between"><span style="font:400 14.5px/1.55 Inter,sans-serif;color:#4A5654">SpO₂</span><span style="font:500 14.5px/1.55 'IBM Plex Mono',monospace">97%</span></div>
+          <div style="display:flex;justify-content:space-between"><span style="font:400 14.5px/1.55 Inter,sans-serif;color:#4A5654">Temp</span><span style="font:500 14.5px/1.55 'IBM Plex Mono',monospace">98.9°F</span></div>
+        </div>
+      </div>
+      <div style="border:1px solid #E8E6E0;border-radius:12px;background:#FFFFFF;padding:18px">
+        <span style="font:500 11.5px/1.4 Inter,sans-serif;text-transform:uppercase;letter-spacing:0.08em;color:#8A9491">Batch trace</span>
+        <div style="display:flex;flex-direction:column;gap:9px;margin-top:12px">
+          <div style="display:flex;justify-content:space-between"><span style="font:400 14.5px/1.55 Inter,sans-serif;color:#4A5654">Vitamin C</span><span style="font:500 14.5px/1.55 'IBM Plex Mono',monospace">VC-B9</span></div>
+          <div style="display:flex;justify-content:space-between"><span style="font:400 14.5px/1.55 Inter,sans-serif;color:#4A5654">Magnesium</span><span style="font:500 14.5px/1.55 'IBM Plex Mono',monospace">MG-A2</span></div>
+          <div style="display:flex;justify-content:space-between"><span style="font:400 14.5px/1.55 Inter,sans-serif;color:#4A5654">Other sessions on MG-A2</span><span style="font:500 14.5px/1.55 'IBM Plex Mono',monospace">31</span></div>
+        </div>
+      </div>
+      <label style="display:flex;flex-direction:column;gap:7px;min-width:0">
+        <span style="font:500 14.5px/1.55 Inter,sans-serif">Physician determination</span>
+        <textarea rows="3" placeholder="Causality, action taken, whether the batch should be quarantined…" style="width:100%;padding:10px 12px;border-radius:8px;border:1px solid #D6D3CB;background:#FFFFFF;font:400 14.5px/1.55 Inter,sans-serif;resize:vertical"></textarea>
+      </label>
+      <div style="display:flex;gap:10px">
+        <button type="button" style="flex:1;min-height:44px;border-radius:8px;border:1px solid #C0453C;background:#C0453C;color:#FFFFFF;font:600 14.5px/1 Inter,sans-serif;cursor:pointer">Quarantine MG-A2</button>
+        <button type="button" style="flex:1;min-height:44px;border-radius:8px;border:1px solid #D6D3CB;background:#FFFFFF;font:600 14.5px/1 Inter,sans-serif;cursor:pointer">Close, no action</button>
+      </div>
+    </div>
+  </div>
+</section>
+
+</div>
+
+</x-dc>
+<script type="text/x-dc" data-dc-script>
+class Component extends DCLogic {
+  renderVals() {
+    const risk = (name, pct) => ({name, pct: pct + '%', risk: pct < 35 ? 'Critical' : pct < 60 ? 'Low' : 'Adequate', color: pct < 35 ? '#C0453C' : pct < 60 ? '#C07A22' : '#2F8F5B'});
+    const flag = (label, kind) => ({
+      label,
+      color: kind === 'crit' ? '#C0453C' : kind === 'warn' ? '#C07A22' : '#45699B',
+      soft: kind === 'crit' ? '#FAEBEA' : kind === 'warn' ? '#FBF1E1' : '#EBF0F7'
+    });
+
+    return {
+      nav: (() => {
+        const on = {bg:'#EAF2EF', fg:'#22513F', font:'600 14.5px/1.55 Inter,sans-serif', dot:'#2D6A5A', badgeFg:'#22513F'};
+        const off = {bg:'transparent', fg:'#4A5654', font:'500 14.5px/1.55 Inter,sans-serif', dot:'#D6D3CB', badgeFg:'#8A9491'};
+        return [
+          {label:'Approvals', badge:'12', ...on},
+          {label:'My patients', badge:'', ...off},
+          {label:'Schedule', badge:'', ...off},
+          {label:'Adverse events', badge:'2', ...off, badgeFg:'#C0453C'},
+          {label:'Protocol library', badge:'', ...off},
+          {label:'Audit log', badge:'', ...off}
+        ];
+      })(),
+
+      stats: [
+        {label:'Pending approvals', value:'12', pct:'34%', color:'#C07A22', note:'3 breaching within the hour'},
+        {label:'Approved today', value:'19', pct:'62%', color:'#2D6A5A', note:'Median review 24 min'},
+        {label:'Declined this week', value:'4', pct:'12%', color:'#C0453C', note:'2 renal, 1 pregnancy, 1 no labs'},
+        {label:'Open adverse events', value:'2', pct:'18%', color:'#C0453C', note:'1 awaiting your determination'}
+      ],
+
+      queue: (() => {
+        const urgent = {slaColor:'#C0453C', rowBg:'#FFFFFF', btnBg:'#2D6A5A', btnFg:'#FFFFFF', btnLine:'#2D6A5A', btn:'Review'};
+        const soon = {slaColor:'#C07A22', rowBg:'#FFFFFF', btnBg:'#FFFFFF', btnFg:'#16211E', btnLine:'#D6D3CB', btn:'Review'};
+        const ok = {slaColor:'#4A5654', rowBg:'#FFFFFF', btnBg:'#FFFFFF', btnFg:'#16211E', btnLine:'#D6D3CB', btn:'Review'};
+        return [
+          {name:'Rohan Mehta', meta:'34 y · M · ND-4417', drip:"Myers' Revive", slot:'14 Sep, 10:30 AM', score:'62', flags:[flag('Sulfa allergy','crit')], sla:'0:18 left', slaPct:'12%', ...urgent},
+          {name:'Priya Nair', meta:'41 y · F · ND-4419', drip:'Iron Restore', slot:'14 Sep, 2:00 PM', score:'48', flags:[flag('Labs 8 mo old','warn'), flag('On metformin','info')], sla:'0:41 left', slaPct:'28%', ...urgent},
+          {name:'Arjun Shetty', meta:'29 y · M · ND-4421', drip:'Deep Recharge', slot:'15 Sep, 8:00 AM', score:'71', flags:[], sla:'1:12 left', slaPct:'48%', ...soon},
+          {name:'Fatima Khan', meta:'52 y · F · ND-4422', drip:'Immune Shield', slot:'15 Sep, 11:00 AM', score:'39', flags:[flag('eGFR 54','crit'), flag('Hypertension','warn')], sla:'1:34 left', slaPct:'58%', ...soon},
+          {name:'Vikram Desai', meta:'38 y · M · ND-4424', drip:'Glow Protocol', slot:'15 Sep, 6:30 PM', score:'66', flags:[flag('Repeat patient','info')], sla:'3:02 left', slaPct:'82%', ...ok},
+          {name:'Sneha Pillai', meta:'26 y · F · ND-4425', drip:'Jetlag Reset', slot:'16 Sep, 9:00 AM', score:'74', flags:[], sla:'5:20 left', slaPct:'94%', ...ok}
+        ];
+      })(),
+
+      history: (() => {
+        const plain = {font:'500 14.5px/1.55 Inter,sans-serif', color:'#16211E'};
+        const alert = {font:'500 14.5px/1.55 Inter,sans-serif', color:'#C0453C'};
+        const mono = {font:"500 14.5px/1.55 'IBM Plex Mono',monospace", color:'#16211E'};
+        return [
+          {k:'Allergies', v:'Sulfa drugs, iodine', ...alert},
+          {k:'Current medication', v:'None declared', ...plain},
+          {k:'Conditions', v:'None declared', ...plain},
+          {k:'Previous IV sessions', v:'3 · last 31 Aug 2026', ...mono},
+          {k:'Weight · BMI', v:'78 kg · 24.1', ...mono}
+        ];
+      })(),
+
+      labs: [
+        {name:'Haemoglobin', value:'13.8 g/dL', range:'13–17', color:'#2F8F5B', lo:'20%', hi:'22%', at:'52%'},
+        {name:'Serum ferritin', value:'22 ng/mL', range:'30–400', color:'#C07A22', lo:'22%', hi:'18%', at:'16%'},
+        {name:'Vitamin D (25-OH)', value:'11 ng/mL', range:'30–100', color:'#C0453C', lo:'28%', hi:'14%', at:'9%'},
+        {name:'Creatinine', value:'0.9 mg/dL', range:'0.7–1.3', color:'#2F8F5B', lo:'24%', hi:'20%', at:'46%'}
+      ],
+
+      markers: [
+        risk('Vitamin D', 18), risk('Iron', 42), risk('Magnesium', 51),
+        risk('B12', 44), risk('Vitamin C', 68), risk('Zinc', 63),
+        risk('Hydration', 57), risk('Glutathione', 38)
+      ],
+
+      doses: (() => {
+        const same = {line:'#E8E6E0', bg:'#FFFFFF', tag:'', tagFg:'#8A9491', fill:'#2D6A5A'};
+        const changed = {line:'#C07A22', bg:'#FBF1E1', tag:'Changed', tagFg:'#C07A22', fill:'#C07A22'};
+        return [
+          {name:'Ascorbic acid', dose:'7,500 mg', was:'7,500 mg', pct:'62%', max:'84%', maxLabel:'10,000 mg', ...same},
+          {name:'Magnesium sulphate', dose:'600 mg', was:'1,000 mg', pct:'50%', max:'84%', maxLabel:'1,200 mg', ...changed},
+          {name:'B-complex', dose:'2 ml', was:'2 ml', pct:'50%', max:'84%', maxLabel:'4 ml', ...same},
+          {name:'Cyanocobalamin', dose:'1,500 mcg', was:'1,000 mcg', pct:'60%', max:'84%', maxLabel:'2,500 mcg', ...changed},
+          {name:'Calcium gluconate', dose:'500 mg', was:'500 mg', pct:'33%', max:'84%', maxLabel:'1,500 mg', ...same},
+          {name:'Pyridoxine (B6)', dose:'100 mg', was:'100 mg', pct:'25%', max:'84%', maxLabel:'400 mg', ...same}
+        ];
+      })(),
+
+      weekdays: [
+        {dow:'Mon', n:'14', fg:'#16211E'}, {dow:'Tue', n:'15', fg:'#16211E'},
+        {dow:'Wed', n:'16', fg:'#16211E'}, {dow:'Thu', n:'17', fg:'#16211E'},
+        {dow:'Fri', n:'18', fg:'#16211E'}, {dow:'Sat', n:'19', fg:'#8A9491'}
+      ],
+
+      slots: (() => {
+        const empty = {bg:'transparent', line:'transparent', fg:'#8A9491', sub:'#8A9491', label:'', count:'', pad:'0'};
+        const review = {bg:'#EAF2EF', line:'#C5DCD4', fg:'#22513F', sub:'#4A5654', label:'Review block', pad:'8px 10px'};
+        const tele = {bg:'#EBF0F7', line:'#45699B', fg:'#16211E', sub:'#4A5654', label:'Teleconsult', pad:'8px 10px'};
+        const full = {bg:'#FBF1E1', line:'#C07A22', fg:'#16211E', sub:'#4A5654', label:'Review block', pad:'8px 10px'};
+        return [
+          {time:'08:00', cells:[{...review, count:'6 pending'}, {...empty}, {...review, count:'4 pending'}, {...empty}, {...review, count:'5 pending'}, {...empty}]},
+          {time:'10:00', cells:[{...empty}, {...tele, count:'P. Nair'}, {...empty}, {...tele, count:'F. Khan'}, {...empty}, {...empty}]},
+          {time:'12:00', cells:[{...full, count:'12 pending'}, {...empty}, {...empty}, {...review, count:'3 pending'}, {...empty}, {...empty}]},
+          {time:'15:00', cells:[{...empty}, {...review, count:'2 pending'}, {...empty}, {...empty}, {...tele, count:'A. Shetty'}, {...empty}]},
+          {time:'18:00', cells:[{...review, count:'on call'}, {...empty}, {...review, count:'on call'}, {...empty}, {...empty}, {...review, count:'on call'}]}
+        ];
+      })()
+    };
+  }
+}
+
+</script>
+</body>
+</html>

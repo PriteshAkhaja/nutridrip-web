@@ -1,0 +1,1250 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>Nutridrip Workflows</title>
+  <style>
+    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; max-width: 900px; margin: 40px auto; padding: 20px; line-height: 1.6; color: #333; }
+    h1 { border-bottom: 3px solid #0C8074; padding-bottom: 10px; color: #111; }
+    h2 { color: #0C8074; margin-top: 30px; }
+    h3 { color: #54637B; }
+    pre { background: #f4f4f4; padding: 15px; border-radius: 8px; overflow-x: auto; font-size: 12px; border: 1px solid #ddd; white-space: pre; }
+    table { width: 100%; border-collapse: collapse; margin: 20px 0; }
+    th, td { border: 1px solid #ddd; padding: 10px; text-align: left; }
+    th { background: #0C8074; color: white; }
+    tr:nth-child(even) { background: #f9f9f9; }
+    code { background: #f4f4f4; padding: 2px 6px; border-radius: 4px; }
+    .toc { background: #f5f7fb; padding: 20px; border-radius: 10px; margin: 20px 0; }
+    @media print { body { margin: 0; padding: 20px; } h1 { page-break-before: auto; } h2 { page-break-after: avoid; } }
+  </style>
+</head>
+<body>
+<h1>Nutridrip Platform Workflows</h1>Detailed workflow documentation for all user roles: Super Admin, Admin, Doctor, Nurse, Clinic, and Patient.
+
+<hr>
+
+<h2>Table of Contents</h2>1. [Super Admin Workflows](#1-super-admin)
+2. [Admin Workflows](#2-admin)
+3. [Doctor Workflows](#3-doctor)
+4. [Nurse Workflows](#4-nurse)
+5. [Clinic Workflows](#5-clinic)
+6. [Patient Workflows](#6-patient)
+
+<hr>
+
+<h2>1. SUPER ADMIN</h2>Super Admin has full platform control including user management, inventory, AI models, and system configuration.
+
+<h3>1.1 Authentication Workflow</h3>``<code>
+┌─────────────────┐
+│   Login Page    │
+│  /login         │
+└────────┬────────┘
+         │
+         ▼
+┌─────────────────┐
+│ Enter Email &   │
+│ Password         │
+└────────┬────────┘
+         │
+         ▼
+┌─────────────────┐
+│ Validate        │
+│ Credentials     │
+└────────┬────────┘
+         │
+    ┌────┴────┐
+    │ Success? │
+    └────┬────┘
+   No    │    Yes
+    │     │
+    ▼     ▼
+┌───────┐  ┌─────────────────┐
+│Show   │  │ Redirect to     │
+│Error  │  │/dashboard/admin │
+└───────┘  └─────────────────┘
+</code>`<code>
+
+<h3>1.2 Dashboard Overview Workflow</h3></code>`<code>
+┌─────────────────┐
+│  Admin Dashboard│
+│/dashboard/admin │
+└────────┬────────┘
+         │
+         ▼
+┌─────────────────┐
+│ View Stats Cards│
+├─────────────────┤
+│ • Total Patients│
+│ • Active Doctors│
+│ • Partner Clinics│
+│ • Pending Approvals│
+│ • Total Revenue │
+└────────┬────────┘
+         │
+         ▼
+┌─────────────────┐
+│ Quick Actions   │
+├─────────────────┤
+│ [Manage Users] │
+│ [Inventory]    │
+│ [AI Studio]    │
+│ [Approvals]    │
+└─────────────────┘
+</code>`<code>
+
+<h3>1.3 User Management Workflow</h3></code>`<code>
+┌─────────────────┐
+│  Manage Users   │
+│/dashboard/admin │
+│     /manage     │
+└────────┬────────┘
+         │
+         ▼
+┌─────────────────┐
+│ Select User Type│
+│ Tab: All |      │
+│ Patients |      │
+│ Doctors |       │
+│ Nurses |        │
+│ Clinics         │
+└────────┬────────┘
+         │
+         ▼
+┌─────────────────┐
+│ View User Table │
+├─────────────────┤
+│ Name | Role |   │
+│ Status | Joined │
+└────────┬────────┘
+         │
+         ▼
+┌─────────────────┐
+│ Action: Add User│
+└────────┬────────┘
+         │
+         ▼
+┌─────────────────┐
+│ Select Role     │
+│ (Doctor/Nurse/  │
+│  Clinic/Patient) │
+└────────┬────────┘
+         │
+         ▼
+┌─────────────────┐
+│ Enter User      │
+│ Details         │
+│ • Name          │
+│ • Email         │
+│ • Phone         │
+│ • Address       │
+│ • Speciality*   │
+└────────┬────────┘
+         │
+         ▼
+┌─────────────────┐
+│ Save User       │
+└────────┬────────┘
+         │
+         ▼
+┌─────────────────┐
+│ User Created    │
+│ Successfully    │
+└─────────────────┘
+</code>`<code>
+
+<h3>1.4 Inventory Management Workflow</h3>#### 1.4.1 Products & Batches View
+</code>`<code>
+┌─────────────────────────┐
+│   Inventory (/inventory) │
+└───────────┬─────────────┘
+            │
+            ▼
+┌─────────────────────────┐
+│ View Stats:             │
+│ • Total Products        │
+│ • Total Batches         │
+│ • Expiring Products     │
+│ • Low Stock Products    │
+└───────────┬─────────────┘
+            │
+            ▼
+┌─────────────────────────┐
+│ Select Tab:             │
+│ [Products] [Batches]    │
+└───────────┬─────────────┘
+            │
+       ┌────┴────┐
+       │Products │
+       └────┬────┘
+            │
+            ▼
+┌─────────────────────────┐
+│ Products Table          │
+├─────────────────────────┤
+│ Drug | Category | Stock │
+│ | Reorder | Status     │
+└───────────┬─────────────┘
+            │
+            ▼
+┌─────────────────────────┐
+│ Filter by Category:     │
+│ All | Drugs | Fluids | │
+│ Consumables | Pre-meds  │
+└───────────┬─────────────┘
+            │
+            ▼
+┌─────────────────────────┐
+│ Search by:             │
+│ • Drug name            │
+│ • HSN code             │
+│ • Molecule             │
+└─────────────────────────┘
+</code>`<code>
+
+#### 1.4.2 Drip Builder View
+</code>`<code>
+┌─────────────────────────┐
+│   Drip Builder Tab      │
+└───────────┬─────────────┘
+            │
+            ▼
+┌─────────────────────────┐
+│ Select View:           │
+│ [Drip Library] [Create]│
+└───────────┬─────────────┘
+            │
+       ┌────┴────┐
+       │Create   │
+       │New Drip │
+       └────┬────┘
+            │
+            ▼
+┌─────────────────────────┐
+│ Step 1: Basic Info     │
+│ • Drip Name            │
+│ • Description          │
+└───────────┬─────────────┘
+            │
+            ▼
+┌─────────────────────────┐
+│ Step 2: Add Ingredients │
+│ ┌───────────────────┐   │
+│ │ Select Product    │   │
+│ │ Enter Dose        │   │
+│ │ Select Unit       │   │
+│ │ Select Role:      │   │
+│ │  • Active Drug    │   │
+│ │  • Fluid Carrier  │   │
+│ │  • Pre-medication │   │
+│ │  • Additive      │   │
+│ │ [+ Add Ingredient]│   │
+│ └───────────────────┘   │
+└───────────┬─────────────┘
+            │
+            ▼
+┌─────────────────────────┐
+│ Step 3: Settings       │
+│ • Infusion Notes       │
+│ • [ ] Include Kit      │
+│   (IV set, cannula)    │
+└───────────┬─────────────┘
+            │
+            ▼
+┌─────────────────────────┐
+│ Step 4: Save           │
+│ [Save Drip] [Cancel]   │
+└──��──────────────────────┘
+</code>`<code>
+
+#### 1.4.3 Availability Calculator View
+</code>`<code>
+┌─────────────────────────┐
+│ Availability Calculator  │
+└───────────┬─────────────┘
+            │
+            ▼
+┌─────────────────────────┐
+│ 1. Select Drip         │
+│ [Dropdown: All Drips]   │
+└───────────┬─────────────┘
+            │
+            ▼
+┌─────────────────────────┐
+│ 2. Enter Quantity       │
+│ [Number Input]          │
+└───────────┬─────────────┘
+            │
+            ▼
+┌─────────────────────────┐
+│ 3. Kit Option          │
+│ [x] Include Session Kit │
+└───────────┬─────────────┘
+            │
+            ▼
+┌─────────────────────────┐
+│ [Check Availability]   │
+└───────────┬─────────────┘
+            │
+            ▼
+┌─────────────────────────┐
+│ Results Display:        │
+│ ┌─────────┬─────────┐  │
+│ │Theoretical│Realistic│ │
+│ │   150   │   142   │  │
+│ │ drips   │ drips   │  │
+│ └─────────┴─────────┘  │
+│                         │
+│ Wastage: 8 vials       │
+│ Bottleneck: Vitamin C   │
+└─────────────────────────┘
+</code>`<code>
+
+#### 1.4.4 Orders View
+</code>`<code>
+┌─────────────────────────┐
+│     Orders View         │
+└───────────┬─────────────┘
+            │
+            ▼
+┌─────────────────────────┐
+│ Filter by Status:       │
+│ [All][Draft][Confirmed] │
+│ [Dispatched][Cancelled] │
+└───────────┬─────────────┘
+            │
+            ▼
+┌─────────────────────────┐
+│ Orders Table            │
+├─────────────────────────┤
+│ Order# | Patient |      │
+│ Items | Status | Date   │
+└───────────┬─────────────┘
+            │
+            ▼
+┌─────────────────────────┐
+│ [+ Create New Order]    │
+└───────────┬─────────────┘
+            │
+            ▼
+┌─────────────────────────┐
+│ Create Order Form:      │
+│ 1. Select Patient       │
+│ 2. Add Drip Items      │
+│    • Select Drip        │
+│    • Quantity           │
+│    • [x] With Kit       │
+│ 3. Save as Draft or    │
+│    Confirm Order        │
+└─────────────────────────┘
+</code>`<code>
+
+#### 1.4.5 Alerts View
+</code>`<code>
+┌─────────────────────────┐
+│     Alerts View          │
+└───────────┬─────────────┘
+            │
+            ▼
+┌─────────────────────────┐
+│ Alert Categories:       │
+│ ┌───────────────────┐   │
+│ │ ⚠️ Expiry Alerts │   │
+│ │ • Product name    │   │
+│ │ • Batch number    │   │
+│ │ • Days remaining  │   │
+│ │ • Expires on date │   │
+│ └───────────────────┘   │
+│ ┌───────────────────┐   │
+│ │ 📦 Low Stock      │   │
+│ │ • Product name    │   │
+│ │ • Current qty     │   │
+│ │ • Reorder level    │   │
+│ └───────────────────┘   │
+└─────────────────────────┘
+</code>`<code>
+
+<h3>1.5 AI Studio Workflow</h3></code>`<code>
+┌─────────────────────────┐
+│   AI Studio (/studio)   │
+└───────────┬─────────────┘
+            │
+            ▼
+┌─────────────────────────┐
+│ View AI Models         │
+├─────────────────────────┤
+│ • Model Name           │
+│ • Status (Active/Test)  │
+│ • Configuration        │
+└───────────┬─────────────┘
+            │
+            ▼
+┌─────────────────────────┐
+│ Actions:               │
+│ [Create Model]         │
+│ [Edit Model]           │
+│ [Toggle Active/Test]   │
+│ [Delete Model]         │
+└─────────────────────────┘
+</code>`<code>
+
+<h3>1.6 Approvals Workflow</h3></code>`<code>
+┌─────────────────────────┐
+│    Approvals Section    │
+└───────────┬─────────────┘
+            │
+            ▼
+┌─────────────────────────┐
+│ Pending Approvals List  │
+├─────────────────────────┤
+│ Request | Type | Date  │
+└───────────┬─────────────┘
+            │
+            ▼
+┌─────────────────────────┐
+│ Review Request         │
+│ • View Details         │
+│ • View Documents       │
+└───────────┬─────────────┘
+            │
+       ┌────┴────┐
+       ▼         ▼
+┌──────────┐ ┌──────────┐
+│ [Approve]│ │ [Reject] │
+└──────────┘ └──────────┘
+       │         │
+       ▼         ▼
+┌──────────┐ ┌──────────┐
+│ Status:  │ │ Status:  │
+│ Approved │ │ Rejected │
+└──────────┘ └──────────┘
+</code>`<code>
+
+<hr>
+
+<h2>2. ADMIN</h2>Admin has similar access to Super Admin for platform operations.
+
+<h3>2.1 Authentication Workflow</h3></code>`<code>
+Same as Super Admin (1.1)
+Role: admin
+</code>`<code>
+
+<h3>2.2 Dashboard Overview Workflow</h3></code>`<code>
+┌─────────────────────────┐
+│  Admin Dashboard        │
+│/dashboard/admin         │
+└───────────┬─────────────┘
+            │
+            ▼
+┌─────────────────────────┐
+│ View Stats              │
+│ • Total Patients        │
+│ • Active Doctors        │
+│ • Partner Clinics       │
+│ • Pending Approvals     │
+│ • Total Revenue         │
+└───────────┬─────────────┘
+            │
+            ▼
+┌─────────────────────────┐
+│ Quick Actions           │
+│ [Manage Users]          │
+│ [View Inventory]        │
+│ [Approve Requests]      │
+└─────────────────────────┘
+</code>`<code>
+
+<h3>2.3 Approval Workflow</h3></code>`<code>
+┌─────────────────────────┐
+│ View Pending Approvals  │
+└───────────┬─────────────┘
+            │
+            ▼
+┌──────────────────���──────┐
+│ Select Approval         │
+│ • View request details  │
+│ • Review supporting docs│
+└───────────┬─────────────┘
+            │
+            ▼
+┌─────────────────────────┐
+│ Decision:               │
+│ [Approve] or [Reject]   │
+│                         │
+│ Add rejection reason     │
+│ (if rejecting)          │
+└───────────┬─────────────┘
+            │
+            ▼
+┌─────────────────────────┐
+│ Notify User             │
+│ • Email notification    │
+│ • Update status         │
+└─────────────────────────┘
+</code>`<code>
+
+<hr>
+
+<h2>3. DOCTOR</h2>Doctor creates and manages IV treatment plans for patients.
+
+<h3>3.1 Authentication Workflow</h3></code>`<code>
+┌─────────────────────────┐
+│   Login Page (/login)   │
+└───────────┬─────────────┘
+            │
+            ▼
+┌─────────────────────────┐
+│ Enter Credentials       │
+│ (Doctor Account)        │
+└───────────┬─────────────┘
+            │
+            ▼
+┌─────────────────────────┐
+│ Redirect to Doctor      │
+│ Dashboard               │
+│/dashboard/doctor        │
+└─────────────────────────┘
+</code>`<code>
+
+<h3>3.2 Dashboard Overview Workflow</h3></code>`<code>
+┌─────────────────────────┐
+│  Doctor Dashboard       │
+│/dashboard/doctor        │
+└───────────┬─────────────┘
+            │
+            ▼
+┌─────────────────────────┐
+│ View Stats              │
+├─────────────────────────┤
+│ • Pending Quizzes       │
+│ • Active Plans          │
+│ • Sessions This Week    │
+│ • Patients Under Care   │
+└───────────┬─────────────┘
+            │
+            ▼
+┌─────────────────────────┐
+│ Navigation              │
+│ [Health Quizzes]        │
+│ [Treatment Plans]       │
+│ [Approvals]             │
+│ [Print RX]              │
+└─────────────────────────┘
+</code>`<code>
+
+<h3>3.3 Health Quiz Review Workflow</h3></code>`<code>
+┌─────────────────────────┐
+│  Health Quizzes Tab     │
+└───────────┬─────────────┘
+            │
+            ▼
+┌─────────────────────────┐
+│ View Pending Quizzes    │
+├─────────────────────────┤
+│ Patient | Submitted |   │
+│ Status                  │
+└───────────┬─────────────┘
+            │
+            ▼
+┌─────────────────────────┐
+│ Select Quiz to Review   │
+└───────────┬─────────────┘
+            │
+            ▼
+┌─────────────────────────┐
+│ View Quiz Responses     │
+│ • Vitality Score        │
+│ • Health Concerns       │
+│ • Medical History       │
+│ • Current Medications   │
+│ • Allergies             │
+│ • Lifestyle Factors     │
+└───────────┬─────────────┘
+            │
+            ▼
+┌─────────────────────────┐
+│ Quiz Actions:           │
+│ [Approve] [Request      │
+│  More Info] [Reject]    │
+└─────────────────────────┘
+</code>`<code>
+
+<h3>3.4 Treatment Plan Creation Workflow</h3></code>`<code>
+┌─────────────────────────┐
+│  Treatment Plans Tab    │
+└───────────┬─────────────┘
+            │
+            ▼
+┌─────────────────────────┐
+│ [Create New Plan]      │
+└───────────┬─────────────┘
+            │
+            ▼
+┌─────────────────────────┐
+│ Step 1: Patient Info   │
+│ • Select Patient        │
+│ • Patient Name          │
+│ • Age / Gender          │
+│ • Diagnosis             │
+└───────────┬─────────────┘
+            │
+            ▼
+┌─────────────────────────┐
+│ Step 2: Plan Details   │
+│ • Plan Name            │
+│ • Start Date           │
+│ • Total Weeks          │
+│ • Sessions per Week    │
+└───────────┬─────────────┘
+            │
+            ▼
+┌─────────────────────────┐
+│ Step 3: Treatment      │
+│ Components per Session  │
+│ ┌───────────────────┐   │
+│ │ Route Options:    │   │
+│ │ • IV Drip in NS   │   │
+│ │ • IV Drip in RL   │   │
+│ │ • IV Push/Bolus   │   │
+│ │ • IM Injection    │   │
+│ │ • Add to Drip Bag │   │
+│ │ • Oral            │   │
+│ └───────────────────┘   │
+│                         │
+│ For Each Component:     │
+│ • Select Drip/Med       │
+│ • Dose                 │
+│ • Carrier Fluid        │
+│ • Route                │
+└───────────┬─────────────┘
+            │
+            ▼
+┌─────────────────────────┐
+│ Step 4: Weekly Schedule│
+│ Configure sessions for   │
+│ each week               │
+│ • Day of week          │
+│ • Session notes        │
+└───────────┬─────────────┘
+            │
+            ▼
+┌─────────────────────────┐
+│ Step 5: Review & Save  │
+│ [Save as Draft]        │
+│ [Share with Nurse]     │
+└─────────────────────────┘
+</code>`<code>
+
+<h3>3.5 Share Plan with Nurse Workflow</h3></code>`<code>
+┌─────────────────────────┐
+│ Completed Treatment Plan │
+└───────────┬─────────────┘
+            │
+            ▼
+┌─────────────────────────┐
+│ [Share with Nurse]      │
+└───────────┬─────────────┘
+            │
+            ▼
+┌─────────────────────────┐
+│ Select Nurse/Clinic     │
+└───────────┬─────────────┘
+            │
+            ▼
+┌─────────────────────────┐
+│ Plan Shared             │
+│ • Nurse notified        │
+│ • Can view in their    │
+│   dashboard            │
+│ • Status: Shared       │
+└─────────────────────────┘
+</code>`<code>
+
+<h3>3.6 Print Prescription Workflow</h3></code>`<code>
+┌─────────────────────────┐
+│ Treatment Plan List     │
+└───────────┬─────────────┘
+            │
+            ▼
+┌─────────────────────────┐
+│ Select Plan             │
+└───────────┬─────────────┘
+            │
+            ▼
+┌─────────────────────────┐
+│ [Print RX] Button      │
+└───────────┬─────────────┘
+            │
+            ▼
+┌─────────────────────────┐
+│ Generate Prescription   │
+│ Document:               │
+│ • Patient Info          │
+│ • Treatment Details     │
+│ • Week-by-week Schedule │
+│ • Drip Components      │
+│ • Dosages & Routes     │
+│ • Doctor Signature      │
+└───────────┬─────────────┘
+            │
+            ▼
+┌─────────────────────────┐
+│ Print Preview Opens     │
+│ [Print] [Close]        │
+└─────────────────────────┘
+</code>`<code>
+
+<hr>
+
+<h2>4. NURSE</h2>Nurse executes treatment plans shared by doctors.
+
+<h3>4.1 Authentication Workflow</h3></code>`<code>
+┌─────────────────────────┐
+│   Login Page (/login)   │
+└───────────┬─────────────┘
+            │
+            ▼
+┌─────────────────────────┐
+│ Enter Credentials       │
+│ (Nurse Account)        │
+└───────────┬─────────────┘
+            │
+            ▼
+┌─────────────────────────┐
+│ Redirect to Nurse       │
+│ Dashboard               │
+│/dashboard/nurse         │
+└─────────────────────────┘
+</code>`<code>
+
+<h3>4.2 Dashboard Overview Workflow</h3></code>`<code>
+┌─────────────────────────┐
+│   Nurse Dashboard       │
+│/dashboard/nurse          │
+└───────────┬─────────────┘
+            │
+            ▼
+┌─────────────────────────┐
+│ View Stats              │
+├─────────────────────────┤
+│ • Pending Preparations  │
+│ • Completed Today      │
+│ • Total This Week      │
+│ • My Nurses            │
+└───────────┬─────────────┘
+            │
+            ▼
+┌─────────────────────────┐
+│ Sections               │
+│ [Pending Orders]       │
+│ [Completed Sessions]   │
+│ [Infusion Checklist]   │
+└─────────────────────────┘
+</code>`<code>
+
+<h3>4.3 Infusion Checklist Workflow</h3></code>`<code>
+┌─────────────────────────┐
+│  Infusion Checklist    │
+└───────────┬─────────────┘
+            │
+            ▼
+┌─────────────────────────┐
+│ View Assigned Plans    │
+│ from Doctors           │
+└───────────┬─────────────┘
+            │
+            ▼
+┌─────────────────────────┐
+│ Select Patient Order   │
+│ • Patient Name         │
+│ • Drip Name            │
+│ • Scheduled Time       │
+│ • Doctor               │
+└───────────┬─────────────┘
+            │
+            ▼
+┌─────────────────────────┐
+│ Step-by-Step Checklist │
+│ ┌───────────────────┐   │
+│ │ □ Gather supplies │   │
+│ │ □ Verify patient  │   │
+│ │ □ Check vitals    │   │
+│ │ □ Prepare drip    │   │
+│ │ □ Prime IV line   │   │
+│ │ □ Insert cannula  │   │
+│ │ □ Start infusion │   │
+│ │ □ Monitor patient │   │
+│ │ □ Complete session│   │
+│ └───────────────────┘   │
+└───────────┬─────────────┘
+            │
+            ▼
+┌─────────────────────────┐
+│ Mark Each Step Done    │
+│ ☑ Gather supplies      │
+│ ☑ Verify patient       │
+│ ☐ Check vitals...     │
+└───────────┬─────────────┘
+            │
+            ▼
+┌─────────────────────────┐
+│ [Complete Session]     │
+└───────────┬─────────────┘
+            │
+            ▼
+┌─────────────────────────┐
+│ Session Completed       │
+│ • Status: Completed    │
+│ • Time logged          │
+│ • Notes saved          │
+└─────────────────────────┘
+</code>`<code>
+
+<h3>4.4 View Orders Workflow</h3></code>`<code>
+┌─────────────────────────┐
+│   Pending Orders Tab   │
+└───────────┬─────────────┘
+            │
+            ▼
+┌─────────────────────────┐
+│ View Order Cards       │
+├─────────────────────────┤
+│ • Order #             │
+│ • Patient Name         │
+│ • Drip Details        │
+│ • Scheduled Date       │
+│ • Status              │
+└───────────┬─────────────┘
+            │
+            ▼
+┌─────────────────────────┐
+│ Order Actions:         │
+│ [View Details]        │
+│ [Start Preparation]   │
+│ [Mark Complete]       │
+└─────────────────────────┘
+</code>`<code>
+
+<hr>
+
+<h2>5. CLINIC</h2>Clinic manages their orders, bookings, and tracks revenue.
+
+<h3>5.1 Authentication Workflow</h3></code>`<code>
+┌─────────────────────────┐
+│   Login Page (/login)   │
+└───────────┬─────────────┘
+            │
+            ▼
+┌─────────────────────────┐
+│ Enter Credentials       │
+│ (Clinic Account)        │
+└───────────┬─────────────┘
+            │
+            ▼
+┌─────────────────────────┐
+│ Redirect to Clinic      │
+│ Dashboard               │
+│/dashboard/clinic         │
+└─────────────────────────┘
+</code>`<code>
+
+<h3>5.2 Dashboard Overview Workflow</h3></code>`<code>
+┌─────────────────────────┐
+│  Clinic Dashboard      │
+│/dashboard/clinic        │
+└───────────┬─────────────┘
+            │
+            ▼
+┌─────────────────────────┐
+│ View Stats              │
+├─────────────────────────┤
+│ • Active Orders        │
+│ • Pending Orders        │
+│ • Total Revenue        │
+│ • Total Bookings       │
+│ • This Month Revenue    │
+└───────────┬─────────────┘
+            │
+            ▼
+┌─────────────────────────┐
+│ Sections               │
+│ [Orders] [Bookings]    │
+│ [Profile]              │
+└─────────────────────────┘
+</code>`<code>
+
+<h3>5.3 Orders Management Workflow</h3></code>`<code>
+┌─────────────────────────┐
+│    Orders Section      │
+└───────────┬─────────────┘
+            │
+            ▼
+┌─────────────────────────┐
+│ View All Orders        │
+├─────────────────────────┤
+│ Order# | Items | Amount│
+│ Status | Date          │
+└───────────┬─────────────┘
+            │
+            ▼
+┌─────────────────────────┐
+│ Filter by Status:      │
+│ All | Pending |        │
+│ Processing | Completed  │
+└───────────┬─────────────┘
+            │
+            ▼
+┌─────────────────────────┐
+│ Order Details          │
+│ • Patient info         │
+│ • Drip items          │
+│ • Quantities          │
+│ • Kit requirements     │
+│ • Special instructions │
+└───────────┬─────────────┘
+            │
+            ▼
+┌─────────────────────────┐
+│ Actions:               │
+│ [View Details]         │
+│ [Track Status]         │
+│ [Download Invoice]     │
+└─────────────────────────┘
+</code>`<code>
+
+<h3>5.4 Bookings Management Workflow</h3></code>`<code>
+┌─────────────────────────┐
+│   Bookings Section     │
+└───────────┬─────────────┘
+            │
+            ▼
+┌─────────────────────────┐
+│ View All Bookings      │
+├─────────────────────────┤
+│ Patient | Date |       │
+│ Time | Treatment |      │
+│ Status | Amount        │
+└───────────┬─────────────┘
+            │
+            ▼
+┌─────────────────────────┐
+│ Filter Bookings:       │
+│ All | Upcoming |       │
+│ Completed | Cancelled  │
+└───────────┬─────────────┘
+            │
+            ▼
+┌─────────────────────────┐
+│ Booking Details        │
+│ • Patient information  │
+│ • Treatment type       │
+│ • Scheduled date/time  │
+│ • Assigned doctor     │
+│ • Notes               │
+└─────────────────────────┘
+</code>`<code>
+
+<h3>5.5 Clinic Profile Workflow</h3></code>`<code>
+┌─────────────────────────┐
+│   Profile Section      │
+└───────────┬─────────────┘
+            │
+            ▼
+┌─────────────────────────┐
+│ View Clinic Info       │
+│ • Clinic Name          │
+│ • Location             │
+│ • Partnership Status   │
+│ • Partner Since        │
+│ • Monthly Volume Target│
+└───────────┬─────────────┘
+            │
+            ▼
+┌─────────────────────────┐
+│ Actions:               │
+│ [Update Info]          │
+│ [View Reports]         │
+└─────────────────────────┘
+</code>`<code>
+
+<hr>
+
+<h2>6. PATIENT</h2>Patient manages their health profile, books sessions, and tracks treatments.
+
+<h3>6.1 Authentication Workflow</h3></code>`<code>
+┌─────────────────────────┐
+│   Login Page (/login)   │
+└───────────┬─────────────┘
+            │
+            ▼
+┌─────────────────────────┐
+│ Enter Credentials       │
+│ (Patient Account)       │
+└───────────┬─────────────┘
+            │
+            ▼
+┌─────────────────────────┐
+│ Redirect to Patient     │
+│ Dashboard               │
+│/dashboard/patient       │
+└─────────────────────────┘
+</code>`<code>
+
+<h3>6.2 Dashboard Overview Workflow</h3></code>`<code>
+┌─────────────────────────┐
+│  Patient Dashboard     │
+│/dashboard/patient       │
+└───────────┬─────────────┘
+            │
+            ▼
+┌─────────────────────────┐
+│ View Stats              │
+├─────────────────────────┤
+│ • Vitality Score        │
+│ • Upcoming Sessions    │
+│ • Completed Sessions    │
+│ • Health Quiz Status    │
+└───────────┬─────────────┘
+            │
+            ▼
+┌─────────────────────────┐
+│ Quick Actions           │
+│ [Health Quiz]          │
+│ [Book Session]         │
+│ [Upcoming Sessions]    │
+│ [Lab Reports]          │
+│ [Profile]              │
+└─────────────────────────┘
+</code>`<code>
+
+<h3>6.3 Health Quiz Workflow</h3></code>`<code>
+┌─────────────────────────┐
+│  Health Quiz Section   │
+└───────────┬─────────────┘
+            │
+            ▼
+┌─────────────────────────┐
+│ [Take Health Quiz]     │
+│ (if not completed)     │
+│                         │
+│ OR                     │
+│                         │
+│ [View Quiz Results]    │
+│ (if completed)         │
+└───────────┬─────────────┘
+            │
+            ▼
+┌─────────────────────────┐
+│ Quiz Sections:         │
+│ 1. Personal Info      │
+│    • Name, DOB        │
+│    • Blood Group       │
+│ 2. Health Concerns     │
+│    • Primary concern   │
+│    • Duration          │
+│ 3. Medical History     │
+│    • Allergies        │
+│    • Chronic conditions│
+│    • Current meds     │
+│ 4. Lifestyle          │
+│    • Diet             │
+│    • Sleep            │
+│    • Stress           │
+└───────────┬─────────────┘
+            │
+            ▼
+┌─────────────────────────┐
+│ Submit Quiz            │
+└───────────┬─────────────┘
+            │
+            ▼
+┌─────────────────────────┐
+│ Calculate Vitality Score│
+│ • 0-100 scale         │
+│ • Based on responses  │
+└───────────┬─────────────┘
+            │
+            ▼
+┌─────────────────────────┐
+│ Quiz Submitted         │
+│ • Status: Pending      │
+│ • Doctor will review   │
+│ • Results shared when  │
+│   approved             │
+└─────────────────────────┘
+</code>`<code>
+
+<h3>6.4 Book Session Workflow</h3></code>`<code>
+┌─────────────────────────┐
+│  Book Session Section  │
+└───────────┬─────────────┘
+            │
+            ▼
+┌─────────────────────────┐
+│ [Book New Session]     │
+└───────────┬─────────────┘
+            │
+            ▼
+┌─────────────────────────┐
+│ Select Treatment       │
+│ • Browse treatments   │
+│ • View details        │
+│ • Select drip         │
+└───────────┬─────────────┘
+            │
+            ▼
+┌─────────────────────────┐
+│ Choose Date & Time    │
+│ • Select available    │
+│   slot               │
+│ • Confirm clinic      │
+└───────────┬─────────────┘
+            │
+            ▼
+┌─────────────────────────┐
+│ Confirm Booking        │
+│ • Review details      │
+│ • Confirm payment     │
+│ • Get confirmation    │
+└───────────┬─────────────┘
+            │
+            ▼
+┌─────────────────────────┐
+│ Booking Confirmed      │
+│ • Session scheduled   │
+│ • Reminder set       │
+│ • View in Upcoming   │
+└─────────────────────────┘
+</code>`<code>
+
+<h3>6.5 Lab Reports Workflow</h3></code>`<code>
+┌─────────────────────────┐
+│  Lab Reports Section   │
+└───────────┬─────────────┘
+            │
+            ▼
+┌─────────────────────────┐
+│ View Uploaded Reports  │
+├─────────────────────────┤
+│ Report | Category |    │
+│ Date | Notes           │
+└───────────┬─────────────┘
+            │
+            ▼
+┌─────────────────────────┐
+│ [Upload New Report]    │
+└───────────┬─────────────┘
+            │
+            ▼
+┌─────────────────────────┐
+│ Upload Form:           │
+│ • Select File (PDF,    │
+│   JPG, PNG)           │
+│ • Select Category:    │
+│   • Blood Test        │
+│   • Imaging          │
+│   • Other            │
+│ • Add Notes           │
+│ • Upload              │
+└───────────┬─────────────┘
+            │
+            ▼
+┌─────────────────────────┐
+│ Report Uploaded        │
+│ • File stored         │
+│ • Available to        │
+│   doctors             │
+└─────────────────────────┘
+</code>`<code>
+
+<h3>6.6 Profile Management Workflow</h3></code>`<code>
+┌─────────────────────────┐
+│   Profile Section     │
+└───────────┬─────────────┘
+            │
+            ▼
+┌─────────────────────────┐
+│ View/Edit Profile     │
+│ ┌───────────────────┐  │
+│ │ Personal Info      │  │
+│ │ • Name            │  │
+│ │ • DOB             │  │
+│ │ • Phone           │  │
+│ │ • Address         │  │
+│ └───────────────────┘  │
+│ ┌───────────────────┐  │
+│ │ Medical Info      │  │
+│ │ • Blood Group     │  │
+│ │ • Allergies      │  │
+│ │ • Chronic Cond.   │  │
+│ │ • Current Meds    │  │
+│ └───────────────────┘  │
+│ ┌───────────────────┐  │
+│ │ Emergency Contact │  │
+│ └───────────────────┘  │
+└───────────┬─────────────┘
+            │
+            ▼
+┌─────────────────────────┐
+│ Save Changes           │
+└───────────┬─────────────┘
+            │
+            ▼
+┌─────────────────────────┐
+│ Profile Updated        │
+└─────────────────────────┘
+</code>`<code>
+
+<h3>6.7 View Sessions Workflow</h3></code>`<code>
+┌─────────────────────────┐
+│  Upcoming Sessions     │
+└───────────┬─────────────┘
+            │
+            ▼
+┌─────────────────────────┐
+│ View Scheduled Sessions│
+├─────────────────────────┤
+│ Date | Treatment |     │
+│ Clinic | Status        │
+└───────────┬─────────────┘
+            │
+            ▼
+┌─────────────────────────┐
+│ Session Details        │
+│ • Date & Time         │
+│ • Treatment type      │
+│ • Assigned clinic     │
+│ • Doctor name         │
+│ • Special notes       │
+└───────────┬─────────────┘
+            │
+            ▼
+┌─────────────────────────┐
+│ Actions:               │
+│ [View Details]        │
+│ [Reschedule]          │
+│ [Cancel]              │
+└─────────────────────────┘
+</code>``
+
+<hr>
+
+<h2>Appendix: Role Permissions Matrix</h2>| Feature | Super Admin | Admin | Doctor | Nurse | Clinic | Patient |
+|---------|-------------|-------|--------|-------|--------|---------|
+| Manage Users | ✓ | Limited | - | - | - | - |
+| Inventory | ✓ | View | - | - | - | - |
+| Create Drips | ✓ | - | - | - | - | - |
+| Create Plans | ✓ | - | ✓ | - | - | - |
+| Approve Quizzes | ✓ | ✓ | ✓ | - | - | - |
+| Prepare Infusions | ✓ | - | - | ✓ | - | - |
+| View Orders | ✓ | ✓ | ✓ | ✓ | ✓ | - |
+| Book Sessions | - | - | - | - | - | ✓ |
+| Health Quiz | - | - | ✓ | - | - | ✓ |
+| Lab Reports | - | - | ✓ | - | - | ✓ |
+
+<hr>
+
+*Document Version: 1.0*
+*Last Updated: August 2026*
+
+</body>
+</html>
