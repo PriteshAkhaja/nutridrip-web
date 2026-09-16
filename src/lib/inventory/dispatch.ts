@@ -444,6 +444,32 @@ export async function cancelOrder(orderId: string, reason?: string, actorId?: st
   if (order.status === "DISPATCHED") throw new Error("Dispatched orders cannot be cancelled");
   if (order.status === "CANCELLED") return order.toObject();
 
+  /**
+   * A draft holds nothing, so cancelling one needs no transaction.
+   *
+   * The transaction below exists to make "release N reservations and close the
+   * order" one indivisible act. With no reservations there is a single write —
+   * and a single-document update is already atomic. Opening a transaction for
+   * it bought nothing and cost everything: transactions require a replica set,
+   * so cancelling a draft failed outright on a standalone mongod.
+   *
+   * The claim is narrowed to DRAFT on purpose. If another request confirmed
+   * this order between the two reads there are now reservations to release,
+   * the conditional update matches nothing, and we fall through to the
+   * transactional path rather than closing an order while its stock stays
+   * held.
+   */
+  const held = await Allocation.countDocuments({ orderId, releasedAt: null });
+  if (held === 0) {
+    const claimed = await Order.updateOne(
+      { _id: order._id, status: "DRAFT" },
+      { $set: { status: "CANCELLED", cancelledAt: new Date(), cancelReason: reason } }
+    );
+    if (claimed.modifiedCount === 1) {
+      return (await Order.findById(orderId).lean<OrderRow | null>())!;
+    }
+  }
+
   const allocations = await Allocation.find({ orderId, releasedAt: null }).lean<
     Array<{ _id: unknown; lotId: unknown; masterId: unknown; unitsReserved: number }>
   >();
