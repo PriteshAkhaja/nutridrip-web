@@ -1,0 +1,14 @@
+<!-- The mark is a Fill: a vessel 62% full, the same proportion LogoMark draws.
+     Colours are the literal brand tokens (primary / primary-soft / primary-line)
+     rather than var() — an icon is loaded outside the document, so it cannot
+     see globals.css. Keep the two in step if the brand moves. -->
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" width="32" height="32" role="img" aria-label="NutriDrip">
+  <defs>
+    <clipPath id="vessel">
+      <rect x="1" y="1" width="30" height="30" rx="10" />
+    </clipPath>
+  </defs>
+  <rect x="1" y="1" width="30" height="30" rx="10" fill="#E4F6FC" />
+  <rect x="1" y="12.4" width="30" height="18.6" fill="#0A7FA1" clip-path="url(#vessel)" />
+  <rect x="1.5" y="1.5" width="29" height="29" rx="9.5" fill="none" stroke="#B3E6F3" stroke-width="1" />
+</svg>
