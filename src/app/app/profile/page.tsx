@@ -159,7 +159,7 @@ export default async function PatientProfilePage() {
         <ButtonLink href="/app/reports" variant="ghost" block>
           Lab reports
         </ButtonLink>
-        <div className="text-center">
+        <div className="mt-3 pt-5 border-t border-[var(--color-line)]">
           <SignOutButton />
         </div>
       </div>

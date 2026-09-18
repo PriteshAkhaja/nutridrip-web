@@ -32,9 +32,14 @@ import {
   ContentBlock,
 } from "../src/lib/models";
 import { connectDB } from "../src/lib/db/mongoose";
-import { CHECKLIST_STEPS } from "../src/lib/clinical/checklist";
+import { blockedByVitals, CHECKLIST_STEPS } from "../src/lib/clinical/checklist";
 import { planAllocation } from "../src/lib/inventory/dispatch";
 import { componentsFromRecipe } from "../src/lib/clinical/plan-input";
+import {
+  componentsForConsent,
+  CURRENT_CONSENT_VERSION,
+  currentConsentDocument,
+} from "../src/lib/clinical/consent";
 import { seedQuizQuestions } from "../src/lib/clinical/quiz-store";
 
 const DAY = 86_400_000;
@@ -813,10 +818,17 @@ async function seedClinical(
   ]);
 
   const checklist = CHECKLIST_STEPS.map((s) => ({ ...s, doneAt: undefined, stamp: undefined }));
+  /**
+   * Stopped before "Prime the line" (step 16), because that is where an
+   * out-of-range baseline stops a nurse. Seeding a step the server refuses —
+   * and an infusion already running on uncleared vitals — made a demo session
+   * no real session could ever reach.
+   */
+  const firstBlocked = CHECKLIST_STEPS.findIndex((s) => blockedByVitals(s));
   const partial = CHECKLIST_STEPS.map((s, i) => ({
     ...s,
-    doneAt: i < 16 ? days(0) : undefined,
-    stamp: i < 16 ? "queued" : undefined,
+    doneAt: i < firstBlocked ? days(0) : undefined,
+    stamp: i < firstBlocked ? "queued" : undefined,
   }));
 
   await Booking.create([
@@ -836,6 +848,15 @@ async function seedClinical(
       clinicId: clinic._id,
       status: "in_progress",
       approvedAt: days(-2),
+      // Waiting on the physician: the baseline SpO₂ below is out of range and
+      // uncleared, so the nurse is stopped at "Prime the line". Clearing it in
+      // the doctor's Escalations queue is what lets the session go on.
+      //
+      // Every ticked step past the sixth needs the prescription open, so it was
+      // unlocked with the patient's code on arrival, before consent at 10:09.
+      rxUnlockedAt: new Date(new Date().setHours(10, 4, 0, 0)),
+      rxUnlockedBy: nurse._id,
+      rxUnlockMethod: "code",
       checklist: partial,
       vitals: [
         {
@@ -850,18 +871,21 @@ async function seedClinical(
           outOfRange: ["spo2"],
         },
       ],
-      consent: { givenAt: new Date(new Date().setHours(10, 9, 0, 0)), version: "v2.1", viaOtp: "4471" },
-      startedAt: new Date(new Date().setHours(10, 12, 0, 0)),
-      bagVolumeMl: 500,
-      remainingMl: 210,
-      rateMlHr: 140,
-      observations: [
-        { at: new Date(new Date().setHours(10, 12, 0, 0)), text: "Site clean, no swelling. Patient comfortable." },
-        {
-          at: new Date(new Date().setHours(10, 36, 0, 0)),
-          text: "Reported mild cool sensation along the arm. Rate reduced to 140 ml/hr.",
-        },
-      ],
+      // The wording and the doses are copied onto the record, not referenced —
+      // a seeded consent that only carried a version would be the very thing
+      // the snapshot exists to prevent.
+      consent: {
+        givenAt: new Date(new Date().setHours(10, 9, 0, 0)),
+        version: CURRENT_CONSENT_VERSION,
+        viaOtp: "4471",
+        affirmation: currentConsentDocument().affirmation,
+        risks: currentConsentDocument().risks,
+        components: componentsForConsent(myers.ingredients),
+      },
+      // The first tick starts a session, so this is when the doorstep checks
+      // began. No bag, rate or observations: the infusion has not started, and
+      // walking the checklist forward is what creates them.
+      startedAt: new Date(new Date().setHours(9, 52, 0, 0)),
       amount: myers.priceInr,
       paymentStatus: "paid",
     },
@@ -880,6 +904,10 @@ async function seedClinical(
       doctorId: doctor._id,
       status: "completed",
       approvedAt: days(-4),
+      // All 29 steps closed, so the prescription was open.
+      rxUnlockedAt: new Date(new Date().setHours(8, 2, 0, 0)),
+      rxUnlockedBy: nurse._id,
+      rxUnlockMethod: "code",
       startedAt: new Date(new Date().setHours(8, 4, 0, 0)),
       completedAt: new Date(new Date().setHours(8, 50, 0, 0)),
       checklist: CHECKLIST_STEPS.map((s) => ({ ...s, doneAt: days(0), stamp: "synced" })),

@@ -4,6 +4,7 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/Button";
 import { Input, Select, Textarea } from "@/components/ui/Field";
+import { DatePicker } from "@/components/ui/DatePicker";
 import { AddressPicker, type PickedAddress } from "@/components/ui/AddressPicker";
 
 export type ProfileInitial = {
@@ -160,7 +161,11 @@ export function ProfileForm({
           <Input label="Email" type="email" value={form.email} onChange={set("email")} placeholder="optional" />
         </div>
         <div className="grid grid-cols-2 gap-3">
-          <Input label="Date of birth" type="date" mono value={form.dob} onChange={set("dob")} />
+          <DatePicker
+            label="Date of birth"
+            value={form.dob}
+            onChange={(v) => set("dob")({ target: { value: v } })}
+          />
           <Select label="Sex" value={form.gender} onChange={set("gender")}>
             <option value="">—</option>
             <option value="female">Female</option>

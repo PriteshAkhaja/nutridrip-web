@@ -1,6 +1,6 @@
 import { z } from "zod";
 import { connectDB } from "@/lib/db/mongoose";
-import { Booking, Drip, HealthQuiz, User } from "@/lib/models";
+import { AuditLog, Booking, Drip, HealthQuiz, User } from "@/lib/models";
 import { getSession } from "@/lib/auth/session";
 import { can } from "@/lib/auth/rbac";
 import { CHECKLIST_STEPS } from "@/lib/clinical/checklist";
@@ -210,6 +210,20 @@ export async function POST(req: Request) {
         "/clinic/bookings"
       );
     }
+
+    await AuditLog.create({
+      actorId: session!.sub,
+      actorRole: session!.role,
+      action: "booking.create",
+      entity: "Booking",
+      entityId: String(booking._id),
+      after: {
+        bookingNo: booking.bookingNo,
+        dripName: booking.dripName,
+        scheduledAt: booking.scheduledAt,
+        location: booking.location,
+      },
+    });
 
     return ok({ booking: booking.toObject() }, { status: 201 });
   } catch (err) {

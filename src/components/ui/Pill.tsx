@@ -68,6 +68,30 @@ const READABLE: Record<string, string> = {
   out_of_stock: "Out of stock",
 };
 
+/**
+ * Statuses still in motion — someone is on the way, a session is running, a
+ * physician has yet to decide. Their dot pulses; nothing else does.
+ *
+ * A pulse says "this is happening now", so it is kept off every settled state
+ * (completed, cancelled, rejected, draft) and every standing fact (an allergy,
+ * a stock level). Pulsing those would say something untrue, and a table where
+ * every row throbs has no signal left in it.
+ */
+const LIVE_STATUSES = new Set([
+  "en_route",
+  "in_progress",
+  "nurse_assigned",
+  "awaiting_review",
+  "Awaiting review",
+  "info_needed",
+  "Needs more information",
+  "pending",
+]);
+
+export function isLiveStatus(status: string): boolean {
+  return LIVE_STATUSES.has(status);
+}
+
 export function labelFor(status: string): string {
   if (READABLE[status]) return READABLE[status];
   if (status === status.toUpperCase()) return status.charAt(0) + status.slice(1).toLowerCase();
@@ -78,11 +102,18 @@ export function Pill({
   children,
   tone = "neutral",
   dot = false,
+  pulse = false,
   className = "",
 }: {
   children: ReactNode;
   tone?: PillTone;
   dot?: boolean;
+  /**
+   * A ring that leaves the dot every two seconds, for a state still in motion.
+   * Needs `dot`. StatusPill sets it from the status; pass it directly only for
+   * something that is genuinely live.
+   */
+  pulse?: boolean;
   className?: string;
 }) {
   const t = TONE[tone];
@@ -97,16 +128,33 @@ export function Pill({
         letterSpacing: "0.02em",
       }}
     >
-      {dot && <span className="w-[6px] h-[6px] rounded-full flex-none" style={{ background: t.dot }} />}
+      {dot && (
+        <span aria-hidden className="relative w-[6px] h-[6px] flex-none">
+          {/* The ring grows by transform, so it never moves the label. It is
+              transparent unless animating: with reduced motion the global rule
+              in globals.css stops the animation and the ring simply is not
+              there, rather than sitting frozen around the dot. */}
+          {pulse && (
+            <span
+              className="absolute inset-0 rounded-full opacity-0"
+              style={{ background: t.dot, animation: "ndDotPulse 2s cubic-bezier(0, 0, 0.2, 1) infinite" }}
+            />
+          )}
+          <span className="absolute inset-0 rounded-full" style={{ background: t.dot }} />
+        </span>
+      )}
       {children}
     </span>
   );
 }
 
-/** Convenience wrapper that maps a raw status string to tone and label. */
-export function StatusPill({ status, dot }: { status: string; dot?: boolean }) {
+/**
+ * Convenience wrapper that maps a raw status string to tone and label. A
+ * dotted pill for a live status pulses on its own; `pulse` overrides that.
+ */
+export function StatusPill({ status, dot, pulse }: { status: string; dot?: boolean; pulse?: boolean }) {
   return (
-    <Pill tone={STATUS_TONE[status] ?? "neutral"} dot={dot}>
+    <Pill tone={STATUS_TONE[status] ?? "neutral"} dot={dot} pulse={pulse ?? isLiveStatus(status)}>
       {labelFor(status)}
     </Pill>
   );

@@ -1,6 +1,7 @@
 import { notFound } from "next/navigation";
 import type { Metadata } from "next";
 import { requireRole } from "@/lib/auth/guard";
+import { logRecordAccess } from "@/lib/auth/access-log";
 import { doctorNav } from "@/lib/nav";
 import { ConsoleShell } from "@/components/layout/ConsoleShell";
 import { patientReview } from "@/lib/data/clinical";
@@ -25,6 +26,14 @@ export default async function PatientReviewPage({ params }: { params: Promise<{ 
 
   const review = await patientReview(id);
   if (!review) notFound();
+
+  await logRecordAccess({
+    session,
+    kind: "assessment",
+    entity: "HealthQuiz",
+    entityId: id,
+    patientId: String(review.patient.id),
+  });
 
   // Only worth loading while there is still a decision to make.
   const pending = review.reviewStatus === "pending";
@@ -57,7 +66,7 @@ export default async function PatientReviewPage({ params }: { params: Promise<{ 
         </div>
       )}
 
-      <div className="grid gap-6 xl:grid-cols-[1.5fr_1fr] items-start">
+      <div className="grid grid-cols-1 gap-6 xl:grid-cols-[minmax(0,1.5fr)_minmax(0,1fr)] items-start">
         <div className="flex flex-col gap-6">
           {/* ---------------- Vitality + lowest markers ---------------- */}
           <Card padding="p-6">
@@ -95,7 +104,7 @@ export default async function PatientReviewPage({ params }: { params: Promise<{ 
               60% is low.
             </p>
             <Card padding="p-6">
-              <div className="grid gap-x-8 gap-y-[14px] md:grid-cols-2">
+              <div className="grid grid-cols-1 gap-x-8 gap-y-[14px] md:grid-cols-2">
                 {review.markers.map((m) => (
                   <FillBar key={m.name} label={m.name} value={`${m.pct}%`} pct={m.pct} color={m.color} />
                 ))}

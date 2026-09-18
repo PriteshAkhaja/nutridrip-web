@@ -1,7 +1,7 @@
 import { z } from "zod";
 import bcrypt from "bcryptjs";
 import { connectDB } from "@/lib/db/mongoose";
-import { OtpToken, User } from "@/lib/models";
+import { AuditLog, OtpToken, User } from "@/lib/models";
 import { signSession, setSessionCookie } from "@/lib/auth/session";
 import { HOME_FOR_ROLE } from "@/lib/auth/rbac";
 import { normalisePhone } from "@/lib/auth/phone";
@@ -64,14 +64,28 @@ export async function POST(req: Request) {
     }
     if (user.status !== "active") return fail("This account is not active", 403);
 
+    const isNew = !user.lastLoginAt;
     user.lastLoginAt = new Date();
     await user.save();
+
+    // The patient half of the same record. A trail that logged staff sign-ins
+    // and not patient ones would answer "who was here" only for half the people
+    // who were.
+    await AuditLog.create({
+      actorId: user._id,
+      actorRole: user.role,
+      action: "auth.signed_in",
+      entity: "User",
+      entityId: String(user._id),
+      after: { method: "otp", ...(isNew ? { firstTime: true } : {}) },
+    });
 
     const jwt = await signSession({
       sub: String(user._id),
       role: user.role,
       name: user.name,
       email: user.email,
+      v: user.tokenVersion ?? 0,
     });
     await setSessionCookie(jwt);
 

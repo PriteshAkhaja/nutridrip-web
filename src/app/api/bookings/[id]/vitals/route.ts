@@ -1,6 +1,6 @@
 import { z } from "zod";
 import { connectDB } from "@/lib/db/mongoose";
-import { Booking } from "@/lib/models";
+import { AuditLog, Booking } from "@/lib/models";
 import { notify, notifyRole } from "@/lib/notify";
 import { VITAL_RANGES, outOfRange } from "@/lib/clinical/checklist";
 import { getSession } from "@/lib/auth/session";
@@ -59,6 +59,22 @@ export async function POST(req: Request, { params }: { params: Promise<{ id: str
       if (booking.doctorId) await notify(String(booking.doctorId), title, body, "error", "/doctor/adverse");
       else await notifyRole("doctor", title, body, "error", "/doctor/adverse");
     }
+
+    // A reading that can stop an infusion is a clinical decision point, so it
+    // belongs in the trail as well as on the booking. The numbers stay on the
+    // record; the trail carries whether they blocked and which ones.
+    await AuditLog.create({
+      actorId: session!.sub,
+      actorRole: session!.role,
+      action: "vitals.recorded",
+      entity: "Booking",
+      entityId: id,
+      after: {
+        bookingNo: booking.bookingNo,
+        outOfRange: flagged.length ? flagged.join(", ") : "none",
+        blockedInfusion: flagged.length > 0,
+      },
+    });
 
     return ok({
       recorded: true,

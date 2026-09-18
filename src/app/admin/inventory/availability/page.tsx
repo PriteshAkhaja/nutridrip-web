@@ -61,7 +61,7 @@ export default async function AvailabilityPage({
           <p className="t-body text-[var(--color-ink-2)]">No active drip formulas to check.</p>
         </Card>
       ) : (
-        <div className="grid gap-6 xl:grid-cols-[1fr_400px] items-start mt-6">
+        <div className="grid grid-cols-1 gap-6 xl:grid-cols-[minmax(0,1fr)_400px] items-start mt-6">
           <div className="flex flex-col gap-4">
             {/* ---------------- Headline ---------------- */}
             <Card padding="p-6">
@@ -70,7 +70,7 @@ export default async function AvailabilityPage({
                 <span className="t-small text-[var(--color-ink-3)]">whole-vial maths · FEFO batch order</span>
               </div>
 
-              <div className="grid gap-4 sm:grid-cols-2 my-[18px]">
+              <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 my-[18px]">
                 <div className="rounded-[var(--radius-md)] border border-[var(--color-primary-line)] bg-[var(--color-primary-soft)] p-5">
                   <span className="t-micro text-[var(--color-primary-dark)]">Realistic</span>
                   <div className="t-data mt-2" style={{ font: "500 44px/1.05 var(--font-mono)" }}>

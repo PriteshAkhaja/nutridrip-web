@@ -145,7 +145,7 @@ export default async function DripBuilderPage() {
         and will not guess.
       </p>
 
-      <div className="grid gap-4 xl:grid-cols-2">
+      <div className="grid grid-cols-1 gap-4 xl:grid-cols-2">
         {drips.map((d) => {
           const available = availableByDrip.get(String(d._id)) ?? 0;
           const maxDose = Math.max(...d.ingredients.map((i) => i.dose), 1);

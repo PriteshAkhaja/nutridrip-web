@@ -1,21 +1,46 @@
 import Link from "next/link";
 import type { ReactNode } from "react";
-import { LogoMark } from "./Logo";
 import { SignOutButton } from "./SignOutButton";
 import { NotificationBell } from "./NotificationBell";
+import { ConsoleRail } from "./ConsoleRail";
 import type { SessionPayload } from "@/lib/auth/session";
+
+/** "Dr. Sarah Menon" gives "SM": an honorific is a title, not part of the name. */
+function initialsOf(name: string) {
+  const words = name.trim().split(" ").filter((w) => w && !w.endsWith("."));
+  const picked = words.length > 1 ? [words[0], words[words.length - 1]] : words;
+  return picked.map((w) => w.charAt(0).toUpperCase()).join("") || "?";
+}
 
 export type NavItem = {
   label: string;
   href: string;
+  /**
+   * The area it belongs to: the same word its pages’ breadcrumbs start
+   * with, so the nav and the breadcrumb never name one place two ways.
+   * Consecutive items sharing a section are drawn under one label.
+   */
+  section?: string;
   /** A count, not a decoration — omit it when there is nothing to count. */
   badge?: number | string;
   badgeTone?: "default" | "critical" | "caution";
 };
 
+/** Consecutive items with the same section, in nav order. */
+function groupBySection(nav: NavItem[]) {
+  const groups: Array<{ section?: string; items: NavItem[] }> = [];
+  for (const item of nav) {
+    const last = groups[groups.length - 1];
+    if (last && last.section === item.section) last.items.push(item);
+    else groups.push({ section: item.section, items: [item] });
+  }
+  return groups;
+}
+
 /**
- * The 236px rail plus breadcrumbed header used by every desk-bound role.
- * Nav rows are 44px so the same shell works on a clinic tablet.
+ * The 240px rail plus breadcrumbed header used by every desk-bound role.
+ * Nav rows are 44px so the same shell works on a clinic tablet; below `lg` the
+ * rail folds into a drawer rather than stacking above the page.
  */
 export function ConsoleShell({
   session,
@@ -40,67 +65,104 @@ export function ConsoleShell({
 }) {
   const hasExact = nav.some((n) => n.href === activeHref);
   return (
-    <div className="min-h-screen grid lg:grid-cols-[236px_1fr] bg-[var(--color-paper)]">
-      {/* ---------------- Rail ---------------- */}
-      <aside className="border-b lg:border-b-0 lg:border-r border-[var(--color-line)] px-[14px] py-[18px] flex flex-col gap-[22px] lg:sticky lg:top-0 lg:h-screen">
-        <Link href="/" className="flex gap-[10px] items-center px-[6px] no-underline hover:no-underline">
-          <LogoMark size={22} />
-          <span style={{ font: "600 14.5px/1 var(--font-display)" }} className="text-[var(--color-ink)]">
-            NutriDrip
-          </span>
-        </Link>
-
-        <nav className="flex flex-col gap-[2px]" aria-label={roleLabel}>
-          <span className="t-micro px-[6px] pb-[6px]">{roleLabel}</span>
-          {nav.map((n) => {
-            // Exact match wins. Only when no item matches exactly does a prefix
-            // count, so /admin/inventory/orders does not also light "Products".
-            const active = hasExact
-              ? activeHref === n.href
-              : n.href !== "/" && activeHref.startsWith(n.href + "/");
-            const badgeColor =
-              n.badgeTone === "critical"
-                ? "var(--color-critical)"
-                : n.badgeTone === "caution"
-                  ? "var(--color-caution)"
-                  : active
-                    ? "var(--color-primary-dark)"
-                    : "var(--color-ink-3)";
+    <div className="min-h-dvh grid lg:grid-cols-[240px_1fr] bg-[var(--color-paper)]">
+      {/* ---------------- Rail ----------------
+          A column at lg, a drawer below it — see ConsoleRail. */}
+      {/* Below lg the bell belongs in the sticky bar, where the app's chrome
+          is, not in a page header that scrolls away with the content. The two
+          copies are split by the same 64rem line as the lg: classes that
+          hide them, and each only polls while it is the one shown. */}
+      <ConsoleRail actions={<NotificationBell media="not all and (min-width: 64rem)" />}>
+        {/* Only the list scrolls: the header above and the account below hold
+            their place, and the nav takes whatever height is left, so Sign out
+            never falls below the fold on a short screen. */}
+        <nav
+          className="flex-1 min-h-0 overflow-y-auto overscroll-contain [scrollbar-width:thin] [scrollbar-color:var(--color-line-2)_transparent] px-[14px] pt-4 lg:pt-2 pb-3 flex flex-col"
+          aria-label={roleLabel}
+        >
+          {groupBySection(nav).map((group, gi) => {
+            const labelId = group.section ? `nav-${group.section.toLowerCase().replace(/[^a-z]+/g, "-")}` : undefined;
             return (
-              <Link
-                key={n.href}
-                href={n.href}
-                aria-current={active ? "page" : undefined}
-                className="flex items-center gap-[10px] min-h-[44px] px-[10px] rounded-[var(--radius-sm)] no-underline hover:no-underline transition-colors duration-150"
-                style={{
-                  background: active ? "var(--color-primary-soft)" : "transparent",
-                  color: active ? "var(--color-primary-dark)" : "var(--color-ink-2)",
-                  font: `${active ? 600 : 500} 14.5px/1.55 var(--font-sans)`,
-                }}
+              <div
+                key={group.section ?? gi}
+                role={group.section ? "group" : undefined}
+                aria-labelledby={labelId}
+                className={`flex flex-col gap-[2px] ${gi > 0 ? "mt-5" : ""}`}
               >
-                <span
-                  className="w-[6px] h-[6px] rounded-[2px] flex-none"
-                  style={{ background: active ? "var(--color-primary)" : "var(--color-line-2)" }}
-                />
-                <span className="truncate">{n.label}</span>
-                {n.badge !== undefined && n.badge !== "" && (
-                  <span className="ml-auto t-data text-[13px] leading-none" style={{ color: badgeColor }}>
-                    {n.badge}
+                {group.section && (
+                  <span id={labelId} className="t-micro px-[6px] pb-[6px]">
+                    {group.section}
                   </span>
                 )}
-              </Link>
+                {group.items.map((n) => {
+                  // Exact match wins. Only when no item matches exactly does a
+                  // prefix count, so /admin/inventory/orders does not also
+                  // light "Products".
+                  const active = hasExact
+                    ? activeHref === n.href
+                    : n.href !== "/" && activeHref.startsWith(n.href + "/");
+                  const badgeColor =
+                    n.badgeTone === "critical"
+                      ? "var(--color-critical)"
+                      : n.badgeTone === "caution"
+                        ? "var(--color-caution)"
+                        : active
+                          ? "var(--color-primary-dark)"
+                          : "var(--color-ink-3)";
+                  return (
+                    <Link
+                      key={n.href}
+                      href={n.href}
+                      aria-current={active ? "page" : undefined}
+                      // Classes rather than inline styles, so a hover can
+                      // actually change them. There was no hover or focus
+                      // state before: nothing said a row was reachable until
+                      // it had been clicked.
+                      className={`group flex items-center gap-[10px] min-h-[44px] px-[10px] rounded-[var(--radius-sm)] text-[14.5px] leading-[1.55] no-underline hover:no-underline transition-colors duration-150 focus-visible:outline-2 focus-visible:outline-offset-[-2px] focus-visible:outline-[var(--color-primary)] ${
+                        active
+                          ? "bg-[var(--color-primary-soft)] text-[var(--color-primary-dark)] font-semibold"
+                          : "text-[var(--color-ink-2)] font-medium hover:bg-[var(--color-surface-2)] hover:text-[var(--color-ink)]"
+                      }`}
+                    >
+                      <span
+                        className={`w-[6px] h-[6px] rounded-[2px] flex-none transition-colors duration-150 ${
+                          active ? "bg-[var(--color-primary)]" : "bg-[var(--color-line-2)] group-hover:bg-[var(--color-ink-3)]"
+                        }`}
+                      />
+                      <span className="truncate">{n.label}</span>
+                      {n.badge !== undefined && n.badge !== "" && (
+                        <span className="ml-auto t-data text-[13px] leading-none" style={{ color: badgeColor }}>
+                          {n.badge}
+                        </span>
+                      )}
+                    </Link>
+                  );
+                })}
+              </div>
             );
           })}
         </nav>
 
-        <div className="mt-auto border-t border-[var(--color-line)] pt-[14px] px-[10px] flex flex-col gap-[5px]">
-          <span className="t-body font-medium">{session.name}</span>
-          <span className="t-data text-[13px] text-[var(--color-ink-3)]">{roleLabel}</span>
-          <div className="mt-2">
-            <SignOutButton />
-          </div>
+        {/* One row: who is signed in, and the way out. It sits pinned under
+            a scrolling list, so every pixel it takes is a pixel of nav lost on
+            a short screen — the button is an icon for that reason, and the row
+            is no taller than its 44px target. It wraps only to show a warning
+            or a failed sign-out underneath. The role is a label, not a figure,
+            so it is in the prose face; mono is kept for doses and dates. */}
+        <div className="shrink-0 border-t border-[var(--color-line)] pt-3 pb-3 pl-5 pr-[14px] flex flex-wrap items-center gap-x-[10px] gap-y-2">
+          <span
+            aria-hidden
+            className="w-8 h-8 rounded-full flex-none inline-flex items-center justify-center bg-[var(--color-primary-soft)] text-[var(--color-primary-dark)] text-[12px] font-semibold tracking-[0.02em]"
+          >
+            {initialsOf(session.name)}
+          </span>
+          <span className="flex-1 min-w-0 flex flex-col leading-tight">
+            <span className="text-[14px] font-medium text-[var(--color-ink)] truncate">{session.name}</span>
+            <span className="text-[12.5px] text-[var(--color-ink-3)] truncate">{roleLabel}</span>
+          </span>
+          <SignOutButton form="icon" />
         </div>
-      </aside>
+      </ConsoleRail>
 
       {/* ---------------- Main ---------------- */}
       <div className="min-w-0 flex flex-col">
@@ -121,7 +183,9 @@ export function ConsoleShell({
           <div className="ml-auto min-w-0 flex gap-3 items-center flex-wrap justify-end">
             {meta && <span className="t-data text-[13px] text-[var(--color-ink-3)] min-w-0">{meta}</span>}
             {actions}
-            <NotificationBell />
+            <div className="hidden lg:block">
+              <NotificationBell media="(min-width: 64rem)" />
+            </div>
           </div>
         </header>
 

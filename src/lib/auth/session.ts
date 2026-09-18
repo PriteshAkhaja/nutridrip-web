@@ -1,3 +1,4 @@
+import { cache } from "react";
 import { cookies } from "next/headers";
 import { SignJWT, jwtVerify } from "jose";
 import type { Role } from "@/lib/models/types";
@@ -27,6 +28,14 @@ export type SessionPayload = {
   role: Role;
   name: string;
   email?: string;
+  /**
+   * The account's token version when this was issued.
+   *
+   * Absent on tokens signed before revocation existed; those are treated as
+   * version 0, which is what every account starts at, so nobody is thrown out
+   * by the upgrade itself.
+   */
+  v?: number;
 };
 
 export async function signSession(payload: SessionPayload): Promise<string> {
@@ -37,6 +46,7 @@ export async function signSession(payload: SessionPayload): Promise<string> {
     .sign(secret());
 }
 
+/** Signature and expiry only. Says nothing about whether the account still stands. */
 export async function verifySession(token: string): Promise<SessionPayload | null> {
   try {
     const { payload } = await jwtVerify(token, secret());
@@ -46,11 +56,53 @@ export async function verifySession(token: string): Promise<SessionPayload | nul
   }
 }
 
-/** Read the current session from the request cookie. Null when signed out. */
+/**
+ * Whether the account behind a valid token is still entitled to it.
+ *
+ * A signature proves the token was issued by us; it cannot know that the
+ * person was dismissed an hour ago. This is the one place that asks, and it is
+ * inside `getSession` rather than beside it so that none of the fifty-odd
+ * callers can forget to.
+ *
+ * Wrapped in React's `cache` so a page that reads the session five times
+ * charges one lookup per request rather than five.
+ *
+ * A database that cannot be reached returns `true`: refusing every request
+ * during a blip would turn a slow database into a total outage, and the token
+ * is still signed and unexpired. The tradeoff is deliberate and narrow — it
+ * only widens the window a revoked token survives.
+ */
+const accountStillValid = cache(async (sub: string, tokenVersion: number): Promise<boolean> => {
+  try {
+    const { connectDB } = await import("@/lib/db/mongoose");
+    const { User } = await import("@/lib/models");
+    await connectDB();
+    const user = await User.findById(sub)
+      .select("status tokenVersion")
+      .lean<{ status?: string; tokenVersion?: number } | null>();
+
+    if (!user) return false;
+    if (user.status !== "active") return false;
+    return (user.tokenVersion ?? 0) === tokenVersion;
+  } catch (err) {
+    console.error("accountStillValid() could not check, allowing the token:", err);
+    return true;
+  }
+});
+
+/**
+ * The current session, or null when there is none — including when the account
+ * has been deactivated or its sessions revoked since the token was issued.
+ */
 export async function getSession(): Promise<SessionPayload | null> {
   const token = (await cookies()).get(COOKIE)?.value;
   if (!token) return null;
-  return verifySession(token);
+
+  const payload = await verifySession(token);
+  if (!payload?.sub) return null;
+
+  const live = await accountStillValid(payload.sub, payload.v ?? 0);
+  return live ? payload : null;
 }
 
 export async function setSessionCookie(token: string) {

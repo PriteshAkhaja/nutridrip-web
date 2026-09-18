@@ -38,7 +38,7 @@ export default function ZonesPage() {
         ))}
       </div>
 
-      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 mb-12">
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 mb-12">
         {ZONES.map((z) => (
           <Card key={z.name} padding="p-5">
             <div className="flex items-start justify-between gap-3 mb-3">
@@ -68,7 +68,7 @@ export default function ZonesPage() {
       </div>
 
       <Card tone="muted" padding="p-8">
-        <div className="grid gap-6 lg:grid-cols-[1.5fr_1fr] items-center">
+        <div className="grid grid-cols-1 gap-6 lg:grid-cols-[1.5fr_1fr] items-center">
           <div>
             <h2 className="t-h2 mb-3">Not on the list?</h2>
             <p className="t-body-lg text-[var(--color-ink-2)] max-w-[54ch]" style={{ textWrap: "pretty" }}>

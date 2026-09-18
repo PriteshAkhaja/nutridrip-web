@@ -1,6 +1,7 @@
 import { notFound } from "next/navigation";
 import type { Metadata } from "next";
 import { requireRole } from "@/lib/auth/guard";
+import { logRecordAccess } from "@/lib/auth/access-log";
 import { MobileShell } from "@/components/layout/MobileShell";
 import { PlanSchedule } from "@/components/clinical/PlanSchedule";
 import { FillSegments } from "@/components/ui/Fill";
@@ -23,6 +24,16 @@ export default async function PatientPlanPage({ params }: { params: Promise<{ id
   // A draft has been shared with nobody, so it is not the patient's to read yet.
   const plan = await planFor(id, session);
   if (!plan) notFound();
+
+  // A patient reading their own record is still an access, and the policy
+  // says every one is written.
+  await logRecordAccess({
+    session,
+    kind: "treatment plan",
+    entity: "TreatmentPlan",
+    entityId: id,
+    patientId: session.sub,
+  });
 
   return (
     <MobileShell

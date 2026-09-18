@@ -105,13 +105,13 @@ export default async function ClinicBookingsPage({
           <tbody>
             {bookings.map((b) => (
               <TR key={String(b._id)}>
-                <TD mono>{b.bookingNo}</TD>
-                <TD>{nameById.get(String(b.patientId)) ?? "—"}</TD>
-                <TD>{b.dripName ?? "—"}</TD>
-                <TD mono>
+                <TD mono nowrap>{b.bookingNo}</TD>
+                <TD nowrap>{nameById.get(String(b.patientId)) ?? "—"}</TD>
+                <TD nowrap>{b.dripName ?? "—"}</TD>
+                <TD mono nowrap>
                   {formatDate(b.scheduledAt)} · {formatTime(b.scheduledAt)}
                 </TD>
-                <TD>{b.nurseId ? (nameById.get(String(b.nurseId)) ?? "—") : "Unassigned"}</TD>
+                <TD nowrap>{b.nurseId ? (nameById.get(String(b.nurseId)) ?? "—") : "Unassigned"}</TD>
                 <TD>
                   <StatusPill status={b.status} dot />
                 </TD>

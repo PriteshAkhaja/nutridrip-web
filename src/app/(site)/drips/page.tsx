@@ -107,7 +107,7 @@ export default async function CataloguePage({
         })}
       </div>
 
-      <div className="grid gap-4 md:grid-cols-2">
+      <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
         {drips.map((d) => {
           const available = availableByDrip.get(d.id) ?? 0;
           return (

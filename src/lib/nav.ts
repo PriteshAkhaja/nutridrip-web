@@ -10,19 +10,20 @@ import type { NavItem } from "@/components/layout/ConsoleShell";
 export async function adminNav(activeCounts = true): Promise<NavItem[]> {
   if (!activeCounts) {
     return [
-      { label: "Overview", href: "/admin" },
-      { label: "Approvals", href: "/admin/approvals" },
-      { label: "Availability", href: "/admin/inventory/availability" },
-      { label: "Products & batches", href: "/admin/inventory" },
-      { label: "Drip builder", href: "/admin/inventory/drips" },
-      { label: "Preparation orders", href: "/admin/inventory/orders" },
-      { label: "Alerts", href: "/admin/inventory/alerts" },
-      { label: "Recall trace", href: "/admin/inventory/recall" },
-      { label: "People", href: "/admin/users" },
-      { label: "Quiz builder", href: "/admin/quiz" },
-      { label: "Site copy", href: "/admin/content" },
-      { label: "Billing", href: "/admin/billing" },
-      { label: "Enquiries", href: "/admin/leads" },
+      { section: "Platform", label: "Overview", href: "/admin" },
+      { section: "Platform", label: "Approvals", href: "/admin/approvals" },
+      { section: "Platform", label: "People", href: "/admin/users" },
+      { section: "Platform", label: "Quiz builder", href: "/admin/quiz" },
+      { section: "Platform", label: "Site copy", href: "/admin/content" },
+      { section: "Platform", label: "Enquiries", href: "/admin/leads" },
+      { section: "Inventory", label: "Availability", href: "/admin/inventory/availability" },
+      { section: "Inventory", label: "Products & batches", href: "/admin/inventory" },
+      { section: "Inventory", label: "Drip builder", href: "/admin/inventory/drips" },
+      { section: "Inventory", label: "Preparation orders", href: "/admin/inventory/orders" },
+      { section: "Inventory", label: "Alerts", href: "/admin/inventory/alerts" },
+      { section: "Inventory", label: "Recall trace", href: "/admin/inventory/recall" },
+      { section: "Admin", label: "Billing", href: "/admin/billing" },
+      { section: "Admin", label: "Audit trail", href: "/admin/audit" },
     ];
   }
 
@@ -39,25 +40,29 @@ export async function adminNav(activeCounts = true): Promise<NavItem[]> {
   const alertCount =
     alerts.counts.expired + alerts.counts.expiringSoon + alerts.counts.lowStock + alerts.counts.outOfStock;
 
+  // Grouped by the areas the breadcrumbs already name — Platform, Inventory,
+  // Admin — and ordered within each as before.
   return [
-    { label: "Overview", href: "/admin" },
-    { label: "Approvals", href: "/admin/approvals", badge: pendingQuizzes || undefined, badgeTone: "caution" },
-    { label: "Availability", href: "/admin/inventory/availability" },
-    { label: "Products & batches", href: "/admin/inventory", badge: products },
-    { label: "Drip builder", href: "/admin/inventory/drips" },
-    { label: "Preparation orders", href: "/admin/inventory/orders", badge: openOrders || undefined },
+    { section: "Platform", label: "Overview", href: "/admin" },
+    { section: "Platform", label: "Approvals", href: "/admin/approvals", badge: pendingQuizzes || undefined, badgeTone: "caution" },
+    { section: "Platform", label: "People", href: "/admin/users", badge: users },
+    { section: "Platform", label: "Quiz builder", href: "/admin/quiz" },
+    { section: "Platform", label: "Site copy", href: "/admin/content" },
+    { section: "Platform", label: "Enquiries", href: "/admin/leads", badge: newLeads || undefined, badgeTone: "caution" },
+    { section: "Inventory", label: "Availability", href: "/admin/inventory/availability" },
+    { section: "Inventory", label: "Products & batches", href: "/admin/inventory", badge: products },
+    { section: "Inventory", label: "Drip builder", href: "/admin/inventory/drips" },
+    { section: "Inventory", label: "Preparation orders", href: "/admin/inventory/orders", badge: openOrders || undefined },
     {
+      section: "Inventory",
       label: "Alerts",
       href: "/admin/inventory/alerts",
       badge: alertCount || undefined,
       badgeTone: alerts.counts.expired > 0 ? "critical" : "caution",
     },
-    { label: "Recall trace", href: "/admin/inventory/recall" },
-    { label: "People", href: "/admin/users", badge: users },
-    { label: "Quiz builder", href: "/admin/quiz" },
-    { label: "Site copy", href: "/admin/content" },
-    { label: "Billing", href: "/admin/billing" },
-    { label: "Enquiries", href: "/admin/leads", badge: newLeads || undefined, badgeTone: "caution" },
+    { section: "Inventory", label: "Recall trace", href: "/admin/inventory/recall" },
+    { section: "Admin", label: "Billing", href: "/admin/billing" },
+    { section: "Admin", label: "Audit trail", href: "/admin/audit" },
   ];
 }
 
@@ -82,11 +87,11 @@ export async function doctorNav(doctorId: string): Promise<NavItem[]> {
   const escalations = blockedVitals + openAdverse;
 
   return [
-    { label: "Approvals queue", href: "/doctor", badge: pendingQuizzes || undefined, badgeTone: "caution" },
-    { label: "Patients", href: "/doctor/patients" },
-    { label: "Treatment plans", href: "/doctor/plans" },
-    { label: "Schedule", href: "/doctor/schedule", badge: todaySessions || undefined },
-    { label: "Escalations", href: "/doctor/adverse", badge: escalations || undefined, badgeTone: "critical" },
+    { section: "Clinical", label: "Approvals queue", href: "/doctor", badge: pendingQuizzes || undefined, badgeTone: "caution" },
+    { section: "Clinical", label: "Patients", href: "/doctor/patients" },
+    { section: "Clinical", label: "Treatment plans", href: "/doctor/plans" },
+    { section: "Clinical", label: "Schedule", href: "/doctor/schedule", badge: todaySessions || undefined },
+    { section: "Clinical", label: "Escalations", href: "/doctor/adverse", badge: escalations || undefined, badgeTone: "critical" },
   ];
 }
 
@@ -98,10 +103,10 @@ export async function clinicNav(clinicId: string): Promise<NavItem[]> {
   ]);
 
   return [
-    { label: "Today", href: "/clinic" },
-    { label: "Orders", href: "/clinic/orders", badge: openOrders || undefined },
-    { label: "Bookings", href: "/clinic/bookings", badge: bookings || undefined },
-    { label: "Profile", href: "/clinic/profile" },
+    { section: "Clinic", label: "Today", href: "/clinic" },
+    { section: "Clinic", label: "Orders", href: "/clinic/orders", badge: openOrders || undefined },
+    { section: "Clinic", label: "Bookings", href: "/clinic/bookings", badge: bookings || undefined },
+    { section: "Clinic", label: "Profile", href: "/clinic/profile" },
   ];
 }
 

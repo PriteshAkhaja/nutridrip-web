@@ -4,6 +4,7 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/Button";
 import { Input, Select, Checkbox, Textarea } from "@/components/ui/Field";
+import { DatePicker } from "@/components/ui/DatePicker";
 import { Card } from "@/components/ui/Card";
 import { CATEGORIES, UNITS, UNIT_FORMS } from "@/lib/models/types";
 
@@ -124,7 +125,7 @@ export function ReceiveStock({
 
       {open === "master" ? (
         <>
-          <div className="grid gap-4 lg:grid-cols-2">
+          <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
             <Input
               label="Drug name"
               value={master.name}
@@ -140,7 +141,7 @@ export function ReceiveStock({
             />
           </div>
 
-          <div className="grid gap-4 lg:grid-cols-4 mt-4">
+          <div className="grid grid-cols-1 gap-4 lg:grid-cols-4 mt-4">
             <Input
               label="HSN code"
               mono
@@ -179,7 +180,7 @@ export function ReceiveStock({
             </Select>
           </div>
 
-          <div className="grid gap-4 lg:grid-cols-2 mt-4">
+          <div className="grid grid-cols-1 gap-4 lg:grid-cols-2 mt-4">
             <Input
               label="Reorder level"
               hint="alert below this many units"
@@ -265,7 +266,7 @@ export function ReceiveStock({
             ))}
           </Select>
 
-          <div className="grid gap-4 lg:grid-cols-2 mt-4">
+          <div className="grid grid-cols-1 gap-4 lg:grid-cols-2 mt-4">
             <Input
               label="Brand"
               value={lot.brandName}
@@ -280,7 +281,7 @@ export function ReceiveStock({
             />
           </div>
 
-          <div className="grid gap-4 lg:grid-cols-2 mt-4">
+          <div className="grid grid-cols-1 gap-4 lg:grid-cols-2 mt-4">
             <Input
               label="Batch number"
               mono
@@ -288,16 +289,14 @@ export function ReceiveStock({
               onChange={(e) => setLot({ ...lot, batchNo: e.target.value })}
               placeholder="VC-B9"
             />
-            <Input
+            <DatePicker
               label="Expiry"
-              type="date"
-              mono
               value={lot.expiry}
-              onChange={(e) => setLot({ ...lot, expiry: e.target.value })}
+              onChange={(v) => setLot({ ...lot, expiry: v })}
             />
           </div>
 
-          <div className="grid gap-4 lg:grid-cols-4 mt-4">
+          <div className="grid grid-cols-1 gap-4 lg:grid-cols-4 mt-4">
             <Input
               label="Content per unit"
               hint={selectedMaster ? `in ${selectedMaster.canonicalUnit}` : undefined}
@@ -350,7 +349,7 @@ export function ReceiveStock({
             />
           </div>
 
-          <div className="grid gap-4 lg:grid-cols-2 mt-4">
+          <div className="grid grid-cols-1 gap-4 lg:grid-cols-2 mt-4">
             <Input
               label="Cost per unit"
               hint="optional"

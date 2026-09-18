@@ -1,5 +1,5 @@
 import { connectDB } from "@/lib/db/mongoose";
-import { Order } from "@/lib/models";
+import { AuditLog, Order } from "@/lib/models";
 import { getSession } from "@/lib/auth/session";
 import { can } from "@/lib/auth/rbac";
 import { cancelOrder } from "@/lib/inventory/dispatch";
@@ -26,6 +26,16 @@ export async function POST(req: Request, { params }: { params: Promise<{ id: str
       "warning",
       "/clinic/orders"
     );
+
+    await AuditLog.create({
+      actorId: session!.sub,
+      actorRole: session!.role,
+      action: "order.cancel",
+      entity: "Order",
+      entityId: id,
+      before: { status: order0?.status },
+      after: { orderNo: order.orderNo, status: order.status, reason: body?.reason ?? "—" },
+    });
 
     return ok({ order });
   } catch (err) {

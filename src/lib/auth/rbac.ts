@@ -46,6 +46,14 @@ export const PERMISSIONS = {
    * it should not drag the other with it.
    */
   "billing.manage": ["superadmin", "admin"],
+  /**
+   * Reading the trail is its own capability.
+   *
+   * It carries who was refused what and when, across every role — closer to a
+   * security log than to an admin screen, and the sign-in page and privacy
+   * policy both promise the user it is kept.
+   */
+  "audit.view": ["superadmin", "admin"],
   "labs.upload": ["patient"],
   "labs.view": ["superadmin", "admin", "doctor", "patient"],
 

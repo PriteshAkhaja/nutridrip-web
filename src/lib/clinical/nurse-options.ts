@@ -169,3 +169,52 @@ export function nurseOptions(
     noTeam: mine.length === 0,
   };
 }
+
+/**
+ * Average speed a nurse actually travels at, across a city.
+ *
+ * 25 km/h is not a driving speed — it is a Bengaluru door-to-door speed, which
+ * is what a patient waiting by the door cares about. The five minutes on top
+ * cover parking, finding the flat and getting up the stairs.
+ */
+const CITY_SPEED_KMH = 25;
+const ARRIVAL_MINUTES = 5;
+
+/**
+ * How long the nurse is from the patient, in minutes.
+ *
+ * Deliberately coarse. This is shown to a patient as "about 20 minutes", and a
+ * figure that looked precise would be a promise the traffic has not agreed to.
+ * Never returns less than five: "arriving in 1 minute" reads as a doorbell
+ * that is about to ring, and it rarely is.
+ */
+export function etaMinutesFor(km: number): number {
+  if (!Number.isFinite(km) || km < 0) return ARRIVAL_MINUTES;
+  return Math.max(ARRIVAL_MINUTES, Math.round((km / CITY_SPEED_KMH) * 60) + ARRIVAL_MINUTES);
+}
+
+/**
+ * The ETA between two known points, or null when either is unknown.
+ *
+ * Null rather than a guess: a nurse with no coordinates on file would
+ * otherwise appear to be exactly at the patient's door.
+ */
+export function etaBetween(
+  from: { latitude?: number; longitude?: number } | null | undefined,
+  to: { latitude?: number; longitude?: number } | null | undefined
+): number | null {
+  if (
+    from?.latitude == null ||
+    from?.longitude == null ||
+    to?.latitude == null ||
+    to?.longitude == null
+  ) {
+    return null;
+  }
+  return etaMinutesFor(distanceKm(from.latitude, from.longitude, to.latitude, to.longitude));
+}
+
+/** "about 20 minutes away", or "on the way" when there is no figure. */
+export function etaLabel(minutes: number | null | undefined): string {
+  return minutes ? `about ${minutes} min away` : "on the way";
+}

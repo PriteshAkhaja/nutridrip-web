@@ -3,9 +3,10 @@
 import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/Button";
+import { CURRENT_CONSENT_VERSION } from "@/lib/clinical/consent";
 import { queuedPost } from "@/lib/offline/queue";
 
-const CONSENT_VERSION = "v2.1";
+
 
 /**
  * A signature pad drawn on canvas. Pointer events cover mouse, touch and
@@ -116,7 +117,7 @@ export function ConsentCapture({
       <div className="rounded-[var(--radius-lg)] border border-[var(--color-safe)] bg-[var(--color-safe-soft)] p-5">
         <span className="t-body font-semibold">Consent already captured</span>
         <p className="t-body text-[var(--color-ink-2)] mt-1">
-          Version {CONSENT_VERSION} ·{" "}
+          Version {CURRENT_CONSENT_VERSION} ·{" "}
           {new Date(alreadyGivenAt).toLocaleString("en-IN", {
             day: "2-digit",
             month: "short",
@@ -141,7 +142,7 @@ export function ConsentCapture({
       const result = await queuedPost(
         `/api/bookings/${bookingId}/consent`,
         {
-          version: CONSENT_VERSION,
+          version: CURRENT_CONSENT_VERSION,
           signatureDataUrl: mode === "signature" ? signature ?? undefined : undefined,
           viaOtp: mode === "otp" ? otp : undefined,
         },

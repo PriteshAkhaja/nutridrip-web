@@ -84,6 +84,18 @@ export async function PATCH(req: Request, { params }: { params: Promise<{ id: st
     if (input.status) user.status = input.status;
     if (input.password) user.passwordHash = await hashPassword(input.password);
 
+    /**
+     * End every session this account already holds.
+     *
+     * Two moments call for it, and both were silent before: a new password is
+     * usually set because the old one is compromised, and an account that stops
+     * being active should stop being usable now rather than whenever its token
+     * happens to expire. Raising the number invalidates them all at once —
+     * see tokenVersion on the User model.
+     */
+    const stopsAccess = Boolean(input.password) || (input.status && input.status !== "active");
+    if (stopsAccess) user.tokenVersion = (user.tokenVersion ?? 0) + 1;
+
     if (user.role === "doctor") {
       user.doctor = {
         ...(user.doctor ?? {}),
@@ -127,7 +139,7 @@ export async function PATCH(req: Request, { params }: { params: Promise<{ id: st
       entity: "User",
       entityId: id,
       before,
-      after: { name: user.name, status: user.status },
+      after: { name: user.name, status: user.status, sessionsEnded: stopsAccess || undefined },
     });
 
     return ok({ user: { id, name: user.name, status: user.status } });

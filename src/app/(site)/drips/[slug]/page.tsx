@@ -83,7 +83,7 @@ export default async function DripDetailPage({ params }: { params: Promise<{ slu
       {/* ================= HERO ================= */}
       <section className="bg-[var(--color-paper)]">
         <div className="mx-auto max-w-[1240px] px-6 md:px-10 py-10 md:py-14">
-          <div className="grid gap-10 lg:gap-14 lg:grid-cols-[1fr_1fr] items-start">
+          <div className="grid grid-cols-1 gap-10 lg:gap-14 lg:grid-cols-[1fr_1fr] items-start">
             {/* --- The object --- */}
             <div className="lg:sticky lg:top-24">
               <div className="rounded-[var(--radius-lg)] border border-[var(--color-line)] bg-[var(--color-surface-2)] aspect-square flex items-center justify-center relative overflow-hidden">
@@ -151,7 +151,7 @@ export default async function DripDetailPage({ params }: { params: Promise<{ slu
               {drip.benefits.length > 0 && (
                 <div className="mt-6 mb-6">
                   <span className="t-micro block mb-3">What it helps with</span>
-                  <div className="grid gap-3 sm:grid-cols-2">
+                  <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
                   {drip.benefits.map((b) => (
                     <div
                       key={b.title}
@@ -256,7 +256,7 @@ export default async function DripDetailPage({ params }: { params: Promise<{ slu
           title="Every ingredient, every dose"
           sub="Bars show each component's weight within this formula. Doses in different units are not directly comparable, so the scale is the formula's own maximum."
         />
-        <div className="grid gap-8 lg:grid-cols-[1.15fr_0.85fr] items-start">
+        <div className="grid grid-cols-1 gap-8 lg:grid-cols-[1.15fr_0.85fr] items-start">
           <div className="rounded-[var(--radius-lg)] border border-[var(--color-line)] bg-[var(--color-surface)] p-7 flex flex-col gap-[18px]">
             {drip.ingredients.map((ing) => (
               <FillBar
@@ -323,7 +323,7 @@ export default async function DripDetailPage({ params }: { params: Promise<{ slu
       {/* ================= HOW A SESSION RUNS ================= */}
       <Section>
         <SectionHeading center eyebrow="The session" title="What the hour actually looks like" />
-        <div className="grid gap-4 md:grid-cols-3">
+        <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
           {TRANSFORMATION.map((t, i) => (
             <div
               key={t.step}
@@ -354,7 +354,7 @@ export default async function DripDetailPage({ params }: { params: Promise<{ slu
         <div className="flex justify-center mb-10">
           <RatingStrip rating={AGGREGATE.rating} count={AGGREGATE.count} />
         </div>
-        <div className="grid gap-4 md:grid-cols-3">
+        <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
           {reviews.map((t) => (
             <TestimonialCard key={t.id} t={t} />
           ))}
@@ -374,7 +374,7 @@ export default async function DripDetailPage({ params }: { params: Promise<{ slu
 
       {/* ================= FAQ ================= */}
       <Section tone="soft">
-        <div className="grid gap-10 lg:grid-cols-[0.8fr_1.2fr] items-start">
+        <div className="grid grid-cols-1 gap-10 lg:grid-cols-[0.8fr_1.2fr] items-start">
           <SectionHeading eyebrow="Before you book" title="Questions people actually ask" />
           <FaqList items={FAQS} />
         </div>
@@ -414,7 +414,7 @@ export default async function DripDetailPage({ params }: { params: Promise<{ slu
             All drips&nbsp;<Arrow />
           </Link>
         </div>
-        <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
+        <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-4">
           {related.map((d) => (
             <Link
               key={d.slug}

@@ -78,6 +78,34 @@ export function blockedByVitals(step: { key: string; phase: string }): boolean {
   return BLOCKED_BY_VITALS.includes(step.key) || step.phase === "During infusion";
 }
 
+/**
+ * The first step that needs the prescription open.
+ *
+ * The patient's code is the proof the nurse is actually with the patient, and
+ * until then the nurse only gets the checks that happen on the doorstep —
+ * booking, identity, protocol, allergies, contraindications, last meal. From
+ * the kit check onward they are handling the drugs or the patient's body.
+ *
+ * Locking only the screens that show the drugs was not enough: the checklist
+ * would still record "Confirm each component against the prescription" as done
+ * by a nurse who had never seen it. A nurse is never stuck here, because a
+ * physician's authorisation or a recorded break-glass also opens it.
+ */
+export const PRESCRIPTION_FROM = "ps-07";
+
+/**
+ * Does ticking this step need the prescription unlocked?
+ *
+ * Decided by position, not by a list of keys: a step added later is covered
+ * without anyone remembering to add it. A key this list does not know is
+ * treated as needing it — a guard that fails open is not a guard.
+ */
+export function needsPrescription(key: string): boolean {
+  const from = CHECKLIST_STEPS.findIndex((s) => s.key === PRESCRIPTION_FROM);
+  const at = CHECKLIST_STEPS.findIndex((s) => s.key === key);
+  return at === -1 || at >= from;
+}
+
 export const PHASE_ORDER: ChecklistPhase[] = [
   "Pre-session",
   "Preparation",

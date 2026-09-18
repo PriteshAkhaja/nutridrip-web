@@ -5,7 +5,7 @@ import { adminNav } from "@/lib/nav";
 import { ConsoleShell } from "@/components/layout/ConsoleShell";
 import { connectDB } from "@/lib/db/mongoose";
 import { Order, User } from "@/lib/models";
-import { DataTable, THead, TH, TR, TD } from "@/components/ui/Table";
+import { DataTable, THead, TH, TR, TD, Pieces } from "@/components/ui/Table";
 import { StatusPill } from "@/components/ui/Pill";
 import { EmptyState } from "@/components/ui/States";
 import { formatInr } from "@/lib/inventory/units";
@@ -95,7 +95,8 @@ export default async function OrdersPage({
         )}
       </div>
 
-      <div className="grid gap-6 xl:grid-cols-[1fr_400px] items-start">
+      {/* Side by side only from 1760px. Below that the table takes the full width and this panel sits under it: with names and dates held on one line, the table does not fit beside the panel on a laptop or a 1536-1680px monitor (measured; the orders list beside its 400px composer needs about 1740px). */}
+      <div className="grid grid-cols-1 gap-6 min-[1760px]:grid-cols-[minmax(0,1fr)_400px] items-start">
       <div>
       {orders.length === 0 ? (
         <EmptyState
@@ -121,21 +122,21 @@ export default async function OrdersPage({
           <tbody>
             {orders.map((o) => (
               <TR key={String(o._id)}>
-                <TD>
+                <TD nowrap>
                   <Link href={`/admin/inventory/orders/${String(o._id)}`} className="t-data text-[14.5px]">
                     {o.orderNo}
                   </Link>
                 </TD>
-                <TD>
+                <TD nowrap>
                   <span className="t-data text-[13px] text-[var(--color-ink-2)]">
                     {o.patientRef ?? o.patientName ?? "—"}
                   </span>
                 </TD>
                 <TD>
-                  {o.lines.map((l) => `${l.dripName} × ${l.quantity}`).join(", ")}
+                  <Pieces items={o.lines.map((l) => `${l.dripName} × ${l.quantity}`)} />
                 </TD>
-                <TD mono>{formatDate(o.createdAt)}</TD>
-                <TD mono>{o.scheduledDelivery ? formatDate(o.scheduledDelivery) : "—"}</TD>
+                <TD mono nowrap>{formatDate(o.createdAt)}</TD>
+                <TD mono nowrap>{o.scheduledDelivery ? formatDate(o.scheduledDelivery) : "—"}</TD>
                 <TD>
                   <StatusPill status={o.status} dot />
                 </TD>

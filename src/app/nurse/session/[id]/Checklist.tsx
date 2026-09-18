@@ -6,6 +6,7 @@ import Link from "next/link";
 import { Button } from "@/components/ui/Button";
 import { Pill } from "@/components/ui/Pill";
 import { queuedPost } from "@/lib/offline/queue";
+import { blockedByVitals, needsPrescription } from "@/lib/clinical/checklist";
 import type { StepView } from "./page";
 
 const SUB_SCREEN: Record<string, { label: string; path: string }> = {
@@ -25,12 +26,15 @@ export function Checklist({
   steps,
   currentIndex,
   vitalsBlocked,
+  rxLocked,
   clearance,
 }: {
   bookingId: string;
   steps: StepView[];
   currentIndex: number;
   vitalsBlocked: boolean;
+  /** The prescription has not been opened for this session yet. */
+  rxLocked: boolean;
   /** Set when a physician has cleared out-of-range baseline vitals. */
   clearance: { at: string; note?: string } | null;
 }) {
@@ -69,19 +73,21 @@ export function Checklist({
 
   return (
     <div className="flex flex-col gap-2">
-      {error && (
-        <div className="rounded-[var(--radius-md)] border border-[var(--color-caution)] bg-[var(--color-caution-soft)] px-4 py-3 mb-2">
-          <span className="t-body text-[var(--color-ink-2)]">{error}</span>
-        </div>
-      )}
-
       {steps.map((step, i) => {
         const done = Boolean(step.doneAt);
         const current = i === currentIndex;
         const sub = step.opens ? SUB_SCREEN[step.opens] : null;
 
         // Out-of-range vitals stop the infusion before it starts.
-        const gated = current && vitalsBlocked && step.phase === "During infusion";
+        // The same function the server uses, so the screen cannot disagree with
+        // it. Checking only the "During infusion" phase here left the three
+        // cannulation steps looking open while the server refused them.
+        const gated = current && vitalsBlocked && blockedByVitals(step);
+
+        // Past the doorstep checks, nothing moves until the patient's code has
+        // been read. The server refuses it anyway; this says so before the
+        // nurse presses anything, and hands them the one way forward.
+        const rxGated = current && rxLocked && needsPrescription(step.key);
 
         return (
           <div
@@ -144,14 +150,14 @@ export function Checklist({
                   {gated && (
                     <div className="rounded-[var(--radius-sm)] border border-[var(--color-critical)] bg-[var(--color-critical-soft)] px-3 py-2 mt-3">
                       <span className="t-small text-[var(--color-ink-2)]">
-                        A baseline reading is outside its reference range. The infusion cannot start until the
-                        reviewing physician clears it — they have been notified, and this step unlocks the moment
-                        they do.
+                        A baseline reading is outside its reference range. Do not cannulate or start the
+                        infusion until the reviewing physician clears it — they have been notified, and this step
+                        unlocks the moment they do.
                       </span>
                     </div>
                   )}
 
-                  {!gated && clearance && step.phase === "During infusion" && (
+                  {!gated && clearance && blockedByVitals(step) && (
                     <div className="rounded-[var(--radius-sm)] border border-[var(--color-safe)] bg-[var(--color-safe-soft)] px-3 py-2 mt-3">
                       <span className="t-small text-[var(--color-ink-2)]">
                         Physician cleared the baseline vitals at{" "}
@@ -163,6 +169,22 @@ export function Checklist({
                     </div>
                   )}
 
+                  {rxGated ? (
+                    <>
+                      <div className="rounded-[var(--radius-sm)] border border-[var(--color-primary)] bg-[var(--color-primary-soft)] px-3 py-2 mt-3">
+                        <span className="t-small text-[var(--color-ink-2)]">
+                          Open the prescription before this step. Ask the patient to read out the code sent
+                          to their phone.
+                        </span>
+                      </div>
+                      <Link
+                        href={`/nurse/session/${bookingId}/rx`}
+                        className="no-underline hover:no-underline block mt-4"
+                      >
+                        <Button block>Open the prescription</Button>
+                      </Link>
+                    </>
+                  ) : (
                   <div className="flex gap-2 mt-4 flex-wrap">
                     {sub && (
                       <Link
@@ -181,6 +203,19 @@ export function Checklist({
                       Mark complete
                     </Button>
                   </div>
+                  )}
+
+                  {/* Under the button that was pressed. At the top of the list it
+                      sat above every finished step, off-screen by the time a
+                      nurse was halfway down — a refusal nobody could see. */}
+                  {error && (
+                    <div
+                      role="alert"
+                      className="rounded-[var(--radius-sm)] border border-[var(--color-caution)] bg-[var(--color-caution-soft)] px-3 py-2 mt-3"
+                    >
+                      <span className="t-small text-[var(--color-ink-2)]">{error}</span>
+                    </div>
+                  )}
                 </>
               )}
             </div>

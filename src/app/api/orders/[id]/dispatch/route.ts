@@ -1,5 +1,6 @@
 import { getSession } from "@/lib/auth/session";
 import { can } from "@/lib/auth/rbac";
+import { AuditLog } from "@/lib/models";
 import { dispatchOrder } from "@/lib/inventory/dispatch";
 import { notify } from "@/lib/notify";
 import { ok, fail, handleError } from "@/lib/api";
@@ -17,6 +18,20 @@ export async function POST(_req: Request, { params }: { params: Promise<{ id: st
       "success",
       "/clinic/orders"
     );
+
+    /**
+     * Stock consumed and the ledger written. The stock ledger records the movement; this records the decision —
+     * who pressed it, and when. A recall is answered from the ledger; "who
+     * dispatched this" is answered from here.
+     */
+    await AuditLog.create({
+      actorId: session!.sub,
+      actorRole: session!.role,
+      action: "order.dispatch",
+      entity: "Order",
+      entityId: id,
+      after: { orderNo: order.orderNo, status: order.status, amount: order.amount },
+    });
 
     return ok({ order });
   } catch (err) {

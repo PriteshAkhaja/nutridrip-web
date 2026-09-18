@@ -92,7 +92,7 @@ export function KitEditor({
 
       <div className="flex flex-col gap-3 mt-4">
         {items.map((item, i) => (
-          <div key={i} className="grid gap-3 sm:grid-cols-[1fr_120px_auto] items-end">
+          <div key={i} className="grid grid-cols-1 gap-3 sm:grid-cols-[1fr_120px_auto] items-end">
             <Select
               label={i === 0 ? "Item" : undefined}
               value={item.masterId}

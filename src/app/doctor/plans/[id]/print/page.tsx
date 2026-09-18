@@ -2,6 +2,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import type { Metadata } from "next";
 import { requireRole } from "@/lib/auth/guard";
+import { logRecordAccess } from "@/lib/auth/access-log";
 import { connectDB } from "@/lib/db/mongoose";
 import { TreatmentPlan, User } from "@/lib/models";
 import { getContent } from "@/lib/content";
@@ -45,6 +46,16 @@ export default async function PrintRxPage({ params }: { params: Promise<{ id: st
   if (!plan) notFound();
   // A physician prints their own prescriptions; the super admin may print any.
   if (session.role === "doctor" && String(plan.doctorId) !== session.sub) notFound();
+
+  // A prescription leaving the building on paper is worth its own row.
+  await logRecordAccess({
+    session,
+    kind: "prescription",
+    entity: "TreatmentPlan",
+    entityId: id,
+    patientId: String(plan.patientId),
+    note: "opened for printing",
+  });
 
   const [patient, doctor, nurse, copy] = await Promise.all([
     User.findById(plan.patientId).lean<{
@@ -94,7 +105,7 @@ export default async function PrintRxPage({ params }: { params: Promise<{ id: st
           </div>
         </header>
 
-        <section className="grid gap-6 md:grid-cols-2 py-6 border-b border-[var(--color-line)]">
+        <section className="grid grid-cols-1 gap-6 md:grid-cols-2 py-6 border-b border-[var(--color-line)]">
           <div>
             <span className="t-micro">Patient</span>
             <div className="t-h3 mt-1">{patient?.name ?? "—"}</div>
@@ -161,7 +172,7 @@ export default async function PrintRxPage({ params }: { params: Promise<{ id: st
               {sessions.map((s, i) => (
                 <tr key={i} className="border-b border-[var(--color-line)] align-top" style={{ breakInside: "avoid" }}>
                   <td className="t-data text-[13px] py-3 pr-3">W{s.weekNum}</td>
-                  <td className="t-data text-[13px] py-3 pr-3">{formatDate(s.date)}</td>
+                  <td className="t-data text-[13px] py-3 pr-3 whitespace-nowrap">{formatDate(s.date)}</td>
                   <td className="py-3 pr-3">
                     <div className="t-body font-semibold">{s.dripName}</div>
                     {s.components.length > 0 ? (

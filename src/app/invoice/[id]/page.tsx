@@ -95,7 +95,7 @@ export default async function InvoicePage({ params }: { params: Promise<{ id: st
           </div>
         </header>
 
-        <section className="grid gap-6 md:grid-cols-2 py-6 border-b border-[var(--color-line)]">
+        <section className="grid grid-cols-1 gap-6 md:grid-cols-2 py-6 border-b border-[var(--color-line)]">
           <div>
             <span className="t-micro">Billed to</span>
             <div className="t-h3 mt-1">{inv.buyer.name}</div>

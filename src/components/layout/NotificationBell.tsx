@@ -43,30 +43,49 @@ async function fetchNotifications(): Promise<{ items: Item[]; unread: number } |
 /**
  * The one surface that tells a person something happened elsewhere in the
  * system — an approval, an assignment, an adverse event, a dispatch.
+ *
+ * `media` is for a shell that places a bell differently by width. The console
+ * keeps one in the phone/tablet bar and one in the desktop page header, and
+ * CSS shows whichever fits — but a hidden bell would still poll, doubling the
+ * requests. So a bell given `media` only fetches and polls while that query
+ * matches, and starts or stops as the window crosses it.
  */
-export function NotificationBell() {
+export function NotificationBell({ media }: { media?: string } = {}) {
   const router = useRouter();
   const [open, setOpen] = useState(false);
   const [items, setItems] = useState<Item[]>([]);
   const [unread, setUnread] = useState(0);
   const panelRef = useRef<HTMLDivElement>(null);
 
-  // Subscribe to the server: first load, then once a minute.
+  // Subscribe to the server: first load, then once a minute — while on screen.
   useEffect(() => {
     let cancelled = false;
+    let timer: ReturnType<typeof setInterval> | undefined;
     const refresh = () =>
       fetchNotifications().then((data) => {
         if (cancelled || !data) return;
         setItems(data.items);
         setUnread(data.unread);
       });
-    refresh();
-    const t = setInterval(refresh, 60_000);
+    const start = () => {
+      if (timer) return;
+      refresh();
+      timer = setInterval(refresh, 60_000);
+    };
+    const stop = () => {
+      if (timer) clearInterval(timer);
+      timer = undefined;
+    };
+    const query = media ? window.matchMedia(media) : null;
+    const sync = () => (query && !query.matches ? stop() : start());
+    sync();
+    query?.addEventListener("change", sync);
     return () => {
       cancelled = true;
-      clearInterval(t);
+      stop();
+      query?.removeEventListener("change", sync);
     };
-  }, []);
+  }, [media]);
 
   // Click-away and Escape both close the panel.
   useEffect(() => {

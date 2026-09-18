@@ -113,14 +113,14 @@ export default async function DoctorSchedulePage() {
                 <tbody>
                   {items.map((b) => (
                     <TR key={String(b._id)}>
-                      <TD mono>{formatTime(b.scheduledAt)}</TD>
-                      <TD>
+                      <TD mono nowrap>{formatTime(b.scheduledAt)}</TD>
+                      <TD nowrap>
                         <Link href={`/doctor/patients/${String(b.patientId)}`}>
                           {nameById.get(String(b.patientId)) ?? "—"}
                         </Link>
                       </TD>
-                      <TD>{b.dripName ?? "—"}</TD>
-                      <TD>{b.nurseId ? (nameById.get(String(b.nurseId)) ?? "—") : "Unassigned"}</TD>
+                      <TD nowrap>{b.dripName ?? "—"}</TD>
+                      <TD nowrap>{b.nurseId ? (nameById.get(String(b.nurseId)) ?? "—") : "Unassigned"}</TD>
                       <TD>
                         <span className="t-small text-[var(--color-ink-2)] capitalize">{b.location}</span>
                       </TD>

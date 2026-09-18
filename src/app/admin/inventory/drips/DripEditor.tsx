@@ -210,7 +210,7 @@ export function DripEditor({
         </div>
       )}
 
-      <div className="grid gap-4 lg:grid-cols-2">
+      <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
         <Input
           label="Name"
           value={d.name}
@@ -229,7 +229,7 @@ export function DripEditor({
         />
       </div>
 
-      <div className="grid gap-4 lg:grid-cols-2 mt-4">
+      <div className="grid grid-cols-1 gap-4 lg:grid-cols-2 mt-4">
         {/* Without this a new drip has no category and lands as "Wellness",
             invisible to every filter chip on the public catalogue. */}
         <Select
@@ -274,7 +274,7 @@ export function DripEditor({
         </div>
       </div>
 
-      <div className="grid gap-4 lg:grid-cols-4 mt-4">
+      <div className="grid grid-cols-1 gap-4 lg:grid-cols-4 mt-4">
         {/* The price is read as tax-inclusive when a clinic is invoiced — the
             taxable value is worked back out of it, so the bill and the order
             come to the same figure. */}
@@ -321,7 +321,7 @@ export function DripEditor({
           Both are optional. Leave the rate blank and this drip is billed with
           no GST on it; leave NutriDrip's own GSTIN unset at /admin/content and
           nothing is taxed at all. */}
-      <div className="grid gap-4 lg:grid-cols-4 mt-4">
+      <div className="grid grid-cols-1 gap-4 lg:grid-cols-4 mt-4">
         <Input
           label="HSN code"
           hint="on the invoice"
@@ -392,7 +392,7 @@ export function DripEditor({
             removes. */}
         <div className="flex flex-col gap-3">
           {d.benefits.map((b, i) => (
-            <div key={i} className="grid gap-2 lg:grid-cols-[1fr_2fr_auto] items-end">
+            <div key={i} className="grid grid-cols-1 gap-2 lg:grid-cols-[1fr_2fr_auto] items-end">
               <Input
                 label={i === 0 ? "Heading" : undefined}
                 value={b.title}
@@ -463,7 +463,7 @@ export function DripEditor({
             const slip = master ? !unitsCompatible(l.unit, master.canonicalUnit) : false;
             return (
               <div key={i} className="rounded-[var(--radius-md)] border border-[var(--color-line)] p-4">
-                <div className="grid gap-3 lg:grid-cols-[2fr_100px_90px_1fr_auto] items-end">
+                <div className="grid grid-cols-1 gap-3 lg:grid-cols-[2fr_100px_90px_1fr_auto] items-end">
                   <Select
                     label={i === 0 ? "Product" : undefined}
                     value={l.masterId}
@@ -575,7 +575,7 @@ export function DripEditor({
         </div>
       )}
 
-      <div className="grid gap-3 sm:grid-cols-2 mt-6">
+      <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 mt-6">
         <Checkbox
           label="Include the session kit"
           checked={d.withKit}

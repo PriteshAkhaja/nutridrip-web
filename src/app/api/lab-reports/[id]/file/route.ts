@@ -2,6 +2,7 @@ import { connectDB } from "@/lib/db/mongoose";
 import { LabReport } from "@/lib/models";
 import { getSession } from "@/lib/auth/session";
 import { can } from "@/lib/auth/rbac";
+import { logRecordAccess } from "@/lib/auth/access-log";
 import { fail, handleError } from "@/lib/api";
 
 export const dynamic = "force-dynamic";
@@ -51,6 +52,21 @@ export async function GET(_req: Request, { params }: { params: Promise<{ id: str
       // browser tab full of nothing.
       return fail("That report has no file attached", 404);
     }
+
+    /**
+     * The single most sensitive read in the product: the patient's actual
+     * medical document leaving the server. Logged before the bytes go, and
+     * separately from opening the list — seeing that a report exists and
+     * downloading its contents are different acts.
+     */
+    await logRecordAccess({
+      session: session!,
+      kind: "lab report",
+      entity: "LabReport",
+      entityId: id,
+      patientId: String(report.patientId),
+      note: `downloaded ${report.fileName}`,
+    });
 
     const bytes = Buffer.from(url.slice(comma + 1), "base64");
     const type = report.mimeType || url.slice(5, url.indexOf(";")) || "application/octet-stream";

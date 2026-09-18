@@ -38,12 +38,12 @@ function ExpiryTable({ rows, expired }: { rows: StockAlert[]; expired: boolean }
       <tbody>
         {rows.map((a) => (
           <TR key={a.lotId}>
-            <TD>
+            <TD nowrap>
               <span className="font-medium">{a.drugName}</span>
             </TD>
-            <TD mono>{a.batchNo}</TD>
-            <TD mono>{a.expiry ? formatDate(a.expiry) : "—"}</TD>
-            <TD>
+            <TD mono nowrap>{a.batchNo}</TD>
+            <TD mono nowrap>{a.expiry ? formatDate(a.expiry) : "—"}</TD>
+            <TD nowrap>
               <span
                 className="t-small"
                 style={{ color: expired ? "var(--color-critical-text)" : "var(--color-caution-text)" }}
@@ -96,7 +96,7 @@ export default async function AlertsPage({
         </div>
       }
     >
-      <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4 mb-6">
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4 mb-6">
         <StatCard
           label="Expired on the shelf"
           value={String(alerts.counts.expired)}
@@ -173,7 +173,7 @@ export default async function AlertsPage({
 
       {tab === "low" &&
         (alerts.lowStock.length ? (
-          <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+          <div className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-3">
             {alerts.lowStock.map((a) => (
               <div
                 key={a.masterId}
@@ -205,7 +205,7 @@ export default async function AlertsPage({
 
       {tab === "out" &&
         (alerts.outOfStock.length ? (
-          <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+          <div className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-3">
             {alerts.outOfStock.map((a) => (
               <div
                 key={a.masterId}

@@ -2,6 +2,7 @@ import { notFound } from "next/navigation";
 import Link from "next/link";
 import type { Metadata } from "next";
 import { requireRole } from "@/lib/auth/guard";
+import { logRecordAccess } from "@/lib/auth/access-log";
 import { MobileShell } from "@/components/layout/MobileShell";
 import { connectDB } from "@/lib/db/mongoose";
 import { Drip, HealthQuiz, User } from "@/lib/models";
@@ -55,6 +56,14 @@ export default async function ResultsPage({
   if (!quiz) notFound();
   // A patient may only ever read their own results.
   if (String(quiz.patientId) !== session.sub && session.role !== "superadmin") notFound();
+
+  await logRecordAccess({
+    session,
+    kind: "assessment",
+    entity: "HealthQuiz",
+    entityId: id,
+    patientId: String(quiz.patientId),
+  });
 
   /**
    * What the PHYSICIAN recommends wins over what the quiz suggested.

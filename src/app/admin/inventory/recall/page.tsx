@@ -76,7 +76,8 @@ export default async function RecallPage({
           />
         </div>
       ) : (
-        <div className="grid gap-6 xl:grid-cols-[1.4fr_1fr] items-start mt-6">
+        <div className="grid grid-cols-1 gap-6 min-[1760px]:grid-cols-[minmax(0,1.4fr)_minmax(0,1fr)] items-start mt-6">
+          {/* Side by side only from 1760px. Below that the table takes the full width and this panel sits under it: with names and dates held on one line, the table does not fit beside the panel on a laptop or a 1536-1680px monitor (measured; the orders list beside its 400px composer needs about 1740px). */}
           <div className="flex flex-col gap-6">
             <section>
               <h2 className="t-h3 mb-3">Orders this batch fed</h2>
@@ -100,17 +101,17 @@ export default async function RecallPage({
                   <tbody>
                     {rows.map((r) => (
                       <TR key={r.id}>
-                        <TD mono>{r.orderNo}</TD>
-                        <TD>
+                        <TD mono nowrap>{r.orderNo}</TD>
+                        <TD nowrap>
                           <span className="t-data text-[13px]">{r.patientRef}</span>
                         </TD>
-                        <TD mono>
+                        <TD mono nowrap>
                           {r.dispatchedAt
                             ? `${formatDate(r.dispatchedAt)} · ${formatTime(r.dispatchedAt)}`
                             : "—"}
                         </TD>
                         <TD numeric>{r.unitsConsumed}</TD>
-                        <TD numeric>
+                        <TD numeric nowrap>
                           {r.activeUsed.toLocaleString("en-IN")} {r.contentUnit ?? ""}
                         </TD>
                       </TR>
@@ -134,9 +135,9 @@ export default async function RecallPage({
                   <tbody>
                     {sessions.map((s) => (
                       <TR key={String(s._id)}>
-                        <TD mono>{s.bookingNo}</TD>
-                        <TD>{s.dripName ?? "—"}</TD>
-                        <TD mono>{s.completedAt ? formatDate(s.completedAt) : "—"}</TD>
+                        <TD mono nowrap>{s.bookingNo}</TD>
+                        <TD nowrap>{s.dripName ?? "—"}</TD>
+                        <TD mono nowrap>{s.completedAt ? formatDate(s.completedAt) : "—"}</TD>
                       </TR>
                     ))}
                   </tbody>

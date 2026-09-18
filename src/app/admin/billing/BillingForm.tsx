@@ -92,7 +92,7 @@ export function BillingForm({ config }: { config: BillingConfig }) {
         />
       </div>
 
-      <div className="grid gap-4 lg:grid-cols-2 mt-5">
+      <div className="grid grid-cols-1 gap-4 lg:grid-cols-2 mt-5">
         <Input
           label="Your GSTIN"
           hint={home ? `${home} · ${code}` : "15 characters"}

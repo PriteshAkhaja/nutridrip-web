@@ -78,7 +78,7 @@ export function PersonFields({
 
   return (
     <>
-      <div className="grid gap-4 lg:grid-cols-2">
+      <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
         <Input
           label="Email"
           /* Changing a sign-in address is an account takeover in one field, so
@@ -114,7 +114,7 @@ export function PersonFields({
       )}
 
       {role === "doctor" && (
-        <div className="grid gap-4 lg:grid-cols-3 mt-4">
+        <div className="grid grid-cols-1 gap-4 lg:grid-cols-3 mt-4">
           <Input label="Specialisation" value={form.specialization} onChange={set("specialization")} />
           <Input
             label="Council number"
@@ -129,7 +129,7 @@ export function PersonFields({
 
       {role === "nurse" && (
         <>
-          <div className="grid gap-4 lg:grid-cols-2 mt-4">
+          <div className="grid grid-cols-1 gap-4 lg:grid-cols-2 mt-4">
             <Input
               label="Council number"
               mono
@@ -185,7 +185,7 @@ export function PersonFields({
             </p>
           </div>
 
-          <div className="grid gap-4 lg:grid-cols-2 mt-4">
+          <div className="grid grid-cols-1 gap-4 lg:grid-cols-2 mt-4">
             <Input label="Home latitude" mono value={form.latitude} onChange={set("latitude")} placeholder="12.9352" />
             <Input
               label="Home longitude"
@@ -202,7 +202,7 @@ export function PersonFields({
       )}
 
       {(role === "clinic" || role === "patient") && (
-        <div className="grid gap-4 lg:grid-cols-3 mt-4">
+        <div className="grid grid-cols-1 gap-4 lg:grid-cols-3 mt-4">
           <Input label="Address" value={form.address} onChange={set("address")} />
           <Input label="City" value={form.city} onChange={set("city")} />
           <Input label="Pincode" mono value={form.pincode} onChange={set("pincode")} />
@@ -210,7 +210,7 @@ export function PersonFields({
       )}
 
       {role === "clinic" && (
-        <div className="grid gap-4 lg:grid-cols-2 mt-4">
+        <div className="grid grid-cols-1 gap-4 lg:grid-cols-2 mt-4">
           {/* A clinic's GSTIN decides whether their invoice is CGST+SGST or
               IGST, so a typo here is a wrongly taxed bill — checked the same
               way our own is. */}

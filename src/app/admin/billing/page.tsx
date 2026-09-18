@@ -15,7 +15,7 @@ export default async function BillingPage() {
   return (
     <ConsoleShell
       session={session}
-      roleLabel="Pharmacist"
+      roleLabel={session.role === "superadmin" ? "Super admin" : "Admin"}
       nav={nav}
       activeHref="/admin/billing"
       breadcrumb={["Admin", "Billing"]}

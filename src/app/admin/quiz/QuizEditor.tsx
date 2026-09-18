@@ -150,7 +150,7 @@ export function QuizEditor({
           </div>
         )}
 
-        <div className="grid gap-4 lg:grid-cols-2">
+        <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
           <Input
             label="Answer key"
             hint="letters, numbers, hyphens"
@@ -188,7 +188,7 @@ export function QuizEditor({
             onChange={(e) => setEditing({ ...editing, help: e.target.value })}
           />
 
-          <div className="grid gap-4 sm:grid-cols-2">
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
             <Select
               label="Answer type"
               value={editing.type}
@@ -221,7 +221,7 @@ export function QuizEditor({
             </span>
             <div className="flex flex-col gap-3">
               {editing.options.map((o, i) => (
-                <div key={i} className="grid gap-3 sm:grid-cols-[1fr_110px_auto] items-end">
+                <div key={i} className="grid grid-cols-1 gap-3 sm:grid-cols-[1fr_110px_auto] items-end">
                   <Input
                     label={i === 0 ? "Label" : undefined}
                     value={o.label}
@@ -278,7 +278,7 @@ export function QuizEditor({
             Weight 0 to 1. A marker at 1 takes this answer&apos;s score at full strength; at 0.5 it counts half as
             much as another question feeding the same marker. Leave a marker at 0 and it is not touched.
           </p>
-          <div className="grid gap-x-6 gap-y-3 md:grid-cols-2">
+          <div className="grid grid-cols-1 gap-x-6 gap-y-3 md:grid-cols-2">
             {markers.map((m) => {
               const weight = editing.affects[m] ?? 0;
               return (

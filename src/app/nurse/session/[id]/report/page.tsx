@@ -42,7 +42,13 @@ export default async function NurseReportPage({ params }: { params: Promise<{ id
       temperatureF?: number;
       outOfRange?: string[];
     }>;
-    consent?: { givenAt?: Date; version?: string; viaOtp?: string };
+    consent?: {
+      givenAt?: Date;
+      version?: string;
+      viaOtp?: string;
+      affirmation?: string;
+      components?: Array<{ name: string; dose: number; unit: string }>;
+    };
     observations: Array<{ at: Date; text: string }>;
     adverseEvents: Array<{ at: Date; symptoms: string[]; severity?: string; actionsTaken?: string[] }>;
     componentsGiven: Array<{ name?: string; dose?: number; unit?: string; batchNo?: string }>;
@@ -85,7 +91,9 @@ export default async function NurseReportPage({ params }: { params: Promise<{ id
             [
               "Consent",
               booking.consent?.givenAt
-                ? `${formatTime(booking.consent.givenAt)} · ${booking.consent.version ?? "v2.1"}`
+                ? `${formatTime(booking.consent.givenAt)} · ${
+                    booking.consent.version ?? "—"
+                  } · ${booking.consent.viaOtp ? "code" : "signature"}`
                 : "Not captured",
             ],
           ].map(([k, v]) => (
@@ -96,6 +104,38 @@ export default async function NurseReportPage({ params }: { params: Promise<{ id
           ))}
         </div>
       </div>
+
+      {/* ---------------- What was consented to ----------------
+           The report is the document of record for this session, so it carries
+           the agreement itself rather than a note that one exists. Read from
+           the snapshot on the booking: a recipe edited since must not change
+           what this patient is shown to have agreed to. */}
+      {booking.consent?.affirmation ? (
+        <div className="rounded-[var(--radius-lg)] border border-[var(--color-line)] bg-[var(--color-surface)] p-5 mb-4">
+          <span className="t-micro">What the patient agreed to</span>
+          <p className="t-body text-[var(--color-ink-2)] mt-2">{booking.consent.affirmation}</p>
+          {booking.consent.components?.length ? (
+            <div className="flex flex-col gap-2 mt-4 pt-4 border-t border-[var(--color-line)]">
+              {booking.consent.components.map((c, n) => (
+                <div key={n} className="flex justify-between gap-4 items-baseline">
+                  <span className="t-body text-[var(--color-ink-2)]">{c.name}</span>
+                  <span className="t-data text-[14.5px]">
+                    {c.dose?.toLocaleString("en-IN") ?? "—"} {c.unit}
+                  </span>
+                </div>
+              ))}
+            </div>
+          ) : null}
+        </div>
+      ) : booking.consent?.givenAt ? (
+        <div className="rounded-[var(--radius-lg)] border border-[var(--color-line)] bg-[var(--color-surface-2)] p-5 mb-4">
+          <span className="t-micro">What the patient agreed to</span>
+          <p className="t-small text-[var(--color-ink-3)] mt-2">
+            This consent was captured before the wording was kept on the record, so only the version
+            is known: {booking.consent.version ?? "unknown"}.
+          </p>
+        </div>
+      ) : null}
 
       {/* ---------------- Checklist coverage ---------------- */}
       <div className="rounded-[var(--radius-lg)] border border-[var(--color-line)] bg-[var(--color-surface)] p-5 mb-4">

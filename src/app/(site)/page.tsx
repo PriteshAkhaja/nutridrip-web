@@ -45,7 +45,7 @@ export default async function HomePage() {
       {/* ================= HERO ================= */}
       <section className="bg-[var(--color-paper)]">
         <div className="mx-auto max-w-[1240px] px-6 md:px-10 pt-10 pb-14 md:pt-16 md:pb-20">
-          <div className="grid gap-10 lg:gap-16 lg:grid-cols-[1.02fr_0.98fr] items-center">
+          <div className="grid grid-cols-1 gap-10 lg:gap-16 lg:grid-cols-[1.02fr_0.98fr] items-center">
             <div>
               <div className="flex items-center gap-3 flex-wrap mb-6">
                 <Stars rating={AGGREGATE.rating} size={15} />
@@ -141,7 +141,7 @@ export default async function HomePage() {
           title="From guessing to a record"
           sub="What actually changes between the week before your first session and the week after."
         />
-        <div className="grid gap-4 md:grid-cols-3">
+        <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
           {TRANSFORMATION.map((t, i) => (
             <div
               key={t.step}
@@ -176,7 +176,7 @@ export default async function HomePage() {
           </Link>
         </div>
 
-        <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
+        <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-4">
           {bestSellers.map((d) => (
             <Link
               key={d.slug}
@@ -217,7 +217,7 @@ export default async function HomePage() {
       {/* ================= CATEGORIES ================= */}
       <Section tone="soft">
         <SectionHeading eyebrow="By goal" title="What are you trying to fix?" />
-        <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+        <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
           {CATEGORIES.map((c) => (
             <Link
               key={c.name}
@@ -249,7 +249,7 @@ export default async function HomePage() {
         <div className="flex justify-center mb-10">
           <RatingStrip rating={AGGREGATE.rating} count={AGGREGATE.count} />
         </div>
-        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+        <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
           {TESTIMONIALS.slice(0, 6).map((t) => (
             <TestimonialCard key={t.id} t={t} />
           ))}
@@ -258,7 +258,7 @@ export default async function HomePage() {
 
       {/* ================= BRAND BENEFITS ================= */}
       <Section tone="ink">
-        <div className="grid gap-12 lg:grid-cols-[0.9fr_1.1fr] items-start">
+        <div className="grid grid-cols-1 gap-12 lg:grid-cols-[0.9fr_1.1fr] items-start">
           <SectionHeading
             onInk
             eyebrow="Why us"
@@ -324,7 +324,7 @@ export default async function HomePage() {
 
       {/* ================= FAQ ================= */}
       <Section tone="soft">
-        <div className="grid gap-10 lg:grid-cols-[0.8fr_1.2fr] items-start">
+        <div className="grid grid-cols-1 gap-10 lg:grid-cols-[0.8fr_1.2fr] items-start">
           <SectionHeading eyebrow="Before you book" title="Questions people actually ask" />
           <FaqList items={FAQS} />
         </div>

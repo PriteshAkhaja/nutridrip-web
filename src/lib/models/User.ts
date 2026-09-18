@@ -78,6 +78,20 @@ const UserSchema = new Schema(
     lastLoginAt: Date,
     failedLoginCount: { type: Number, default: 0 },
     lockedUntil: Date,
+
+    /**
+     * Bumped to invalidate every session this account already holds.
+     *
+     * Sessions are stateless JWTs, so until this existed there was no way to
+     * log anybody out: a token held by somebody dismissed this morning stayed
+     * valid until it expired on its own, and setting the account to inactive
+     * did nothing about it. The number is signed into each token and compared
+     * on every read, so raising it by one ends them all at once.
+     *
+     * Raised when the password changes and when the account stops being
+     * active — the two moments where existing access should stop.
+     */
+    tokenVersion: { type: Number, default: 0 },
   },
   { timestamps: true }
 );

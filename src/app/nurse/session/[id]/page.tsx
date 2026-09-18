@@ -2,6 +2,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import type { Metadata } from "next";
 import { requireRole } from "@/lib/auth/guard";
+import { logRecordAccess } from "@/lib/auth/access-log";
 import { MobileShell } from "@/components/layout/MobileShell";
 import { nurseOwns } from "@/lib/auth/ownership";
 import { connectDB } from "@/lib/db/mongoose";
@@ -9,6 +10,7 @@ import { Booking, User } from "@/lib/models";
 import { PHASE_ORDER, phaseProgress } from "@/lib/clinical/checklist";
 import { FillSegments } from "@/components/ui/Fill";
 import { Checklist } from "./Checklist";
+import { EnRouteButton } from "./EnRouteButton";
 import { formatTime } from "@/lib/data/inventory";
 import { Pill } from "@/components/ui/Pill";
 import { rxLockState } from "@/lib/clinical/prescription";
@@ -41,6 +43,8 @@ export default async function ChecklistPage({ params }: { params: Promise<{ id: 
     dripName?: string;
     scheduledAt: Date;
     status: string;
+    enRouteAt?: Date;
+    etaMinutes?: number;
     rxUnlockedAt?: Date;
     vitalsClearedAt?: Date;
     vitalsClearanceNote?: string;
@@ -58,6 +62,14 @@ export default async function ChecklistPage({ params }: { params: Promise<{ id: 
   } | null>();
 
   if (!booking || !nurseOwns(session, booking)) notFound();
+
+  await logRecordAccess({
+    session,
+    kind: "session",
+    entity: "Booking",
+    entityId: id,
+    patientId: String(booking.patientId),
+  });
 
   const patient = await User.findById(booking.patientId).lean<{ name: string } | null>();
   const progress = phaseProgress(booking.checklist ?? []);
@@ -93,6 +105,17 @@ export default async function ChecklistPage({ params }: { params: Promise<{ id: 
       }
       back={{ href: "/nurse", label: "Back to today" }}
     >
+      {/* ---------------- On my way ----------------
+           Above the checklist because it is not a clinical step: it happens
+           before any of them, and it is the one thing here the patient sees. */}
+      {["approved", "nurse_assigned", "en_route"].includes(booking.status) ? (
+        <EnRouteButton
+          bookingId={id}
+          enRouteAt={booking.enRouteAt ? booking.enRouteAt.toISOString() : null}
+          etaMinutes={booking.etaMinutes ?? null}
+        />
+      ) : null}
+
       {/* ---------------- Phase progress ---------------- */}
       <div className="rounded-[var(--radius-lg)] border border-[var(--color-line)] bg-[var(--color-surface)] p-5 flex flex-col gap-[14px] mb-5">
         {PHASE_ORDER.map((phase) => {
@@ -128,6 +151,7 @@ export default async function ChecklistPage({ params }: { params: Promise<{ id: 
         steps={steps}
         currentIndex={currentIndex}
         vitalsBlocked={blocked}
+        rxLocked={!rxLock.unlocked}
         clearance={flagged ? clearance : null}
       />
     </MobileShell>

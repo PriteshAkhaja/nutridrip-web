@@ -84,7 +84,29 @@ export async function PATCH(req: Request, { params }: { params: Promise<{ id: st
     if (input.diagnosis !== undefined) plan.diagnosis = input.diagnosis;
     if (input.nurseId) plan.nurseId = input.nurseId;
     if (input.sharedWithNurse !== undefined) plan.sharedWithNurse = input.sharedWithNurse;
-    if (input.status) plan.status = input.status;
+    /**
+     * Which status moves are allowed.
+     *
+     * Only two of the five were ever reachable — a finished course read
+     * "Active" forever and could not be tidied away. The rest are reachable
+     * now, but not from anywhere: a draft becomes active by being shared, not
+     * by being declared finished, and an archived plan comes back as active
+     * rather than to whatever it was before.
+     */
+    const ALLOWED_MOVES: Record<string, string[]> = {
+      draft: ["archived"],
+      awaiting_review: ["active", "archived"],
+      active: ["completed", "archived"],
+      completed: ["archived", "active"],
+      archived: ["active"],
+    };
+    const wasStatus = plan.status;
+    if (input.status && input.status !== wasStatus) {
+      if (!ALLOWED_MOVES[wasStatus]?.includes(input.status)) {
+        return fail(`A ${wasStatus} plan cannot be marked ${input.status}.`, 409);
+      }
+      plan.status = input.status;
+    }
 
     // `sent` rather than `!== undefined`: clearing a recorded weight has to be
     // possible, and an absent key is not the same as an empty one.
@@ -164,10 +186,38 @@ export async function PATCH(req: Request, { params }: { params: Promise<{ id: st
       );
     }
 
+    if (input.status === "archived" && wasStatus !== "archived") {
+      // It has just left their screens. Saying so beats a nurse opening the
+      // schedule tomorrow and finding a course simply gone.
+      if (plan.sharedWithNurse && plan.nurseId) {
+        await notify(
+          String(plan.nurseId),
+          `Treatment plan closed · ${patient?.name ?? "a patient"}`,
+          "The physician has archived it. It is no longer on your schedule.",
+          "info",
+          "/nurse/schedule"
+        );
+      }
+      if (wasStatus !== "draft") {
+        await notify(
+          String(plan.patientId),
+          "Your treatment plan has been closed",
+          "Your physician has archived it. Ask them if you were expecting more sessions.",
+          "info",
+          "/app"
+        );
+      }
+    }
+
     await AuditLog.create({
       actorId: session!.sub,
       actorRole: session!.role,
-      action: rewriting ? "plan.rewrite" : "plan.update",
+      action:
+        input.status && input.status !== wasStatus
+          ? `plan.${input.status}`
+          : rewriting
+            ? "plan.rewrite"
+            : "plan.update",
       entity: "TreatmentPlan",
       entityId: id,
       before,
@@ -188,6 +238,57 @@ export async function PATCH(req: Request, { params }: { params: Promise<{ id: st
     });
 
     return ok({ id, sharedWithNurse: plan.sharedWithNurse, status: plan.status });
+  } catch (err) {
+    return handleError(err);
+  }
+}
+
+/**
+ * Removing a plan outright.
+ *
+ * Only a draft. Once a plan has been shared, a nurse may have worked from it
+ * and a patient may have read it — deleting that leaves two people holding a
+ * document the system denies ever existed. Those are archived instead, which
+ * takes them off every screen while the record stands.
+ */
+export async function DELETE(_req: Request, { params }: { params: Promise<{ id: string }> }) {
+  try {
+    const session = await getSession();
+    if (!can(session?.role, "plans.create")) return fail("Only a physician removes a plan", 403);
+
+    const { id } = await params;
+    await connectDB();
+
+    const plan = await TreatmentPlan.findById(id);
+    if (!plan) return fail("Plan not found", 404);
+    if (session!.role === "doctor" && String(plan.doctorId) !== session!.sub) {
+      return fail("Another physician wrote this plan. Ask them to remove it.", 403);
+    }
+    if (plan.status !== "draft" || plan.sharedWithNurse) {
+      return fail(
+        "This plan has been shared, so it cannot be deleted. Archive it instead — it comes off every screen and the record stands.",
+        409
+      );
+    }
+
+    const patient = await User.findById(plan.patientId).lean<{ name: string } | null>();
+    await TreatmentPlan.deleteOne({ _id: id });
+
+    await AuditLog.create({
+      actorId: session!.sub,
+      actorRole: session!.role,
+      action: "plan.delete",
+      entity: "TreatmentPlan",
+      entityId: id,
+      before: {
+        patient: patient?.name ?? "unknown",
+        diagnosis: plan.diagnosis ?? "—",
+        totalWeeks: plan.totalWeeks,
+        sessions: plan.weeks.reduce((n: number, w: { sessions: unknown[] }) => n + w.sessions.length, 0),
+      },
+    });
+
+    return ok({ deleted: true });
   } catch (err) {
     return handleError(err);
   }

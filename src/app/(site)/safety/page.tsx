@@ -83,7 +83,7 @@ export default function SafetyPage() {
 
       {/* ---------------- The six guarantees ---------------- */}
       <section className="mb-14">
-        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+        <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
           {GUARANTEES.map((g) => (
             <Card key={g.title} padding="p-6">
               <h2 className="t-h3 mb-2">{g.title}</h2>
@@ -143,7 +143,7 @@ export default function SafetyPage() {
           These are the bands your baseline vitals are checked against. A reading outside any of them blocks the
           infusion before it starts and escalates to the physician who approved your protocol.
         </p>
-        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
           {Object.entries(VITAL_RANGES).map(([key, r]) => (
             <Card key={key} padding="p-5">
               <span className="t-micro">{r.label}</span>
@@ -163,7 +163,7 @@ export default function SafetyPage() {
           The quiz screens for all of these. A decline is not a refusal of care — it usually means there is a better
           route, and the physician will say which.
         </p>
-        <div className="grid gap-4 md:grid-cols-2">
+        <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
           {CONTRAINDICATIONS.map((group) => (
             <Card key={group.heading} tone={group.tone} padding="p-6">
               <h3 className="t-h3 mb-4">{group.heading}</h3>
@@ -189,7 +189,7 @@ export default function SafetyPage() {
       {/* ---------------- Emergency ---------------- */}
       <section>
         <Card tone="muted" padding="p-8">
-          <div className="grid gap-6 lg:grid-cols-[1.5fr_1fr] items-center">
+          <div className="grid grid-cols-1 gap-6 lg:grid-cols-[1.5fr_1fr] items-center">
             <div>
               <h2 className="t-h2 mb-3">This is not emergency care</h2>
               <p className="t-body-lg text-[var(--color-ink-2)] max-w-[58ch]" style={{ textWrap: "pretty" }}>

@@ -1,5 +1,5 @@
 import { connectDB } from "@/lib/db/mongoose";
-import { LabReport } from "@/lib/models";
+import { AuditLog, LabReport } from "@/lib/models";
 import { getSession } from "@/lib/auth/session";
 import { can } from "@/lib/auth/rbac";
 import { ok, fail, handleError } from "@/lib/api";
@@ -38,8 +38,40 @@ export async function DELETE(_req: Request, { params }: { params: Promise<{ id: 
     const { id } = await params;
     await connectDB();
 
+    /**
+     * Read it before removing it.
+     *
+     * This deletes a medical document, and the file goes with the row — a
+     * trail entry saying only "a lab report was deleted" records that
+     * something happened without recording what. The name, category and upload
+     * date are kept so the deletion can be explained afterwards, which is the
+     * whole reason the trail exists. The file body is never copied into it.
+     */
+    const report = await LabReport.findOne({ _id: id, patientId: session.sub }).lean<{
+      fileName?: string;
+      category?: string;
+      uploadedAt?: Date;
+      sharedWithDoctorId?: unknown;
+    } | null>();
+    if (!report) return fail("Report not found", 404);
+
     const res = await LabReport.deleteOne({ _id: id, patientId: session.sub });
     if (res.deletedCount === 0) return fail("Report not found", 404);
+
+    await AuditLog.create({
+      actorId: session.sub,
+      actorRole: session.role,
+      action: "lab.delete",
+      entity: "LabReport",
+      entityId: id,
+      before: {
+        fileName: report.fileName ?? "unnamed",
+        category: report.category ?? "—",
+        uploadedAt: report.uploadedAt,
+        sharedWithPhysician: Boolean(report.sharedWithDoctorId),
+      },
+    });
+
     return ok({ deleted: true });
   } catch (err) {
     return handleError(err);

@@ -107,12 +107,45 @@ const BookingSchema = new Schema(
     /* Execution */
     checklist: { type: [ChecklistStepSchema], default: [] },
     vitals: { type: [VitalsSchema], default: [] },
+    /**
+     * What the patient agreed to, copied rather than referenced.
+     *
+     * `version` alone was not enough: the wording it names lived in a component
+     * and the doses were read live from the Drip, so editing either rewrote
+     * history. The affirmation, the risks and the doses are all snapshotted
+     * here at the moment of capture, the way an Invoice snapshots its lines.
+     *
+     * Records captured before this existed carry only `version`; every reader
+     * has to cope with the snapshot being absent.
+     */
     consent: {
       givenAt: Date,
       signatureDataUrl: String,
       viaOtp: String,
       version: String,
+      affirmation: String,
+      risks: [String],
+      components: {
+        type: [
+          new Schema(
+            { name: String, dose: Number, unit: String },
+            { _id: false }
+          ),
+        ],
+        default: undefined,
+      },
     },
+    /**
+     * When the nurse said they had set off, and how far away they were then.
+     *
+     * `etaMinutes` is a snapshot taken at that moment, not a live countdown —
+     * nothing tracks the nurse afterwards, so a figure that kept decreasing on
+     * its own would be a fiction. The patient's screen counts down from
+     * `enRouteAt` instead, which is honest about what is actually known.
+     */
+    enRouteAt: Date,
+    etaMinutes: Number,
+
     startedAt: Date,
     completedAt: Date,
     /** Infusion telemetry for the live-session screen. */

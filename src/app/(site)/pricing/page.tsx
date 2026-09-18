@@ -73,7 +73,7 @@ export default async function PricingPage() {
         </p>
       </div>
 
-      <div className="grid gap-4 md:grid-cols-3 mb-14">
+      <div className="grid grid-cols-1 gap-4 md:grid-cols-3 mb-14">
         {PLANS.map((p) => {
           const per = Math.round(base * (1 - p.discount));
           const featured = p.tag !== null;

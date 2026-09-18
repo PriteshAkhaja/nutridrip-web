@@ -1,7 +1,22 @@
 import type { ButtonHTMLAttributes, AnchorHTMLAttributes, ReactNode } from "react";
 import Link from "next/link";
 
-export type ButtonVariant = "primary" | "secondary" | "ghost" | "danger";
+/**
+ * What a button does decides how it looks.
+ *
+ * `primary`   the one thing this screen is for
+ * `secondary` a real action, but not the point of the screen
+ * `ghost`     navigation and dismissal — reads as a link, and should
+ * `destructive` proposes removing something: red, but outlined, because it is
+ *              an offer rather than the deed
+ * `danger`    the deed itself, once confirmed — solid, and deliberately loud
+ *
+ * The last two are separate on purpose. A delete styled as a ghost link is
+ * invisible next to the things it sits beside; styled solid red it shouts at
+ * somebody who has not yet asked for it. Proposing and confirming are two
+ * different moments and should not look the same.
+ */
+export type ButtonVariant = "primary" | "secondary" | "ghost" | "destructive" | "danger";
 export type ButtonSize = "sm" | "md" | "lg";
 
 /** Every interactive target is at least 44px tall — the mobile apps depend on it. */
@@ -18,6 +33,9 @@ const VARIANT: Record<ButtonVariant, string> = {
     "border-[var(--color-line-2)] bg-[var(--color-surface)] text-[var(--color-ink)] hover:border-[var(--color-primary)] hover:text-[var(--color-primary)] active:bg-[var(--color-primary-soft)]",
   ghost:
     "border-transparent bg-transparent text-[var(--color-primary)] hover:bg-[var(--color-primary-soft)] active:bg-[var(--color-primary-line)]",
+  destructive:
+    "border-[var(--color-line-2)] bg-[var(--color-surface)] text-[var(--color-critical-text)] " +
+    "hover:border-[var(--color-critical)] hover:bg-[var(--color-critical-soft)] active:translate-y-px",
   danger:
     "border-[var(--color-critical)] bg-[var(--color-critical)] text-white hover:brightness-95 active:translate-y-px",
 };

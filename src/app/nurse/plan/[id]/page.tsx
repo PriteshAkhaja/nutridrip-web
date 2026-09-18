@@ -1,6 +1,7 @@
 import { notFound } from "next/navigation";
 import type { Metadata } from "next";
 import { requireRole } from "@/lib/auth/guard";
+import { logRecordAccess } from "@/lib/auth/access-log";
 import { MobileShell } from "@/components/layout/MobileShell";
 import { PlanSchedule } from "@/components/clinical/PlanSchedule";
 import { planFor } from "@/lib/data/plans";
@@ -24,6 +25,13 @@ export default async function NursePlanPage({ params }: { params: Promise<{ id: 
   // confirms it exists.
   const plan = await planFor(id, session);
   if (!plan) notFound();
+
+  await logRecordAccess({
+    session,
+    kind: "treatment plan",
+    entity: "TreatmentPlan",
+    entityId: id,
+  });
 
   return (
     <MobileShell

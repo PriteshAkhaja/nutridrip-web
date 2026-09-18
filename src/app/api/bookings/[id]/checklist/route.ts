@@ -6,7 +6,7 @@ import { getSession } from "@/lib/auth/session";
 import { can } from "@/lib/auth/rbac";
 import { nurseOwns } from "@/lib/auth/ownership";
 import { componentsForDrip } from "@/lib/clinical/components";
-import { blockedByVitals } from "@/lib/clinical/checklist";
+import { blockedByVitals, needsPrescription } from "@/lib/clinical/checklist";
 import { labelFor } from "@/components/ui/Pill";
 import { ok, fail, handleError } from "@/lib/api";
 
@@ -33,6 +33,16 @@ export async function POST(req: Request, { params }: { params: Promise<{ id: str
 
     const index = booking.checklist.findIndex((s: { key: string }) => s.key === key);
     if (index === -1) return fail("Step not found on this session", 404);
+
+    // Before the sequence rule, so a nurse is told the real reason: past the
+    // doorstep checks nothing moves until the patient's code has been read.
+    // Reopening a step is still allowed — undoing a tick needs no proof.
+    if (done && needsPrescription(key) && !booking.rxUnlockedAt) {
+      return fail(
+        "Open the prescription first — ask the patient to read out the code sent to their phone",
+        409
+      );
+    }
 
     // The checklist is a sequence: a step cannot be ticked while an earlier
     // mandatory one is still open.

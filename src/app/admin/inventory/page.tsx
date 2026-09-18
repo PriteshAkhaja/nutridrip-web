@@ -5,7 +5,7 @@ import { adminNav } from "@/lib/nav";
 import { ConsoleShell } from "@/components/layout/ConsoleShell";
 import { listMasters, listLots, formatDate, expiryPhrase } from "@/lib/data/inventory";
 import { STATUS_STYLE, FillDepleting } from "@/components/ui/Fill";
-import { DataTable, THead, TH, TR, TD } from "@/components/ui/Table";
+import { DataTable, THead, TH, TR, TD, Pieces } from "@/components/ui/Table";
 import { Pill } from "@/components/ui/Pill";
 import { StatCard } from "@/components/ui/Card";
 import { EmptyState } from "@/components/ui/States";
@@ -56,7 +56,7 @@ export default async function InventoryPage({
       meta={<HeaderCounts items={[`${masters.length} masters`, `${lots.length} lots`]} />}
       actions={<ButtonLink href="/admin/inventory/alerts" variant="secondary">View alerts</ButtonLink>}
     >
-      <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4 mb-6">
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4 mb-6">
         <StatCard label="Product masters" value={String(masters.length)} />
         <StatCard label="Batch lots" value={String(lots.length)} />
         <StatCard
@@ -116,15 +116,14 @@ export default async function InventoryPage({
                   <TR key={l.id}>
                     <TD>
                       <div className="flex flex-col">
-                        <span className="font-medium">{l.drugName}</span>
+                        <span className="font-medium whitespace-nowrap">{l.drugName}</span>
                         <span className="t-small text-[var(--color-ink-3)]">
-                          {l.brandName}
-                          {l.manufacturer ? ` · ${l.manufacturer}` : ""}
+                          <Pieces items={[l.brandName, l.manufacturer]} separator=" · " />
                         </span>
                       </div>
                     </TD>
-                    <TD mono>{l.batchNo}</TD>
-                    <TD>
+                    <TD mono nowrap>{l.batchNo}</TD>
+                    <TD nowrap>
                       <div className="flex flex-col">
                         <span className="t-data text-[14.5px]">{formatDate(l.expiry)}</span>
                         <span className="t-small" style={{ color: l.daysToExpiry < 0 ? s.color : "var(--color-ink-3)" }}>
@@ -132,7 +131,7 @@ export default async function InventoryPage({
                         </span>
                       </div>
                     </TD>
-                    <TD numeric>
+                    <TD numeric nowrap>
                       {l.contentValue.toLocaleString("en-IN")} {l.contentUnit}
                     </TD>
                     <TD numeric>{l.qtyOnHand}</TD>
@@ -202,11 +201,9 @@ export default async function InventoryPage({
                 <TR key={m.id}>
                   <TD>
                     <Link href={`/admin/inventory?tab=batches&q=${encodeURIComponent(m.name)}`} className="flex flex-col no-underline hover:no-underline">
-                      <span className="font-medium text-[var(--color-ink)]">{m.name}</span>
+                      <span className="font-medium whitespace-nowrap text-[var(--color-ink)]">{m.name}</span>
                       <span className="t-small text-[var(--color-ink-3)]">
-                        {m.molecule ? `${m.molecule} · ` : ""}
-                        {m.lotCount} lot{m.lotCount === 1 ? "" : "s"}
-                        {m.isMultidose ? " · multidose" : ""}
+                        <Pieces separator=" · " items={[m.molecule, `${m.lotCount} lot${m.lotCount === 1 ? "" : "s"}`, m.isMultidose ? "multidose" : null]} />
                       </span>
                     </Link>
                   </TD>
@@ -217,7 +214,7 @@ export default async function InventoryPage({
                   <TD numeric>{m.onHand}</TD>
                   <TD numeric>{m.available}</TD>
                   <TD numeric>{m.reorderLevel}</TD>
-                  <TD>
+                  <TD nowrap>
                     {m.soonestExpiryDays === null ? (
                       <span className="t-small text-[var(--color-ink-3)]">Nothing in date</span>
                     ) : (

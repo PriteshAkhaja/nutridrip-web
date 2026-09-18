@@ -55,7 +55,7 @@ export default async function ClinicProfilePage() {
       title={clinic?.name ?? "Profile"}
       meta={clinic?.status === "active" ? "Active partner" : clinic?.status}
     >
-      <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3 mb-6">
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-3 mb-6">
         <StatCard
           label="Sessions this month"
           value={String(completed.length)}
@@ -70,7 +70,7 @@ export default async function ClinicProfilePage() {
         />
       </div>
 
-      <div className="grid gap-4 xl:grid-cols-2">
+      <div className="grid grid-cols-1 gap-4 xl:grid-cols-2">
         <Card padding="p-6">
           <span className="t-micro">Registered details</span>
           <div className="flex flex-col gap-2 mt-4">

@@ -34,10 +34,12 @@ export default async function LoginPage({
   return (
     // Carries a click on a demo row across to the form in the other column.
     <LoginStateProvider>
-      <div className={`min-h-screen grid ${showDemo ? "lg:grid-cols-[1fr_1fr]" : ""}`}>
+      {/* dvh, not vh: on a phone 100vh counts the strip behind the browser's
+          toolbar, so a centred form was pushed partly under it. */}
+      <div className={`min-h-dvh grid ${showDemo ? "lg:grid-cols-[1fr_1fr]" : ""}`}>
         {/* ---------------- Form ---------------- */}
         <div className="flex flex-col justify-center px-6 md:px-12 lg:px-16 py-12">
-          <div className="w-full max-w-[420px] mx-auto">
+          <div id="sign-in" className="w-full max-w-[420px] mx-auto scroll-mt-6">
             <Logo size={26} />
 
             <h1 className="t-h1 mt-9 mb-3 text-[34px]">Sign in</h1>
@@ -59,9 +61,12 @@ export default async function LoginPage({
         </div>
 
         {/* ---------------- Demo accounts ---------------- */}
+        {/* Stacked under the form below lg rather than hidden. It was
+            `hidden lg:flex`, which is why the demo accounts never appeared on a
+            phone or a portrait tablet — nothing to do with the viewport unit. */}
         {showDemo && (
-        <div className="hidden lg:flex flex-col justify-center bg-[var(--color-surface)] border-l border-[var(--color-line)] px-16 py-12">
-          <div className="w-full max-w-[440px]">
+        <div className="flex flex-col justify-center bg-[var(--color-surface)] border-t lg:border-t-0 lg:border-l border-[var(--color-line)] px-6 md:px-12 lg:px-16 py-10 lg:py-12">
+          <div className="w-full max-w-[420px] lg:max-w-[440px] mx-auto lg:mx-0">
             <span className="t-micro">Demo accounts</span>
             <h2 className="t-h3 mt-2 mb-4">Six roles, one platform</h2>
             <p className="t-body text-[var(--color-ink-2)] mb-6 max-w-[52ch]">

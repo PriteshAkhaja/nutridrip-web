@@ -90,7 +90,7 @@ export default async function DoctorPatientsPage() {
 
               return (
                 <TR key={id}>
-                  <TD>
+                  <TD nowrap>
                     <div className="flex flex-col">
                       <span className="font-medium">{p.name}</span>
                       <span className="t-data text-[13px] text-[var(--color-ink-3)]">
@@ -115,7 +115,7 @@ export default async function DoctorPatientsPage() {
                     )}
                   </TD>
                   <TD numeric>{sessionCount.get(id) ?? 0}</TD>
-                  <TD mono>{quiz ? formatDate(quiz.completedAt) : "—"}</TD>
+                  <TD mono nowrap>{quiz ? formatDate(quiz.completedAt) : "—"}</TD>
                   <TD>{quiz ? <StatusPill status={quiz.reviewStatus} dot /> : "—"}</TD>
                   <TD>
                     <StatusPill status={p.status} dot />

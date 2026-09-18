@@ -103,7 +103,7 @@ export default async function ClinicOrderPage({ params }: { params: Promise<{ id
         {order.cancelReason && <span className="t-small text-[var(--color-ink-2)]">{order.cancelReason}</span>}
       </div>
 
-      <div className="grid gap-6 xl:grid-cols-[1.4fr_1fr] items-start">
+      <div className="grid grid-cols-1 gap-6 xl:grid-cols-[minmax(0,1.4fr)_minmax(0,1fr)] items-start">
         <div className="flex flex-col gap-6">
           <section>
             <h2 className="t-h3 mb-3">Order lines</h2>
@@ -120,7 +120,7 @@ export default async function ClinicOrderPage({ params }: { params: Promise<{ id
               <tbody>
                 {order.lines.map((l, i) => (
                   <TR key={i}>
-                    <TD>{l.dripName}</TD>
+                    <TD nowrap>{l.dripName}</TD>
                     <TD numeric>{l.quantity}</TD>
                     <TD>{l.withKit ? <Pill tone="primary">Included</Pill> : <span className="t-small">—</span>}</TD>
                     <TD numeric>{formatInr(l.unitPrice)}</TD>
@@ -151,9 +151,9 @@ export default async function ClinicOrderPage({ params }: { params: Promise<{ id
                     const lot = lotById.get(String(a.lotId));
                     return (
                       <TR key={String(a._id)}>
-                        <TD>{masterById.get(String(a.masterId))?.name ?? "—"}</TD>
-                        <TD mono>{lot?.batchNo ?? "—"}</TD>
-                        <TD mono>{lot ? formatDate(lot.expiry) : "—"}</TD>
+                        <TD nowrap>{masterById.get(String(a.masterId))?.name ?? "—"}</TD>
+                        <TD mono nowrap>{lot?.batchNo ?? "—"}</TD>
+                        <TD mono nowrap>{lot ? formatDate(lot.expiry) : "—"}</TD>
                         <TD numeric>{a.unitsReserved}</TD>
                       </TR>
                     );
@@ -185,10 +185,10 @@ export default async function ClinicOrderPage({ params }: { params: Promise<{ id
                     const lot = lotById.get(String(c.lotId));
                     return (
                       <TR key={String(c._id)}>
-                        <TD>{c.drugName ?? "—"}</TD>
-                        <TD>{lot?.brandName ?? "—"}</TD>
-                        <TD mono>{c.batchNo ?? lot?.batchNo ?? "—"}</TD>
-                        <TD mono>{lot ? formatDate(lot.expiry) : "—"}</TD>
+                        <TD nowrap>{c.drugName ?? "—"}</TD>
+                        <TD nowrap>{lot?.brandName ?? "—"}</TD>
+                        <TD mono nowrap>{c.batchNo ?? lot?.batchNo ?? "—"}</TD>
+                        <TD mono nowrap>{lot ? formatDate(lot.expiry) : "—"}</TD>
                         <TD numeric>{c.unitsConsumed}</TD>
                       </TR>
                     );

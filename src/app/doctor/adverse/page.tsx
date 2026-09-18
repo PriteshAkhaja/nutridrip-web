@@ -196,7 +196,7 @@ export default async function EscalationsPage() {
                   : null;
               return (
                 <Card key={String(b._id)} tone="caution" padding="p-6">
-                  <div className="grid gap-6 xl:grid-cols-[1.3fr_1fr] items-start">
+                  <div className="grid grid-cols-1 gap-6 xl:grid-cols-[minmax(0,1.3fr)_minmax(0,1fr)] items-start">
                     <div className="flex flex-col gap-2">
                       <div className="flex items-baseline gap-3 flex-wrap">
                         <span className="t-h3">{patient?.name ?? "Unknown patient"}</span>
@@ -288,7 +288,7 @@ export default async function EscalationsPage() {
               const patient = byId.get(String(b.patientId));
               return (
                 <Card key={String(b._id)} tone="critical" padding="p-6">
-                  <div className="grid gap-6 xl:grid-cols-[1.3fr_1fr] items-start">
+                  <div className="grid grid-cols-1 gap-6 xl:grid-cols-[minmax(0,1.3fr)_minmax(0,1fr)] items-start">
                     <div>
                       <div className="flex items-baseline gap-3 flex-wrap">
                         <Link href={`/doctor/patients/${String(b.patientId)}`} className="t-h3 no-underline hover:no-underline">
@@ -379,7 +379,7 @@ export default async function EscalationsPage() {
                     </div>
                   </div>
 
-                  <div className="grid gap-5 md:grid-cols-2">
+                  <div className="grid grid-cols-1 gap-5 md:grid-cols-2">
                     <div>
                       <span className="t-micro block mb-2">Symptoms</span>
                       <div className="flex gap-2 flex-wrap">

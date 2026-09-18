@@ -112,7 +112,9 @@ export default async function NurseProfilePage() {
         )}
       </div>
 
-      <SignOutButton />
+      <div className="mt-6 pt-5 border-t border-[var(--color-line)]">
+        <SignOutButton />
+      </div>
     </MobileShell>
   );
 }

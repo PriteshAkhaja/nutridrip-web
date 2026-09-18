@@ -81,7 +81,7 @@ export default async function ClinicPage() {
       meta={clinic?.clinic?.city}
       actions={<ButtonLink href="/clinic/orders">Place an order</ButtonLink>}
     >
-      <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4 mb-6">
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4 mb-6">
         <StatCard
           label="Sessions today"
           value={String(todayBookings.length)}
@@ -105,7 +105,7 @@ export default async function ClinicPage() {
         />
       </div>
 
-      <div className="grid gap-6 xl:grid-cols-[1.4fr_1fr] items-start">
+      <div className="grid grid-cols-1 gap-6 xl:grid-cols-[minmax(0,1.4fr)_minmax(0,1fr)] items-start">
         <section>
           <div className="flex items-baseline justify-between mb-3 gap-4">
             <h2 className="t-h3">Today&apos;s room</h2>
@@ -134,9 +134,9 @@ export default async function ClinicPage() {
               <tbody>
                 {todayBookings.map((b) => (
                   <TR key={String(b._id)}>
-                    <TD mono>{formatTime(b.scheduledAt)}</TD>
-                    <TD>{patientNames.get(String(b.patientId)) ?? "—"}</TD>
-                    <TD>{b.dripName ?? "—"}</TD>
+                    <TD mono nowrap>{formatTime(b.scheduledAt)}</TD>
+                    <TD nowrap>{patientNames.get(String(b.patientId)) ?? "—"}</TD>
+                    <TD nowrap>{b.dripName ?? "—"}</TD>
                     <TD>
                       <StatusPill status={b.status} dot />
                     </TD>

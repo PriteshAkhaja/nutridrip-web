@@ -39,13 +39,13 @@ export default async function WelcomePage() {
   if (onboardingOf(me).complete) redirect("/app");
 
   return (
-    <div className="min-h-screen bg-[var(--color-paper)] flex flex-col">
+    <div className="min-h-dvh bg-[var(--color-paper)] flex flex-col">
       <header className="border-b border-[var(--color-line)]">
         <div className="mx-auto w-full max-w-[560px] px-5 py-3 flex items-center gap-3">
           <LogoMark size={22} />
           <span style={{ font: "600 14.5px/1 var(--font-display)" }}>NutriDrip</span>
           <div className="ml-auto">
-            <SignOutButton />
+            <SignOutButton form="compact" />
           </div>
         </div>
       </header>

@@ -74,7 +74,7 @@ export default async function ForClinicsPage() {
   return (
     <div className="mx-auto max-w-[1280px] px-6 md:px-10 py-12">
       {/* ---------------- Hero ---------------- */}
-      <section className="grid gap-10 lg:grid-cols-[1.1fr_0.9fr] items-center mb-16">
+      <section className="grid grid-cols-1 gap-10 lg:grid-cols-[1.1fr_0.9fr] items-center mb-16">
         <div>
           <span className="t-micro">For clinics</span>
           <h1
@@ -147,7 +147,7 @@ export default async function ForClinicsPage() {
       {/* ---------------- What you get ---------------- */}
       <section className="mb-16">
         <h2 className="t-h2 mb-6">What the partnership actually covers</h2>
-        <div className="grid gap-4 md:grid-cols-2">
+        <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
           {WHAT_YOU_GET.map((w) => (
             <Card key={w.n} padding="p-6">
               <span className="t-data text-[13px] text-[var(--color-ink-3)]">{w.n}</span>
@@ -161,7 +161,7 @@ export default async function ForClinicsPage() {
       {/* ---------------- How onboarding runs ---------------- */}
       <section className="mb-16">
         <h2 className="t-h2 mb-6">From first call to first session</h2>
-        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
           {[
             ["Week 1", "Site visit", "We look at the room, the cold chain and your existing staff."],
             ["Week 2", "Agreement", "Split, volume target and liability, in writing before anything is ordered."],
@@ -203,7 +203,7 @@ export default async function ForClinicsPage() {
 
       {/* ---------------- Enquiry ---------------- */}
       <section id="enquire" className="scroll-mt-24">
-        <div className="grid gap-8 lg:grid-cols-[1fr_1fr] items-start">
+        <div className="grid grid-cols-1 gap-8 lg:grid-cols-[1fr_1fr] items-start">
           <div>
             <h2 className="t-h2 mb-3">Tell us about your rooms</h2>
             <p className="t-body-lg text-[var(--color-ink-2)] max-w-[52ch]" style={{ textWrap: "pretty" }}>

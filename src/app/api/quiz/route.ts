@@ -1,6 +1,6 @@
 import { z } from "zod";
 import { connectDB } from "@/lib/db/mongoose";
-import { Drip, HealthQuiz, User } from "@/lib/models";
+import { AuditLog, Drip, HealthQuiz, User } from "@/lib/models";
 import { getSession } from "@/lib/auth/session";
 import { scoreQuiz, suggestDripSlugs } from "@/lib/clinical/quiz";
 import { loadQuestions } from "@/lib/clinical/quiz-store";
@@ -64,6 +64,18 @@ export async function POST(req: Request) {
       scored.contraindications.length ? "warning" : "info",
       `/doctor/review/${String(quiz._id)}`
     );
+
+    await AuditLog.create({
+      actorId: session?.sub,
+      actorRole: session?.role ?? "patient",
+      action: "quiz.submitted",
+      entity: "HealthQuiz",
+      entityId: String(quiz._id),
+      after: {
+        vitalityScore: scored.vitalityScore,
+        screeningFlags: scored.contraindications.length,
+      },
+    });
 
     return ok(
       {

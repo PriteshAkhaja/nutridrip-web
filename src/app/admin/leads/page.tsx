@@ -103,7 +103,7 @@ export default async function LeadsPage({
           <tbody>
             {leads.map((l) => (
               <TR key={String(l._id)}>
-                <TD>
+                <TD nowrap>
                   <div className="flex flex-col">
                     <span className="font-medium">{l.name}</span>
                     <span className="t-small text-[var(--color-ink-3)]">
@@ -120,7 +120,7 @@ export default async function LeadsPage({
                 <TD>{l.city ?? "—"}</TD>
                 <TD numeric>{l.rooms ?? "—"}</TD>
                 <TD numeric>{l.monthlyVolume ?? "—"}</TD>
-                <TD mono>{formatDate(l.createdAt)}</TD>
+                <TD mono nowrap>{formatDate(l.createdAt)}</TD>
                 <TD>
                   <LeadStatus id={String(l._id)} status={l.status} />
                 </TD>

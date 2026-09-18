@@ -1,6 +1,6 @@
 import { z } from "zod";
 import { connectDB } from "@/lib/db/mongoose";
-import { User } from "@/lib/models";
+import { AuditLog, User } from "@/lib/models";
 import { verifyPassword } from "@/lib/auth/password";
 import { signSession, setSessionCookie } from "@/lib/auth/session";
 import { HOME_FOR_ROLE } from "@/lib/auth/rbac";
@@ -44,11 +44,36 @@ export async function POST(req: Request) {
     user.lastLoginAt = new Date();
     await user.save();
 
+    /**
+     * Who got in, and when.
+     *
+     * Refusals were recorded from the start and entries were not, which left
+     * the trail able to answer "who was turned away" but not "who was here" —
+     * the first question anyone actually asks of an audit log. The PRD files
+     * audit logging under compliance, beside GDPR and medical data protection,
+     * and half a record does not meet that.
+     *
+     * Failed attempts stay out on purpose: the lockout counter already bounds
+     * them, and logging every wrong password would let anyone flood the trail
+     * from the sign-in page without an account.
+     */
+    await AuditLog.create({
+      actorId: user._id,
+      actorRole: user.role,
+      action: "auth.signed_in",
+      entity: "User",
+      entityId: String(user._id),
+      after: { method: "password" },
+    });
+
     const token = await signSession({
       sub: String(user._id),
       role: user.role,
       name: user.name,
       email: user.email,
+      // Stamped so this token can be ended later without waiting for it to
+      // expire — see tokenVersion on the User model.
+      v: user.tokenVersion ?? 0,
     });
     await setSessionCookie(token);
 

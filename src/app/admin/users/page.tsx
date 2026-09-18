@@ -5,7 +5,7 @@ import { adminNav } from "@/lib/nav";
 import { ConsoleShell } from "@/components/layout/ConsoleShell";
 import { connectDB } from "@/lib/db/mongoose";
 import { User } from "@/lib/models";
-import { DataTable, THead, TH, TR, TD } from "@/components/ui/Table";
+import { DataTable, THead, TH, TR, TD, Pieces } from "@/components/ui/Table";
 import { StatusPill } from "@/components/ui/Pill";
 import { EmptyState } from "@/components/ui/States";
 import { StatCard } from "@/components/ui/Card";
@@ -182,7 +182,7 @@ export default async function UsersPage({
         </div>
       )}
 
-      <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4 mb-6">
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4 mb-6">
         <StatCard label="Patients" value={String(counts.patient)} pct={Math.min(100, counts.patient * 8)} />
         <StatCard label="Doctors" value={String(counts.doctor)} pct={Math.min(100, counts.doctor * 20)} />
         <StatCard label="Nurses" value={String(counts.nurse)} pct={Math.min(100, counts.nurse * 20)} />
@@ -240,10 +240,10 @@ export default async function UsersPage({
           <tbody>
             {users.map((u) => (
               <TR key={String(u._id)}>
-                <TD>
+                <TD nowrap>
                   <span className="font-medium">{u.name}</span>
                 </TD>
-                <TD>
+                <TD nowrap>
                   <span className="t-small text-[var(--color-ink-2)]">{ROLE_LABEL[u.role]}</span>
                 </TD>
                 <TD>
@@ -252,10 +252,10 @@ export default async function UsersPage({
                   </span>
                 </TD>
                 <TD>
-                  <span className="t-small text-[var(--color-ink-2)]">{detailFor(u)}</span>
+                  <span className="t-small text-[var(--color-ink-2)]"><Pieces items={detailFor(u).split(" · ")} separator=" · " /></span>
                 </TD>
-                <TD mono>{formatDate(u.createdAt)}</TD>
-                <TD mono>{u.lastLoginAt ? formatDate(u.lastLoginAt) : "Never"}</TD>
+                <TD mono nowrap>{formatDate(u.createdAt)}</TD>
+                <TD mono nowrap>{u.lastLoginAt ? formatDate(u.lastLoginAt) : "Never"}</TD>
                 <TD>
                   <StatusPill status={u.status} dot />
                 </TD>

@@ -59,7 +59,7 @@ export function QuizFlow({
   };
 
   return (
-    <div className="min-h-screen bg-[var(--color-paper)] flex flex-col">
+    <div className="min-h-dvh bg-[var(--color-paper)] flex flex-col">
       {/* ---------------- Progress ---------------- */}
       <header className="sticky top-0 bg-[var(--color-paper)] border-b border-[var(--color-line)] z-20">
         <div className="mx-auto w-full max-w-[560px] px-5 py-4">

@@ -64,7 +64,7 @@ export default async function AdminApprovalsPage() {
         clinical decision itself is made in the physician console.
       </p>
 
-      <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4 mb-6">
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4 mb-6">
         <StatCard
           label="Waiting"
           value={String(queue.length)}
@@ -112,7 +112,7 @@ export default async function AdminApprovalsPage() {
               const overdue = q.msLeft < 0;
               return (
                 <TR key={q.quizId}>
-                  <TD>
+                  <TD nowrap>
                     <div className="flex flex-col">
                       <span className="font-medium">{q.name}</span>
                       <span className="t-data text-[13px] text-[var(--color-ink-3)]">
@@ -135,11 +135,11 @@ export default async function AdminApprovalsPage() {
                       )}
                     </span>
                   </TD>
-                  <TD>{q.dripName ?? <span className="t-small text-[var(--color-ink-3)]">No booking yet</span>}</TD>
-                  <TD mono>
+                  <TD nowrap>{q.dripName ?? <span className="t-small text-[var(--color-ink-3)]">No booking yet</span>}</TD>
+                  <TD mono nowrap>
                     {formatDate(q.submittedAt)} · {formatTime(q.submittedAt)}
                   </TD>
-                  <TD>
+                  <TD nowrap>
                     <span
                       className="t-data text-[13px]"
                       style={{ color: overdue ? "var(--color-critical)" : q.msLeft < 3_600_000 ? "var(--color-caution)" : "var(--color-ink-2)" }}
@@ -148,7 +148,7 @@ export default async function AdminApprovalsPage() {
                     </span>
                   </TD>
                   {session.role === "superadmin" && (
-                    <TD>
+                    <TD nowrap>
                       <Link href={`/doctor/review/${q.quizId}`}>Review</Link>
                     </TD>
                   )}
@@ -178,13 +178,13 @@ export default async function AdminApprovalsPage() {
             <tbody>
               {recent.map((r) => (
                 <TR key={String(r._id)}>
-                  <TD>{nameById.get(String(r.patientId)) ?? "—"}</TD>
+                  <TD nowrap>{nameById.get(String(r.patientId)) ?? "—"}</TD>
                   <TD numeric>{r.vitalityScore}</TD>
                   <TD>
                     <StatusPill status={r.reviewStatus} dot />
                   </TD>
-                  <TD>{r.reviewedBy ? (nameById.get(String(r.reviewedBy)) ?? "—") : "—"}</TD>
-                  <TD mono>{r.reviewedAt ? `${formatDate(r.reviewedAt)} · ${formatTime(r.reviewedAt)}` : "—"}</TD>
+                  <TD nowrap>{r.reviewedBy ? (nameById.get(String(r.reviewedBy)) ?? "—") : "—"}</TD>
+                  <TD mono nowrap>{r.reviewedAt ? `${formatDate(r.reviewedAt)} · ${formatTime(r.reviewedAt)}` : "—"}</TD>
                 </TR>
               ))}
             </tbody>

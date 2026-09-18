@@ -14,6 +14,7 @@ import { ageFrom } from "@/lib/data/clinical";
 import { toDay, type PlanComponentInput } from "@/lib/clinical/plan-input";
 import { PlanBuilder, type PlanDraft } from "./PlanBuilder";
 import { ShareToggle } from "./ShareToggle";
+import { PlanActions } from "./PlanActions";
 import { Arrow } from "@/components/ui/Arrow";
 
 export const metadata: Metadata = { title: "Treatment plans" };
@@ -90,15 +91,21 @@ function toDraft(p: PlanDoc, masterByName: Map<string, string>): PlanDraft {
 export default async function PlansPage({
   searchParams,
 }: {
-  searchParams: Promise<{ edit?: string }>;
+  searchParams: Promise<{ edit?: string; show?: string }>;
 }) {
   const session = await requireRole("doctor", "superadmin");
-  const { edit } = await searchParams;
+  const { edit, show } = await searchParams;
+  const showArchived = show === "archived";
   const nav = await doctorNav(session.sub);
   await connectDB();
 
   const [plans, patients, nurses, drips, masters] = await Promise.all([
-    TreatmentPlan.find(session.role === "doctor" ? { doctorId: session.sub } : {})
+    TreatmentPlan.find({
+      ...(session.role === "doctor" ? { doctorId: session.sub } : {}),
+      // Archiving is meant to clear the list. Leaving them in would make the
+      // action do nothing on the very screen it exists for.
+      ...(showArchived ? { status: "archived" } : { status: { $ne: "archived" } }),
+    })
       .sort({ createdAt: -1 })
       .lean<PlanDoc[]>(),
     User.find({ role: "patient", status: "active" })
@@ -198,8 +205,30 @@ export default async function PlansPage({
         prescription slip carrying your council registration.
       </p>
 
+      {/* Archived plans have to be reachable, or "archive" is indistinguishable
+          from "delete" — and the whole reason a shared plan is archived rather
+          than deleted is that the record stands. */}
+      <div className="flex gap-1 p-1 rounded-[var(--radius-sm)] bg-[var(--color-surface-2)] border border-[var(--color-line)] mb-5 w-fit">
+        {[
+          ["", "Open"],
+          ["archived", "Archived"],
+        ].map(([key, label]) => (
+          <Link
+            key={label}
+            href={key ? "/doctor/plans?show=archived" : "/doctor/plans"}
+            className={`px-4 min-h-[36px] inline-flex items-center rounded-[6px] text-[13px] font-semibold no-underline hover:no-underline ${
+              (key === "archived") === showArchived
+                ? "bg-[var(--color-surface)] text-[var(--color-ink)]"
+                : "text-[var(--color-ink-2)]"
+            }`}
+          >
+            {label}
+          </Link>
+        ))}
+      </div>
+
       <div className="mb-6">
-        {editing ? (
+        {showArchived ? null : editing ? (
           <PlanBuilder
             key={String(editing._id)}
             {...builderProps}
@@ -213,11 +242,15 @@ export default async function PlansPage({
       {plans.length === 0 ? (
         <EmptyState
           kind="first-run"
-          title="No plans yet"
-          body="Write one when a patient needs a course rather than a single session — a four-week iron protocol, or six weeks of glutathione."
+          title={showArchived ? "Nothing archived" : "No plans yet"}
+          body={
+            showArchived
+              ? "Plans you close appear here. They stay readable — archiving takes a course off everyone's screen without pretending it never happened."
+              : "Write one when a patient needs a course rather than a single session — a four-week iron protocol, or six weeks of glutathione."
+          }
         />
       ) : (
-        <div className="grid gap-4 xl:grid-cols-2">
+        <div className="grid grid-cols-1 gap-4 xl:grid-cols-2">
           {plans.map((p) => {
             const sessions = p.weeks.flatMap((w) => w.sessions);
             const past = sessions.filter((s) => new Date(s.date) < new Date()).length;
@@ -235,7 +268,11 @@ export default async function PlansPage({
                       >
                         {nameById.get(String(p.patientId)) ?? "Unknown patient"}
                       </Link>
-                      <StatusPill status={p.status} dot />
+                      {/* An active plan is a course still being given, so it
+                          pulses. Set here rather than in the shared live list:
+                          "active" on an account means only that it is enabled,
+                          and those rows must stay still. */}
+                      <StatusPill status={p.status} dot pulse={p.status === "active"} />
                     </div>
                     {p.diagnosis && (
                       <p className="t-body text-[var(--color-ink-2)] mt-1 max-w-[46ch]">{p.diagnosis}</p>
@@ -278,7 +315,13 @@ export default async function PlansPage({
                     Print Rx&nbsp;<Arrow />
                   </Link>
                 </div>
-                <div className="mt-4 pt-4 border-t border-[var(--color-line)]">
+                <div className="mt-4 pt-4 border-t border-[var(--color-line)] flex flex-col gap-4">
+                  <PlanActions
+                    planId={String(p._id)}
+                    status={p.status}
+                    shared={p.sharedWithNurse}
+                    patientName={nameById.get(String(p.patientId)) ?? "this patient"}
+                  />
                   <ShareToggle
                     planId={String(p._id)}
                     shared={p.sharedWithNurse}

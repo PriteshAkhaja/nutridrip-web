@@ -13,6 +13,7 @@ import { riskColor, riskBand } from "@/lib/models/types";
 import { approvalState } from "@/lib/clinical/validity";
 import { formatDate, formatTime } from "@/lib/data/inventory";
 import { plansFor } from "@/lib/data/plans";
+import { etaLabel } from "@/lib/clinical/nurse-options";
 import { PATIENT_TABS } from "./tabs";
 import { Arrow } from "@/components/ui/Arrow";
 
@@ -27,7 +28,7 @@ export const dynamic = "force-dynamic";
  * is simply untrue, and it is the sort of line a patient waits by the door for.
  */
 function nurseStageLabel(status: string): string {
-  if (status === "en_route") return "Nurse en route";
+  if (status === "en_route") return "Nurse on the way";
   if (status === "in_progress" || status === "completed") return "Nurse arrived";
   if (status === "nurse_assigned") return "Nurse assigned";
   return "Nurse being assigned";
@@ -42,6 +43,8 @@ function timelineFor(booking: {
   completedAt?: Date;
   scheduledAt: Date;
   durationMin?: number;
+  enRouteAt?: Date;
+  etaMinutes?: number;
 }): TimelineItem[] {
   const fmt = (d?: Date) =>
     d
@@ -66,7 +69,12 @@ function timelineFor(booking: {
       // session that is still two days away tells the patient somebody has set
       // off when nobody has, and it is the line they will ring us about.
       nurseStageLabel(booking.status),
-      booking.status === "en_route" ? "On the way" : fmt(booking.scheduledAt),
+      // The figure is what the nurse's distance was when they set off, not a
+      // live countdown — nothing tracks them afterwards, so a number that kept
+      // falling on its own would be invented.
+      booking.status === "en_route"
+        ? `Set off ${fmt(booking.enRouteAt)} · ${etaLabel(booking.etaMinutes)}`
+        : fmt(booking.scheduledAt),
       ["en_route", "in_progress", "completed"].includes(booking.status),
     ],
     ["Consent & vitals", booking.startedAt ? fmt(booking.startedAt) : "—", Boolean(booking.startedAt)],
@@ -118,6 +126,8 @@ export default async function PatientHomePage() {
         completedAt?: Date;
         remainingMl?: number;
         bagVolumeMl?: number;
+        enRouteAt?: Date;
+        etaMinutes?: number;
       } | null>(),
     // Drafts are excluded inside plansFor — a plan the physician has not
     // shared yet is not the patient's to read.

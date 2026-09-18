@@ -69,8 +69,23 @@ export async function PATCH(req: Request) {
       action: "billing.update",
       entity: "BillingSettings",
       entityId: "billing",
-      before: { gstEnabled: before.gstEnabled, gstin: before.gstin },
-      after: { gstEnabled: input.gstEnabled, gstin },
+      // Every field the form writes, not just the two that felt important.
+      // All four are printed on a legal tax invoice — the registered address
+      // and the payment terms as much as the GSTIN — so a change to any of
+      // them has to be answerable later. Recording a subset meant editing the
+      // address left a row saying nothing had changed at all.
+      before: {
+        gstEnabled: before.gstEnabled,
+        gstin: before.gstin,
+        address: before.address,
+        terms: before.terms,
+      },
+      after: {
+        gstEnabled: input.gstEnabled,
+        gstin,
+        address: input.address.trim(),
+        terms: input.terms.trim(),
+      },
     });
 
     return ok({

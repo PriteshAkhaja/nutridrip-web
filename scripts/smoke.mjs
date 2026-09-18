@@ -421,6 +421,17 @@ async function main() {
   if (!live) {
     skip("checklist sequence", "no session assigned to this nurse — reseed with `npm run seed`");
   } else {
+    // The patient's code, the way a nurse gets it: ask for one, read it back.
+    // Outside production the code is echoed, which is what makes this walkable.
+    const unlockRx = async (booking) => {
+      const sent = await post(nurse.jar, `/api/bookings/${booking._id}/rx-otp`, { mode: "request" });
+      if (sent.json?.data?.alreadyUnlocked) return true;
+      const code = sent.json?.data?.devCode;
+      if (!code) return false;
+      const verified = await post(nurse.jar, `/api/bookings/${booking._id}/rx-otp`, { mode: "verify", code });
+      return verified.json?.data?.unlocked === true;
+    };
+
     const openStep = live.checklist.find((s) => !s.doneAt && s.mandatory);
     const laterStep = [...live.checklist].reverse().find((s) => !s.doneAt);
 
@@ -487,6 +498,23 @@ async function main() {
       const vitalsStep = freshBooking.checklist.find((s) => s.opens === "vitals" && !s.doneAt);
       const consentStep = freshBooking.checklist.find((s) => s.opens === "consent" && !s.doneAt);
       if (vitalsStep) {
+        // Past the six doorstep checks nothing moves until the patient's code
+        // has been read — checked on the still-locked session before opening it.
+        // Without the unlock below, every later check in this block would get
+        // a 409 from the lock and pass for the wrong reason.
+        const pastDoorstep = freshBooking.checklist.find((s) => s.key === "ps-07" && !s.doneAt);
+        if (pastDoorstep && !freshBooking.rxUnlockedAt) {
+          const lockedTick = await post(nurse.jar, `/api/bookings/${freshBooking._id}/checklist`, { key: pastDoorstep.key, done: true });
+          ok("a step past the doorstep checks is refused while the prescription is locked",
+            lockedTick.status === 409 && /prescription/i.test(lockedTick.json?.error ?? ""),
+            `${lockedTick.status}: ${lockedTick.json?.error}`);
+          const lockedConsent = await post(nurse.jar, `/api/bookings/${freshBooking._id}/consent`, { viaOtp: "4471" });
+          ok("consent cannot be captured while the prescription is locked",
+            lockedConsent.status === 409 && /prescription/i.test(lockedConsent.json?.error ?? ""),
+            `${lockedConsent.status}: ${lockedConsent.json?.error}`);
+        } else skip("prescription gate on the checklist", "the fresh session is already unlocked — reseed for this check");
+        ok("the patient's code opens the prescription", await unlockRx(freshBooking));
+
         // Close everything before it so the sequence rule is not what refuses us.
         for (const s of freshBooking.checklist) {
           if (s.key === vitalsStep.key) break;
@@ -524,6 +552,8 @@ async function main() {
     // verified code. Both rules need a session in the right state to show.
     const needsConsent = workable.find((b) => !b.consent?.givenAt);
     if (needsConsent) {
+      // Opened first, so the 422 below is the missing signature talking and not the lock.
+      await unlockRx(needsConsent);
       const emptyConsent = await post(nurse.jar, `/api/bookings/${needsConsent._id}/consent`, {});
       ok("consent needs a signature or a code", emptyConsent.status === 422, emptyConsent.json?.error);
     } else skip("consent needs a signature or a code", "every session already has consent");

@@ -4,6 +4,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/Button";
 import { Input, Select, Textarea, Checkbox } from "@/components/ui/Field";
+import { DatePicker } from "@/components/ui/DatePicker";
 import { Card } from "@/components/ui/Card";
 import { DripPicker } from "@/components/ui/DripPicker";
 import { ROUTES, UNITS } from "@/lib/models/types";
@@ -166,7 +167,7 @@ function ComponentRow({
     // 15000 mg is an ordinary ascorbic acid dose, and a dose that is cut off
     // by the edge of its own box is the one number on this row that must never
     // be guessed at.
-    <div className="grid gap-3 md:grid-cols-[minmax(0,2fr)_116px_92px_minmax(0,1.5fr)_minmax(0,1.3fr)_auto] md:items-end">
+    <div className="grid grid-cols-1 gap-3 md:grid-cols-[minmax(0,2fr)_116px_92px_minmax(0,1.5fr)_minmax(0,1.3fr)_auto] md:items-end">
       <Select
         label={labelled ? "Product" : undefined}
         aria-label="Product"
@@ -293,13 +294,11 @@ function SessionCard({
         ) : null}
       </div>
 
-      <div className="grid gap-4 lg:grid-cols-[190px_minmax(0,1fr)]">
-        <Input
+      <div className="grid grid-cols-1 gap-4 lg:grid-cols-[190px_minmax(0,1fr)]">
+        <DatePicker
           label="Date"
-          type="date"
-          mono
           value={s.day}
-          onChange={(e) => onChange({ ...s, day: e.target.value })}
+          onChange={(v) => onChange({ ...s, day: v })}
         />
         <DripPicker
           label="Protocol"
@@ -615,7 +614,7 @@ export function PlanBuilder({
         </Button>
       </div>
 
-      <div className="grid gap-4 lg:grid-cols-2">
+      <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
         <Select
           label="Patient"
           value={patientId}
@@ -659,7 +658,7 @@ export function PlanBuilder({
         <p className="t-small text-[var(--color-ink-3)] -mt-2 mb-3">
           Leave a field blank to take what is on the patient&rsquo;s record.
         </p>
-        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
           <Input
             label="Age"
             mono
@@ -701,13 +700,11 @@ export function PlanBuilder({
 
       <div className="mt-5 pt-5 border-t border-[var(--color-line)]">
         <span className="t-micro block mb-3">Lay out the schedule</span>
-        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-          <Input
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
+          <DatePicker
             label="Starts"
-            type="date"
-            mono
             value={startDate}
-            onChange={(e) => setStartDate(e.target.value)}
+            onChange={setStartDate}
           />
           <Input
             label="Weeks"
@@ -845,7 +842,7 @@ export function PlanBuilder({
         ) : null}
       </div>
 
-      <div className="grid gap-4 lg:grid-cols-2 mt-5 pt-5 border-t border-[var(--color-line)] items-end">
+      <div className="grid grid-cols-1 gap-4 lg:grid-cols-2 mt-5 pt-5 border-t border-[var(--color-line)] items-end">
         <Select label="Nurse" value={nurseId} onChange={(e) => setNurseId(e.target.value)}>
           <option value="">Assign later</option>
           {nurses.map((n) => (

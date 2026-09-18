@@ -200,6 +200,19 @@
   100% { transform: translateY(14px); opacity: 0 }
 }
 
+/* --------------------------------------------------------------------------
+   Status pulse — a ring leaving the dot of a status still in motion (Pill).
+   Its own keyframes rather than ndPulse: that one belongs to the loader, which
+   keeps its tokens apart so a change there cannot move the status language.
+   Starts at half strength and is gone by 70%, so the last stretch of each
+   two-second cycle is still — a pulse, not a strobe.
+   -------------------------------------------------------------------------- */
+@keyframes ndDotPulse {
+  0%   { transform: scale(1);   opacity: 0.5 }
+  70%  { transform: scale(2.6); opacity: 0 }
+  100% { transform: scale(2.6); opacity: 0 }
+}
+
 @layer components {
   .skeleton {
     background: linear-gradient(90deg, var(--color-surface-2) 25%, var(--color-line) 37%, var(--color-surface-2) 63%);

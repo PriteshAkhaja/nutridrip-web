@@ -29,7 +29,7 @@ export function MobileShell({
   children: ReactNode;
 }) {
   return (
-    <div className="min-h-screen bg-[var(--color-paper)] flex flex-col">
+    <div className="min-h-dvh bg-[var(--color-paper)] flex flex-col">
       <header className="sticky top-0 z-30 bg-[var(--color-paper)] border-b border-[var(--color-line)]">
         <div className="mx-auto w-full max-w-[560px] px-5 py-3 flex items-center gap-3">
           {back ? (

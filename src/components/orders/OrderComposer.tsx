@@ -4,6 +4,7 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/Button";
 import { Input, Select, Checkbox, Textarea } from "@/components/ui/Field";
+import { DatePicker } from "@/components/ui/DatePicker";
 import { Card } from "@/components/ui/Card";
 import { DripPicker } from "@/components/ui/DripPicker";
 import { Pill } from "@/components/ui/Pill";
@@ -87,7 +88,7 @@ export function OrderComposer({
   };
 
   return (
-    <Card padding="p-5" className="xl:sticky xl:top-6">
+    <Card padding="p-5" className="min-[1760px]:sticky min-[1760px]:top-6">
       <span className="t-micro">New order</span>
       <h2 className="t-h3 mt-2 mb-4">{mode === "admin" ? "Raise a preparation order" : "What do you need"}</h2>
 
@@ -111,7 +112,7 @@ export function OrderComposer({
               />
 
               <div className="flex gap-3 items-end">
-                <div className="flex-1">
+                <div className="flex-1 min-w-0">
                   <Input
                     label="Quantity"
                     type="number"
@@ -186,13 +187,11 @@ export function OrderComposer({
               value={patientName}
               onChange={(e) => setPatientName(e.target.value)}
             />
-            <Input
+            <DatePicker
               label="Needed by"
               hint="optional"
-              type="date"
-              mono
               value={delivery}
-              onChange={(e) => setDelivery(e.target.value)}
+              onChange={setDelivery}
             />
             <Textarea
               label="Notes for dispatch"

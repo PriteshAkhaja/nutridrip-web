@@ -2,6 +2,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import type { Metadata } from "next";
 import { requireRole } from "@/lib/auth/guard";
+import { logRecordAccess } from "@/lib/auth/access-log";
 import { doctorNav } from "@/lib/nav";
 import { ConsoleShell } from "@/components/layout/ConsoleShell";
 import { connectDB } from "@/lib/db/mongoose";
@@ -56,6 +57,16 @@ export default async function PatientDetailPage({ params }: { params: Promise<{ 
   // The id comes from the URL, so it must be checked: without this, any staff
   // or admin record could be read through the patient screen.
   if (!patient || patient.role !== "patient") notFound();
+
+  // Written only once the record is known to be openable, so a refusal is
+  // never filed as a read.
+  await logRecordAccess({
+    session,
+    kind: "patient chart",
+    entity: "User",
+    entityId: id,
+    patientId: id,
+  });
 
   const [quizzes, bookings, labs] = await Promise.all([
     HealthQuiz.find({ patientId: id })
@@ -146,7 +157,8 @@ export default async function PatientDetailPage({ params }: { params: Promise<{ 
         )}
       </div>
 
-      <div className="grid gap-6 xl:grid-cols-[1.5fr_1fr] items-start">
+      {/* Side by side only from 1760px. Below that the table takes the full width and this panel sits under it: with names and dates held on one line, the table does not fit beside the panel on a laptop or a 1536-1680px monitor (measured; the orders list beside its 400px composer needs about 1740px). */}
+      <div className="grid grid-cols-1 gap-6 min-[1760px]:grid-cols-[minmax(0,1.5fr)_minmax(0,1fr)] items-start">
         <div className="flex flex-col gap-6">
           {/* ---------------- Vitality ---------------- */}
           {latest ? (
@@ -223,9 +235,9 @@ export default async function PatientDetailPage({ params }: { params: Promise<{ 
                     const events = (b.adverseEvents ?? []).length;
                     return (
                       <TR key={String(b._id)}>
-                        <TD mono>{b.bookingNo}</TD>
-                        <TD>{b.dripName ?? "—"}</TD>
-                        <TD mono>
+                        <TD mono nowrap>{b.bookingNo}</TD>
+                        <TD nowrap>{b.dripName ?? "—"}</TD>
+                        <TD mono nowrap>
                           {formatDate(b.scheduledAt)} · {formatTime(b.scheduledAt)}
                         </TD>
                         <TD>

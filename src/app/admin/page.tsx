@@ -81,7 +81,7 @@ export default async function AdminOverviewPage() {
       meta={`Updated ${formatTime(new Date())}`}
       actions={<ButtonLink href="/admin/inventory/availability">Check availability</ButtonLink>}
     >
-      <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4 mb-6">
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4 mb-6">
         <StatCard
           label="Pending approvals"
           value={String(pendingQuizzes)}
@@ -112,7 +112,8 @@ export default async function AdminOverviewPage() {
         />
       </div>
 
-      <div className="grid gap-6 xl:grid-cols-[1.4fr_1fr] items-start">
+      {/* Side by side only from 1760px. Below that the table takes the full width and this panel sits under it: with names and dates held on one line, the table does not fit beside the panel on a laptop or a 1536-1680px monitor (measured; the orders list beside its 400px composer needs about 1740px). */}
+      <div className="grid grid-cols-1 gap-6 min-[1760px]:grid-cols-[minmax(0,1.4fr)_minmax(0,1fr)] items-start">
         <section>
           <div className="flex items-baseline justify-between mb-3 gap-4">
             <h2 className="t-h3">Recent sessions</h2>
@@ -142,10 +143,10 @@ export default async function AdminOverviewPage() {
               <tbody>
                 {recentBookings.map((b) => (
                   <TR key={String(b._id)}>
-                    <TD mono>{b.bookingNo}</TD>
-                    <TD>{patientNames.get(String(b.patientId)) ?? "—"}</TD>
-                    <TD>{b.dripName ?? "—"}</TD>
-                    <TD mono>
+                    <TD mono nowrap>{b.bookingNo}</TD>
+                    <TD nowrap>{patientNames.get(String(b.patientId)) ?? "—"}</TD>
+                    <TD nowrap>{b.dripName ?? "—"}</TD>
+                    <TD mono nowrap>
                       {formatDate(b.scheduledAt)} · {formatTime(b.scheduledAt)}
                     </TD>
                     <TD>
