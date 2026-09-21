@@ -47,3 +47,6 @@ yarn-error.log*
 
 # unzip cruft
 __MACOSX/
+
+# zip files
+*.zip
