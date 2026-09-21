@@ -17,14 +17,24 @@ import { formatDate, formatTime } from "@/lib/data/inventory";
 import { formatInr } from "@/lib/inventory/units";
 import { riskColor, riskBand } from "@/lib/models/types";
 import { ageFrom } from "@/lib/data/clinical";
+import { PagedResults, PagedView, Pagination } from "@/components/ui/Paged";
+import { paginate } from "@/lib/pagination-db";
+import { parsePaging } from "@/lib/pagination";
 
 export const metadata: Metadata = { title: "Patient" };
 export const dynamic = "force-dynamic";
 
-export default async function PatientDetailPage({ params }: { params: Promise<{ id: string }> }) {
+export default async function PatientDetailPage({
+  params,
+  searchParams,
+}: {
+  params: Promise<{ id: string }>;
+  searchParams: Promise<{ page?: string; pageSize?: string }>;
+}) {
   const session = await requireRole("doctor", "superadmin");
   const nav = await doctorNav(session.sub);
   const { id } = await params;
+  const { page, pageSize } = await searchParams;
 
   await connectDB();
   const patient = await User.findById(id).lean<{
@@ -68,7 +78,7 @@ export default async function PatientDetailPage({ params }: { params: Promise<{ 
     patientId: id,
   });
 
-  const [quizzes, bookings, labs] = await Promise.all([
+  const [quizzes, sessions, labs] = await Promise.all([
     HealthQuiz.find({ patientId: id })
       .sort({ completedAt: -1 })
       .lean<
@@ -81,20 +91,19 @@ export default async function PatientDetailPage({ params }: { params: Promise<{ 
           doctorNotes?: string;
         }>
       >(),
-    Booking.find({ patientId: id })
-      .sort({ scheduledAt: -1 })
-      .lean<
-        Array<{
-          _id: unknown;
-          bookingNo: string;
-          dripName?: string;
-          scheduledAt: Date;
-          status: string;
-          amount: number;
-          adverseEvents?: Array<{ symptoms: string[] }>;
-          vitals?: Array<{ outOfRange?: string[] }>;
-        }>
-      >(),
+    // One page of sessions. A patient on a long course builds up years of them,
+    // and the two figures beside the heading are counts, so paging the table
+    // must not turn them into "how many are on this page".
+    paginate<{
+      _id: unknown;
+      bookingNo: string;
+      dripName?: string;
+      scheduledAt: Date;
+      status: string;
+      amount: number;
+      adverseEvents?: Array<{ symptoms: string[] }>;
+      vitals?: Array<{ outOfRange?: string[] }>;
+    }>(Booking, { patientId: id }, { sort: { scheduledAt: -1 }, paging: parsePaging({ page, pageSize }) }),
     LabReport.find({ patientId: id })
       .sort({ uploadedAt: -1 })
       .select({ fileName: 1, category: 1, notes: 1, uploadedAt: 1, hasFile: { $gt: [{ $strLenCP: { $ifNull: ["$fileUrl", ""] } }, 0] } })
@@ -111,10 +120,13 @@ export default async function PatientDetailPage({ params }: { params: Promise<{ 
   ]);
 
   const p = patient.patient ?? {};
+  const [completedCount, eventCount] = await Promise.all([
+    Booking.countDocuments({ patientId: id, status: "completed" }),
+    Booking.countDocuments({ patientId: id, "adverseEvents.0": { $exists: true } }),
+  ]);
+
   const latest = quizzes[0];
   const lowest = latest ? [...latest.nutrientRisks].sort((a, b) => a.pct - b.pct).slice(0, 4) : [];
-  const completed = bookings.filter((b) => b.status === "completed");
-  const withEvents = bookings.filter((b) => (b.adverseEvents ?? []).length > 0);
 
   const age = ageFrom(p.dob);
 
@@ -150,9 +162,9 @@ export default async function PatientDetailPage({ params }: { params: Promise<{ 
         {p.currentMedications && p.currentMedications.toLowerCase() !== "none" && (
           <Pill tone="info">On {p.currentMedications}</Pill>
         )}
-        {withEvents.length > 0 && (
+        {eventCount > 0 && (
           <Pill tone="critical" dot>
-            {withEvents.length} adverse event{withEvents.length === 1 ? "" : "s"} on record
+            {eventCount} adverse event{eventCount === 1 ? "" : "s"} on record
           </Pill>
         )}
       </div>
@@ -212,12 +224,14 @@ export default async function PatientDetailPage({ params }: { params: Promise<{ 
             <div className="flex items-baseline justify-between gap-4 mb-3">
               <h2 className="t-h3">Sessions</h2>
               <span className="t-data text-[13px] text-[var(--color-ink-3)]">
-                {completed.length} completed of {bookings.length}
+                {completedCount} completed of {sessions.meta.total}
               </span>
             </div>
-            {bookings.length === 0 ? (
+            {sessions.meta.total === 0 ? (
               <EmptyState kind="first-run" title="No sessions yet" body="Nothing has been booked for this patient." />
             ) : (
+              <PagedView>
+              <PagedResults>
               <DataTable>
                 <THead>
                   <TR>
@@ -230,7 +244,7 @@ export default async function PatientDetailPage({ params }: { params: Promise<{ 
                   </TR>
                 </THead>
                 <tbody>
-                  {bookings.map((b) => {
+                  {sessions.rows.map((b) => {
                     const flagged = (b.vitals ?? []).some((v) => (v.outOfRange ?? []).length > 0);
                     const events = (b.adverseEvents ?? []).length;
                     return (
@@ -258,6 +272,14 @@ export default async function PatientDetailPage({ params }: { params: Promise<{ 
                   })}
                 </tbody>
               </DataTable>
+              </PagedResults>
+              <Pagination
+                meta={sessions.meta}
+                basePath={`/doctor/patients/${id}`}
+                params={{ pageSize }}
+                nouns={["session", "sessions"]}
+              />
+              </PagedView>
             )}
           </section>
 

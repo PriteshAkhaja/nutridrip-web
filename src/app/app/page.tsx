@@ -131,7 +131,8 @@ export default async function PatientHomePage() {
       } | null>(),
     // Drafts are excluded inside plansFor — a plan the physician has not
     // shared yet is not the patient's to read.
-    plansFor(session),
+    // Only the current plan is shown here, so only one is fetched.
+    plansFor(session, { limit: 1 }),
   ]);
 
   const plan = plans[0] ?? null;

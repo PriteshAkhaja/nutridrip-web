@@ -7,6 +7,8 @@ import { connectDB } from "@/lib/db/mongoose";
 import { TreatmentPlan, User } from "@/lib/models";
 import { getContent } from "@/lib/content";
 import { LogoMark } from "@/components/layout/Logo";
+import { LetterheadBlock } from "@/components/clinical/LetterheadBlock";
+import { hasLetterhead, letterheadView, normaliseLetterhead } from "@/lib/clinical/letterhead";
 import { ageFrom } from "@/lib/data/clinical";
 import { formatDate } from "@/lib/data/inventory";
 import { PrintButton } from "@/components/ui/PrintButton";
@@ -65,11 +67,18 @@ export default async function PrintRxPage({ params }: { params: Promise<{ id: st
     } | null>(),
     User.findById(plan.doctorId).lean<{
       name: string;
-      doctor?: { specialization?: string; licenseNo?: string; registrationCouncil?: string };
+      doctor?: { specialization?: string; licenseNo?: string; registrationCouncil?: string; letterhead?: unknown };
     } | null>(),
     plan.nurseId ? User.findById(plan.nurseId).lean<{ name: string } | null>() : Promise.resolve(null),
     getContent(),
   ]);
+
+  // The physician's own letterhead, when they have set one. The credentials
+  // block further down is read from the verified record either way, so a
+  // letterhead can change how the slip is headed and never who signed it.
+  const letterhead = normaliseLetterhead(doctor?.doctor?.letterhead);
+  const custom = hasLetterhead(letterhead);
+  const lhView = letterheadView(letterhead, doctor?.name ?? "");
 
   const p = patient?.patient ?? {};
   const sessions = plan.weeks.flatMap((w) => w.sessions.map((s) => ({ ...s, weekNum: w.weekNum })));
@@ -88,22 +97,39 @@ export default async function PrintRxPage({ params }: { params: Promise<{ id: st
       {/* ---------------- The sheet ---------------- */}
       <article className="rx-page mx-auto max-w-[820px] bg-white border border-[var(--color-line)] rounded-[var(--radius-lg)] p-8 md:p-12 print:border-0 print:rounded-none print:p-0">
         <header className="flex items-start justify-between gap-6 pb-6 border-b-2 border-[var(--color-ink)]">
-          <div className="flex items-center gap-3">
-            <LogoMark size={28} />
-            <div className="flex flex-col">
-              <span style={{ font: "600 20px/1 var(--font-display)", letterSpacing: "-0.01em" }}>NutriDrip</span>
-              <span className="t-small text-[var(--color-ink-3)] mt-1">{copy["footer.legalName"]}</span>
-              <span className="t-small text-[var(--color-ink-3)]">
-                Clinical establishment reg. <span className="t-data">{copy["footer.registration"]}</span>
-              </span>
+          {custom ? (
+            <LetterheadBlock view={lhView} />
+          ) : (
+            <div className="flex items-center gap-3">
+              <LogoMark size={28} />
+              <div className="flex flex-col">
+                <span style={{ font: "600 20px/1 var(--font-display)", letterSpacing: "-0.01em" }}>NutriDrip</span>
+                <span className="t-small text-[var(--color-ink-3)] mt-1">{copy["footer.legalName"]}</span>
+                <span className="t-small text-[var(--color-ink-3)]">
+                  Clinical establishment reg. <span className="t-data">{copy["footer.registration"]}</span>
+                </span>
+              </div>
             </div>
-          </div>
+          )}
           <div className="text-right">
             <span style={{ font: "700 34px/1 var(--font-display)" }}>℞</span>
             <div className="t-data text-[13px] mt-2">{rxNo}</div>
             <div className="t-small text-[var(--color-ink-3)]">{formatDate(plan.createdAt)}</div>
           </div>
         </header>
+
+        {/* The establishment is still named on the document — a prescription
+            issued through a clinical establishment carries its registration —
+            it just is not the headline when the physician has their own. */}
+        {custom ? (
+          <div className="flex items-center gap-2 py-3 border-b border-[var(--color-line)]">
+            <LogoMark size={16} />
+            <span className="t-small text-[var(--color-ink-3)]">
+              Issued through NutriDrip · {copy["footer.legalName"]} · Clinical establishment reg.{" "}
+              <span className="t-data">{copy["footer.registration"]}</span>
+            </span>
+          </div>
+        ) : null}
 
         <section className="grid grid-cols-1 gap-6 md:grid-cols-2 py-6 border-b border-[var(--color-line)]">
           <div>
@@ -203,6 +229,7 @@ export default async function PrintRxPage({ params }: { params: Promise<{ id: st
             Valid for the course above only. Each session is administered by a council-registered nurse against the
             29-step checklist, after baseline vitals, and is not to be dispensed or administered elsewhere.
             {copy["footer.emergency"] ? ` ${copy["footer.emergency"]}` : ""}
+            {custom && lhView.footerNote ? ` ${lhView.footerNote}` : ""}
           </p>
           <div>
             <div className="h-[56px] border-b border-[var(--color-ink)]" />

@@ -39,11 +39,19 @@ export function Section({
   tone = "paper",
   id,
   className = "",
+  wide = false,
 }: {
   children: ReactNode;
   tone?: "paper" | "ink" | "soft";
   id?: string;
   className?: string;
+  /**
+   * Line up with the site header (1280px) instead of the home page's 1240px.
+   * The two differ by 20px a side, invisible while a page is all Sections and
+   * plain to see the moment one sits under a header-width block — as it does on
+   * the pages that lead with a title and a row of figures.
+   */
+  wide?: boolean;
 }) {
   const bg = {
     paper: "bg-[var(--color-paper)]",
@@ -52,7 +60,9 @@ export function Section({
   }[tone];
   return (
     <section id={id} className={`${bg} ${className}`}>
-      <div className="mx-auto max-w-[1240px] px-6 md:px-10 py-16 md:py-24">{children}</div>
+      <div className={`mx-auto ${wide ? "max-w-[1280px]" : "max-w-[1240px]"} px-6 md:px-10 py-16 md:py-24`}>
+        {children}
+      </div>
     </section>
   );
 }
@@ -242,11 +252,25 @@ function Mark({ on, emphasis }: { on: boolean; emphasis: boolean }) {
 /* -------------------------------------------------------------------------
    FAQ — details/summary, so it works with JavaScript off
    ------------------------------------------------------------------------- */
-export function FaqList({ items }: { items: Array<{ q: string; a: string }> }) {
+export function FaqList({
+  items,
+  open = "first",
+}: {
+  items: Array<{ q: string; a: string }>;
+  /**
+   * Which answers start open. "first" is what the home page has always done;
+   * a search opens every match, because somebody who typed a word wants to see
+   * the sentence it is in, not a list of closed rows to click through.
+   */
+  open?: "first" | "all" | "none";
+}) {
   return (
     <div className="rounded-[var(--radius-lg)] border border-[var(--color-line)] bg-[var(--color-surface)] overflow-hidden">
       {items.map((f, i) => (
-        <details key={f.q} open={i === 0} className="border-b border-[var(--color-line)] last:border-b-0 group">
+        <details
+          key={f.q}
+          open={open === "all" || (open === "first" && i === 0)}
+          className="border-b border-[var(--color-line)] last:border-b-0 group">
           <summary className="flex items-start justify-between gap-4 px-5 md:px-6 py-5 cursor-pointer list-none min-h-[44px]">
             <span
               style={{

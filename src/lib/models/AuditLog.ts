@@ -16,5 +16,10 @@ const AuditLogSchema = new Schema(
   { timestamps: false }
 );
 
+/** Serves the paged, filtered trail: the filter, then the sort, so a page is an index walk. */
+AuditLogSchema.index({ at: -1, _id: -1 });
+AuditLogSchema.index({ action: 1, at: -1, _id: -1 });
+AuditLogSchema.index({ actorId: 1, at: -1, _id: -1 });
+
 export const AuditLog = models.AuditLog || model("AuditLog", AuditLogSchema);
 export default AuditLog;

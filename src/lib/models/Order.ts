@@ -43,7 +43,10 @@ const OrderSchema = new Schema(
   { timestamps: true }
 );
 
-OrderSchema.index({ status: 1, createdAt: -1 });
+OrderSchema.index({ status: 1, createdAt: -1, _id: -1 });
+
+/** Serves the paged lists: the filter, then the sort, so a page is an index walk. */
+OrderSchema.index({ clinicId: 1, createdAt: -1, _id: -1 });
 
 export const Order = models.Order || model("Order", OrderSchema);
 export default Order;

@@ -22,6 +22,19 @@ const UserSchema = new Schema(
       licenseNo: String,
       registrationCouncil: String,
       signatureUrl: String,
+      /**
+       * What the physician prints above their own prescriptions. Presentation
+       * only, and edited by the physician; the registration above is edited by
+       * an administrator and prints regardless. See lib/clinical/letterhead.ts.
+       */
+      letterhead: {
+        practiceName: String,
+        qualifications: String,
+        address: String,
+        phone: String,
+        email: String,
+        footerNote: String,
+      },
     },
 
     nurse: {
@@ -100,6 +113,10 @@ UserSchema.index({ role: 1, status: 1 });
 UserSchema.index({ name: "text", email: "text" });
 
 export type UserDoc = InferSchemaType<typeof UserSchema> & { _id: mongoose.Types.ObjectId };
+
+/** Serves the paged lists: the filter, then the sort, so a page is an index walk. */
+UserSchema.index({ createdAt: -1, _id: -1 });
+UserSchema.index({ role: 1, createdAt: -1, _id: -1 });
 
 export const User = models.User || model("User", UserSchema);
 export default User;

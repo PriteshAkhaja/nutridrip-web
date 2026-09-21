@@ -2,6 +2,7 @@ import { connectDB } from "@/lib/db/mongoose";
 import { Booking, HealthQuiz, Lead, Order, ProductMaster, User } from "@/lib/models";
 import { getAlerts } from "@/lib/inventory/alerts";
 import type { NavItem } from "@/components/layout/ConsoleShell";
+import { AI_STUDIO_ENABLED } from "@/lib/ai/enabled";
 
 /**
  * Nav badges are live counts, never static. A badge with nothing to count is
@@ -23,6 +24,7 @@ export async function adminNav(activeCounts = true): Promise<NavItem[]> {
       { section: "Inventory", label: "Alerts", href: "/admin/inventory/alerts" },
       { section: "Inventory", label: "Recall trace", href: "/admin/inventory/recall" },
       { section: "Admin", label: "Billing", href: "/admin/billing" },
+      ...(AI_STUDIO_ENABLED ? [{ section: "Admin", label: "AI Studio", href: "/admin/studio", permission: "ai.configure" } as const] : []),
       { section: "Admin", label: "Audit trail", href: "/admin/audit" },
     ];
   }
@@ -62,6 +64,7 @@ export async function adminNav(activeCounts = true): Promise<NavItem[]> {
     },
     { section: "Inventory", label: "Recall trace", href: "/admin/inventory/recall" },
     { section: "Admin", label: "Billing", href: "/admin/billing" },
+    ...(AI_STUDIO_ENABLED ? [{ section: "Admin", label: "AI Studio", href: "/admin/studio", permission: "ai.configure" } as const] : []),
     { section: "Admin", label: "Audit trail", href: "/admin/audit" },
   ];
 }
@@ -92,6 +95,7 @@ export async function doctorNav(doctorId: string): Promise<NavItem[]> {
     { section: "Clinical", label: "Treatment plans", href: "/doctor/plans" },
     { section: "Clinical", label: "Schedule", href: "/doctor/schedule", badge: todaySessions || undefined },
     { section: "Clinical", label: "Escalations", href: "/doctor/adverse", badge: escalations || undefined, badgeTone: "critical" },
+    { section: "Account", label: "Letterhead", href: "/doctor/letterhead", permission: "letterhead.edit" },
   ];
 }
 
@@ -106,6 +110,7 @@ export async function clinicNav(clinicId: string): Promise<NavItem[]> {
     { section: "Clinic", label: "Today", href: "/clinic" },
     { section: "Clinic", label: "Orders", href: "/clinic/orders", badge: openOrders || undefined },
     { section: "Clinic", label: "Bookings", href: "/clinic/bookings", badge: bookings || undefined },
+    { section: "Clinic", label: "Billing", href: "/clinic/billing" },
     { section: "Clinic", label: "Profile", href: "/clinic/profile" },
   ];
 }

@@ -32,7 +32,10 @@ const LeadSchema = new Schema(
   { timestamps: true }
 );
 
-LeadSchema.index({ status: 1, createdAt: -1 });
+LeadSchema.index({ status: 1, createdAt: -1, _id: -1 });
+
+/** Serves the paged lists: the filter, then the sort, so a page is an index walk. */
+LeadSchema.index({ createdAt: -1, _id: -1 });
 
 export const Lead = models.Lead || model("Lead", LeadSchema);
 export default Lead;

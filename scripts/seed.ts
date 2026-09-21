@@ -30,6 +30,7 @@ import {
   Lead,
   QuizQuestion,
   ContentBlock,
+  AIModel,
 } from "../src/lib/models";
 import { connectDB } from "../src/lib/db/mongoose";
 import { blockedByVitals, CHECKLIST_STEPS } from "../src/lib/clinical/checklist";
@@ -67,6 +68,7 @@ async function wipe() {
       Lead,
       QuizQuestion,
       ContentBlock,
+      AIModel,
     ].map((m) => m.deleteMany({}))
   );
 }
@@ -100,6 +102,17 @@ async function seedUsers() {
         specialization: "Integrative medicine",
         licenseNo: "KMC/2016/44219",
         registrationCouncil: "Karnataka Medical Council",
+        // Dr. Menon has a letterhead of her own and Dr. Rao does not, so the
+        // demo shows both: her prescriptions are headed by her practice, his by
+        // NutriDrip's default. The registration above prints on both.
+        letterhead: {
+          practiceName: "Menon Integrative Medicine",
+          qualifications: "MBBS, MD (Internal Medicine) · Fellowship in Integrative Medicine",
+          address: "12 Church Street\nBengaluru 560001",
+          phone: "080 4000 0142",
+          email: "dr.sarah@nutridrip.com",
+          footerNote: "Please keep this slip for your nurse to see at every session.",
+        },
       },
     },
     {
@@ -1113,7 +1126,34 @@ async function seedClinical(
       monthlyVolume: 20,
       status: "contacted",
     },
+    {
+      // What the Ask a clinician form writes: the ticked topics and the best
+      // time to call go into the message, in the shape composeConsultMessage
+      // gives them.
+      kind: "consult",
+      name: "Priya Nair",
+      phone: "+919845553344",
+      pincode: "560034",
+      message:
+        "Topics: Energy, Immunity\nBest time to call: Evening\n\nI take thyroid tablets — is that a reason not to have a Myers' drip?",
+      status: "new",
+    },
   ]);
+
+  // One draft in AI Studio, in Test, so the screen shows what a configuration
+  // looks like. Nothing reads it: no model is called anywhere in the app.
+  await AIModel.create({
+    name: "Treatment recommendations (draft)",
+    description: "First draft of the recommendation prompt. Not connected to anything yet.",
+    model: "claude-sonnet-5",
+    temperature: 0.2,
+    maxTokens: 1024,
+    systemPrompt:
+      "You assist a registered physician reviewing a health quiz. Summarise the risks the answers point to and suggest which protocols to consider. You never diagnose and you never approve a protocol: the physician decides.",
+    userPromptTemplate:
+      "Patient aged {{age}}, {{gender}}. Quiz score {{quizScore}}. Reported: {{symptoms}}. Allergies: {{allergies}}.",
+    status: "test",
+  });
 
   await Order.create([
     {

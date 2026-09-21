@@ -4,6 +4,7 @@ import { SignOutButton } from "./SignOutButton";
 import { NotificationBell } from "./NotificationBell";
 import { ConsoleRail } from "./ConsoleRail";
 import type { SessionPayload } from "@/lib/auth/session";
+import { can, type Permission } from "@/lib/auth/rbac";
 
 /** "Dr. Sarah Menon" gives "SM": an honorific is a title, not part of the name. */
 function initialsOf(name: string) {
@@ -24,6 +25,13 @@ export type NavItem = {
   /** A count, not a decoration — omit it when there is nothing to count. */
   badge?: number | string;
   badgeTone?: "default" | "critical" | "caution";
+  /**
+   * The capability the destination needs. An item whose permission the signed-in
+   * role lacks is left out of the rail entirely, rather than drawn and then
+   * refused on click — a refusal from the guard is written to the audit trail,
+   * and following a link that was offered is not an attempt at anything.
+   */
+  permission?: Permission;
 };
 
 /** Consecutive items with the same section, in nav order. */
@@ -63,7 +71,9 @@ export function ConsoleShell({
   actions?: ReactNode;
   children: ReactNode;
 }) {
-  const hasExact = nav.some((n) => n.href === activeHref);
+  // Only what this role could actually open.
+  const visible = nav.filter((n) => !n.permission || can(session.role, n.permission));
+  const hasExact = visible.some((n) => n.href === activeHref);
   return (
     <div className="min-h-dvh grid lg:grid-cols-[240px_1fr] bg-[var(--color-paper)]">
       {/* ---------------- Rail ----------------
@@ -80,7 +90,7 @@ export function ConsoleShell({
           className="flex-1 min-h-0 overflow-y-auto overscroll-contain [scrollbar-width:thin] [scrollbar-color:var(--color-line-2)_transparent] px-[14px] pt-4 lg:pt-2 pb-3 flex flex-col"
           aria-label={roleLabel}
         >
-          {groupBySection(nav).map((group, gi) => {
+          {groupBySection(visible).map((group, gi) => {
             const labelId = group.section ? `nav-${group.section.toLowerCase().replace(/[^a-z]+/g, "-")}` : undefined;
             return (
               <div

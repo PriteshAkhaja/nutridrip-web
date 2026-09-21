@@ -9,6 +9,9 @@ import { DataTable, THead, TH, TR, TD } from "@/components/ui/Table";
 import { Pill } from "@/components/ui/Pill";
 import { nameEntities, nameKey } from "@/lib/data/audit-names";
 import { AuditFilters, AuditResults, AuditView } from "./AuditFilters";
+import { Pagination } from "@/components/ui/Paged";
+import { parsePaging } from "@/lib/pagination";
+import { paginate } from "@/lib/pagination-db";
 import { EmptyState } from "@/components/ui/States";
 import { formatDate, formatTime } from "@/lib/data/inventory";
 import {
@@ -27,7 +30,6 @@ import {
 export const metadata: Metadata = { title: "Audit trail" };
 export const dynamic = "force-dynamic";
 
-const PAGE_SIZE = 50;
 
 type Row = {
   _id: unknown;
@@ -51,14 +53,16 @@ export default async function AuditPage({
     from?: string;
     to?: string;
     page?: string;
+    pageSize?: string;
   }>;
 }) {
   const session = await requirePermission("audit.view");
-  const { group, action, actor, from, to, page = "1" } = await searchParams;
+  const query = await searchParams;
+  const { group, action, actor, from, to, page, pageSize } = query;
   const nav = await adminNav();
   await connectDB();
 
-  const pageNo = Math.max(1, Number(page) || 1);
+  const paging = parsePaging({ page, pageSize });
 
   /**
    * The date window scopes everything on the page, including the counts.
@@ -90,13 +94,10 @@ export default async function AuditPage({
     ...(actor ? { actorId: actor } : {}),
   };
 
-  const [rows, total, counts, actorCounts] = await Promise.all([
-    AuditLog.find(filter)
-      .sort({ at: -1, _id: -1 })
-      .skip((pageNo - 1) * PAGE_SIZE)
-      .limit(PAGE_SIZE)
-      .lean<Row[]>(),
-    AuditLog.countDocuments(filter),
+  const [paged, counts, actorCounts] = await Promise.all([
+    // One page, asked of the database: the count, the skip and the limit are all
+    // in the query, and `at` is indexed, so page 400 costs what page 1 does.
+    paginate<Row>(AuditLog, filter, { sort: { at: -1 }, paging }),
     AuditLog.aggregate<{ _id: string; n: number }>([
       { $match: window },
       { $group: { _id: "$action", n: { $sum: 1 } } },
@@ -111,6 +112,9 @@ export default async function AuditPage({
       { $limit: 40 },
     ]),
   ]);
+
+  const { rows, meta: pageMeta } = paged;
+  const total = pageMeta.total;
 
   // Every id on the page, turned into what a person calls the thing: actor
   // names, and the record each row was about. One query per kind, not per row.
@@ -140,13 +144,6 @@ export default async function AuditPage({
     byGroup.set(g, (byGroup.get(g) ?? 0) + c.n);
   }
 
-  const lastPage = Math.max(1, Math.ceil(total / PAGE_SIZE));
-  const href = (p: Record<string, string | undefined>) => {
-    const q = new URLSearchParams();
-    for (const [k, v] of Object.entries({ group, action, actor, from, to, ...p })) if (v) q.set(k, v);
-    const s = q.toString();
-    return `/admin/audit${s ? `?${s}` : ""}`;
-  };
 
   return (
     <ConsoleShell
@@ -180,6 +177,7 @@ export default async function AuditPage({
         actors={actorOptions}
         byGroup={Object.fromEntries(byGroup)}
         total={counts.reduce((n, c) => n + c.n, 0)}
+        pageSize={query.pageSize}
       />
 
       <AuditResults>
@@ -302,29 +300,13 @@ export default async function AuditPage({
               })}
             </tbody>
           </DataTable>
-
-          {lastPage > 1 ? (
-            <div className="flex items-center justify-between gap-4 mt-5 flex-wrap">
-              <span className="t-small text-[var(--color-ink-3)]">
-                Page {pageNo} of {lastPage}
-              </span>
-              <div className="flex gap-3">
-                {pageNo > 1 ? (
-                  <Link href={href({ page: String(pageNo - 1) })} className="t-small font-semibold">
-                    ← Newer
-                  </Link>
-                ) : null}
-                {pageNo < lastPage ? (
-                  <Link href={href({ page: String(pageNo + 1) })} className="t-small font-semibold">
-                    Older →
-                  </Link>
-                ) : null}
-              </div>
-            </div>
-          ) : null}
         </>
       )}
       </AuditResults>
+
+      {/* Outside the dimmed wrapper, so the controls stay sharp while the rows
+          are on their way. Every filter rides along in the links. */}
+      <Pagination meta={pageMeta} basePath="/admin/audit" params={query} nouns={["entry", "entries"]} />
       </AuditView>
     </ConsoleShell>
   );

@@ -223,9 +223,11 @@ export async function patientReview(quizId: string): Promise<PatientReview | nul
    * up to 4 MB, and this page only needs to know it exists. Opening it goes
    * through /api/lab-reports/[id]/file.
    */
+  // Every report, not the latest twenty: a physician approving an iron protocol
+  // may be looking for an older ferritin, and a cut-off list would hide it
+  // without saying so. The rows are small because the file is not read.
   const labs = await LabReport.find({ patientId: quiz.patientId })
     .sort({ uploadedAt: -1 })
-    .limit(20)
     .select({ fileName: 1, category: 1, notes: 1, uploadedAt: 1, hasFile: { $gt: [{ $strLenCP: { $ifNull: ["$fileUrl", ""] } }, 0] } })
     .lean<Array<{ _id: unknown; fileName: string; category?: string; notes?: string; uploadedAt: Date; hasFile?: boolean }>>();
 

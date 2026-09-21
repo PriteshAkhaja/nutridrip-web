@@ -5,6 +5,8 @@ import { getSession } from "@/lib/auth/session";
 import { can } from "@/lib/auth/rbac";
 import { notifyRole } from "@/lib/notify";
 import { normalisePhone } from "@/lib/auth/phone";
+import { paginate } from "@/lib/pagination-db";
+import { pageInfo, parsePaging } from "@/lib/pagination";
 import { ok, fail, handleError } from "@/lib/api";
 
 const CreateLead = z.object({
@@ -40,7 +42,11 @@ export async function POST(req: Request) {
 
     await notifyRole(
       ["admin", "superadmin"],
-      input.kind === "clinic" ? "New clinic enquiry" : "New enquiry",
+      input.kind === "clinic"
+        ? "New clinic enquiry"
+        : input.kind === "consult"
+          ? "New consultation request"
+          : "New enquiry",
       `${input.name}${input.organisation ? ` · ${input.organisation}` : ""}${input.city ? ` · ${input.city}` : ""}`,
       "info",
       "/admin/leads"
@@ -58,10 +64,12 @@ export async function GET(req: Request) {
     if (!can(session?.role, "users.view")) return fail("Not permitted", 403);
 
     await connectDB();
-    const status = new URL(req.url).searchParams.get("status");
+    const params = new URL(req.url).searchParams;
+    const status = params.get("status");
     const filter = status && status !== "all" ? { status } : {};
-    const leads = await Lead.find(filter).sort({ createdAt: -1 }).limit(200).lean();
-    return ok({ leads });
+    const paging = parsePaging({ page: params.get("page"), pageSize: params.get("pageSize") });
+    const { rows: leads, meta } = await paginate(Lead, filter, { sort: { createdAt: -1 }, paging });
+    return ok({ leads, pagination: pageInfo(meta) });
   } catch (err) {
     return handleError(err);
   }

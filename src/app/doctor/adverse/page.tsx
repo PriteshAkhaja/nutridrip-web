@@ -15,6 +15,9 @@ import { formatDate, formatTime } from "@/lib/data/inventory";
 import { VitalsDecision } from "./VitalsDecision";
 import { RxOverrideDecision } from "./RxOverrideDecision";
 import { AdverseDecision } from "./AdverseDecision";
+import { PagedResults, PagedView, Pagination } from "@/components/ui/Paged";
+import { parsePaging } from "@/lib/pagination";
+import { paginate } from "@/lib/pagination-db";
 
 export const metadata: Metadata = { title: "Escalations" };
 export const dynamic = "force-dynamic";
@@ -53,12 +56,38 @@ const WHERE: Record<string, string> = {
   hotel: "at a hotel",
 };
 
-export default async function EscalationsPage() {
+type EventBooking = {
+          _id: unknown;
+          bookingNo: string;
+          patientId: unknown;
+          nurseId?: unknown;
+          dripName?: string;
+          scheduledAt: Date;
+          adverseEvents: Array<{
+            _id: unknown;
+            at: Date;
+            symptoms: string[];
+            severity?: string;
+            actionsTaken?: string[];
+            infusionStopped?: boolean;
+            notes?: string;
+            determination?: string;
+            acknowledgedAt?: Date;
+          }>;
+        };
+
+export default async function EscalationsPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ page?: string; pageSize?: string }>;
+}) {
+  const { page, pageSize } = await searchParams;
+  const paging = parsePaging({ page, pageSize });
   const session = await requireRole("doctor", "superadmin");
   const nav = await doctorNav(session.sub);
   await connectDB();
 
-  const [blocked, rxRequests, withEvents] = await Promise.all([
+  const [blocked, rxRequests, openEventBookings, history] = await Promise.all([
     // Sessions a nurse cannot start until a physician clears the baseline.
     Booking.find({
       "vitals.outOfRange.0": { $exists: true },
@@ -100,33 +129,26 @@ export default async function EscalationsPage() {
           rxOverride?: { requestedAt?: Date; lastAskedAt?: Date; reason?: string };
         }>
       >(),
-    // Everything ever filed, so a closed report stays readable; the ones still
-    // awaiting a determination are what the count and the heading speak to.
-    Booking.find({ "adverseEvents.0": { $exists: true } })
+    // Every booking with a report STILL AWAITING a determination, in full and
+    // never paged. This used to be one query cut at 100, so an open report on
+    // an older session could drop off the list and out of the "awaiting your
+    // determination" count. An open safety event is not something a page size
+    // is allowed to hide.
+    Booking.find({ adverseEvents: { $elemMatch: { acknowledgedAt: null } } })
       .sort({ scheduledAt: -1 })
-      .limit(100)
-      .lean<
-        Array<{
-          _id: unknown;
-          bookingNo: string;
-          patientId: unknown;
-          nurseId?: unknown;
-          dripName?: string;
-          scheduledAt: Date;
-          adverseEvents: Array<{
-            _id: unknown;
-            at: Date;
-            symptoms: string[];
-            severity?: string;
-            actionsTaken?: string[];
-            infusionStopped?: boolean;
-            notes?: string;
-            determination?: string;
-            acknowledgedAt?: Date;
-          }>;
-        }>
-      >(),
+      .lean<EventBooking[]>(),
+    // The closed history: this is the part that grows without bound, so this is
+    // the part that is paged, by the database.
+    paginate<EventBooking>(
+      Booking,
+      {
+        "adverseEvents.0": { $exists: true },
+        adverseEvents: { $not: { $elemMatch: { acknowledgedAt: null } } },
+      },
+      { sort: { scheduledAt: -1 }, paging }
+    ),
   ]);
+  const withEvents = [...openEventBookings, ...history.rows];
 
   const ids = [...blocked, ...withEvents].flatMap((b) => [b.patientId, b.nurseId].filter(Boolean));
   // The override rows carry a patient and a nurse too, or every one of them
@@ -349,6 +371,8 @@ export default async function EscalationsPage() {
             body="Nothing has been reported. Each one that is filed lands here immediately, with the session it came from."
           />
         ) : (
+          <PagedView>
+          <PagedResults>
           <div className="flex flex-col gap-4">
             {withEvents.flatMap((b) =>
               b.adverseEvents.map((e, i) => (
@@ -431,6 +455,21 @@ export default async function EscalationsPage() {
               ))
             )}
           </div>
+          </PagedResults>
+          {history.meta.total > 0 ? (
+            <>
+              <p className="t-small text-[var(--color-ink-3)] mt-5">
+                Every report still awaiting a determination is shown above in full. Closed reports are paged.
+              </p>
+              <Pagination
+                meta={history.meta}
+                basePath="/doctor/adverse"
+                params={{ pageSize }}
+                nouns={["closed report", "closed reports"]}
+              />
+            </>
+          ) : null}
+          </PagedView>
         )}
       </section>
     </ConsoleShell>

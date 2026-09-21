@@ -23,6 +23,12 @@ export const PERMISSIONS = {
   "plans.view": ["superadmin", "admin", "doctor", "nurse", "patient"],
   "plans.create": ["superadmin", "doctor"],
   "plans.share": ["superadmin", "doctor"],
+  /**
+   * A physician's own letterhead. Deliberately not superadmin: it is the
+   * physician's identity on a document they answer for, so nobody edits it on
+   * their behalf.
+   */
+  "letterhead.edit": ["doctor"],
 
   "infusion.prepare": ["superadmin", "nurse"],
   "infusion.complete": ["superadmin", "nurse"],

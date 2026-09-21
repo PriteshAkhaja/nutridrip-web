@@ -41,6 +41,10 @@ const GROUP_BY_PREFIX: Record<string, AuditGroup> = {
   profile: "Accounts",
   content: "Admin",
   billing: "Admin",
+  // AI Studio. Unlisted prefixes read as Admin in groupFor(), but the group
+  // FILTER is built from this map, so an action left out here would be labelled
+  // Admin and then never turn up when somebody filters by it.
+  ai: "Admin",
   lead: "Admin",
 };
 
@@ -81,7 +85,11 @@ export function isNotable(action: string): boolean {
 
 /** "prescription.override.break_glass" → "Prescription override break glass" */
 export function actionLabel(action: string): string {
-  const words = action.replace(/[._]/g, " ").trim();
+  const words = action
+    .replace(/[._]/g, " ")
+    .trim()
+    // "ai" is an acronym, not a word: "Ai delete" reads as a typo.
+    .replace(/\bai\b/gi, "AI");
   return words.charAt(0).toUpperCase() + words.slice(1);
 }
 
@@ -96,6 +104,14 @@ export type FieldChange = { field: string; from?: string; to?: string };
  * remembering to add it here.
  */
 const SECRET = /pass|hash|secret|token|otp|code|signature|key/i;
+
+/**
+ * Field names that trip the pattern above without being secrets. `maxTokens`
+ * is a length limit on a model, and hiding it would make an AI Studio change
+ * unreadable in the one place it is recorded. Exact names only: a loose
+ * exemption would be a way for a real `resetToken` to slip through.
+ */
+const NOT_SECRET = new Set(["maxTokens"]);
 
 const readable = (v: unknown): string => {
   if (v === null || v === undefined) return "—";
@@ -120,7 +136,7 @@ export function describeChange(
   const out: FieldChange[] = [];
 
   for (const field of keys) {
-    if (SECRET.test(field)) {
+    if (SECRET.test(field) && !NOT_SECRET.has(field)) {
       out.push({ field, to: "hidden" });
       continue;
     }
@@ -174,8 +190,20 @@ export function groupFilter(group: AuditGroup): RegExp {
  * string is the useful part.
  */
 export function entityLabel(entity: string): string {
-  const words = entity.replace(/([a-z0-9])([A-Z])/g, "$1 $2");
-  return words.charAt(0).toUpperCase() + words.slice(1).toLowerCase();
+  // "TreatmentPlan" splits at lower-to-upper; "AIModel" also at the end of a
+  // run of capitals ("AI" | "Model"), or the acronym would be read as one word.
+  const words = entity
+    .replace(/([a-z0-9])([A-Z])/g, "$1 $2")
+    .replace(/([A-Z]+)([A-Z][a-z])/g, "$1 $2");
+  // Lower-case every word except an acronym (two or more capitals).
+  return words
+    .split(" ")
+    .map((w, i) => {
+      const keep = /^[A-Z]{2,}$/.test(w);
+      const word = keep ? w : w.toLowerCase();
+      return i === 0 ? word.charAt(0).toUpperCase() + word.slice(1) : word;
+    })
+    .join(" ");
 }
 
 /* ------------------------------------------------------------------ dates */

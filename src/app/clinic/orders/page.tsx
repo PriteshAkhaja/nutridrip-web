@@ -13,28 +13,41 @@ import { EmptyState } from "@/components/ui/States";
 import { formatInr } from "@/lib/inventory/units";
 import { formatDate } from "@/lib/data/inventory";
 import { OrderComposer } from "@/components/orders/OrderComposer";
+import { PagedResults, PagedView, Pagination } from "@/components/ui/Paged";
+import { parsePaging } from "@/lib/pagination";
+import { paginate } from "@/lib/pagination-db";
 
 export const metadata: Metadata = { title: "Orders" };
 export const dynamic = "force-dynamic";
 
-export default async function ClinicOrdersPage() {
+export default async function ClinicOrdersPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ page?: string; pageSize?: string }>;
+}) {
   const session = await requireRole("clinic", "superadmin");
+  const { page, pageSize } = await searchParams;
+  const paging = parsePaging({ page, pageSize });
   const nav = await clinicNav(session.sub);
   await connectDB();
 
-  const orders = await Order.find({ clinicId: session.sub })
-    .sort({ createdAt: -1 })
-    .lean<
-      Array<{
-        _id: unknown;
-        orderNo: string;
-        status: string;
-        amount: number;
-        lines: Array<{ dripName?: string; quantity: number }>;
-        createdAt: Date;
-        scheduledDelivery?: Date;
-      }>
-    >();
+  // This list had no limit at all. A clinic that has ordered every week for a
+  // year would have downloaded every order on every visit.
+  type OrderRow = {
+    _id: unknown;
+    orderNo: string;
+    status: string;
+    amount: number;
+    lines: Array<{ dripName?: string; quantity: number }>;
+    createdAt: Date;
+    scheduledDelivery?: Date;
+  };
+  // Scoped by the session's clinic id, in the query, as everything here is.
+  const { rows: orders, meta } = await paginate<OrderRow>(
+    Order,
+    { clinicId: session.sub },
+    { sort: { createdAt: -1 }, paging }
+  );
 
   const drips = await listDrips();
   const { results } = await checkAvailability(
@@ -51,7 +64,7 @@ export default async function ClinicOrdersPage() {
       activeHref="/clinic/orders"
       breadcrumb={["Clinic", "Orders"]}
       title="Preparation orders"
-      meta={`${orders.length} order${orders.length === 1 ? "" : "s"}`}
+      meta={`${meta.total} order${meta.total === 1 ? "" : "s"}`}
     >
       {/* Side by side only from 1760px. Below that the table takes the full width and this panel sits under it: with names and dates held on one line, the table does not fit beside the panel on a laptop or a 1536-1680px monitor (measured; the orders list beside its 400px composer needs about 1740px). */}
       <div className="grid grid-cols-1 gap-6 min-[1760px]:grid-cols-[minmax(0,1fr)_400px] items-start">
@@ -63,6 +76,8 @@ export default async function ClinicOrdersPage() {
               body="Order the drips you expect to run this week. The pharmacy reserves the stock on confirmation, so a confirmed order is a promise you can plan against."
             />
           ) : (
+            <PagedView>
+              <PagedResults>
             <DataTable>
               <THead>
                 <TR>
@@ -93,6 +108,9 @@ export default async function ClinicOrdersPage() {
                 ))}
               </tbody>
             </DataTable>
+              </PagedResults>
+              <Pagination meta={meta} basePath="/clinic/orders" params={{ pageSize }} nouns={["order", "orders"]} />
+            </PagedView>
           )}
 
           <p className="t-small text-[var(--color-ink-3)] mt-4">

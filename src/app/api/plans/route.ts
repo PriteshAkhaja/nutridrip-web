@@ -6,6 +6,8 @@ import { can } from "@/lib/auth/rbac";
 import { notify } from "@/lib/notify";
 import { ROUTES, UNITS } from "@/lib/models/types";
 import { componentsFromRecipe, type PlanComponentInput } from "@/lib/clinical/plan-input";
+import { paginate } from "@/lib/pagination-db";
+import { pageInfo, parsePaging } from "@/lib/pagination";
 import { ok, fail, handleError } from "@/lib/api";
 
 const Component = z.object({
@@ -58,7 +60,8 @@ export async function GET(req: Request) {
     if (!can(session?.role, "plans.view")) return fail("Not permitted", 403);
 
     await connectDB();
-    const patientId = new URL(req.url).searchParams.get("patientId");
+    const params = new URL(req.url).searchParams;
+    const patientId = params.get("patientId");
     const filter: Record<string, unknown> = {};
     // Each role sees only the plans they are party to.
     if (session!.role === "patient") filter.patientId = session!.sub;
@@ -68,8 +71,9 @@ export async function GET(req: Request) {
       filter.sharedWithNurse = true;
     } else if (patientId) filter.patientId = patientId;
 
-    const plans = await TreatmentPlan.find(filter).sort({ createdAt: -1 }).limit(100).lean();
-    return ok({ plans });
+    const paging = parsePaging({ page: params.get("page"), pageSize: params.get("pageSize") });
+    const { rows: plans, meta } = await paginate(TreatmentPlan, filter, { sort: { createdAt: -1 }, paging });
+    return ok({ plans, pagination: pageInfo(meta) });
   } catch (err) {
     return handleError(err);
   }

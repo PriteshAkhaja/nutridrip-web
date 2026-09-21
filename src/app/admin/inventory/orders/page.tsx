@@ -14,6 +14,9 @@ import { ORDER_STATUS } from "@/lib/models/types";
 import { listDrips } from "@/lib/data/drips";
 import { checkAvailability } from "@/lib/inventory/availability";
 import { OrderComposer } from "@/components/orders/OrderComposer";
+import { PagedResults, PagedView, Pagination } from "@/components/ui/Paged";
+import { hrefWith, parsePaging } from "@/lib/pagination";
+import { paginate } from "@/lib/pagination-db";
 
 export const metadata: Metadata = { title: "Preparation orders" };
 export const dynamic = "force-dynamic";
@@ -21,16 +24,17 @@ export const dynamic = "force-dynamic";
 export default async function OrdersPage({
   searchParams,
 }: {
-  searchParams: Promise<{ status?: string }>;
+  searchParams: Promise<{ status?: string; page?: string; pageSize?: string }>;
 }) {
   const session = await requireRole("superadmin", "admin");
   const nav = await adminNav();
-  const { status = "all" } = await searchParams;
+  const { status = "all", page, pageSize } = await searchParams;
+  const paging = parsePaging({ page, pageSize });
 
   await connectDB();
   const filter = status === "all" ? {} : { status: status.toUpperCase() };
-  const orders = await Order.find(filter).sort({ createdAt: -1 }).limit(100).lean<
-    Array<{
+  // One page from the database; the old `.limit(100)` hid every order past it.
+  type OrderRow = {
       _id: unknown;
       orderNo: string;
       patientRef?: string;
@@ -40,8 +44,8 @@ export default async function OrdersPage({
       lines: Array<{ dripName?: string; quantity: number }>;
       createdAt: Date;
       scheduledDelivery?: Date;
-    }>
-  >();
+  };
+  const { rows: orders, meta } = await paginate<OrderRow>(Order, filter, { sort: { createdAt: -1 }, paging });
 
   const counts = Object.fromEntries(
     await Promise.all(
@@ -83,7 +87,7 @@ export default async function OrdersPage({
           ([key, label, count]) => (
             <Link
               key={key}
-              href={`/admin/inventory/orders?status=${key}`}
+              href={hrefWith("/admin/inventory/orders", { pageSize }, { status: key })}
               className={`px-4 min-h-[36px] inline-flex items-center gap-2 rounded-[6px] text-[13px] font-semibold no-underline hover:no-underline ${
                 status === key ? "bg-[var(--color-surface)] text-[var(--color-ink)]" : "text-[var(--color-ink-2)]"
               }`}
@@ -107,6 +111,8 @@ export default async function OrdersPage({
           actionHref="/admin/inventory/orders?status=all"
         />
       ) : (
+        <PagedView>
+        <PagedResults>
         <DataTable>
           <THead>
             <TR>
@@ -145,6 +151,9 @@ export default async function OrdersPage({
             ))}
           </tbody>
         </DataTable>
+        </PagedResults>
+        <Pagination meta={meta} basePath="/admin/inventory/orders" params={{ status, pageSize }} nouns={["order", "orders"]} />
+        </PagedView>
       )}
       </div>
 

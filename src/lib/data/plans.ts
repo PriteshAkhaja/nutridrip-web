@@ -139,8 +139,21 @@ export async function planFor(
   return shape(plan, await namesFor([plan]));
 }
 
-/** Every plan this person may read, newest first. */
-export async function plansFor(viewer: { sub: string; role: string }): Promise<PlanView[]> {
+/**
+ * Every plan this person may read, newest first.
+ *
+ * The filter is what makes this a short list rather than a long one: a nurse
+ * sees the courses shared with them that are not archived, a patient the ones a
+ * physician has issued. It is deliberately NOT paged — it is the reference
+ * material beside a worklist, and a course hidden on a second page is a course
+ * nobody reads. `limit` is for a caller that shows a fixed few (a dashboard
+ * showing the current plan); it used to be a hidden `.limit(20)` here, which
+ * cut a nurse's list off and left the heading counting the wrong number.
+ */
+export async function plansFor(
+  viewer: { sub: string; role: string },
+  opts: { limit?: number } = {}
+): Promise<PlanView[]> {
   await connectDB();
 
   const filter =
@@ -152,10 +165,9 @@ export async function plansFor(viewer: { sub: string; role: string }): Promise<P
           ? { doctorId: viewer.sub }
           : {};
 
-  const plans = await TreatmentPlan.find(filter)
-    .sort({ createdAt: -1 })
-    .limit(20)
-    .lean<PlanDoc[]>();
+  const query = TreatmentPlan.find(filter).sort({ createdAt: -1, _id: -1 });
+  if (opts.limit) query.limit(opts.limit);
+  const plans = await query.lean<PlanDoc[]>();
   if (plans.length === 0) return [];
 
   const names = await namesFor(plans);

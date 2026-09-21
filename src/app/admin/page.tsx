@@ -37,9 +37,12 @@ export default async function AdminOverviewPage() {
       HealthQuiz.countDocuments({ reviewStatus: "pending" }),
       getAlerts(30),
       Booking.countDocuments({ scheduledAt: { $gte: startOfToday(), $lt: endOfToday() } }),
-      Booking.find({ status: "completed", completedAt: { $gte: monthStart } }).lean<
-        Array<{ amount: number }>
-      >(),
+      // Summed by the database: this used to load every session completed this
+      // month just to add up one field.
+      Booking.aggregate<{ count: number; revenue: number }>([
+        { $match: { status: "completed", completedAt: { $gte: monthStart } } },
+        { $group: { _id: null, count: { $sum: 1 }, revenue: { $sum: { $ifNull: ["$amount", 0] } } } },
+      ]),
       Booking.find({})
         .sort({ scheduledAt: -1 })
         .limit(8)
@@ -56,7 +59,7 @@ export default async function AdminOverviewPage() {
         >(),
     ]);
 
-  const revenue = completedThisMonth.reduce((s, b) => s + (b.amount ?? 0), 0);
+  const revenue = completedThisMonth[0]?.revenue ?? 0;
   const patientNames = new Map(
     (
       await User.find({ _id: { $in: recentBookings.map((b) => b.patientId) } }).lean<

@@ -2,7 +2,9 @@ import Link from "next/link";
 import type { Metadata } from "next";
 import { requireRole } from "@/lib/auth/guard";
 import { MobileShell } from "@/components/layout/MobileShell";
-import { patientSessions } from "@/lib/data/sessions";
+import { patientSessionsPaged } from "@/lib/data/sessions";
+import { PagedResults, PagedView, Pagination } from "@/components/ui/Paged";
+import { parsePaging } from "@/lib/pagination";
 import { connectDB } from "@/lib/db/mongoose";
 import { HealthQuiz } from "@/lib/models";
 import { StatusPill } from "@/components/ui/Pill";
@@ -16,9 +18,14 @@ import { PATIENT_TABS } from "../tabs";
 export const metadata: Metadata = { title: "Sessions" };
 export const dynamic = "force-dynamic";
 
-export default async function SessionsPage() {
+export default async function SessionsPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ page?: string; pageSize?: string }>;
+}) {
   const session = await requireRole("patient", "superadmin");
-  const sessions = await patientSessions(session.sub);
+  const { page, pageSize } = await searchParams;
+  const { upcoming, past, meta } = await patientSessionsPaged(session.sub, parsePaging({ page, pageSize }));
   const days = releasedDays();
 
   await connectDB();
@@ -27,13 +34,11 @@ export default async function SessionsPage() {
     .sort({ completedAt: 1 })
     .lean<Array<{ _id: unknown; vitalityScore: number; completedAt: Date }>>();
 
-  const upcoming = sessions.filter((s) => !["completed", "cancelled"].includes(s.status));
-  const past = sessions.filter((s) => ["completed", "cancelled"].includes(s.status));
 
   return (
     <MobileShell
       title="Your sessions"
-      subtitle={`${past.length} completed · ${upcoming.length} upcoming`}
+      subtitle={`${meta.total} past · ${upcoming.length} upcoming`}
       tabs={PATIENT_TABS}
       activeHref="/app/sessions"
     >
@@ -94,7 +99,7 @@ export default async function SessionsPage() {
 
       <section>
         <span className="t-micro block mb-3">Your history</span>
-        {past.length === 0 ? (
+        {meta.total === 0 ? (
           <EmptyState
             kind="first-run"
             title="No sessions yet"
@@ -103,6 +108,8 @@ export default async function SessionsPage() {
             actionHref="/quiz"
           />
         ) : (
+          <PagedView>
+          <PagedResults>
           <div className="flex flex-col gap-3">
             {past.map((s) => (
               <Link
@@ -127,6 +134,9 @@ export default async function SessionsPage() {
               </Link>
             ))}
           </div>
+          </PagedResults>
+          <Pagination meta={meta} basePath="/app/sessions" params={{ pageSize }} nouns={["session", "sessions"]} />
+          </PagedView>
         )}
       </section>
     </MobileShell>

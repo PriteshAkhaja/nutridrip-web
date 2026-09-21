@@ -3,6 +3,7 @@ import { requireRole } from "@/lib/auth/guard";
 import { clinicNav } from "@/lib/nav";
 import { ConsoleShell } from "@/components/layout/ConsoleShell";
 import { connectDB } from "@/lib/db/mongoose";
+import { Types } from "mongoose";
 import { Booking, User } from "@/lib/models";
 import { Card } from "@/components/ui/Card";
 import { StatCard } from "@/components/ui/Card";
@@ -36,14 +37,18 @@ export default async function ClinicProfilePage() {
         gstin?: string;
       };
     } | null>(),
-    Booking.find({ clinicId: session.sub, status: "completed", completedAt: { $gte: monthStart } }).lean<
-      Array<{ amount: number }>
-    >(),
+    // Counted and summed by the database. An aggregation does not cast ids the
+    // way find() does, so the clinic's id is made an ObjectId here.
+    Booking.aggregate<{ count: number; revenue: number }>([
+        { $match: { clinicId: new Types.ObjectId(session.sub), status: "completed", completedAt: { $gte: monthStart } } },
+        { $group: { _id: null, count: { $sum: 1 }, revenue: { $sum: { $ifNull: ["$amount", 0] } } } },
+      ]),
   ]);
 
   const c = clinic?.clinic ?? {};
   const target = c.monthlyVolumeTarget ?? 100;
-  const revenue = completed.reduce((s, b) => s + (b.amount ?? 0), 0);
+  const completedCount = completed[0]?.count ?? 0;
+  const revenue = completed[0]?.revenue ?? 0;
 
   return (
     <ConsoleShell
@@ -58,9 +63,9 @@ export default async function ClinicProfilePage() {
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-3 mb-6">
         <StatCard
           label="Sessions this month"
-          value={String(completed.length)}
-          pct={Math.min(100, (completed.length / target) * 100)}
-          note={`${Math.round((completed.length / target) * 100)}% of your ${target} target`}
+          value={String(completedCount)}
+          pct={Math.min(100, (completedCount / target) * 100)}
+          note={`${Math.round((completedCount / target) * 100)}% of your ${target} target`}
         />
         <StatCard label="Revenue this month" value={formatInr(revenue)} pct={Math.min(100, (revenue / 500000) * 100)} />
         <StatCard

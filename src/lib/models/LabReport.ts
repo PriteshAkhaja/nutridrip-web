@@ -15,5 +15,8 @@ const LabReportSchema = new Schema(
   { timestamps: true }
 );
 
+/** Serves the paged lists: the filter, then the sort, so a page is an index walk. */
+LabReportSchema.index({ patientId: 1, uploadedAt: -1, _id: -1 });
+
 export const LabReport = models.LabReport || model("LabReport", LabReportSchema);
 export default LabReport;

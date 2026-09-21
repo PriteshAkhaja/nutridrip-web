@@ -34,26 +34,44 @@ type Row = {
 };
 
 export async function nurseFeedback(nurseId: string, limit = 5): Promise<NurseFeedback> {
-  const rows = await Booking.find({
-    nurseId,
-    "feedback.rating": { $exists: true },
-  })
-    .sort({ "feedback.givenAt": -1 })
-    .select("bookingNo feedback")
-    .lean<Row[]>();
+  // The rating must BE a number, not merely be present: a booking whose rating
+  // was written as something else must not count towards an average.
+  const filter = { nurseId, "feedback.rating": { $type: "number" } };
 
-  const rated = rows.filter((r) => typeof r.feedback?.rating === "number");
-  const total = rated.reduce((n, r) => n + (r.feedback!.rating as number), 0);
+  // The three figures are sums over a nurse's whole career, so the database
+  // sums them, and only the few comments actually shown are fetched. This used
+  // to read every rated session a nurse had ever run in order to show five of
+  // them, and the `limit` argument never reached the query at all.
+  const [totals, rows] = await Promise.all([
+    Booking.aggregate<{ count: number; total: number; poor: number }>([
+      { $match: filter },
+      {
+        $group: {
+          _id: null,
+          count: { $sum: 1 },
+          total: { $sum: "$feedback.rating" },
+          poor: { $sum: { $cond: [{ $lte: ["$feedback.rating", 2] }, 1, 0] } },
+        },
+      },
+    ]),
+    Booking.find(filter)
+      .sort({ "feedback.givenAt": -1, _id: -1 })
+      .limit(limit)
+      .select("bookingNo feedback")
+      .lean<Row[]>(),
+  ]);
+
+  const count = totals[0]?.count ?? 0;
 
   return {
-    count: rated.length,
+    count,
     // Rounded to one place. A nurse's record is not improved by "4.333333".
-    average: rated.length ? Math.round((total / rated.length) * 10) / 10 : null,
-    poor: rated.filter((r) => (r.feedback!.rating as number) <= 2).length,
-    recent: rated.slice(0, limit).map((r) => ({
+    average: count ? Math.round(((totals[0]?.total ?? 0) / count) * 10) / 10 : null,
+    poor: totals[0]?.poor ?? 0,
+    recent: rows.map((r) => ({
       bookingId: String(r._id),
       bookingNo: r.bookingNo,
-      rating: r.feedback!.rating as number,
+      rating: r.feedback?.rating as number,
       comment: r.feedback?.comment?.trim() || null,
       givenAt: r.feedback?.givenAt ?? null,
     })),

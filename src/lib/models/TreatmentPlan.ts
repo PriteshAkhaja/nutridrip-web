@@ -56,5 +56,9 @@ const TreatmentPlanSchema = new Schema(
   { timestamps: true }
 );
 
+/** Serves the paged lists: the filter, then the sort, so a page is an index walk. */
+TreatmentPlanSchema.index({ doctorId: 1, createdAt: -1, _id: -1 });
+TreatmentPlanSchema.index({ patientId: 1, createdAt: -1, _id: -1 });
+
 export const TreatmentPlan = models.TreatmentPlan || model("TreatmentPlan", TreatmentPlanSchema);
 export default TreatmentPlan;

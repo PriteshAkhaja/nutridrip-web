@@ -9,6 +9,7 @@ import { Arrow } from "@/components/ui/Arrow";
 
 const NAV = [
   { label: "Drips", href: "/drips" },
+  { label: "How it works", href: "/how-it-works" },
   { label: "Pricing", href: "/pricing" },
   { label: "Safety", href: "/safety" },
   { label: "Zones", href: "/zones" },
@@ -108,6 +109,20 @@ export async function SiteFooter() {
               ["Drips", "/drips"],
               ["Pricing", "/pricing"],
               ["Zones", "/zones"],
+            ].map(([label, href]) => (
+              <Link key={href} href={href} className="t-small text-[var(--color-paper)] no-underline hover:underline">
+                {label}
+              </Link>
+            ))}
+          </div>
+          <div className="flex flex-col gap-[7px]">
+            <span className="t-micro" style={{ color: "var(--color-ink-on-dark)" }}>Company</span>
+            {[
+              ["About", "/about"],
+              ["How it works", "/how-it-works"],
+              ["FAQs", "/faqs"],
+              ["Ask a clinician", "/consult"],
+              ["For clinics", "/for-clinics"],
             ].map(([label, href]) => (
               <Link key={href} href={href} className="t-small text-[var(--color-paper)] no-underline hover:underline">
                 {label}

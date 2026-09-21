@@ -1,5 +1,7 @@
 import { connectDB } from "@/lib/db/mongoose";
 import { Booking, User } from "@/lib/models";
+import { paginate } from "@/lib/pagination-db";
+import type { PageMeta, Paging } from "@/lib/pagination";
 import { phaseProgress, type PhaseProgress } from "@/lib/clinical/checklist";
 import type { BookingStatus, SessionLocation } from "@/lib/models/types";
 
@@ -102,4 +104,31 @@ export async function patientSessions(patientId: string): Promise<SessionCard[]>
   await connectDB();
   const bookings = await Booking.find({ patientId }).sort({ scheduledAt: -1 }).lean<LeanBooking[]>();
   return withPatientNames(bookings);
+}
+
+const FINISHED = ["completed", "cancelled"];
+
+/**
+ * A patient's sessions, split the way their screen shows them.
+ *
+ * Upcoming sessions are returned whole: they are what the patient may still
+ * cancel or move, so none can sit on page 2, and there are only ever a few.
+ * History only grows, so it is one page from the database. Both halves keep the
+ * order the screen always had (newest first).
+ */
+export async function patientSessionsPaged(
+  patientId: string,
+  paging: Paging
+): Promise<{ upcoming: SessionCard[]; past: SessionCard[]; meta: PageMeta }> {
+  await connectDB();
+  const [upcomingBookings, history] = await Promise.all([
+    Booking.find({ patientId, status: { $nin: FINISHED } }).sort({ scheduledAt: -1 }).lean<LeanBooking[]>(),
+    paginate<LeanBooking>(Booking, { patientId, status: { $in: FINISHED } }, { sort: { scheduledAt: -1 }, paging }),
+  ]);
+  const cards = await withPatientNames([...upcomingBookings, ...history.rows]);
+  return {
+    upcoming: cards.slice(0, upcomingBookings.length),
+    past: cards.slice(upcomingBookings.length),
+    meta: history.meta,
+  };
 }

@@ -4,7 +4,8 @@ import { AuditLog, ProductMaster } from "@/lib/models";
 import { getSession } from "@/lib/auth/session";
 import { can } from "@/lib/auth/rbac";
 import { CATEGORIES, UNITS } from "@/lib/models/types";
-import { listMasters } from "@/lib/data/inventory";
+import { pageInfo, parsePaging } from "@/lib/pagination";
+import { listMastersPage } from "@/lib/data/inventory";
 import { ok, fail, handleError } from "@/lib/api";
 
 const CreateMaster = z.object({
@@ -27,12 +28,13 @@ export async function GET(req: Request) {
     if (!can(session?.role, "inventory.view")) return fail("Not permitted", 403);
     const params = new URL(req.url).searchParams;
     const category = params.get("category");
-    return ok({
-      masters: await listMasters({
-        category: (category as (typeof CATEGORIES)[number]) || undefined,
-        q: params.get("q") ?? undefined,
-      }),
+    // One page, from the database; stock is worked out for that page's products only.
+    const { rows: masters, meta } = await listMastersPage({
+      category: (category as (typeof CATEGORIES)[number]) || undefined,
+      q: params.get("q") ?? undefined,
+      paging: parsePaging({ page: params.get("page"), pageSize: params.get("pageSize") }),
     });
+    return ok({ masters, pagination: pageInfo(meta) });
   } catch (err) {
     return handleError(err);
   }

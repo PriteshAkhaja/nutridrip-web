@@ -11,6 +11,8 @@ import { notify, notifyRole } from "@/lib/notify";
 import { pickNurse } from "@/lib/clinical/assign";
 import { nextReference, createWithReference } from "@/lib/sequence";
 import { zoneForPincode } from "@/lib/zones";
+import { paginate } from "@/lib/pagination-db";
+import { pageInfo, parsePaging } from "@/lib/pagination";
 import { ok, fail, handleError } from "@/lib/api";
 
 const CreateBooking = z.object({
@@ -27,7 +29,7 @@ const CreateBooking = z.object({
 /** Slots inside this window cannot be booked — the nurse needs the lead time. */
 const MIN_LEAD_MS = 60 * 60_000;
 
-export async function GET() {
+export async function GET(req: Request) {
   try {
     const session = await getSession();
     if (!can(session?.role, "bookings.view")) return fail("Not permitted", 403);
@@ -39,8 +41,10 @@ export async function GET() {
     if (session!.role === "clinic") filter.clinicId = session!.sub;
     if (session!.role === "doctor") filter.doctorId = session!.sub;
 
-    const bookings = await Booking.find(filter).sort({ scheduledAt: -1 }).limit(200).lean();
-    return ok({ bookings });
+    const params = new URL(req.url).searchParams;
+    const paging = parsePaging({ page: params.get("page"), pageSize: params.get("pageSize") });
+    const { rows: bookings, meta } = await paginate(Booking, filter, { sort: { scheduledAt: -1 }, paging });
+    return ok({ bookings, pagination: pageInfo(meta) });
   } catch (err) {
     return handleError(err);
   }

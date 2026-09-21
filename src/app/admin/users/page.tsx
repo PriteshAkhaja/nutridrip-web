@@ -13,6 +13,9 @@ import { formatDate } from "@/lib/data/inventory";
 import { AddPerson } from "./AddPerson";
 import { EditPerson } from "./EditPerson";
 import { ROLES, type Role } from "@/lib/models/types";
+import { PagedResults, PagedView, Pagination } from "@/components/ui/Paged";
+import { hrefWith, parsePaging } from "@/lib/pagination";
+import { paginate } from "@/lib/pagination-db";
 
 export const metadata: Metadata = { title: "People" };
 export const dynamic = "force-dynamic";
@@ -51,11 +54,12 @@ function detailFor(u: {
 export default async function UsersPage({
   searchParams,
 }: {
-  searchParams: Promise<{ role?: string; q?: string; edit?: string }>;
+  searchParams: Promise<{ role?: string; q?: string; edit?: string; page?: string; pageSize?: string }>;
 }) {
   const session = await requireRole("superadmin", "admin");
   const nav = await adminNav();
-  const { role, q, edit } = await searchParams;
+  const { role, q, edit, page, pageSize } = await searchParams;
+  const paging = parsePaging({ page, pageSize });
 
   await connectDB();
   const filter: Record<string, unknown> = {};
@@ -65,8 +69,9 @@ export default async function UsersPage({
     filter.$or = [{ name: rx }, { email: rx }, { phone: rx }];
   }
 
-  const users = await User.find(filter).sort({ createdAt: -1 }).limit(300).lean<
-    Array<{
+  // One page, asked of the database. This used to be `.limit(300)`: the 301st
+  // person simply did not exist on the screen, with nothing to say so.
+  type UserRow = {
       _id: unknown;
       name: string;
       email?: string;
@@ -79,8 +84,8 @@ export default async function UsersPage({
       nurse?: { licenseNo?: string; serviceAreas?: string[]; doctorId?: unknown };
       clinic?: { city?: string; pincode?: string };
       patient?: { vitalityScore?: number; city?: string };
-    }>
-  >();
+  };
+  const { rows: users, meta } = await paginate<UserRow>(User, filter, { sort: { createdAt: -1 }, paging });
 
   /**
    * The person being edited comes from the URL, so the form is server-rendered
@@ -108,14 +113,11 @@ export default async function UsersPage({
       } | null>()
     : null;
 
-  const listHref = `/admin/users${role ? `?role=${role}` : q ? `?q=${encodeURIComponent(q)}` : ""}`;
-  const editHref = (id: string) => {
-    const params = new URLSearchParams();
-    if (role) params.set("role", role);
-    if (q) params.set("q", q);
-    params.set("edit", id);
-    return `/admin/users?${params}`;
-  };
+  // Opening a person, and closing them again, keeps the list where it was:
+  // the same filter, the same page, the same rows per page.
+  const here = { role, q, page, pageSize };
+  const listHref = hrefWith("/admin/users", here);
+  const editHref = (id: string) => hrefWith("/admin/users", here, { edit: id });
 
   // Offered when adding a nurse: the physician they work under.
   const doctorOptions = (
@@ -191,7 +193,7 @@ export default async function UsersPage({
 
       <div className="flex flex-wrap gap-2 items-center mb-5">
         <Link
-          href="/admin/users"
+          href={hrefWith("/admin/users", { pageSize })}
           className={`inline-flex items-center min-h-[36px] px-3 rounded-full border text-[13px] font-medium no-underline hover:no-underline ${
             role
               ? "border-[var(--color-line-2)] bg-[var(--color-surface)] text-[var(--color-ink-2)]"
@@ -203,7 +205,7 @@ export default async function UsersPage({
         {ROLES.map((r) => (
           <Link
             key={r}
-            href={`/admin/users?role=${r}`}
+            href={hrefWith("/admin/users", { pageSize }, { role: r })}
             className={`inline-flex items-center min-h-[36px] px-3 rounded-full border text-[13px] font-medium no-underline hover:no-underline ${
               role === r
                 ? "border-[var(--color-primary)] bg-[var(--color-primary-soft)] text-[var(--color-primary-dark)]"
@@ -224,6 +226,8 @@ export default async function UsersPage({
           actionHref="/admin/users"
         />
       ) : (
+        <PagedView>
+        <PagedResults>
         <DataTable>
           <THead>
             <TR>
@@ -276,6 +280,10 @@ export default async function UsersPage({
             ))}
           </tbody>
         </DataTable>
+        </PagedResults>
+        {/* Not in the edit form's params: paging away closes it, as it should. */}
+        <Pagination meta={meta} basePath="/admin/users" params={{ role, q, pageSize }} nouns={["account", "accounts"]} />
+        </PagedView>
       )}
     </ConsoleShell>
   );

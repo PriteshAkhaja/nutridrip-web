@@ -9,6 +9,9 @@ import { DataTable, THead, TH, TR, TD } from "@/components/ui/Table";
 import { EmptyState } from "@/components/ui/States";
 import { formatDate } from "@/lib/data/inventory";
 import { LeadStatus } from "./LeadStatus";
+import { PagedResults, PagedView, Pagination } from "@/components/ui/Paged";
+import { hrefWith, parsePaging } from "@/lib/pagination";
+import { paginate } from "@/lib/pagination-db";
 
 export const metadata: Metadata = { title: "Enquiries" };
 export const dynamic = "force-dynamic";
@@ -18,16 +21,17 @@ const STATUSES = ["new", "contacted", "qualified", "converted", "closed"] as con
 export default async function LeadsPage({
   searchParams,
 }: {
-  searchParams: Promise<{ status?: string }>;
+  searchParams: Promise<{ status?: string; page?: string; pageSize?: string }>;
 }) {
   const session = await requireRole("superadmin", "admin");
   const nav = await adminNav();
-  const { status = "all" } = await searchParams;
+  const { status = "all", page, pageSize } = await searchParams;
+  const paging = parsePaging({ page, pageSize });
 
   await connectDB();
   const filter = status === "all" ? {} : { status };
-  const leads = await Lead.find(filter).sort({ createdAt: -1 }).limit(200).lean<
-    Array<{
+  // One page from the database; the old `.limit(200)` hid the 201st enquiry.
+  type LeadRow = {
       _id: unknown;
       kind: string;
       name: string;
@@ -38,10 +42,11 @@ export default async function LeadsPage({
       rooms?: number;
       monthlyVolume?: number;
       message?: string;
+      pincode?: string;
       status: string;
       createdAt: Date;
-    }>
-  >();
+  };
+  const { rows: leads, meta } = await paginate<LeadRow>(Lead, filter, { sort: { createdAt: -1 }, paging });
 
   const counts = Object.fromEntries(
     await Promise.all(STATUSES.map(async (s) => [s, await Lead.countDocuments({ status: s })] as const))
@@ -63,7 +68,7 @@ export default async function LeadsPage({
           ([key, label, count]) => (
             <Link
               key={key}
-              href={`/admin/leads?status=${key}`}
+              href={hrefWith("/admin/leads", { pageSize }, { status: key })}
               className={`px-4 min-h-[36px] inline-flex items-center gap-2 rounded-[6px] text-[13px] font-semibold no-underline hover:no-underline ${
                 status === key ? "bg-[var(--color-surface)] text-[var(--color-ink)]" : "text-[var(--color-ink-2)]"
               }`}
@@ -88,6 +93,8 @@ export default async function LeadsPage({
           actionHref={status === "all" ? undefined : "/admin/leads?status=all"}
         />
       ) : (
+        <PagedView>
+        <PagedResults>
         <DataTable>
           <THead>
             <TR>
@@ -107,7 +114,7 @@ export default async function LeadsPage({
                   <div className="flex flex-col">
                     <span className="font-medium">{l.name}</span>
                     <span className="t-small text-[var(--color-ink-3)]">
-                      {l.organisation ?? l.kind}
+                      {l.organisation ?? (l.kind === "consult" ? "Consultation request" : l.kind)}
                     </span>
                   </div>
                 </TD>
@@ -117,7 +124,7 @@ export default async function LeadsPage({
                     {l.phone && <span className="t-data text-[13px] text-[var(--color-ink-3)]">{l.phone}</span>}
                   </div>
                 </TD>
-                <TD>{l.city ?? "—"}</TD>
+                <TD>{l.city ?? l.pincode ?? "—"}</TD>
                 <TD numeric>{l.rooms ?? "—"}</TD>
                 <TD numeric>{l.monthlyVolume ?? "—"}</TD>
                 <TD mono nowrap>{formatDate(l.createdAt)}</TD>
@@ -128,6 +135,9 @@ export default async function LeadsPage({
             ))}
           </tbody>
         </DataTable>
+        </PagedResults>
+        <Pagination meta={meta} basePath="/admin/leads" params={{ status, pageSize }} nouns={["enquiry", "enquiries"]} />
+        </PagedView>
       )}
 
       {leads.some((l) => l.message) && (
@@ -136,7 +146,6 @@ export default async function LeadsPage({
           <div className="flex flex-col gap-3">
             {leads
               .filter((l) => l.message)
-              .slice(0, 10)
               .map((l) => (
                 <div
                   key={`msg-${String(l._id)}`}
@@ -146,7 +155,7 @@ export default async function LeadsPage({
                     {l.name}
                     {l.organisation ? ` · ${l.organisation}` : ""}
                   </span>
-                  <p className="t-body text-[var(--color-ink-2)] mt-2">{l.message}</p>
+                  <p className="t-body text-[var(--color-ink-2)] mt-2 whitespace-pre-line">{l.message}</p>
                 </div>
               ))}
           </div>

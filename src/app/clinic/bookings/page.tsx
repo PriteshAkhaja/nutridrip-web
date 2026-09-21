@@ -10,6 +10,9 @@ import { StatusPill } from "@/components/ui/Pill";
 import { EmptyState } from "@/components/ui/States";
 import { formatInr } from "@/lib/inventory/units";
 import { formatDate, formatTime } from "@/lib/data/inventory";
+import { PagedResults, PagedView, Pagination } from "@/components/ui/Paged";
+import { hrefWith, parsePaging } from "@/lib/pagination";
+import { paginate } from "@/lib/pagination-db";
 
 export const metadata: Metadata = { title: "Bookings" };
 export const dynamic = "force-dynamic";
@@ -23,11 +26,12 @@ const FILTERS = [
 export default async function ClinicBookingsPage({
   searchParams,
 }: {
-  searchParams: Promise<{ view?: string }>;
+  searchParams: Promise<{ view?: string; page?: string; pageSize?: string }>;
 }) {
   const session = await requireRole("clinic", "superadmin");
   const nav = await clinicNav(session.sub);
-  const { view = "upcoming" } = await searchParams;
+  const { view = "upcoming", page, pageSize } = await searchParams;
+  const paging = parsePaging({ page, pageSize });
 
   await connectDB();
   const now = new Date();
@@ -35,23 +39,24 @@ export default async function ClinicBookingsPage({
   if (view === "upcoming") filter.scheduledAt = { $gte: now };
   if (view === "past") filter.scheduledAt = { $lt: now };
 
-  const bookings = await Booking.find(filter)
-    .sort({ scheduledAt: view === "past" ? -1 : 1 })
-    .limit(200)
-    .lean<
-      Array<{
-        _id: unknown;
-        bookingNo: string;
-        patientId: unknown;
-        nurseId?: unknown;
-        dripName?: string;
-        scheduledAt: Date;
-        status: string;
-        amount: number;
-        location: string;
-      }>
-    >();
+  // One page from the database; the old `.limit(200)` cut the list off silently.
+  type BookingRow = {
+    _id: unknown;
+    bookingNo: string;
+    patientId: unknown;
+    nurseId?: unknown;
+    dripName?: string;
+    scheduledAt: Date;
+    status: string;
+    amount: number;
+    location: string;
+  };
+  const { rows: bookings, meta } = await paginate<BookingRow>(Booking, filter, {
+    sort: { scheduledAt: view === "past" ? -1 : 1 },
+    paging,
+  });
 
+  // Only the people on THIS page, so a long history costs one small lookup.
   const people = await User.find({
     _id: { $in: [...bookings.map((b) => b.patientId), ...bookings.map((b) => b.nurseId).filter(Boolean)] },
   }).lean<Array<{ _id: unknown; name: string }>>();
@@ -65,13 +70,13 @@ export default async function ClinicBookingsPage({
       activeHref="/clinic/bookings"
       breadcrumb={["Clinic", "Bookings"]}
       title="Bookings"
-      meta={`${bookings.length} shown`}
+      meta={`${meta.total} ${view === "all" ? "in total" : view}`}
     >
       <div className="flex gap-1 p-1 rounded-[var(--radius-sm)] bg-[var(--color-surface-2)] border border-[var(--color-line)] mb-5 w-fit">
         {FILTERS.map((f) => (
           <Link
             key={f.key}
-            href={`/clinic/bookings?view=${f.key}`}
+            href={hrefWith("/clinic/bookings", { pageSize }, { view: f.key })}
             className={`px-4 min-h-[36px] inline-flex items-center rounded-[6px] text-[13px] font-semibold no-underline hover:no-underline ${
               view === f.key ? "bg-[var(--color-surface)] text-[var(--color-ink)]" : "text-[var(--color-ink-2)]"
             }`}
@@ -90,6 +95,8 @@ export default async function ClinicBookingsPage({
           actionHref="/clinic/bookings?view=all"
         />
       ) : (
+        <PagedView>
+        <PagedResults>
         <DataTable>
           <THead>
             <TR>
@@ -120,6 +127,9 @@ export default async function ClinicBookingsPage({
             ))}
           </tbody>
         </DataTable>
+        </PagedResults>
+        <Pagination meta={meta} basePath="/clinic/bookings" params={{ view, pageSize }} nouns={["booking", "bookings"]} />
+        </PagedView>
       )}
     </ConsoleShell>
   );

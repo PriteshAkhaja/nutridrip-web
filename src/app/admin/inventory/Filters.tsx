@@ -15,10 +15,13 @@ export function InventoryFilters({
   tab,
   category,
   q,
+  pageSize,
 }: {
   tab: string;
   category?: string;
   q?: string;
+  /** Not a filter, but it must survive one: changing a filter must not undo the rows-per-page. */
+  pageSize?: string;
 }) {
   const href = (next: { tab?: string; cat?: string | null; q?: string }) => {
     const params = new URLSearchParams();
@@ -27,6 +30,7 @@ export function InventoryFilters({
     if (c) params.set("cat", c);
     const s = next.q ?? q;
     if (s) params.set("q", s);
+    if (pageSize && pageSize !== "25") params.set("pageSize", pageSize);
     return `/admin/inventory?${params}`;
   };
 
@@ -86,7 +90,7 @@ export function InventoryFilters({
       <SearchBox
         basePath="/admin/inventory"
         q={q}
-        keep={{ tab, cat: category }}
+        keep={{ tab, cat: category, pageSize: pageSize !== "25" ? pageSize : undefined }}
         placeholder="Drug name, HSN code, molecule, batch"
         label="Search inventory"
         className="ml-auto w-[300px] max-w-full"

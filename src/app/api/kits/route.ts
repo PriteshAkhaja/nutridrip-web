@@ -3,17 +3,28 @@ import { AuditLog, ProductMaster, SessionKit } from "@/lib/models";
 import { getSession } from "@/lib/auth/session";
 import { can } from "@/lib/auth/rbac";
 import { KitInput } from "@/lib/inventory/kit-input";
+import { paginate } from "@/lib/pagination-db";
+import { pageInfo, parsePaging } from "@/lib/pagination";
 import { ok, fail, handleError } from "@/lib/api";
 
-export async function GET() {
+export async function GET(req: Request) {
   try {
     const session = await getSession();
     if (!can(session?.role, "inventory.view")) return fail("Not permitted", 403);
     await connectDB();
-    const kits = await SessionKit.find({}).sort({ isDefault: -1, name: 1 }).lean<
-      Array<{ _id: unknown; name: string; description?: string; items: Array<{ masterId: unknown; qty: number }>; isDefault: boolean; isActive: boolean }>
-    >();
-    const masterIds = kits.flatMap((k) => k.items.map((i) => String(i.masterId)));
+    const q = new URL(req.url).searchParams;
+    const { rows: kits, meta } = await paginate<{
+      _id: unknown;
+      name: string;
+      description?: string;
+      items: Array<{ masterId: unknown; qty: number }>;
+      isDefault: boolean;
+      isActive: boolean;
+    }>(SessionKit, {}, {
+      sort: { isDefault: -1, name: 1 },
+      paging: parsePaging({ page: q.get("page"), pageSize: q.get("pageSize") }),
+    });
+    const masterIds = kits.flatMap((k) => (k.items ?? []).map((i) => String(i.masterId)));
     const masters = await ProductMaster.find({ _id: { $in: masterIds } }).lean<Array<{ _id: unknown; name: string }>>();
     const nameById = new Map(masters.map((m) => [String(m._id), m.name]));
     return ok({
@@ -23,8 +34,9 @@ export async function GET() {
         description: k.description,
         isDefault: k.isDefault,
         isActive: k.isActive,
-        items: k.items.map((i) => ({ masterId: String(i.masterId), name: nameById.get(String(i.masterId)) ?? "Unknown", qty: i.qty })),
+        items: (k.items ?? []).map((i) => ({ masterId: String(i.masterId), name: nameById.get(String(i.masterId)) ?? "Unknown", qty: i.qty })),
       })),
+      pagination: pageInfo(meta),
     });
   } catch (err) {
     return handleError(err);

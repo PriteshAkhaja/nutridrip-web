@@ -8,6 +8,8 @@ import { notify } from "@/lib/notify";
 import { ROLES } from "@/lib/models/types";
 import { normalisePhone } from "@/lib/auth/phone";
 import { checkGstin } from "@/lib/billing/gst";
+import { paginate } from "@/lib/pagination-db";
+import { pageInfo, parsePaging } from "@/lib/pagination";
 import { ok, fail, handleError } from "@/lib/api";
 
 const CreateUser = z.object({
@@ -53,8 +55,9 @@ export async function GET(req: Request) {
       filter.$or = [{ name: rx }, { email: rx }, { phone: rx }];
     }
 
-    const users = await User.find(filter).sort({ createdAt: -1 }).limit(300).lean();
-    return ok({ users });
+    const paging = parsePaging({ page: params.get("page"), pageSize: params.get("pageSize") });
+    const { rows: users, meta } = await paginate(User, filter, { sort: { createdAt: -1 }, paging });
+    return ok({ users, pagination: pageInfo(meta) });
   } catch (err) {
     return handleError(err);
   }

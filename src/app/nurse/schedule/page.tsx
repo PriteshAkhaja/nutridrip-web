@@ -8,42 +8,50 @@ import { StatusPill } from "@/components/ui/Pill";
 import { EmptyState } from "@/components/ui/States";
 import { formatDate, formatTime } from "@/lib/data/inventory";
 import { plansFor } from "@/lib/data/plans";
+import { PagedResults, PagedView, Pagination } from "@/components/ui/Paged";
+import { paginate } from "@/lib/pagination-db";
+import { parsePaging } from "@/lib/pagination";
 import { NURSE_TABS } from "../tabs";
 
 export const metadata: Metadata = { title: "Schedule" };
 export const dynamic = "force-dynamic";
 
+type Row = {
+  _id: unknown;
+  bookingNo: string;
+  patientId: unknown;
+  dripName?: string;
+  scheduledAt: Date;
+  status: string;
+  address?: string;
+};
+
 export default async function NurseSchedulePage({
   searchParams,
 }: {
-  searchParams: Promise<{ view?: string }>;
+  searchParams: Promise<{ view?: string; page?: string; pageSize?: string }>;
 }) {
   const session = await requireRole("nurse", "superadmin");
-  const { view = "upcoming" } = await searchParams;
+  const { view = "upcoming", page, pageSize } = await searchParams;
   const past = view === "past";
   await connectDB();
 
   const from = new Date();
   from.setHours(0, 0, 0, 0);
 
-  const bookings = await Booking.find({
+  const filter = {
     nurseId: session.sub,
     scheduledAt: past ? { $lt: from } : { $gte: from },
     ...(past ? {} : { status: { $ne: "cancelled" } }),
-  })
-    .sort({ scheduledAt: past ? -1 : 1 })
-    .limit(60)
-    .lean<
-      Array<{
-        _id: unknown;
-        bookingNo: string;
-        patientId: unknown;
-        dripName?: string;
-        scheduledAt: Date;
-        status: string;
-        address?: string;
-      }>
-    >();
+  };
+  const sort = { scheduledAt: (past ? -1 : 1) as 1 | -1 };
+
+  // Upcoming is a worklist: every session this nurse still has to run is shown,
+  // never held back on a second page. History only grows, so it is one page from
+  // the database. Both used to share a `.limit(60)`, which silently hid the
+  // sixty-first session a nurse had ever run.
+  const history = past ? await paginate<Row>(Booking, filter, { sort, paging: parsePaging({ page, pageSize }) }) : null;
+  const bookings = history ? history.rows : await Booking.find(filter).sort(sort).lean<Row[]>();
 
   const patients = await User.find({ _id: { $in: bookings.map((b) => b.patientId) } }).lean<
     Array<{ _id: unknown; name: string }>
@@ -65,7 +73,7 @@ export default async function NurseSchedulePage({
   return (
     <MobileShell
       title="Schedule"
-      subtitle={`${bookings.length} session${bookings.length === 1 ? "" : "s"} ${past ? "completed" : "ahead"}`}
+      subtitle={`${history ? history.meta.total : bookings.length} session${(history ? history.meta.total : bookings.length) === 1 ? "" : "s"} ${past ? "completed" : "ahead"}`}
       tabs={NURSE_TABS}
       activeHref="/nurse/schedule"
     >
@@ -76,7 +84,7 @@ export default async function NurseSchedulePage({
         ].map(([key, label]) => (
           <Link
             key={key}
-            href={`/nurse/schedule?view=${key}`}
+            href={`/nurse/schedule?view=${key}${pageSize ? `&pageSize=${pageSize}` : ""}`}
             className={`px-4 min-h-[36px] inline-flex items-center rounded-[6px] text-[13px] font-semibold no-underline hover:no-underline ${
               view === key ? "bg-[var(--color-surface)] text-[var(--color-ink)]" : "text-[var(--color-ink-2)]"
             }`}
@@ -97,6 +105,8 @@ export default async function NurseSchedulePage({
           }
         />
       ) : (
+        <PagedView>
+        <PagedResults>
         <div className="flex flex-col gap-6">
           {[...byDay].map(([day, items]) => (
             <section key={day}>
@@ -126,6 +136,16 @@ export default async function NurseSchedulePage({
             </section>
           ))}
         </div>
+        </PagedResults>
+        {history ? (
+          <Pagination
+            meta={history.meta}
+            basePath="/nurse/schedule"
+            params={{ view, pageSize }}
+            nouns={["session", "sessions"]}
+          />
+        ) : null}
+        </PagedView>
       )}
       {plans.length > 0 ? (
         <section className="mt-8 pt-6 border-t border-[var(--color-line)]">

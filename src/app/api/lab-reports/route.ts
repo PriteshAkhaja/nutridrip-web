@@ -4,6 +4,8 @@ import { AuditLog, HealthQuiz, LabReport, User } from "@/lib/models";
 import { getSession } from "@/lib/auth/session";
 import { can } from "@/lib/auth/rbac";
 import { notify } from "@/lib/notify";
+import { paginate } from "@/lib/pagination-db";
+import { pageInfo, parsePaging } from "@/lib/pagination";
 import { ok, fail, handleError } from "@/lib/api";
 
 /** Kept small deliberately — the store is the database until object storage exists. */
@@ -18,17 +20,19 @@ export async function GET(req: Request) {
     if (!can(session?.role, "labs.view")) return fail("Not permitted", 403);
 
     await connectDB();
-    const patientId = new URL(req.url).searchParams.get("patientId");
+    const params = new URL(req.url).searchParams;
+    const patientId = params.get("patientId");
     // A patient may only ever read their own.
     const filter =
       session!.role === "patient" ? { patientId: session!.sub } : patientId ? { patientId } : {};
 
-    const reports = await LabReport.find(filter)
-      .sort({ uploadedAt: -1 })
-      .select("-fileUrl")
-      .limit(200)
-      .lean();
-    return ok({ reports });
+    const paging = parsePaging({ page: params.get("page"), pageSize: params.get("pageSize") });
+    const { rows: reports, meta } = await paginate(LabReport, filter, {
+      sort: { uploadedAt: -1 },
+      paging,
+      select: "-fileUrl",
+    });
+    return ok({ reports, pagination: pageInfo(meta) });
   } catch (err) {
     return handleError(err);
   }

@@ -39,5 +39,8 @@ BatchLotSchema.index({ masterId: 1, batchNo: 1 }, { unique: true });
 /** FEFO reads: earliest expiry first, within a master. */
 BatchLotSchema.index({ masterId: 1, expiry: 1 });
 
+/** Serves the paged lists: the filter, then the sort, so a page is an index walk. */
+BatchLotSchema.index({ isActive: 1, expiry: 1, _id: 1 });
+
 export const BatchLot = models.BatchLot || model("BatchLot", BatchLotSchema);
 export default BatchLot;

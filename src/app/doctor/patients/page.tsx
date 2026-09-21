@@ -10,47 +10,60 @@ import { StatusPill, Pill } from "@/components/ui/Pill";
 import { EmptyState } from "@/components/ui/States";
 import { formatDate } from "@/lib/data/inventory";
 import { riskColor } from "@/lib/models/types";
+import { PagedResults, PagedView, Pagination } from "@/components/ui/Paged";
+import { parsePaging } from "@/lib/pagination";
+import { paginate } from "@/lib/pagination-db";
 
 export const metadata: Metadata = { title: "Patients" };
 export const dynamic = "force-dynamic";
 
-export default async function DoctorPatientsPage() {
+export default async function DoctorPatientsPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ page?: string; pageSize?: string }>;
+}) {
   const session = await requireRole("doctor", "superadmin");
+  const { page, pageSize } = await searchParams;
+  const paging = parsePaging({ page, pageSize });
   const nav = await doctorNav(session.sub);
   await connectDB();
 
-  const patients = await User.find({ role: "patient" }).sort({ createdAt: -1 }).lean<
-    Array<{
-      _id: unknown;
-      name: string;
-      phone?: string;
-      status: string;
-      createdAt: Date;
-      patient?: { vitalityScore?: number; allergies?: string; city?: string; lastQuizAt?: Date };
-    }>
-  >();
+  // This list had no limit, and then loaded EVERY quiz and EVERY completed
+  // booking for EVERY patient to pick each one's latest quiz and count their
+  // sessions in JavaScript. One page of patients, and one summary row per
+  // patient from the database, means the work follows the page, not the platform.
+  type PatientRow = {
+    _id: unknown;
+    name: string;
+    phone?: string;
+    status: string;
+    createdAt: Date;
+    patient?: { vitalityScore?: number; allergies?: string; city?: string; lastQuizAt?: Date };
+  };
+  const { rows: patients, meta } = await paginate<PatientRow>(
+    User,
+    { role: "patient" },
+    { sort: { createdAt: -1 }, paging }
+  );
 
   const ids = patients.map((p) => p._id);
+  type QuizSummary = { _id: unknown; reviewStatus: string; completedAt: Date };
   const [quizzes, sessions] = await Promise.all([
-    HealthQuiz.find({ patientId: { $in: ids } })
-      .sort({ completedAt: -1 })
-      .lean<Array<{ patientId: unknown; reviewStatus: string; completedAt: Date }>>(),
-    Booking.find({ patientId: { $in: ids }, status: "completed" }).lean<
-      Array<{ patientId: unknown }>
-    >(),
+    // The newest quiz per patient: sorted and grouped by the database, so a
+    // patient with forty quizzes sends one row, not forty.
+    HealthQuiz.aggregate<QuizSummary>([
+      { $match: { patientId: { $in: ids } } },
+      { $sort: { completedAt: -1 } },
+      { $group: { _id: "$patientId", reviewStatus: { $first: "$reviewStatus" }, completedAt: { $first: "$completedAt" } } },
+    ]),
+    Booking.aggregate<{ _id: unknown; n: number }>([
+      { $match: { patientId: { $in: ids }, status: "completed" } },
+      { $group: { _id: "$patientId", n: { $sum: 1 } } },
+    ]),
   ]);
 
-  const latestQuiz = new Map<string, (typeof quizzes)[number]>();
-  for (const q of quizzes) {
-    const k = String(q.patientId);
-    if (!latestQuiz.has(k)) latestQuiz.set(k, q);
-  }
-
-  const sessionCount = new Map<string, number>();
-  for (const s of sessions) {
-    const k = String(s.patientId);
-    sessionCount.set(k, (sessionCount.get(k) ?? 0) + 1);
-  }
+  const latestQuiz = new Map<string, QuizSummary>(quizzes.map((q) => [String(q._id), q]));
+  const sessionCount = new Map<string, number>(sessions.map((s) => [String(s._id), s.n]));
 
   return (
     <ConsoleShell
@@ -60,7 +73,7 @@ export default async function DoctorPatientsPage() {
       activeHref="/doctor/patients"
       breadcrumb={["Clinical", "Patients"]}
       title="Patients"
-      meta={`${patients.length} on the platform`}
+      meta={`${meta.total} on the platform`}
     >
       {patients.length === 0 ? (
         <EmptyState
@@ -69,6 +82,8 @@ export default async function DoctorPatientsPage() {
           body="Patients appear here as soon as they complete their first health quiz."
         />
       ) : (
+        <PagedView>
+        <PagedResults>
         <DataTable>
           <THead>
             <TR>
@@ -125,6 +140,9 @@ export default async function DoctorPatientsPage() {
             })}
           </tbody>
         </DataTable>
+        </PagedResults>
+        <Pagination meta={meta} basePath="/doctor/patients" params={{ pageSize }} nouns={["patient", "patients"]} />
+        </PagedView>
       )}
 
       <p className="t-small text-[var(--color-ink-3)] mt-5">

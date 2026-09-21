@@ -320,3 +320,325 @@ can never be deleted, and log every deletion in the audit trail.
 
 **Separate open item:** `npm run seed` wipes every clinical collection and has no guard
 against running on production. Not fixed yet.
+
+---
+
+## 7 · The pages and features that were missing 🔨 BUILT — 3 checks wait on a server restart
+
+**Source:** the "Not in this list — the client's call" list above. Asked to build them, so
+they are built. Checked against the whole `_reference` folder first: the PRD names only
+**AI Studio** (§6.7, P1); the mockups have the FAQ inside the Pricing page and "How it
+works" as a nav item, and nothing else; the requirement docs never mention `/about`,
+`/faqs`, `/how-it-works`, the consult form, an Rx letterhead or clinic monthly billing
+(only a monthly volume *target* on the clinic profile). Those come from the old build,
+and its content was **not** copied — see "Found on the way".
+
+Tests: 392 passing (was 269). Typecheck and lint clean.
+
+### 7.1 · `/about`, `/faqs`, `/how-it-works`
+
+| # | Test | Result |
+|---|---|---|
+| 7.1.1 | All three render and are reachable | ✅ 200 on each. "How it works" is in the header nav (the mockup has it there); About, FAQs and Ask a clinician are in a new footer column |
+| 7.1.2 | No sideways scroll, and the header does not collide, at every width | ✅ 20 page-and-width combinations (390 · 768 · 1024 · 1180 · 1440), 0 problems |
+| 7.1.3 | The numbers in the answers come from the rules that enforce them | ✅ 90-day approval, the 4-hour line, the ₹500 fee and the 14 zones are read from their constants, and a test fails if they drift |
+| 7.1.4 | The FAQ does not promise what the app cannot do | ✅ tests refuse "refund", card and UPI, an export-or-delete button, HIPAA / ISO / GMP / CDSCO, and "nobody else can see your record" |
+| 7.1.5 | Search finds words in any order and opens each match | ✅ "cancel fee" → "Showing 1 of 20 answers", the cancellation answer open |
+| 7.1.6 | About carries no invented figures | ✅ four figures counted live: 9 formulas, 14 zones, 29 steps, 90 days |
+| 7.1.7 | Tap targets are 44px on a phone | ✅ chips and link rows raised from 22–36px |
+| 7.1.8 | Everything lines up with the header | ✅ headings at x=113 on every new page, as on Safety (the shared `Section` was 20px narrower a side; it now has an opt-in `wide`) |
+
+### 7.2 · Ask a clinician (`/consult`)
+
+Writes to the existing enquiries (`kind: "consult"`), so there is no new backend.
+
+| # | Test | Result |
+|---|---|---|
+| 7.2.1 | A request with no way to reply is refused | ✅ 422 |
+| 7.2.2 | Anyone can send one, signed in or not, and it reaches Enquiries as a consultation with its message and pincode | ✅ |
+| 7.2.3 | The pincode answers as you type | ✅ 560095 "Koramangala — we serve it" · 110001 "We do not serve that pincode yet. You can still ask us a question." · a limited zone names its shorter hours |
+| 7.2.4 | Ticked topics and best time are written into the message in a fixed shape; a value the form never offered is dropped | ✅ 20 tests |
+| 7.2.5 | It never claims a booking | ✅ says "a request, not an appointment — nothing is booked and no payment is taken". The old build's "Consultation booked!" over a form that booked nothing is not carried over. What happens next is editable in Site copy |
+
+### 7.3 · Per-physician Rx letterhead (`/doctor/letterhead`)
+
+A physician's practice name, qualifications, address, contact and closing note head their
+own prescriptions. **Registration number and council are not editable here and always
+print** — they come from the record an administrator verified.
+
+| # | Test | Result |
+|---|---|---|
+| 7.3.1 | Dr. Menon's slip is headed by her practice, with NutriDrip's establishment registration in a slim "issued through" line and her registration in the physician block | ✅ read from the live printed page |
+| 7.3.2 | With no letterhead the slip is exactly as before | ✅ default header, no "issued through" line |
+| 7.3.3 | A letterhead cannot change a credential | ✅ licence, council and specialisation unchanged through a save and a clear; a licence number sent in the body is stripped (tested) |
+| 7.3.4 | Only a physician has one | ✅ nurse 403 · patient 403 · no session 401 · **super admin 403** (nobody edits it on a physician's behalf) |
+| 7.3.5 | Errors read as words and land under the right field | ✅ "That does not look like a phone number" · "An address is at most 4 lines" |
+| 7.3.6 | The save will not claim success it did not achieve | ✅ read back after writing. Against the stale server it answered 500 "could not be saved, and nothing was changed" — no audit row, no data change |
+| 7.3.7 | The form's preview is the same component as the paper | ✅ one `LetterheadBlock` used by both |
+| 7.3.8 | **Saving from the form, and seeing it on the slip** | ⏸ **needs the dev server restarted** — see below. 3 smoke checks: save · save again says "nothing changed" · slip is headed by it |
+
+### 7.4 · Clinic monthly billing (`/clinic/billing`)
+
+A month's invoices, with totals and a printable statement. It shows what has been
+**invoiced** — there is no payment gateway and an invoice has no paid state — so nothing
+on it says "due", "paid" or "outstanding", and the page and the sheet say so.
+
+| # | Test | Result |
+|---|---|---|
+| 7.4.1 | Figures reconcile to the paisa | ✅ ₹23,214.29 taxable + ₹2,785.71 GST = ₹26,000.00, matching the invoice |
+| 7.4.2 | **Another account never sees a clinic's invoices** | ✅ super admin's statement lists none of them · a nurse is redirected · every query is scoped by the session's clinic id, and there is no parameter that could name another |
+| 7.4.3 | An order dispatched but not yet invoiced is named, not silently missing | ✅ shown as "1 order sent in September not yet invoiced" until its invoice was opened; then it moved into the figures |
+| 7.4.4 | Month edges | ✅ 27 tests: half-open month, leap February, December → January, an invoice at midnight belongs to one month only |
+| 7.4.5 | Money is added as whole paise | ✅ 0.1 + 0.2 = 0.3 exactly; 1,000 × ₹0.01 = ₹10 |
+| 7.4.6 | A hand-edited month falls back to the current one | ✅ `?month=september`, `2026-13`, `1999-12` |
+| 7.4.7 | Printable statement | ✅ header, billed-to with GSTIN, table, totals, and "not a record of payments and does not show a balance due" |
+
+### 7.5 · AI Studio (`/admin/studio`) — super admin only
+
+The PRD's model list with Create / Edit / Toggle Active–Test / Delete. **Nothing in the app
+reads these settings** — recommendations come from the quiz's scoring rules and are reviewed
+by a physician — and the first thing on the screen says so. No API key is ever stored.
+
+| # | Test | Result |
+|---|---|---|
+| 7.5.1 | Super admin only, and hidden from an admin who could not use it | ✅ no session 403 · admin 403 (page redirects) · physician 403 · the nav link is absent for admin, present for super admin |
+| 7.5.2 | A new model always starts in Test | ✅ even when the request said `status: "active"` |
+| 7.5.3 | **Only one model is active — even when four are activated at once** | ✅ 3 rounds of 4 simultaneous requests: never more than one active; a real collision gets a plain 409. **This test found a real bug** — see below |
+| 7.5.4 | Renaming does not overwrite the temperature or length | ✅ the zod `.partial()` keeps `.default()` trap, tested |
+| 7.5.5 | A model needs a system prompt to be made active; the active one cannot be deleted | ✅ 409 with a plain reason |
+| 7.5.6 | Every change is in the audit trail with before and after | ✅ `ai.create` · `ai.update` (only what moved) · `ai.activate` (names the model it replaced) · `ai.deactivate` · `ai.delete` (full row kept). Filed under Admin, in the label and the filter |
+| 7.5.7 | The form uses one set of messages | ✅ the browser's own range check silently blocked a bad temperature and said nothing; now `noValidate`, and "Temperature is between 0 and 1" shows under the field |
+| 7.5.8 | A duplicate name, in any case, is refused | ✅ |
+
+**The bug 7.5.3 found:** after four simultaneous activations *three* models were active.
+The guard — a partial unique index — had never been built: the schema also said
+`index: true` on the same key, the two collided on the name, and Mongoose dropped the one
+that mattered without a word. Fixed (one named index, `one_active_model`), built in the
+live database, and re-tested. The page also now shows a red notice if it ever sees two.
+
+### Found on the way — not changed, yours to decide
+
+1. **Public copy over-promises.** The home and Pricing FAQs say *"you can export or delete
+   your record from your profile"* (there is no such button) and *"you are not charged for a
+   session that does not run"* (there are no payments). The home and Pricing FAQs also say
+   *nobody but you, your physician and the nurse can see your record* — an admin can open
+   lab reports and work the approvals queue. The privacy policy says *"ask from your
+   profile and we will export everything"*. The new `/faqs` says none of these.
+2. **The invoice rounds to whole rupees**; the new statement shows paise. A ₹23,214.29
+   taxable value reads ₹23,214 on the invoice and ₹23,214.29 on the statement.
+3. **`npm run seed` does not wipe `Invoice`**, so a reseed leaves orphans — INV-2026-0001
+   belongs to a clinic that no longer exists. The statement correctly hides it.
+4. **Claims not carried over from the old About page:** 12,400 clients, named
+   leadership, and four certifications (HIPAA, ISO 9001, GMP, CDSCO). None can be backed
+   up from this build. If the client has real people and real certificates, they belong
+   in Site copy, not in code.
+5. **A wording I invented and the client should confirm:** the About and consult intros
+   are new copy. All of it is in **Site copy** (About page, Consultation request) so the
+   business can change it without a developer.
+
+### To finish
+
+**Restart the dev server** (`Ctrl+C`, then `npm run dev`). The physician letterhead adds a
+field to the `User` model, and a running Next dev server keeps the old compiled schema —
+Mongoose then silently drops the new field. Nothing is wrong with the code; the save is
+refusing, on purpose, to pretend. After the restart the 3 waiting checks (7.3.8) pass, and:
+
+```
+npm run seed      # gives Dr. Menon her letterhead and adds an AI Studio draft + a consult request
+npm run smoke     # now includes a section for everything above
+```
+
+---
+
+## AI Studio is switched off for now
+
+**Decision (19 Sept 2026):** AI Studio (section 7.5) is switched **off**. Nothing was
+deleted: the page, the API, the model, the seed draft and the tests are all still in the code.
+
+**How it is off:** one setting, `AI_STUDIO_ENABLED` in `src/lib/ai/enabled.ts`, set to
+`false`. While it is off, the sidebar link is gone, `/admin/studio` is a plain 404, and
+`/api/admin/ai` answers 404 to everyone. The smoke test skips the AI checks and instead
+checks that it really is off.
+
+**To bring it back:** change that one line to `true`. Nothing else.
+
+**What stays:** the AI rows already in the audit trail (the trail is never edited), and the
+one draft in Test in the database.
+
+---
+
+## Statement amounts now match the invoice (whole rupees)
+
+Item 2 under "Found on the way" (section 7) is fixed. The invoice prints whole rupees, so
+the clinic billing page and the printed statement do too: ₹23,214.29 shows as ₹23,214 in
+all three places.
+
+| # | Test | Result |
+|---|---|---|
+| 7.4.8 | The same invoice reads the same on the invoice, the billing page and the statement | ✅ taxable ₹23,214 · GST ₹2,786 (the invoice's CGST ₹1,393 + SGST ₹1,393) · total ₹26,000. No paise on either page |
+| 7.4.9 | The totals add up to the figures shown | ✅ totals are the sum of the rounded rows, so the footer always equals its own column. 33 statement tests, including three rows of ₹10.40 showing 10 + 10 + 10 = 30 |
+
+This replaces the earlier 7.4.1 wording ("reconcile to the paisa"): the underlying invoice
+still holds the exact paise, and only what is displayed is rounded.
+
+
+## Pagination: every growing list is paged by the database
+
+Before this, the lists either loaded everything or cut off silently (`.limit(200)`, `.limit(300)`), so the 201st enquiry or the 301st person could not be seen at all. Now a list asks MongoDB for one page and a count, and never fetches rows to throw them away.
+
+### How it works
+
+- **One shared piece of logic** (`src/lib/pagination.ts`, pure and unit-tested) and **one shared database helper** (`src/lib/pagination-db.ts`): count, skip and limit all happen in the query, together.
+- **One shared footer** (`src/components/ui/Paged.tsx`): "Showing 26–50 of 137", Previous / numbered pages / Next, rows per page (10, 25, 50, 100), and a jump-to-page box on a big list. Page, rows-per-page and filters all live in the URL, so a page can be shared, refreshed, and the back button works.
+- **Responsive**: stacked on a phone (44px touch targets, "Page 2 of 6" instead of a long strip), two rows on a tablet, one row on a wide screen. Measured with no sideways scroll at 390, 768, 1024 and 1440 px.
+- **Theme**: the current page uses the primary colour, like the tabs and chips; nothing is hard-coded.
+- **Safe with bad input**: `page=abc`, `page=0`, `pageSize=999999` all give a valid first page, capped at 100 rows. A page past the end shows the last real page.
+- **No repeated or missing rows**: the sort always ends with `_id`, so two rows made in the same millisecond keep one fixed place.
+- **Rows-per-page survives a filter change** (audit filters, inventory tabs and search, People, and so on).
+
+### Where it is now
+
+| Screen | Paged in the database |
+|---|---|
+| Audit trail | yes |
+| People, Enquiries, Prep orders | yes |
+| Inventory → Batches | yes (search and counts moved into the query as well) |
+| Clinic orders, Clinic bookings | yes |
+| Doctor patients, Doctor plans | yes |
+| Doctor escalations | closed history paged; open reports always shown in full |
+| Patient sessions | history paged; upcoming always shown in full |
+| Patient lab reports | yes (only the fields a row shows are read) |
+| APIs: users, leads, orders, bookings, plans, lab-reports | yes: `?page=&pageSize=`, reply carries a `pagination` block, existing keys unchanged |
+
+### Left unpaged on purpose
+
+A worklist must never hide an item on page 2. These stay whole: open escalations, upcoming sessions, the nurse's day route and kit list, the doctor's 14-day schedule, the approvals pending queue, dashboard "recent" widgets, and the small dropdown lists (active patients, drips, clinics). The escalations page used to cap at 100 in one query, which could have hidden an open report; it now loads every open report and pages only the closed history.
+
+Note for later: the plan builder loads all active patients for its picker. That is fine today; a search-as-you-type picker would be a separate improvement.
+
+### Speed
+
+- Inventory totals per product are now one database aggregation, not every batch summed in code. Compared with the old code on the live data (lots, searches, counts, and paged rows stitched back together): identical.
+- Indexes added for every paged sort (filter, then sort key, then `_id`) on User, Lead, Order, Booking, TreatmentPlan, LabReport, BatchLot and AuditLog, and built in the live database. `explain` shows every paged query using an index with no in-memory sort.
+- First version of these indexes left out `_id`, and `explain` caught it (every query still sorted in memory). Fixed before finishing.
+- On a throwaway collection of 200,000 bookings (50,000 belonging to one patient): a page took about 100–145 ms without the right index and about 15–38 ms with it, including the count, and page 2000 costs about the same as page 1.
+
+### Tests
+
+| # | Test | Result |
+|---|---|---|
+| P.1 | Unit tests for paging, page window, links and sort (`tests/pagination.test.ts`) | ✅ 37 pass; whole suite 439 pass; lint and typecheck clean |
+| P.2 | Every list API reports its page, sends no more than the page size, page 2 differs from page 1, a page past the end is pulled back, nonsense input is safe and capped at 100 | ✅ 6 lists, 33 smoke checks pass (2 "page 2" checks skipped: those lists have two rows or fewer) |
+| P.3 | Audit and Batches footers say which rows are shown; an audit page past the end still renders | ✅ |
+| P.4 | Old vs new inventory code on live data | ✅ identical |
+| P.5 | Pager in the browser at 390 / 768 / 1024 / 1440 px | ✅ no sideways scroll, controls 44px on touch and 36px on desktop |
+
+Not passing in the last smoke run, and not caused by this work: the order confirm and dispatch checks need MongoDB as a replica set (this machine runs a standalone one), and the "vitals step" check needs a fresh `npm run seed`. The recall page failed once in that run and rendered normally straight afterwards and later in the same run.
+
+## Pagination audit: every module checked
+
+A second pass over all 70 pages, all list APIs and the data layer, looking for any list that loads everything, or that stops at a hidden limit (`.limit(20)`, `.limit(60)`) without saying so.
+
+### Found and fixed
+
+| Where | Problem | Fix |
+|---|---|---|
+| Nurse → Schedule → History | Silently stopped at 60. A nurse's 61st past session could not be seen. | History is now paged in the database. Upcoming stays whole, because it is the nurse's worklist. |
+| Physician → Patient page | The whole session history was loaded into one table. | Sessions are paged. The "X completed of Y" and "N adverse events" figures are database counts, so they stay correct on every page. |
+| Nurse → Schedule → Treatment plans | A hidden `.limit(20)` cut the list short, so the heading could count the wrong number. | Removed. The list shows every shared plan that is not archived. The patient dashboard, which shows only the current plan, now fetches just one. |
+| Physician → Review a quiz → Lab reports | Only the latest 20 reports were shown, with no warning. An older ferritin result could be missed. | Every report is shown. The rows are small because the file itself is not read. |
+| Nurse → Me → Ratings | Every rated session was loaded to show 5 comments. The `limit` setting never reached the query. | The average, count and "poor" figures are summed by the database, and only 5 comments are fetched. |
+| Admin dashboard and Clinic profile → this month's revenue | Every session completed this month was loaded to add up one field. | Summed by the database. |
+
+On the live data, all the new figures match the old ones: ratings for every nurse, overall revenue, and revenue for every clinic.
+
+### Checked and left as they are, on purpose
+
+| Where | Why |
+|---|---|
+| Approvals → reviewed in the last seven days | It shows the 20 most recent, and the heading says "showing 20 of N" with the real total. It is a recent-activity view. The pending queue above it is never cut short. |
+| Admin dashboard: recent sessions (8), open orders (5) | Dashboard previews. Open orders links to the full, paged orders list. |
+| Notification bell (20) | The unread count is a real total. The bell shows the latest. |
+| Inventory alerts, recall trace, open escalations, upcoming sessions, nurse kit and day route, doctor 14-day schedule | Worklists and safety lists. Hiding an item on page 2 would be the bug. A recall in particular must list every patient. |
+| Patient page lab reports and vitality trend | Clinical record and trend chart: every entry is needed, and the rows are small. |
+| Product catalogue, drips, kits, dropdown pickers | Short reference lists, not growing records. |
+| Order detail, invoice, session and report pages | A single record. |
+
+### Tests
+
+| # | Test | Result |
+|---|---|---|
+| P.6 | Nurse history pages 1, 2 and 3 of 3 (one per page) give 3 different sessions; page 9 falls back to the last page | ✅ |
+| P.7 | Patient page sessions paged; the totals stay whole-history on page 2; `page=abc&pageSize=99999` is safe | ✅ |
+| P.8 | Smoke: nurse history paged, nurse upcoming NOT paged, patient sessions and reports paged, patient page paged | ✅ all pass (38 pagination checks in total) |
+| P.9 | Nurse history pager at 390 and 768 px | ✅ no sideways scroll; sits above the bottom tab bar |
+| P.10 | Unit tests, lint, typecheck | ✅ 439 pass, clean |
+
+The only smoke failures (7) are the order confirm and dispatch checks, which need MongoDB running as a replica set. The earlier recall-page and vitals-step failures passed this time.
+
+
+## Pagination: checked role by role
+
+Signed in as each of the six roles and opened every page in that role's menu (37 page visits), recording which lists are paged and which are whole.
+
+| Role | Paged | Whole on purpose |
+|---|---|---|
+| Super admin and Admin (same 16 pages) | Audit trail, Products (new), Batches, Prep orders, Enquiries, People | Dashboard previews, Approvals (pending queue whole; "last 7 days" says "showing 20 of N"), Alerts, Recall, Availability, Drips (9 formulas), Quiz, Content, Billing settings. AI Studio is off (404, expected). |
+| Doctor (6) | Patients, Plans, Escalation history, and each patient's session history | Dashboard, 14-day schedule, open escalations, letterhead |
+| Nurse (5) | Schedule → History | Today, Upcoming, Kit, Me |
+| Clinic (5) | Orders, Bookings (History and All tabs; Upcoming shows the pager as soon as there is anything upcoming) | Dashboard, the month's statement, profile |
+| Patient (5) | Sessions history, Lab reports | Home (current plan only), profile, drip catalogue |
+
+### Found in this pass: the Products tab
+
+The product catalogue already had 25 products (one full page) and no pager, and it grows with every drug added. It is now paged by the database like the Batches tab:
+
+- The table asks for one page of products, and works out stock only for the products on that page.
+- The cards ("Product masters", "At or below reorder" and its two names) are worked out by the database over every matching product, not just the page on screen. The low-stock rule is the same as on the rows: "expiring" takes precedence over "low".
+- The "Receive a batch" product picker gets its own light list (name and unit only, no stock figures).
+
+Checked against the old code on live data for every category and several searches: the card figures, the pages stitched back together, and the picker are identical. To exercise the low-stock rule, the reorder levels on five products were raised temporarily: 4 came out low in both old and new code (Ascorbic acid correctly counted as expiring, not low), and all five values were then put back.
+
+| # | Test | Result |
+|---|---|---|
+| P.11 | Products pages 1 and 3 of 25 at 10 per page, page 99 falls back to page 3, category and search filters, for both admin roles | ✅ |
+| P.12 | Products pager at 390 / 768 / 1024 / 1440 px | ✅ no sideways scroll; theme colour on the current page |
+| P.13 | Smoke: 175 pass. All pagination checks pass, including the new Products check | ✅ (the 7 failures are the order confirm and dispatch checks, which need a replica set) |
+
+
+## Pagination: final check
+
+A last pass over the code, every GET API and every paged screen.
+
+### Found and fixed in this pass
+
+Four list APIs still returned everything. No screen reads them as a list, but they are list APIs and two of them grow. They now take `?page=&pageSize=` and send a `pagination` block, like the others:
+
+| API | Returns |
+|---|---|
+| `GET /api/inventory/masters` | products (one page, stock worked out for that page only) |
+| `GET /api/inventory/masters/[id]` | one product's batches (each delivery adds one) |
+| `GET /api/drips` | drips |
+| `GET /api/kits` | session kits |
+
+The smoke test used to find "Ascorbic acid" by relying on it being on the first page of products. It now searches for it by name, which is the right way to use a paged list.
+
+The smoke "page 2 differs" check read each row's `_id`, but product and kit rows name it `id`. That made every row look the same, and the check failed even though the pages were correct. The check now reads either field.
+
+### Left whole on purpose (unchanged)
+
+- **Audit CSV export:** streams every row, because a download must be complete.
+- **Notification bell:** shows the latest 20, with a real unread count.
+- The remaining in-code limits each say so on screen or are internal: approvals "showing 20 of N", two dashboard previews, 5 recent ratings next to real totals, the patient dashboard's current plan, and the reference-number helper.
+
+### Live walk, page by page
+
+| # | Test | Result |
+|---|---|---|
+| P.14 | Every paged API walked two rows at a time as each role that can read it (19 walks across 10 APIs): the pages add up to the total, no row twice, none missing, same order as one fetch | ✅ all 19 exact |
+| P.15 | Every paged screen walked as its own role (20 walks, both admin roles): "Showing a–b of N" ranges run back to back, N never changes, the last page ends at N. This includes all 2,590 audit entries over 259 pages. | ✅ all 20 clean |
+| P.16 | Clinic sees 19 orders, the same as the super admin: confirmed that every order in the data belongs to that clinic | ✅ expected |
+| P.17 | Smoke: 52 pagination checks | ✅ 52 pass, 0 fail (3 skipped: those lists have too few rows for a page 2) |
+| P.18 | Unit tests, typecheck, lint | ✅ 439 pass, clean |
+
+The only smoke failures (7) are the order confirm and dispatch checks, which need MongoDB running as a replica set.

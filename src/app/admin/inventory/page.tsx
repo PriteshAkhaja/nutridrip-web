@@ -3,7 +3,9 @@ import type { Metadata } from "next";
 import { requireRole } from "@/lib/auth/guard";
 import { adminNav } from "@/lib/nav";
 import { ConsoleShell } from "@/components/layout/ConsoleShell";
-import { listMasters, listLots, formatDate, expiryPhrase } from "@/lib/data/inventory";
+import { listMastersPage, masterStats, masterChoices, listLotsPage, lotStats, formatDate, expiryPhrase } from "@/lib/data/inventory";
+import { PagedResults, PagedView, Pagination } from "@/components/ui/Paged";
+import { parsePaging } from "@/lib/pagination";
 import { STATUS_STYLE, FillDepleting } from "@/components/ui/Fill";
 import { DataTable, THead, TH, TR, TD, Pieces } from "@/components/ui/Table";
 import { Pill } from "@/components/ui/Pill";
@@ -31,19 +33,30 @@ const TONE_FOR_STATUS = {
 export default async function InventoryPage({
   searchParams,
 }: {
-  searchParams: Promise<{ tab?: string; cat?: string; q?: string }>;
+  searchParams: Promise<{ tab?: string; cat?: string; q?: string; page?: string; pageSize?: string }>;
 }) {
   const session = await requireRole("superadmin", "admin");
   const nav = await adminNav();
 
-  const { tab = "products", cat, q } = await searchParams;
+  const { tab = "products", cat, q, page, pageSize } = await searchParams;
   const category = (cat as Category) || undefined;
+  const paging = parsePaging({ page, pageSize });
 
-  const [masters, lots] = await Promise.all([listMasters({ category, q }), listLots({ q })]);
-
-  const expiringLots = lots.filter((l) => l.daysToExpiry >= 0 && l.daysToExpiry <= 90);
-  const expiredLots = lots.filter((l) => l.daysToExpiry < 0 && l.qtyOnHand > 0);
-  const lowMasters = masters.filter((m) => m.status === "low" || m.status === "out");
+  // Both tables are counted and paged by the database: the batches grow with
+  // every delivery, and the product catalogue grows with every drug added. The
+  // cards are database counts over EVERYTHING that matches, not over the page on
+  // screen, and only the table being looked at is fetched.
+  const [mStats, stats, mastersPage, lotsPage, choices] = await Promise.all([
+    masterStats({ category, q }),
+    lotStats({ q }),
+    tab === "batches" ? Promise.resolve(null) : listMastersPage({ category, q, paging }),
+    tab === "batches" ? listLotsPage({ q, paging }) : Promise.resolve(null),
+    session.role === "superadmin" ? masterChoices({ category, q }) : Promise.resolve([]),
+  ]);
+  const masters = mastersPage?.rows ?? [];
+  const lots = lotsPage?.rows ?? [];
+  const expiringCount = stats.expiring;
+  const expiredCount = stats.expiredOnShelf;
 
   return (
     <ConsoleShell
@@ -53,40 +66,40 @@ export default async function InventoryPage({
       activeHref="/admin/inventory"
       breadcrumb={["Inventory", tab === "batches" ? "Batches" : "Products"]}
       title="Products & batches"
-      meta={<HeaderCounts items={[`${masters.length} masters`, `${lots.length} lots`]} />}
+      meta={<HeaderCounts items={[`${mStats.total} masters`, `${stats.total} lots`]} />}
       actions={<ButtonLink href="/admin/inventory/alerts" variant="secondary">View alerts</ButtonLink>}
     >
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4 mb-6">
-        <StatCard label="Product masters" value={String(masters.length)} />
-        <StatCard label="Batch lots" value={String(lots.length)} />
+        <StatCard label="Product masters" value={String(mStats.total)} />
+        <StatCard label="Batch lots" value={String(stats.total)} />
         <StatCard
           label="Expiring ≤90 days"
-          value={String(expiringLots.length)}
-          pct={lots.length ? (expiringLots.length / lots.length) * 100 : 0}
+          value={String(expiringCount)}
+          pct={stats.total ? (expiringCount / stats.total) * 100 : 0}
           color="var(--color-caution)"
-          note={expiredLots.length ? `${expiredLots.length} already expired on the shelf` : "Nothing expired"}
+          note={expiredCount ? `${expiredCount} already expired on the shelf` : "Nothing expired"}
         />
         <StatCard
           label="At or below reorder"
-          value={String(lowMasters.length)}
-          pct={masters.length ? (lowMasters.length / masters.length) * 100 : 0}
+          value={String(mStats.low)}
+          pct={mStats.total ? (mStats.low / mStats.total) * 100 : 0}
           color="var(--color-critical)"
-          note={lowMasters.map((m) => m.name).slice(0, 2).join(", ") || "All healthy"}
+          note={mStats.lowNames.join(", ") || "All healthy"}
         />
       </div>
 
       {session.role === "superadmin" && (
         <div className="mb-6">
           <ReceiveStock
-            masters={masters.map((m) => ({ id: m.id, name: m.name, canonicalUnit: m.canonicalUnit }))}
+            masters={choices}
           />
         </div>
       )}
 
-      <InventoryFilters tab={tab} category={cat} q={q} />
+      <InventoryFilters tab={tab} category={cat} q={q} pageSize={pageSize} />
 
       {tab === "batches" ? (
-        lots.length === 0 ? (
+        lotsPage === null || lotsPage.meta.total === 0 ? (
           <EmptyState
             kind="filtered"
             title="No batches match"
@@ -95,6 +108,8 @@ export default async function InventoryPage({
             actionHref="/admin/inventory?tab=batches"
           />
         ) : (
+          <PagedView>
+          <PagedResults>
           <DataTable>
             <THead>
               <TR>
@@ -170,8 +185,16 @@ export default async function InventoryPage({
               })}
             </tbody>
           </DataTable>
+          </PagedResults>
+          <Pagination
+            meta={lotsPage.meta}
+            basePath="/admin/inventory"
+            params={{ tab, cat, q, pageSize }}
+            nouns={["batch", "batches"]}
+          />
+          </PagedView>
         )
-      ) : masters.length === 0 ? (
+      ) : mastersPage === null || mastersPage.meta.total === 0 ? (
         <EmptyState
           kind="filtered"
           title="No products match"
@@ -180,6 +203,8 @@ export default async function InventoryPage({
           actionHref="/admin/inventory"
         />
       ) : (
+        <PagedView>
+        <PagedResults>
         <DataTable>
           <THead>
             <TR>
@@ -254,6 +279,14 @@ export default async function InventoryPage({
             })}
           </tbody>
         </DataTable>
+        </PagedResults>
+        <Pagination
+          meta={mastersPage.meta}
+          basePath="/admin/inventory"
+          params={{ tab, cat, q, pageSize }}
+          nouns={["product", "products"]}
+        />
+        </PagedView>
       )}
     </ConsoleShell>
   );

@@ -160,6 +160,55 @@ describe("exporting the trail", () => {
   });
 });
 
+describe("AI Studio in the trail", () => {
+  it("files every ai.* action under Admin, in the label AND in the filter", () => {
+    // groupFor() defaults an unknown prefix to Admin, but the group FILTER is
+    // built from the prefix map — an action missing from it would be labelled
+    // Admin and then never turn up when somebody filters by Admin.
+    for (const action of ["ai.create", "ai.update", "ai.activate", "ai.deactivate", "ai.delete"]) {
+      expect(groupFor(action), action).toBe("Admin");
+      expect(groupFilter("Admin").test(action), action).toBe(true);
+    }
+  });
+
+  it("does not pull in a prefix that merely starts with the same letters", () => {
+    expect(groupFilter("Admin").test("aim.something")).toBe(false);
+    expect(groupFilter("Admin").test("airport.thing")).toBe(false);
+  });
+
+  it("reads as words", () => {
+    expect(actionLabel("ai.activate")).toBe("AI activate");
+  });
+});
+
+describe("labels and redaction after AI Studio", () => {
+  it("writes AI as an acronym in an action", () => {
+    expect(actionLabel("ai.delete")).toBe("AI delete");
+    expect(actionLabel("ai.activate")).toBe("AI activate");
+    // Only the whole word: "aim" and "airport" are not AI.
+    expect(actionLabel("aim.thing")).toBe("Aim thing");
+  });
+
+  it("keeps an acronym intact in a record kind, and still splits ordinary names", () => {
+    expect(entityLabel("AIModel")).toBe("AI model");
+    expect(entityLabel("TreatmentPlan")).toBe("Treatment plan");
+    expect(entityLabel("BatchLot")).toBe("Batch lot");
+    expect(entityLabel("User")).toBe("User");
+  });
+
+  it("shows a model's length limit instead of hiding it as a token", () => {
+    const c = describeChange({ maxTokens: 512 }, { maxTokens: 1024 });
+    expect(c).toEqual([{ field: "maxTokens", from: "512", to: "1,024" }]);
+  });
+
+  it("still hides real secrets whose names contain the same word", () => {
+    for (const field of ["resetToken", "accessToken", "apiKey", "passwordHash", "viaOtp"]) {
+      const c = describeChange({}, { [field]: "s3cret" });
+      expect(c, field).toEqual([{ field, to: "hidden" }]);
+    }
+  });
+});
+
 describe("the date window", () => {
   it("names the local day, not the UTC one", () => {
     // 2am on 12 March in a zone ahead of UTC is still 12 March. Via

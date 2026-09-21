@@ -69,6 +69,8 @@ async function call(j, method, path, body) {
 const get = (j, p) => call(j, "GET", p);
 const post = (j, p, b) => call(j, "POST", p, b ?? {});
 const patch = (j, p, b) => call(j, "PATCH", p, b ?? {});
+const put = (j, p, b) => call(j, "PUT", p, b ?? {});
+const del = (j, p) => call(j, "DELETE", p);
 
 async function signIn(email, password) {
   const j = jar();
@@ -154,7 +156,7 @@ async function main() {
 
   /* ---------------- Availability engine ---------------- */
   section("Availability");
-  const drips = await get(superadmin.jar, "/api/drips");
+  const drips = await get(superadmin.jar, "/api/drips?pageSize=100");
   ok("the drip library loads", drips.json?.data?.drips?.length > 0);
   const myers = drips.json.data.drips.find((d) => d.slug === "myers-revive");
   const immune = drips.json.data.drips.find((d) => d.slug === "immune-shield");
@@ -179,7 +181,7 @@ async function main() {
 
   /* ---------------- Order lifecycle ---------------- */
   section("Order lifecycle");
-  const before = await get(superadmin.jar, `/api/inventory/masters`);
+  const before = await get(superadmin.jar, "/api/inventory/masters?q=Ascorbic%20acid");
   const vitcBefore = before.json.data.masters.find((m) => m.name === "Ascorbic acid");
 
   const created = await post(clinic.jar, "/api/orders", {
@@ -200,7 +202,7 @@ async function main() {
   ok("the pharmacy confirms it", confirmed.json?.success === true, confirmed.json?.error);
   ok("confirmation moves it to CONFIRMED", confirmed.json?.data?.order?.status === "CONFIRMED");
 
-  const afterConfirm = await get(superadmin.jar, "/api/inventory/masters");
+  const afterConfirm = await get(superadmin.jar, "/api/inventory/masters?q=Ascorbic%20acid");
   const vitcReserved = afterConfirm.json.data.masters.find((m) => m.name === "Ascorbic acid");
   ok("confirming reserves units without taking them off the shelf",
     vitcReserved.onHand === vitcBefore.onHand && vitcReserved.available < vitcBefore.available,
@@ -212,7 +214,7 @@ async function main() {
   const dispatched = await post(superadmin.jar, `/api/orders/${orderId}/dispatch`);
   ok("dispatch consumes the stock", dispatched.json?.data?.order?.status === "DISPATCHED", dispatched.json?.error);
 
-  const afterDispatch = await get(superadmin.jar, "/api/inventory/masters");
+  const afterDispatch = await get(superadmin.jar, "/api/inventory/masters?q=Ascorbic%20acid");
   const vitcAfter = afterDispatch.json.data.masters.find((m) => m.name === "Ascorbic acid");
   ok("dispatch decrements what is on hand", vitcAfter.onHand < vitcReserved.onHand,
     `${vitcReserved.onHand} → ${vitcAfter.onHand}`);
@@ -237,11 +239,11 @@ async function main() {
   });
   const secondId = second.json.data.order._id;
   await post(superadmin.jar, `/api/orders/${secondId}/confirm`);
-  const midway = await get(superadmin.jar, "/api/inventory/masters");
+  const midway = await get(superadmin.jar, "/api/inventory/masters?q=Ascorbic%20acid");
   const vitcHeld = midway.json.data.masters.find((m) => m.name === "Ascorbic acid").available;
   const cancelled = await post(superadmin.jar, `/api/orders/${secondId}/cancel`, { reason: "smoke test" });
   ok("cancelling releases the reservation", cancelled.json?.data?.order?.status === "CANCELLED");
-  const released = await get(superadmin.jar, "/api/inventory/masters");
+  const released = await get(superadmin.jar, "/api/inventory/masters?q=Ascorbic%20acid");
   ok("the released units are available again",
     released.json.data.masters.find((m) => m.name === "Ascorbic acid").available > vitcHeld);
 
@@ -270,7 +272,7 @@ async function main() {
 
   /* ---------------- Inventory guards ---------------- */
   section("Inventory guards");
-  const masters = (await get(superadmin.jar, "/api/inventory/masters")).json.data.masters;
+  const masters = (await get(superadmin.jar, "/api/inventory/masters?q=Ascorbic%20acid")).json.data.masters;
   const vitc = masters.find((m) => m.name === "Ascorbic acid");
 
   const expiredLot = await post(superadmin.jar, `/api/inventory/masters/${vitc.id}/lots`, {
@@ -710,11 +712,225 @@ async function main() {
   const recall = await get(superadmin.jar, "/admin/inventory/recall");
   ok("the recall trace page renders", recall.status === 200);
 
+  /* ---------------- Ask a clinician, letterhead, billing, AI Studio ---------------- */
+  section("Ask a clinician, letterhead, billing, AI Studio");
+
+  // The consultation request is a public form, so there is no session to lean on.
+  const noContact = await post(null, "/api/leads", { kind: "consult", name: "Smoke Consult" });
+  ok("a consultation request with no way to reply is refused", noContact.status === 422, noContact.json?.error);
+  const consult = await post(null, "/api/leads", {
+    kind: "consult",
+    name: "Smoke Consult",
+    phone: "9845559999",
+    pincode: "560034",
+    message: "Topics: Energy - Best time to call: Evening - smoke test",
+  });
+  ok("a consultation request is accepted without signing in", consult.status === 201, consult.json?.error);
+  const leadList = await get(superadmin.jar, "/api/leads");
+  const lead = (leadList.json?.data?.leads ?? []).find((l) => l.name === "Smoke Consult" && l.kind === "consult");
+  ok("it reaches the enquiries as a consultation, with its message and pincode intact",
+    Boolean(lead) && (lead.message ?? "").includes("Best time to call") && lead.pincode === "560034");
+
+  // The physician's own letterhead.
+  const lh0 = await get(doctor.jar, "/api/me/letterhead");
+  ok("a physician can read their own letterhead and the credentials beside it",
+    lh0.json?.success === true && Boolean(lh0.json?.data?.credentials?.licenseNo), lh0.json?.error);
+  const licence = lh0.json?.data?.credentials?.licenseNo;
+  const originalLetterhead = lh0.json?.data?.letterhead ?? {};
+  ok("a nurse has no letterhead", (await get(nurse.jar, "/api/me/letterhead")).status === 403);
+  ok("nor does a patient", (await get(patient.jar, "/api/me/letterhead")).status === 403);
+  ok("nobody, a super admin included, can edit one on a physician's behalf",
+    (await put(superadmin.jar, "/api/me/letterhead", { practiceName: "x" })).status === 403);
+
+  const badPhone = await put(doctor.jar, "/api/me/letterhead", { phone: "call me" });
+  ok("a phone number that is not one is refused, against its own field",
+    badPhone.status === 422 && badPhone.json?.issues?.[0]?.path === "phone", badPhone.json?.error);
+
+  const smokeLetterhead = {
+    practiceName: "Smoke Practice",
+    qualifications: "MBBS",
+    address: "1 Test Road",
+    phone: "080 4000 1111",
+    email: "smoke@example.com",
+    footerNote: "Smoke note",
+  };
+  const savedLh = await put(doctor.jar, "/api/me/letterhead", smokeLetterhead);
+  ok("a physician can save a letterhead", savedLh.json?.success === true,
+    `${savedLh.json?.error} - after a schema change the dev server has to be restarted`);
+  const savedAgain = await put(doctor.jar, "/api/me/letterhead", smokeLetterhead);
+  ok("saving the same letterhead again changes nothing, and says so", savedAgain.json?.data?.changed === false);
+
+  const myPlans = await get(doctor.jar, "/api/plans");
+  const aPlan = (myPlans.json?.data?.plans ?? [])[0];
+  if (aPlan) {
+    const slip = await get(doctor.jar, "/doctor/plans/" + aPlan._id + "/print");
+    ok("the printed prescription is headed by the physician's letterhead", slip.text.includes("Smoke Practice"));
+    ok("and still prints the verified registration number beside it", Boolean(licence) && slip.text.includes(licence));
+  } else skip("prescription carries the letterhead", "this physician has no plan to print");
+
+  await put(doctor.jar, "/api/me/letterhead", { practiceName: "Smoke Practice", licenseNo: "FAKE/9999/1" });
+  const lh1 = await get(doctor.jar, "/api/me/letterhead");
+  ok("a licence number sent along with a letterhead is ignored", lh1.json?.data?.credentials?.licenseNo === licence);
+  const restored = await put(doctor.jar, "/api/me/letterhead", originalLetterhead);
+  ok("the letterhead is put back as it was", restored.json?.success === true, restored.json?.error);
+
+  // A clinic's billing, and the tenant boundary around it.
+  const bill = await get(clinic.jar, "/clinic/billing");
+  ok("the clinic's billing page renders", bill.status === 200, "status " + bill.status);
+  ok("a hand-edited month falls back to this one rather than failing",
+    (await get(clinic.jar, "/clinic/billing?month=not-a-month")).status === 200);
+  ok("a nurse is turned away from billing",
+    [302, 307].includes((await get(nurse.jar, "/clinic/billing")).status));
+
+  const ym = (d) => d.getFullYear() + "-" + String(d.getMonth() + 1).padStart(2, "0");
+  const months = [0, 1, 2].map((n) => ym(new Date(new Date().getFullYear(), new Date().getMonth() - n, 1)));
+  const theirs = new Set();
+  for (const m of months) {
+    const page = await get(clinic.jar, "/clinic/billing?month=" + m);
+    for (const no of page.text.match(/INV-[0-9]{4}-[0-9]{4}/g) ?? []) theirs.add(no);
+  }
+  if (theirs.size > 0) {
+    let leaked = [];
+    for (const m of months) {
+      const page = await get(superadmin.jar, "/clinic/billing?month=" + m);
+      leaked = leaked.concat([...theirs].filter((no) => page.text.includes(no)));
+    }
+    ok("another account never sees this clinic's invoices on a statement", leaked.length === 0, leaked.join(", "));
+  } else skip("billing tenant boundary", "this clinic has no invoice in the last three months");
+
+  // AI Studio: super admin only, one active at a time. It is switched off for now
+  // (src/lib/ai/enabled.ts), so the whole block is skipped while the API answers
+  // 404 - and what runs instead is a check that it really is off.
+  const aiOn = (await get(superadmin.jar, "/api/admin/ai")).status !== 404;
+  if (!aiOn) {
+    skip("AI Studio behaviour", "switched off (AI_STUDIO_ENABLED is false)");
+    ok("AI Studio is switched off: the API answers 404 to everyone",
+      (await get(superadmin.jar, "/api/admin/ai")).status === 404 && (await get(null, "/api/admin/ai")).status === 404);
+    ok("and its page is a plain 404, not a refusal", (await get(superadmin.jar, "/admin/studio")).status === 404);
+  }
+  if (aiOn) {
+  ok("AI Studio is closed to no session", (await get(null, "/api/admin/ai")).status === 403);
+  ok("and to an ordinary admin", (await get(admin.jar, "/api/admin/ai")).status === 403);
+  ok("and to a physician", (await get(doctor.jar, "/api/admin/ai")).status === 403);
+
+  const madeA = await post(superadmin.jar, "/api/admin/ai", {
+    name: "Smoke A", model: "claude-sonnet-5", temperature: 0.4, maxTokens: 512, systemPrompt: "p", status: "active",
+  });
+  ok("a new model is saved, and starts in Test whatever it asked for",
+    madeA.status === 201 && madeA.json?.data?.model?.status === "test", madeA.json?.error);
+  const aId = madeA.json?.data?.model?.id;
+  ok("a duplicate name is refused in any case",
+    (await post(superadmin.jar, "/api/admin/ai", { name: "SMOKE A", model: "m" })).status === 409);
+  const hot = await post(superadmin.jar, "/api/admin/ai", { name: "Smoke Hot", model: "m", temperature: 5 });
+  ok("a temperature above 1 is refused against its own field",
+    hot.status === 422 && hot.json?.issues?.[0]?.path === "temperature", hot.json?.error);
+  const renamed = await patch(superadmin.jar, "/api/admin/ai/" + aId, { name: "Smoke A2" });
+  ok("renaming leaves the temperature and the length alone",
+    renamed.json?.data?.model?.temperature === 0.4 && renamed.json?.data?.model?.maxTokens === 512);
+
+  const madeB = await post(superadmin.jar, "/api/admin/ai", { name: "Smoke B", model: "m" });
+  const bId = madeB.json?.data?.model?.id;
+  ok("a model with no system prompt cannot be made active",
+    (await patch(superadmin.jar, "/api/admin/ai/" + bId, { status: "active" })).status === 409);
+  const actA = await patch(superadmin.jar, "/api/admin/ai/" + aId, { status: "active" });
+  ok("a model with a prompt can", actA.json?.data?.model?.status === "active", actA.json?.error);
+  ok("the active model cannot be deleted", (await del(superadmin.jar, "/api/admin/ai/" + aId)).status === 409);
+  await patch(superadmin.jar, "/api/admin/ai/" + bId, { systemPrompt: "b", status: "active" });
+  const afterSwitch = await get(superadmin.jar, "/api/admin/ai");
+  const liveNow = (afterSwitch.json?.data?.models ?? []).filter((m) => m.status === "active");
+  ok("making another model active moves the first back to Test, never leaving two",
+    liveNow.length === 1 && liveNow[0].id === bId);
+
+  const extra = [];
+  for (let n = 0; n < 3; n++) {
+    const r = await post(superadmin.jar, "/api/admin/ai", { name: "Smoke R" + n, model: "m", systemPrompt: "r" });
+    extra.push(r.json?.data?.model?.id);
+  }
+  const race = await Promise.all([aId, bId, ...extra].map((id) => patch(superadmin.jar, "/api/admin/ai/" + id, { status: "active" })));
+  const afterRace = await get(superadmin.jar, "/api/admin/ai");
+  ok("five simultaneous activations leave at most one active",
+    (afterRace.json?.data?.models ?? []).filter((m) => m.status === "active").length <= 1);
+  ok("and every answer is a success or a plain conflict, never an error",
+    race.every((r) => r.status === 200 || r.status === 409), race.map((r) => r.status).join(","));
+
+  for (const id of [aId, bId, ...extra]) {
+    await patch(superadmin.jar, "/api/admin/ai/" + id, { status: "test" });
+    await del(superadmin.jar, "/api/admin/ai/" + id);
+  }
+  const tidy = await get(superadmin.jar, "/api/admin/ai");
+  ok("the smoke test leaves none of its own models behind",
+    !(tidy.json?.data?.models ?? []).some((m) => m.name.startsWith("Smoke ")));
+  }
+
+  /* ---------------- Pagination ---------------- */
+  section("Pagination");
+  // Every list API pages in the database and says where it is. The lists checked
+  // are the ones a superadmin can read in full.
+  for (const [path, key] of [
+    ["/api/users", "users"], ["/api/leads", "leads"], ["/api/orders", "orders"],
+    ["/api/bookings", "bookings"], ["/api/plans", "plans"], ["/api/lab-reports", "reports"], ["/api/inventory/masters", "masters"], ["/api/drips", "drips"], ["/api/kits", "kits"],
+  ]) {
+    const first = await get(superadmin.jar, `${path}?pageSize=2`);
+    const pg = first.json?.data?.pagination;
+    ok(`${path} reports its page`, Boolean(pg) && pg.page === 1 && pg.pageSize === 2, JSON.stringify(pg));
+    ok(`${path} sends no more than the page size`, (first.json?.data?.[key] ?? []).length <= 2);
+    if ((pg?.total ?? 0) > 2) {
+      const second = await get(superadmin.jar, `${path}?pageSize=2&page=2`);
+      const a = (first.json.data[key] ?? []).map((r) => r._id ?? r.id);
+      const b = (second.json?.data?.[key] ?? []).map((r) => r._id ?? r.id);
+      ok(`${path} page 2 is different rows from page 1`, b.length > 0 && !b.some((id) => a.includes(id)));
+    } else skip(`${path} page 2`, "two rows or fewer in the list");
+    const past = await get(superadmin.jar, `${path}?pageSize=2&page=99999`);
+    ok(`${path} a page past the end is pulled back to the last`,
+      past.json?.data?.pagination?.page === (pg?.totalPages ?? 1), JSON.stringify(past.json?.data?.pagination));
+    const hostile = await get(superadmin.jar, `${path}?page=abc&pageSize=999999`);
+    ok(`${path} nonsense input is safe and capped at 100`,
+      hostile.status === 200 && hostile.json?.data?.pagination?.pageSize === 100 && hostile.json?.data?.pagination?.page === 1,
+      `status ${hostile.status}`);
+  }
+
+  const aProduct = (await get(superadmin.jar, "/api/inventory/masters?pageSize=1")).json?.data?.masters?.[0];
+  const productLots = aProduct ? await get(superadmin.jar, `/api/inventory/masters/${aProduct.id}?pageSize=1`) : null;
+  ok("a product's batches come a page at a time",
+    productLots?.json?.data?.pagination?.pageSize === 1 && (productLots?.json?.data?.lots ?? []).length <= 1);
+
+  // The same lists as screens: the footer says which rows and how many.
+  const audit = await get(superadmin.jar, "/admin/audit?pageSize=10");
+  ok("the audit trail footer names the rows shown", /Showing/.test(audit.text) && /entries/.test(audit.text));
+  const auditPast = await get(superadmin.jar, "/admin/audit?pageSize=10&page=99999");
+  ok("an audit page past the end still renders", auditPast.status === 200);
+  const batches = await get(superadmin.jar, "/admin/inventory?tab=batches&pageSize=10");
+  ok("the batches tab is paged", batches.status === 200 && /Showing/.test(batches.text) && /batches/.test(batches.text));
+
+  const products = await get(superadmin.jar, "/admin/inventory?pageSize=10&page=99");
+  ok("the products tab is paged, and a page past the end is pulled back",
+    products.status === 200 && /Showing/.test(products.text) && /products/.test(products.text));
+
+  // History lists are paged; the worklists beside them are not.
+  const nurseHistory = await get(nurse.jar, "/nurse/schedule?view=past&pageSize=1");
+  ok("the nurse's history is paged", nurseHistory.status === 200 && /Showing/.test(nurseHistory.text));
+  const nurseUpcoming = await get(nurse.jar, "/nurse/schedule");
+  ok("the nurse's upcoming worklist is not paged", nurseUpcoming.status === 200 && !/aria-label="Pagination"/.test(nurseUpcoming.text));
+  for (const [path, who, label] of [
+    ["/app/sessions?pageSize=1", patient, "the patient's session history"],
+    ["/app/reports?pageSize=1", patient, "the patient's lab reports"],
+  ]) {
+    const res = await get(who.jar, path);
+    ok(`${label} is paged`, res.status === 200 && /Showing/.test(res.text), `status ${res.status}`);
+  }
+  const anyBooking = (await get(superadmin.jar, "/api/bookings?pageSize=1")).json?.data?.bookings?.[0];
+  if (anyBooking?.patientId) {
+    const detail = await get(superadmin.jar, `/doctor/patients/${anyBooking.patientId}?page=abc&pageSize=99999`);
+    ok("a patient's session history is paged, and safe with nonsense input", detail.status === 200 && /Showing/.test(detail.text),
+      `status ${detail.status}`);
+  } else skip("patient session history pager", "no booking to find a patient by");
+
   /* ---------------- Pages render ---------------- */
   section("Pages");
   const pages = [
     ["/", null], ["/drips", null], ["/pricing", null], ["/safety", null], ["/zones", null],
     ["/for-clinics", null], ["/legal/terms", null], ["/legal/privacy", null], ["/login", null],
+    ["/about", null], ["/faqs", null], ["/how-it-works", null], ["/consult", null],
     ["/drips/myers-revive", null],
     ["/admin", superadmin], ["/admin/approvals", superadmin], ["/admin/inventory", superadmin],
     ["/admin/inventory/drips", superadmin], ["/admin/inventory/availability", superadmin],
@@ -722,12 +938,14 @@ async function main() {
     ["/admin/inventory/recall", superadmin], ["/admin/users", superadmin], ["/admin/quiz", superadmin],
     ["/admin/content", superadmin], ["/admin/leads", superadmin],
     ["/doctor", doctor], ["/doctor/patients", doctor], ["/doctor/plans", doctor],
-    ["/doctor/schedule", doctor], ["/doctor/adverse", doctor],
+    ["/doctor/schedule", doctor], ["/doctor/adverse", doctor], ["/doctor/letterhead", doctor],
     ["/nurse", nurse], ["/nurse/schedule", nurse], ["/nurse/kit", nurse], ["/nurse/me", nurse],
     ["/clinic", clinic], ["/clinic/orders", clinic], ["/clinic/bookings", clinic], ["/clinic/profile", clinic],
+    ["/clinic/billing", clinic], ["/clinic/billing/statement", clinic],
     ["/app", patient], ["/app/sessions", patient], ["/app/reports", patient], ["/app/profile", patient],
     ["/app/book", patient],
   ];
+  if (aiOn) pages.push(["/admin/studio", superadmin]);
   const broken = [];
   for (const [path, who] of pages) {
     const res = await get(who?.jar ?? null, path);

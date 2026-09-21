@@ -4,6 +4,8 @@ import { Drip, Order, User } from "@/lib/models";
 import { getSession } from "@/lib/auth/session";
 import { can } from "@/lib/auth/rbac";
 import { nextReference, createWithReference } from "@/lib/sequence";
+import { paginate } from "@/lib/pagination-db";
+import { pageInfo, parsePaging } from "@/lib/pagination";
 import { ok, fail, handleError } from "@/lib/api";
 
 const CreateOrder = z.object({
@@ -29,14 +31,16 @@ export async function GET(req: Request) {
     if (!can(session?.role, "orders.view")) return fail("Not permitted", 403);
 
     await connectDB();
-    const status = new URL(req.url).searchParams.get("status");
+    const params = new URL(req.url).searchParams;
+    const status = params.get("status");
     const filter: Record<string, unknown> = {};
     if (status && status !== "all") filter.status = status.toUpperCase();
     // A clinic only ever sees its own orders.
     if (session!.role === "clinic") filter.clinicId = session!.sub;
 
-    const orders = await Order.find(filter).sort({ createdAt: -1 }).limit(200).lean();
-    return ok({ orders });
+    const paging = parsePaging({ page: params.get("page"), pageSize: params.get("pageSize") });
+    const { rows: orders, meta } = await paginate(Order, filter, { sort: { createdAt: -1 }, paging });
+    return ok({ orders, pagination: pageInfo(meta) });
   } catch (err) {
     return handleError(err);
   }

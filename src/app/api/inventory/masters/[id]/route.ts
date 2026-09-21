@@ -3,7 +3,8 @@ import { connectDB } from "@/lib/db/mongoose";
 import { Allocation, AuditLog, BatchLot, ProductMaster } from "@/lib/models";
 import { getSession } from "@/lib/auth/session";
 import { can } from "@/lib/auth/rbac";
-import { listLots } from "@/lib/data/inventory";
+import { pageInfo, parsePaging } from "@/lib/pagination";
+import { listLotsPage } from "@/lib/data/inventory";
 import { ok, fail, handleError } from "@/lib/api";
 
 const Patch = z.object({
@@ -18,7 +19,7 @@ const Patch = z.object({
 });
 
 /** A product with every batch under it. */
-export async function GET(_req: Request, { params }: { params: Promise<{ id: string }> }) {
+export async function GET(req: Request, { params }: { params: Promise<{ id: string }> }) {
   try {
     const session = await getSession();
     if (!can(session?.role, "inventory.view")) return fail("Not permitted", 403);
@@ -26,7 +27,13 @@ export async function GET(_req: Request, { params }: { params: Promise<{ id: str
     await connectDB();
     const master = await ProductMaster.findById(id).lean();
     if (!master) return fail("Product not found", 404);
-    return ok({ master, lots: await listLots({ masterId: id }) });
+    // Every delivery of a product adds a batch, so its batches come a page at a time.
+    const q = new URL(req.url).searchParams;
+    const { rows: lots, meta } = await listLotsPage({
+      masterId: id,
+      paging: parsePaging({ page: q.get("page"), pageSize: q.get("pageSize") }),
+    });
+    return ok({ master, lots, pagination: pageInfo(meta) });
   } catch (err) {
     return handleError(err);
   }

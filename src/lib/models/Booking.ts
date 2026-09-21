@@ -221,5 +221,10 @@ const BookingSchema = new Schema(
 BookingSchema.index({ status: 1, scheduledAt: 1 });
 BookingSchema.index({ nurseId: 1, scheduledAt: 1 });
 
+/** Serves the paged lists: the filter, then the sort, so a page is an index walk. */
+BookingSchema.index({ patientId: 1, scheduledAt: -1, _id: -1 });
+BookingSchema.index({ clinicId: 1, scheduledAt: -1, _id: -1 });
+BookingSchema.index({ doctorId: 1, scheduledAt: -1, _id: -1 });
+
 export const Booking = models.Booking || model("Booking", BookingSchema);
 export default Booking;

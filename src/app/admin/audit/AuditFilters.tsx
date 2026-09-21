@@ -2,14 +2,8 @@
 
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import {
-  createContext,
-  useContext,
-  useOptimistic,
-  useTransition,
-  type MouseEvent,
-  type ReactNode,
-} from "react";
+import { useOptimistic, useTransition, type MouseEvent } from "react";
+import { useNavigation } from "@/components/ui/Paged";
 import { Select } from "@/components/ui/Field";
 import { DatePicker } from "@/components/ui/DatePicker";
 import {
@@ -49,6 +43,8 @@ type Filters = {
   actor?: string;
   from?: string;
   to?: string;
+  /** Not a filter, but it has to survive one: changing a filter must not undo the rows-per-page. */
+  pageSize?: string;
 };
 
 /** A change to the filter: a string sets a key, `null` clears it. */
@@ -63,6 +59,7 @@ const apply = (base: Filters, next: Patch): Filters => {
     actor: pick("actor", base.actor),
     from: pick("from", base.from),
     to: pick("to", base.to),
+    pageSize: base.pageSize,
   };
 };
 
@@ -73,43 +70,18 @@ const hrefFor = (f: Filters) => {
   if (f.actor) p.set("actor", f.actor);
   if (f.from) p.set("from", f.from);
   if (f.to) p.set("to", f.to);
+  // 25 is the default, and the clean URL leaves it out.
+  if (f.pageSize && f.pageSize !== "25") p.set("pageSize", f.pageSize);
   const s = p.toString();
   return `/admin/audit${s ? `?${s}` : ""}`;
 };
 
 /**
- * The filters and the results are siblings on the page, rendered by the
- * server, so the "a new filter is loading" fact has to live above both of them.
+ * The provider and the dimmed wrapper are the shared ones, so a change of filter
+ * and a change of page are the same thing to the reader: the rows go quiet while
+ * the next ones are on their way, and the page stays where it is.
  */
-const Navigation = createContext<{
-  pending: boolean;
-  start: (fn: () => void) => void;
-} | null>(null);
-
-export function AuditView({ children }: { children: ReactNode }) {
-  const [pending, start] = useTransition();
-  return <Navigation.Provider value={{ pending, start }}>{children}</Navigation.Provider>;
-}
-
-/**
- * The rows while a new filter is on its way: dimmed, not replaced. Swapping in
- * a skeleton would throw away a table someone may still be reading and make
- * every filter feel slower than it is. The dim waits 150ms before it starts, so
- * an answer that comes back quickly never flickers the page at all.
- */
-export function AuditResults({ children }: { children: ReactNode }) {
-  const pending = useContext(Navigation)?.pending ?? false;
-  return (
-    <div
-      aria-busy={pending || undefined}
-      className={`transition-opacity ${
-        pending ? "opacity-45 duration-200 delay-150 pointer-events-none" : "opacity-100 duration-100"
-      }`}
-    >
-      {children}
-    </div>
-  );
-}
+export { PagedView as AuditView, PagedResults as AuditResults } from "@/components/ui/Paged";
 
 export function AuditFilters({
   group,
@@ -117,6 +89,7 @@ export function AuditFilters({
   actor,
   from,
   to,
+  pageSize,
   presets,
   counts,
   actors,
@@ -128,6 +101,7 @@ export function AuditFilters({
   actor?: string;
   from?: string;
   to?: string;
+  pageSize?: string;
   /** Computed on the server — a client component must not read the clock. */
   presets: DatePreset[];
   counts: Array<{ action: string; n: number }>;
@@ -136,7 +110,7 @@ export function AuditFilters({
   total: number;
 }) {
   const router = useRouter();
-  const shared = useContext(Navigation);
+  const shared = useNavigation();
   // Only for a bar mounted without AuditView around it; the page provides one.
   const [, startLocal] = useTransition();
   const start = shared?.start ?? startLocal;
@@ -146,7 +120,7 @@ export function AuditFilters({
    * server is still answering. React drops the optimistic copy the moment the
    * navigation lands, by which point the props say the same thing.
    */
-  const [view, show] = useOptimistic<Filters, Filters>({ group, action, actor, from, to }, (_, next) => next);
+  const [view, show] = useOptimistic<Filters, Filters>({ group, action, actor, from, to, pageSize }, (_, next) => next);
 
   /**
    * Built on the bar's current view, not the props, so two quick changes

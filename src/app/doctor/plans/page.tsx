@@ -10,6 +10,9 @@ import { StatusPill } from "@/components/ui/Pill";
 import { EmptyState } from "@/components/ui/States";
 import { FillSegments } from "@/components/ui/Fill";
 import { formatDate } from "@/lib/data/inventory";
+import { PagedResults, PagedView, Pagination } from "@/components/ui/Paged";
+import { hrefWith, parsePaging } from "@/lib/pagination";
+import { paginate } from "@/lib/pagination-db";
 import { ageFrom } from "@/lib/data/clinical";
 import { toDay, type PlanComponentInput } from "@/lib/clinical/plan-input";
 import { PlanBuilder, type PlanDraft } from "./PlanBuilder";
@@ -91,23 +94,30 @@ function toDraft(p: PlanDoc, masterByName: Map<string, string>): PlanDraft {
 export default async function PlansPage({
   searchParams,
 }: {
-  searchParams: Promise<{ edit?: string; show?: string }>;
+  searchParams: Promise<{ edit?: string; show?: string; page?: string; pageSize?: string }>;
 }) {
   const session = await requireRole("doctor", "superadmin");
-  const { edit, show } = await searchParams;
+  const { edit, show, page, pageSize } = await searchParams;
+  const paging = parsePaging({ page, pageSize });
   const showArchived = show === "archived";
   const nav = await doctorNav(session.sub);
   await connectDB();
 
-  const [plans, patients, nurses, drips, masters] = await Promise.all([
-    TreatmentPlan.find({
-      ...(session.role === "doctor" ? { doctorId: session.sub } : {}),
-      // Archiving is meant to clear the list. Leaving them in would make the
-      // action do nothing on the very screen it exists for.
-      ...(showArchived ? { status: "archived" } : { status: { $ne: "archived" } }),
-    })
-      .sort({ createdAt: -1 })
-      .lean<PlanDoc[]>(),
+  // A physician sees their own plans; a super admin sees all.
+  const ownerFilter = session.role === "doctor" ? { doctorId: session.sub } : {};
+
+  const [paged, patients, nurses, drips, masters] = await Promise.all([
+    // One page of plans from the database (this had `.limit(100)` in the API and
+    // nothing at all here). Archived plans are left out of the open list, so
+    // archiving does something on the very screen it exists for.
+    paginate<PlanDoc>(
+      TreatmentPlan,
+      {
+        ...ownerFilter,
+        ...(showArchived ? { status: "archived" } : { status: { $ne: "archived" } }),
+      },
+      { sort: { createdAt: -1 }, paging }
+    ),
     User.find({ role: "patient", status: "active" })
       .sort({ name: 1 })
       .lean<
@@ -151,7 +161,17 @@ export default async function PlansPage({
 
   const nameById = new Map([...patients, ...nurses].map((u) => [String(u._id), u.name]));
   const masterByName = new Map(masters.map((m) => [m.name.trim().toLowerCase(), String(m._id)]));
-  const editing = edit ? plans.find((p) => String(p._id) === edit) : undefined;
+  const { rows: plans, meta } = paged;
+
+  // Looked up by id rather than found in the list on screen: the plan being
+  // edited may be on page 3, and a plan not on THIS page must still open. The
+  // owner filter applies here too, so nobody can open a colleague's plan by
+  // typing its id; and only a well-formed id is asked for, so a mangled link is
+  // an empty editor and not a server error.
+  const editing =
+    edit && /^[0-9a-f]{24}$/i.test(edit)
+      ? ((await TreatmentPlan.findOne({ _id: edit, ...ownerFilter }).lean<PlanDoc | null>()) ?? undefined)
+      : undefined;
 
   const builderProps = {
     patients: patients.map((p) => ({
@@ -196,7 +216,7 @@ export default async function PlansPage({
       activeHref="/doctor/plans"
       breadcrumb={["Clinical", "Treatment plans"]}
       title="Treatment plans"
-      meta={`${plans.length} plan${plans.length === 1 ? "" : "s"}`}
+      meta={`${meta.total} plan${meta.total === 1 ? "" : "s"}`}
     >
       <p className="t-body text-[var(--color-ink-2)] max-w-[76ch] mb-6" style={{ textWrap: "pretty" }}>
         A plan is a course, not a single session — several weeks of drips with their doses and routes written out.
@@ -215,7 +235,7 @@ export default async function PlansPage({
         ].map(([key, label]) => (
           <Link
             key={label}
-            href={key ? "/doctor/plans?show=archived" : "/doctor/plans"}
+            href={hrefWith("/doctor/plans", { pageSize }, { show: key || undefined })}
             className={`px-4 min-h-[36px] inline-flex items-center rounded-[6px] text-[13px] font-semibold no-underline hover:no-underline ${
               (key === "archived") === showArchived
                 ? "bg-[var(--color-surface)] text-[var(--color-ink)]"
@@ -250,6 +270,8 @@ export default async function PlansPage({
           }
         />
       ) : (
+        <PagedView>
+        <PagedResults>
         <div className="grid grid-cols-1 gap-4 xl:grid-cols-2">
           {plans.map((p) => {
             const sessions = p.weeks.flatMap((w) => w.sessions);
@@ -308,7 +330,10 @@ export default async function PlansPage({
                 </div>
 
                 <div className="mt-auto pt-4 border-t border-[var(--color-line)] flex items-center gap-5 flex-wrap">
-                  <Link href={`/doctor/plans?edit=${String(p._id)}`} className="t-small font-semibold">
+                  <Link
+                    href={hrefWith("/doctor/plans", { show, page, pageSize }, { edit: String(p._id) })}
+                    className="t-small font-semibold"
+                  >
                     Edit the plan&nbsp;<Arrow />
                   </Link>
                   <Link href={`/doctor/plans/${String(p._id)}/print`} className="t-small font-semibold">
@@ -333,6 +358,9 @@ export default async function PlansPage({
             );
           })}
         </div>
+        </PagedResults>
+        <Pagination meta={meta} basePath="/doctor/plans" params={{ show, pageSize }} nouns={["plan", "plans"]} />
+        </PagedView>
       )}
     </ConsoleShell>
   );
