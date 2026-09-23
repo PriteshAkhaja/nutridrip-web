@@ -11,6 +11,7 @@ import { Pill, StatusPill } from "@/components/ui/Pill";
 import { StatCard } from "@/components/ui/Card";
 import { EmptyState } from "@/components/ui/States";
 import { formatDate, formatTime } from "@/lib/data/inventory";
+import { NameLink } from "@/components/ui/NameLink";
 
 export const metadata: Metadata = { title: "Approvals" };
 export const dynamic = "force-dynamic";
@@ -44,6 +45,12 @@ export default async function AdminApprovalsPage() {
     _id: { $in: [...recent.map((r) => r.patientId), ...recent.map((r) => r.reviewedBy).filter(Boolean)] },
   }).lean<Array<{ _id: unknown; name: string }>>();
   const nameById = new Map(people.map((p) => [String(p._id), p.name]));
+
+  // Age, gender, vitality and the allergy / medication flags all come out of the
+  // patient's health quiz. The super admin, who may read the record, sees them; an
+  // Admin watches the queue by who is waiting and for how long, which is all the
+  // SLA needs.
+  const clinical = session.role === "superadmin";
 
   const breaching = queue.filter((q) => q.msLeft < 0).length;
   const withinHour = queue.filter((q) => q.msLeft >= 0 && q.msLeft < 3_600_000).length;
@@ -99,8 +106,8 @@ export default async function AdminApprovalsPage() {
           <THead>
             <TR>
               <TH>Patient</TH>
-              <TH numeric>Vitality</TH>
-              <TH>Flags</TH>
+              {clinical && <TH numeric>Vitality</TH>}
+              {clinical && <TH>Flags</TH>}
               <TH>Requested</TH>
               <TH>Submitted</TH>
               <TH>SLA</TH>
@@ -114,27 +121,28 @@ export default async function AdminApprovalsPage() {
                 <TR key={q.quizId}>
                   <TD nowrap>
                     <div className="flex flex-col">
-                      <span className="font-medium">{q.name}</span>
+                      <NameLink href={`/admin/users/${q.patientId}`}>{q.name}</NameLink>
                       <span className="t-data text-[13px] text-[var(--color-ink-3)]">
-                        {q.age} · {q.gender}
-                        {q.bookingNo ? ` · ${q.bookingNo}` : ""}
+                        {clinical ? `${q.age} · ${q.gender}${q.bookingNo ? ` · ${q.bookingNo}` : ""}` : (q.bookingNo ?? "No booking yet")}
                       </span>
                     </div>
                   </TD>
-                  <TD numeric>{q.vitalityScore}</TD>
-                  <TD>
-                    <span className="flex gap-1 flex-wrap">
-                      {q.flags.length === 0 ? (
-                        <span className="t-small text-[var(--color-ink-3)]">—</span>
-                      ) : (
-                        q.flags.map((f) => (
-                          <Pill key={f.label} tone={FLAG_TONE[f.kind]} dot={f.kind === "crit"}>
-                            {f.label}
-                          </Pill>
-                        ))
-                      )}
-                    </span>
-                  </TD>
+                  {clinical && <TD numeric>{q.vitalityScore}</TD>}
+                  {clinical && (
+                    <TD>
+                      <span className="flex gap-1 flex-wrap">
+                        {q.flags.length === 0 ? (
+                          <span className="t-small text-[var(--color-ink-3)]">—</span>
+                        ) : (
+                          q.flags.map((f) => (
+                            <Pill key={f.label} tone={FLAG_TONE[f.kind]} dot={f.kind === "crit"}>
+                              {f.label}
+                            </Pill>
+                          ))
+                        )}
+                      </span>
+                    </TD>
+                  )}
                   <TD nowrap>{q.dripName ?? <span className="t-small text-[var(--color-ink-3)]">No booking yet</span>}</TD>
                   <TD mono nowrap>
                     {formatDate(q.submittedAt)} · {formatTime(q.submittedAt)}
@@ -169,7 +177,7 @@ export default async function AdminApprovalsPage() {
             <THead>
               <TR>
                 <TH>Patient</TH>
-                <TH numeric>Vitality</TH>
+                {clinical && <TH numeric>Vitality</TH>}
                 <TH>Decision</TH>
                 <TH>Physician</TH>
                 <TH>When</TH>
@@ -178,8 +186,12 @@ export default async function AdminApprovalsPage() {
             <tbody>
               {recent.map((r) => (
                 <TR key={String(r._id)}>
-                  <TD nowrap>{nameById.get(String(r.patientId)) ?? "—"}</TD>
-                  <TD numeric>{r.vitalityScore}</TD>
+                  <TD nowrap>
+                    <NameLink href={`/admin/users/${String(r.patientId)}`}>
+                      {nameById.get(String(r.patientId)) ?? "—"}
+                    </NameLink>
+                  </TD>
+                  {clinical && <TD numeric>{r.vitalityScore}</TD>}
                   <TD>
                     <StatusPill status={r.reviewStatus} dot />
                   </TD>

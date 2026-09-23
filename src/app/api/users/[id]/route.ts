@@ -7,13 +7,16 @@ import { hashPassword } from "@/lib/auth/password";
 import { USER_STATUS } from "@/lib/models/types";
 import { normalisePhone } from "@/lib/auth/phone";
 import { checkGstin } from "@/lib/billing/gst";
+import { notify } from "@/lib/notify";
+import { noticesForNurseChange } from "@/lib/data/team-notices";
+import { trackedFields, withDoctorName } from "@/lib/data/user-audit";
 import { ok, fail, handleError } from "@/lib/api";
 
 const UpdateUser = z.object({
-  name: z.string().min(1).max(120).optional(),
-  phone: z.string().min(6).max(20).optional(),
+  name: z.string().min(1, "enter a name").max(120, "that name is too long").optional(),
+  phone: z.string().min(6, "that number does not look right").max(20, "that number does not look right").optional(),
   status: z.enum(USER_STATUS).optional(),
-  password: z.string().min(8).max(72).optional(),
+  password: z.string().min(8, "use at least 8 characters").max(72, "use 72 characters or fewer").optional(),
   specialization: z.string().max(120).optional(),
   licenseNo: z.string().max(60).optional(),
   registrationCouncil: z.string().max(120).optional(),
@@ -72,6 +75,12 @@ export async function PATCH(req: Request, { params }: { params: Promise<{ id: st
     }
 
     const before = { name: user.name, status: user.status };
+    // Everything an edit can change that is worth a before-and-after: the trail used
+    // to keep only the name and status, so a moved nurse or a new GSTIN left no trace.
+    const beforeFields = trackedFields(user.toObject());
+    let doctorNames: Record<string, string> = {};
+    // What the team looked like before this edit, for telling the people it changes for.
+    const wasDoctorId = user.role === "nurse" && user.nurse?.doctorId ? String(user.nurse.doctorId) : null;
 
     if (input.name) user.name = input.name;
     if (input.phone) {
@@ -132,14 +141,37 @@ export async function PATCH(req: Request, { params }: { params: Promise<{ id: st
 
     await user.save();
 
+    // A nurse moved between physicians, or switched off or back on, is news to the
+    // physicians and the nurse it touches. A corrected name is not, and says nothing.
+    if (user.role === "nurse") {
+      const nowDoctorId = user.nurse?.doctorId ? String(user.nurse.doctorId) : null;
+      const ids = [...new Set([wasDoctorId, nowDoctorId].filter((x): x is string => Boolean(x)))];
+      const doctors = ids.length
+        ? await User.find({ _id: { $in: ids } }).select("name").lean<Array<{ _id: unknown; name: string }>>()
+        : [];
+      doctorNames = Object.fromEntries(doctors.map((d) => [String(d._id), d.name]));
+      const notices = noticesForNurseChange({
+        nurse: { id, name: user.name, zones: user.nurse?.serviceAreas },
+        before: { doctorId: wasDoctorId, status: before.status },
+        after: { doctorId: nowDoctorId, status: user.status },
+        doctorNames,
+      });
+      for (const n of notices) await notify(n.userId, n.title, n.body, n.type, n.link);
+    }
+
     await AuditLog.create({
       actorId: session!.sub,
       actorRole: session!.role,
       action: "user.update",
       entity: "User",
       entityId: id,
-      before,
-      after: { name: user.name, status: user.status, sessionsEnded: stopsAccess || undefined },
+      before: withDoctorName(beforeFields, doctorNames),
+      after: {
+        ...withDoctorName(trackedFields(user.toObject()), doctorNames),
+        // A password is never written to the trail, but THAT one was set is worth knowing.
+        ...(input.password ? { credentials: "new password set" } : {}),
+        sessionsEnded: stopsAccess || undefined,
+      },
     });
 
     return ok({ user: { id, name: user.name, status: user.status } });

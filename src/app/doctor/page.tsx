@@ -5,9 +5,9 @@ import { doctorNav } from "@/lib/nav";
 import { ConsoleShell } from "@/components/layout/ConsoleShell";
 import { reviewQueue } from "@/lib/data/clinical";
 import { connectDB } from "@/lib/db/mongoose";
-import { Booking, HealthQuiz } from "@/lib/models";
+import { Booking, HealthQuiz, User } from "@/lib/models";
 import { StatCard } from "@/components/ui/Card";
-import { Pill } from "@/components/ui/Pill";
+import { Pill, StatusPill } from "@/components/ui/Pill";
 import { EmptyState } from "@/components/ui/States";
 import { Button } from "@/components/ui/Button";
 
@@ -42,6 +42,27 @@ export default async function DoctorQueuePage() {
   const escalations = openAdverse + blockedVitals;
 
   const breaching = queue.filter((q) => q.msLeft < 3_600_000).length;
+
+  // The nurses posted under this physician: who they are, where they work, and
+  // what they are carrying right now. Only a physician has a team -- the super
+  // admin, who can also open this page, does not.
+  const OPEN = ["nurse_assigned", "en_route", "in_progress"];
+  const team =
+    session.role === "doctor"
+      ? await User.find({ role: "nurse", "nurse.doctorId": session.sub })
+          .select("name status nurse.serviceAreas")
+          .sort({ name: 1 })
+          .lean<Array<{ _id: unknown; name: string; status: string; nurse?: { serviceAreas?: string[] } }>>()
+      : [];
+  const openByNurse = new Map(
+    (team.length
+      ? await Booking.aggregate<{ _id: unknown; n: number }>([
+          { $match: { nurseId: { $in: team.map((n) => n._id) }, status: { $in: OPEN } } },
+          { $group: { _id: "$nurseId", n: { $sum: 1 } } },
+        ])
+      : []
+    ).map((r) => [String(r._id), r.n])
+  );
 
   return (
     <ConsoleShell
@@ -170,6 +191,54 @@ export default async function DoctorQueuePage() {
             );
           })}
         </div>
+      )}
+
+      {/* Where "… has joined your team" lands. Only for a physician. */}
+      {session.role === "doctor" && (
+        <section id="team" className="mt-10 scroll-mt-20">
+          <div className="flex items-baseline justify-between gap-4 mb-3">
+            <h2 className="t-h3">Your nurses</h2>
+            <span className="t-data text-[13px] text-[var(--color-ink-3)]">{team.length} on your team</span>
+          </div>
+          {team.length === 0 ? (
+            <p className="t-body text-[var(--color-ink-2)] max-w-[62ch]">
+              No nurse is posted under you yet. The operations team adds nurses and chooses which physician each works
+              under; you are told the moment one joins.
+            </p>
+          ) : (
+            <div className="flex flex-col gap-3">
+              {team.map((n) => {
+                const zones = n.nurse?.serviceAreas ?? [];
+                const open = openByNurse.get(String(n._id)) ?? 0;
+                return (
+                  <div
+                    key={String(n._id)}
+                    className="rounded-[var(--radius-lg)] border border-[var(--color-line)] bg-[var(--color-surface)] p-5 grid gap-3 lg:grid-cols-[1fr_1.4fr_260px] items-center"
+                  >
+                    <span className="t-h3">{n.name}</span>
+                    <div className="flex gap-2 flex-wrap items-center">
+                      {zones.length === 0 ? (
+                        <span className="t-small text-[var(--color-ink-3)]">Offered for every zone</span>
+                      ) : (
+                        zones.map((z) => (
+                          <Pill key={z} tone="neutral">
+                            {z}
+                          </Pill>
+                        ))
+                      )}
+                    </div>
+                    <div className="flex items-center gap-4 justify-between lg:justify-end">
+                      <span className="t-small text-[var(--color-ink-2)]">
+                        {open === 0 ? "No open sessions" : `${open} open session${open === 1 ? "" : "s"}`}
+                      </span>
+                      <StatusPill status={n.status} dot />
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          )}
+        </section>
       )}
     </ConsoleShell>
   );

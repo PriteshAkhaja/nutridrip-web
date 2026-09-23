@@ -111,7 +111,28 @@ const SECRET = /pass|hash|secret|token|otp|code|signature|key/i;
  * unreadable in the one place it is recorded. Exact names only: a loose
  * exemption would be a way for a real `resetToken` to slip through.
  */
-const NOT_SECRET = new Set(["maxTokens"]);
+// `pincode` contains "code", and hiding it would make a clinic's move unreadable.
+const NOT_SECRET = new Set(["maxTokens", "pincode"]);
+
+/**
+ * Actions whose before/after carry what a patient told a physician, or what a
+ * physician found: the symptoms on a reaction report, the question and answer
+ * when a patient replies to a doctor, the file name of a lab report, the readings
+ * that were out of range.
+ *
+ * The Admin reads the trail -- it is a security log, and that is a fair use of it
+ * -- but is not meant to read anyone's medical record, and this is the back door
+ * a limited patient page would otherwise leave open. So for an Admin the row is
+ * still there (who, what, when, to which record) and the clinical text is not.
+ * The super admin, who may read the record, sees it.
+ */
+const CLINICAL_DETAIL = /^(adverse\.|vitals\.|lab\.|quiz\.submitted$|quiz\.info\.)/;
+
+export const CLINICAL_WITHHELD = "Clinical detail: for the treating physician";
+
+export function withholdsDetail(role: string | undefined, action: string): boolean {
+  return role === "admin" && CLINICAL_DETAIL.test(action);
+}
 
 const readable = (v: unknown): string => {
   if (v === null || v === undefined) return "—";

@@ -20,7 +20,7 @@ export const PERMISSIONS = {
   "orders.update": ["superadmin", "admin"],
   "orders.dispatch": ["superadmin", "admin"],
 
-  "plans.view": ["superadmin", "admin", "doctor", "nurse", "patient"],
+  "plans.view": ["superadmin", "doctor", "nurse", "patient"],
   "plans.create": ["superadmin", "doctor"],
   "plans.share": ["superadmin", "doctor"],
   /**
@@ -61,7 +61,13 @@ export const PERMISSIONS = {
    */
   "audit.view": ["superadmin", "admin"],
   "labs.upload": ["patient"],
-  "labs.view": ["superadmin", "admin", "doctor", "patient"],
+  /**
+   * A lab report is a patient's own medical document: the physician reads it, and
+   * so does the patient. Operations staff do not, so an Admin is not listed here
+   * even though the screens never showed it -- the API did, to anyone with a
+   * session. `plans.view`, further up, is left out for the same reason.
+   */
+  "labs.view": ["superadmin", "doctor", "patient"],
 
   "bookings.create": ["patient"],
   "bookings.view": ["superadmin", "admin", "doctor", "nurse", "clinic", "patient"],
@@ -78,6 +84,27 @@ export const PERMISSIONS = {
 } as const satisfies Record<string, readonly Role[]>;
 
 export type Permission = keyof typeof PERMISSIONS;
+
+/**
+ * How much of a PATIENT's record a role may read.
+ *
+ *  - "full"    the whole clinical record: answers, history, allergies, labs, plans.
+ *  - "limited" who they are, where they are, and their sessions -- what running
+ *              the service needs -- and nothing clinical. An Admin's view.
+ *  - "none"    not a screen this role opens.
+ *
+ * Every physician reads every patient for now: that was decided, and it is the
+ * client's to tighten. When they do, this is the ONE place: make "doctor" depend
+ * on whether that physician reviewed, treated or is on call for the patient, and
+ * every screen and test that asks this question follows.
+ */
+export type PatientRecordView = "full" | "limited" | "none";
+
+export function patientRecordView(role: Role | undefined): PatientRecordView {
+  if (role === "superadmin" || role === "doctor") return "full";
+  if (role === "admin") return "limited";
+  return "none";
+}
 
 export function can(role: Role | undefined, permission: Permission): boolean {
   if (!role) return false;

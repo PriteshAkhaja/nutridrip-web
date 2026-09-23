@@ -75,7 +75,11 @@ export function ConsoleShell({
   const visible = nav.filter((n) => !n.permission || can(session.role, n.permission));
   const hasExact = visible.some((n) => n.href === activeHref);
   return (
-    <div className="min-h-dvh grid lg:grid-cols-[240px_1fr] bg-[var(--color-paper)]">
+    <div className="min-h-dvh grid content-start lg:content-stretch lg:grid-cols-[240px_1fr] bg-[var(--color-paper)]">
+      {/* `content-start` below lg: a grid gives its spare height to its rows, and on a
+        tall screen with a short page (an iPad, Approvals) the top bar's row took
+        an 89px share and showed as an empty band under the bar. At lg there is
+        one row and it must fill the screen, so it stretches again there. */}
       {/* ---------------- Rail ----------------
           A column at lg, a drawer below it — see ConsoleRail. */}
       {/* Below lg the bell belongs in the sticky bar, where the app's chrome

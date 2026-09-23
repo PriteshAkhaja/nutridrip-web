@@ -10,6 +10,8 @@ import {
   groupFilter,
   groupFor,
   isNotable,
+  withholdsDetail,
+  CLINICAL_WITHHELD,
   prefixesForGroup,
 } from "@/lib/data/audit";
 
@@ -271,5 +273,51 @@ describe("the date window", () => {
 
     // And a leap year, where the same sum lands a day later.
     expect(presetsFor(new Date(2024, 2, 3, 9, 0))[1].from).toBe("2024-02-26");
+  });
+});
+
+describe("clinical detail in the trail", () => {
+  const clinical = [
+    "adverse.reported",
+    "adverse.closed",
+    "vitals.recorded",
+    "quiz.submitted",
+    "quiz.info.answered",
+    "lab.upload",
+    "lab.delete",
+  ];
+
+  it("is withheld from an Admin: the row stays, the patient's words do not", () => {
+    for (const action of clinical) expect(withholdsDetail("admin", action), action).toBe(true);
+  });
+
+  it("is shown to the super admin, who may read the record", () => {
+    for (const action of clinical) expect(withholdsDetail("superadmin", action), action).toBe(false);
+  });
+
+  it("leaves everything else in the trail readable to an Admin", () => {
+    for (const action of [
+      "access.refused",
+      "auth.signed_in",
+      "record.opened",
+      "user.update",
+      "order.confirm",
+      "drip.update",
+      "plan.create",
+      "prescription.override.requested",
+      "audit.export",
+    ]) {
+      expect(withholdsDetail("admin", action), action).toBe(false);
+    }
+  });
+
+  it("does not catch an action that only starts with the same letters", () => {
+    // "lab." is a prefix; "labour.x" or "vitalsigns" is not the same thing.
+    expect(withholdsDetail("admin", "labour.scheduled")).toBe(false);
+    expect(withholdsDetail("admin", "quiz.submittedlate")).toBe(false);
+  });
+
+  it("says why, in a sentence a person can read", () => {
+    expect(CLINICAL_WITHHELD).toMatch(/treating physician/i);
   });
 });

@@ -250,8 +250,8 @@ async function seedUsers() {
       name: "V. Iyer",
       phone: "+919845550004",
       role: "patient",
-      status: "pending",
-      patient: { city: "Bengaluru", pincode: "560103", vitalityScore: 55 },
+      status: "active",
+      patient: { dob: new Date("1988-05-14"), gender: "male", city: "Bengaluru", pincode: "560103", vitalityScore: 55 },
     },
   ]);
 

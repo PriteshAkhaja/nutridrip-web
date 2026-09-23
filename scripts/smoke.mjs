@@ -862,6 +862,104 @@ async function main() {
     !(tidy.json?.data?.models ?? []).some((m) => m.name.startsWith("Smoke ")));
   }
 
+  /* ---------------- People details, and what an Admin may read ---------------- */
+  section("People details and clinical limits");
+  {
+    const everyone = (await get(superadmin.jar, "/api/users?pageSize=100")).json?.data?.users ?? [];
+    const patientUser = everyone.find((u) => u.role === "patient" && u.patient?.allergies);
+    const nurseUser = everyone.find((u) => u.role === "nurse");
+
+    // The API: an Admin gets contact and place, never a medical profile.
+    const adminUsers = (await get(admin.jar, "/api/users?pageSize=100")).json?.data?.users ?? [];
+    const profileKeys = [...new Set(adminUsers.filter((u) => u.role === "patient").flatMap((u) => Object.keys(u.patient ?? {})))];
+    ok("an Admin sees only address, city and pincode of a patient's profile",
+      profileKeys.every((k) => ["address", "city", "pincode"].includes(k)), profileKeys.join(", "));
+    ok("an Admin still sees a nurse's record whole", adminUsers.filter((u) => u.role === "nurse").every((u) => u.nurse?.licenseNo));
+    ok("the super admin still sees the medical profile", everyone.some((u) => u.patient?.allergies !== undefined));
+
+    const adminBookings = (await get(admin.jar, "/api/bookings?pageSize=100")).json?.data?.bookings ?? [];
+    const CLINICAL = ["vitals", "checklist", "consent", "adverseEvents", "observations", "componentsGiven", "aftercareNotes"];
+    ok("an Admin's bookings carry the schedule and none of the clinical record",
+      adminBookings.length > 0 && adminBookings.every((b) => b.bookingNo && !CLINICAL.some((f) => b[f] !== undefined)));
+
+    const adminLabs = await get(admin.jar, "/api/lab-reports");
+    ok("an Admin cannot list lab reports", adminLabs.status === 403, `status ${adminLabs.status}`);
+    const adminPlans = await get(admin.jar, "/api/plans");
+    ok("an Admin cannot list treatment plans", adminPlans.status === 403, `status ${adminPlans.status}`);
+    const someLab = (await get(superadmin.jar, "/api/lab-reports")).json?.data?.reports?.[0];
+    if (someLab) {
+      const adminFile = await get(admin.jar, `/api/lab-reports/${someLab._id}/file`);
+      ok("an Admin cannot open a lab file by its id", adminFile.status === 403, `status ${adminFile.status}`);
+    } else skip("Admin opening a lab file", "no lab report on file");
+
+    // The screens.
+    if (patientUser) {
+      const page = await get(admin.jar, `/admin/users/${patientUser._id}`);
+      const visible = page.text.replace(/<script[\s\S]*?<\/script>/g, "").replace(/<[^>]+>/g, " ");
+      ok("an Admin opens a patient's page", page.status === 200 && /Where they are/.test(visible), `status ${page.status}`);
+      ok("...and it carries nothing clinical, on the page or in what the server sends",
+        !/allerg|vitality|chronic|medication|surger|blood group/i.test(visible) &&
+        !/allergies|vitalityScore|chronicConditions|currentMedications|emergencyContact/.test(page.text));
+      const asSuper = await get(superadmin.jar, `/admin/users/${patientUser._id}`);
+      ok("the super admin is offered the full clinical record from it", /Open clinical record/.test(asSuper.text));
+      ok("an Admin is not", !/Open clinical record/.test(page.text) && !/\/doctor\/patients\//.test(page.text));
+      const adminFull = await get(admin.jar, `/doctor/patients/${patientUser._id}`);
+      ok("an Admin is turned away from the physician's patient record", [302, 307].includes(adminFull.status), `status ${adminFull.status}`);
+      const docFull = await get(doctor.jar, `/doctor/patients/${patientUser._id}`);
+      ok("a physician reads the full patient record", docFull.status === 200);
+      for (const [who, label] of [[nurse, "nurse"], [clinic, "clinic"], [patient, "patient"]]) {
+        const r = await get(who.jar, `/admin/users/${patientUser._id}`);
+        ok(`a ${label} cannot open the People details page`, [302, 307].includes(r.status), `status ${r.status}`);
+      }
+    } else skip("patient page checks", "no patient with a medical profile");
+
+    if (nurseUser) {
+      const page = await get(admin.jar, `/admin/users/${nurseUser._id}`);
+      ok("a nurse's page shows posting, zones and rating", page.status === 200 && /Posting/.test(page.text) && /Patient rating/.test(page.text));
+    }
+    for (const bad of ["not-an-id", "6aabdbb05ed1cbee4378ffff"]) {
+      const r = await get(admin.jar, `/admin/users/${bad}`);
+      ok(`a bad person id is a 404 (${bad})`, r.status === 404, `status ${r.status}`);
+    }
+
+    // What somebody adding a nurse reads when the form is refused: plain words.
+    const shortPw = await post(superadmin.jar, "/api/users", { name: "Probe", role: "nurse", email: "probe@example.com", password: "abc" });
+    ok("a short password is refused in plain words", shortPw.status === 422 && /at least 8 characters/.test(shortPw.json?.error ?? "") && !/Too small|expected string/i.test(shortPw.json?.error ?? ""), shortPw.json?.error);
+    const badMail = await post(superadmin.jar, "/api/users", { name: "Probe", role: "nurse", email: "nope", password: "nurse1234" });
+    ok("a malformed email is refused in plain words", badMail.status === 422 && /does not look right/.test(badMail.json?.error ?? ""), badMail.json?.error);
+
+    // People can be searched: there is a box to type into, and it filters in the database.
+    const peopleSearch = await get(admin.jar, "/admin/users?q=emma");
+    ok("People has a search box", /aria-label="Search people"/.test((await get(admin.jar, "/admin/users")).text));
+    ok("searching People narrows the list", peopleSearch.status === 200 && /Emma Fernandes/.test(peopleSearch.text) && !/Sunita Prakash/.test(peopleSearch.text));
+    ok("a role chip keeps the search", /href="\/admin\/users\?[^"]*q=emma[^"]*role=nurse"/.test(peopleSearch.text));
+
+    // A physician's home shows their team, which is where "has joined your team" lands.
+    const docHome = await get(doctor.jar, "/doctor");
+    ok("a physician's home lists their nurses", docHome.status === 200 && /Your nurses/.test(docHome.text) && /id="team"/.test(docHome.text));
+    const superDocHome = await get(superadmin.jar, "/doctor");
+    ok("the super admin, who has no team, is not shown that section", superDocHome.status === 200 && !/Your nurses/.test(superDocHome.text));
+
+    // Names are links.
+    const docList = await get(doctor.jar, "/doctor/patients");
+    ok("the physician's Patients list links each patient to their record", /href="\/doctor\/patients\/[0-9a-f]{24}"/.test(docList.text));
+    const people = await get(admin.jar, "/admin/users");
+    ok("People links each name to their page", /href="\/admin\/users\/[0-9a-f]{24}"/.test(people.text));
+    const approvals = await get(admin.jar, "/admin/approvals");
+    ok("an Admin's Approvals shows the queue but not vitality or allergy flags",
+      approvals.status === 200 && !/Vitality|allergy/i.test(approvals.text.replace(/<script[\s\S]*?<\/script>/g, "")));
+
+    // The trail: an Admin sees that a clinical event happened, not what the patient said.
+    const csv = await fetch(`${BASE}/api/audit/export`, { headers: { cookie: admin.jar.header() } }).then((r) => r.text());
+    const clinicalRows = csv.split("\n").filter((l) => /,(adverse\.[a-z]+|vitals\.recorded|quiz\.info\.answered|lab\.upload|lab\.delete),/.test(l));
+    if (clinicalRows.length) {
+      ok(`an Admin's audit export withholds the clinical detail (${clinicalRows.length} rows)`,
+        clinicalRows.every((l) => /Clinical detail: for the treating physician/.test(l)));
+    } else skip("audit export withholds clinical detail", "no clinical event in the trail yet");
+    const opened = (await fetch(`${BASE}/api/audit/export?action=record.opened`, { headers: { cookie: superadmin.jar.header() } }).then((r) => r.text()));
+    ok("opening a patient's page is written to the trail", /patient profile/.test(opened));
+  }
+
   /* ---------------- Pagination ---------------- */
   section("Pagination");
   // Every list API pages in the database and says where it is. The lists checked
@@ -908,7 +1006,8 @@ async function main() {
 
   // History lists are paged; the worklists beside them are not.
   const nurseHistory = await get(nurse.jar, "/nurse/schedule?view=past&pageSize=1");
-  ok("the nurse's history is paged", nurseHistory.status === 200 && /Showing/.test(nurseHistory.text));
+  if (/No past sessions/.test(nurseHistory.text)) skip("the nurse's history is paged", "this nurse has run no session before today");
+  else ok("the nurse's history is paged", nurseHistory.status === 200 && /Showing/.test(nurseHistory.text));
   const nurseUpcoming = await get(nurse.jar, "/nurse/schedule");
   ok("the nurse's upcoming worklist is not paged", nurseUpcoming.status === 200 && !/aria-label="Pagination"/.test(nurseUpcoming.text));
   for (const [path, who, label] of [

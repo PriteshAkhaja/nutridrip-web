@@ -12,6 +12,7 @@ import { connectDB } from "@/lib/db/mongoose";
 import { Booking, HealthQuiz, Order, User } from "@/lib/models";
 import { getAlerts } from "@/lib/inventory/alerts";
 import { formatInr } from "@/lib/inventory/units";
+import { NameLink } from "@/components/ui/NameLink";
 import { formatDate, formatTime } from "@/lib/data/inventory";
 import { Arrow } from "@/components/ui/Arrow";
 
@@ -99,13 +100,31 @@ export default async function AdminOverviewPage() {
           pct={Math.min(100, todayBookings * 8)}
           note={`${clinics} partner clinic${clinics === 1 ? "" : "s"} · ${doctors} physician${doctors === 1 ? "" : "s"}`}
         />
+        {/* One number for what the pharmacy has to act on: batches expiring inside
+            30 days plus batches already expired and still on the shelf. The note
+            splits it, so "2" is never a guess -- and the link lands on the tab that
+            has something in it, at the same 30-day horizon the card counts. */}
         <StatCard
-          label="Batches expiring ≤30d"
+          label="Batches needing action"
           value={String(alerts.counts.expiringSoon + alerts.counts.expired)}
           pct={Math.min(100, (alerts.counts.expiringSoon + alerts.counts.expired) * 14)}
           color="var(--color-critical)"
-          note={`${formatInr(alerts.valueAtRiskInr)} at risk`}
-          href="/admin/inventory/alerts"
+          note={
+            alerts.counts.expiringSoon + alerts.counts.expired === 0
+              ? "Nothing expiring in the next 30 days"
+              : [
+                  alerts.counts.expiringSoon > 0 ? `${alerts.counts.expiringSoon} expiring within 30 days` : null,
+                  alerts.counts.expired > 0 ? `${alerts.counts.expired} already expired` : null,
+                  `${formatInr(alerts.valueAtRiskInr)} at risk`,
+                ]
+                  .filter(Boolean)
+                  .join(" · ")
+          }
+          href={
+            alerts.counts.expiringSoon === 0 && alerts.counts.expired > 0
+              ? "/admin/inventory/alerts?tab=expired&days=30"
+              : "/admin/inventory/alerts?days=30"
+          }
         />
         <StatCard
           label="Revenue this month"
@@ -147,7 +166,9 @@ export default async function AdminOverviewPage() {
                 {recentBookings.map((b) => (
                   <TR key={String(b._id)}>
                     <TD mono nowrap>{b.bookingNo}</TD>
-                    <TD nowrap>{patientNames.get(String(b.patientId)) ?? "—"}</TD>
+                    <TD nowrap>
+                      <NameLink href={`/admin/users/${String(b.patientId)}`}>{patientNames.get(String(b.patientId)) ?? "—"}</NameLink>
+                    </TD>
                     <TD nowrap>{b.dripName ?? "—"}</TD>
                     <TD mono nowrap>
                       {formatDate(b.scheduledAt)} · {formatTime(b.scheduledAt)}

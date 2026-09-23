@@ -26,6 +26,7 @@ import type { SessionPayload } from "@/lib/auth/session";
  */
 export type RecordKind =
   | "patient chart"
+  | "patient profile"
   | "session"
   | "prescription"
   | "lab report"

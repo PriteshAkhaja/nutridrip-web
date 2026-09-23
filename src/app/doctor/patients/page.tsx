@@ -6,6 +6,7 @@ import { ConsoleShell } from "@/components/layout/ConsoleShell";
 import { connectDB } from "@/lib/db/mongoose";
 import { Booking, HealthQuiz, User } from "@/lib/models";
 import { DataTable, THead, TH, TR, TD } from "@/components/ui/Table";
+import { NameLink } from "@/components/ui/NameLink";
 import { StatusPill, Pill } from "@/components/ui/Pill";
 import { EmptyState } from "@/components/ui/States";
 import { formatDate } from "@/lib/data/inventory";
@@ -107,7 +108,7 @@ export default async function DoctorPatientsPage({
                 <TR key={id}>
                   <TD nowrap>
                     <div className="flex flex-col">
-                      <span className="font-medium">{p.name}</span>
+                      <NameLink href={`/doctor/patients/${id}`}>{p.name}</NameLink>
                       <span className="t-data text-[13px] text-[var(--color-ink-3)]">
                         {p.phone ?? p.patient?.city ?? "—"}
                       </span>

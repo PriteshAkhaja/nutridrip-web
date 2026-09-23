@@ -19,6 +19,8 @@ import {
   AUDIT_GROUPS,
   auditRange,
   describeChange,
+  CLINICAL_WITHHELD,
+  withholdsDetail,
   entityLabel,
   groupFilter,
   groupFor,
@@ -210,7 +212,8 @@ export default async function AuditPage({
             </THead>
             <tbody>
               {rows.map((r) => {
-                const changes = describeChange(r.before, r.after);
+                const withheld = withholdsDetail(session.role, r.action);
+                const changes = withheld ? [] : describeChange(r.before, r.after);
                 // A record is called what people call it — a name, a booking
                 // number, an order number. Falls back to the id only when the
                 // record itself is gone, which is worth seeing in its own right.
@@ -259,7 +262,9 @@ export default async function AuditPage({
                       ) : null}
                     </TD>
                     <TD>
-                      {changes.length === 0 ? (
+                      {withheld ? (
+                        <span className="t-small text-[var(--color-ink-3)]">{CLINICAL_WITHHELD}</span>
+                      ) : changes.length === 0 ? (
                         <span className="t-small text-[var(--color-ink-3)]">—</span>
                       ) : (
                         <div className="flex flex-col gap-[3px]">

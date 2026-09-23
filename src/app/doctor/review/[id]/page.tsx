@@ -13,6 +13,7 @@ import { ReviewDecision } from "./Decision";
 import { nurseChoicesFor } from "@/lib/data/nurse-choices";
 import { listDrips } from "@/lib/data/drips";
 import { HeaderCounts } from "@/components/layout/HeaderCounts";
+import { ButtonLink } from "@/components/ui/Button";
 
 export const metadata: Metadata = { title: "Patient review" };
 export const dynamic = "force-dynamic";
@@ -52,6 +53,11 @@ export default async function PatientReviewPage({ params }: { params: Promise<{ 
       activeHref="/doctor"
       breadcrumb={["Clinical", "Approvals", review.patient.name]}
       title={review.patient.name}
+      actions={
+        <ButtonLink href={`/doctor/patients/${review.patient.id}`} variant="secondary">
+          Patient record
+        </ButtonLink>
+      }
       meta={
         <HeaderCounts items={[`Submitted ${formatDate(review.submittedAt)}`, formatTime(review.submittedAt)]} />
       }

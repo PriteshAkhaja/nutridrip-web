@@ -8,6 +8,8 @@ import {
   actionLabel,
   auditRange,
   describeChange,
+  CLINICAL_WITHHELD,
+  withholdsDetail,
   entityLabel,
   groupFilter,
   groupFor,
@@ -154,7 +156,9 @@ export async function GET(req: Request) {
               : "System";
             const which =
               r.entity && r.entityId ? (names.get(nameKey(r.entity, r.entityId)) ?? "") : "";
-            const changed = describeChange(r.before, r.after)
+            const changed = withholdsDetail(session.role, r.action)
+              ? CLINICAL_WITHHELD
+              : describeChange(r.before, r.after)
               .map((c) =>
                 c.from !== undefined && c.to !== undefined
                   ? `${c.field}: ${c.from} -> ${c.to}`

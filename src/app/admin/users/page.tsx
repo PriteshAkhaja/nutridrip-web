@@ -6,6 +6,8 @@ import { ConsoleShell } from "@/components/layout/ConsoleShell";
 import { connectDB } from "@/lib/db/mongoose";
 import { User } from "@/lib/models";
 import { DataTable, THead, TH, TR, TD, Pieces } from "@/components/ui/Table";
+import { NameLink } from "@/components/ui/NameLink";
+import { SearchBox } from "@/components/ui/SearchBox";
 import { StatusPill } from "@/components/ui/Pill";
 import { EmptyState } from "@/components/ui/States";
 import { StatCard } from "@/components/ui/Card";
@@ -30,13 +32,17 @@ const ROLE_LABEL: Record<Role, string> = {
 };
 
 /** The one detail that matters per role, so the table says something useful. */
-function detailFor(u: {
+function detailFor(
+  u: {
   role: Role;
   doctor?: { specialization?: string; licenseNo?: string };
   nurse?: { licenseNo?: string; serviceAreas?: string[] };
   clinic?: { city?: string; pincode?: string };
   patient?: { vitalityScore?: number; city?: string };
-}): string {
+},
+  /** An Admin is not shown a patient's vitality score: it comes out of their health quiz. */
+  showClinical = true
+): string {
   switch (u.role) {
     case "doctor":
       return [u.doctor?.specialization, u.doctor?.licenseNo].filter(Boolean).join(" · ") || "—";
@@ -45,7 +51,7 @@ function detailFor(u: {
     case "clinic":
       return [u.clinic?.city, u.clinic?.pincode].filter(Boolean).join(" · ") || "—";
     case "patient":
-      return u.patient?.vitalityScore ? `Vitality ${u.patient.vitalityScore}` : u.patient?.city ?? "—";
+      return showClinical && u.patient?.vitalityScore ? `Vitality ${u.patient.vitalityScore}` : u.patient?.city ?? "—";
     default:
       return "Platform access";
   }
@@ -193,7 +199,7 @@ export default async function UsersPage({
 
       <div className="flex flex-wrap gap-2 items-center mb-5">
         <Link
-          href={hrefWith("/admin/users", { pageSize })}
+          href={hrefWith("/admin/users", { pageSize, q })}
           className={`inline-flex items-center min-h-[36px] px-3 rounded-full border text-[13px] font-medium no-underline hover:no-underline ${
             role
               ? "border-[var(--color-line-2)] bg-[var(--color-surface)] text-[var(--color-ink-2)]"
@@ -205,7 +211,7 @@ export default async function UsersPage({
         {ROLES.map((r) => (
           <Link
             key={r}
-            href={hrefWith("/admin/users", { pageSize }, { role: r })}
+            href={hrefWith("/admin/users", { pageSize, q }, { role: r })}
             className={`inline-flex items-center min-h-[36px] px-3 rounded-full border text-[13px] font-medium no-underline hover:no-underline ${
               role === r
                 ? "border-[var(--color-primary)] bg-[var(--color-primary-soft)] text-[var(--color-primary-dark)]"
@@ -215,6 +221,18 @@ export default async function UsersPage({
             {ROLE_LABEL[r]} <span className="t-data text-[13px] ml-2 opacity-70">{counts[r]}</span>
           </Link>
         ))}
+
+        {/* The page has always searched (`?q=`); there was just nothing to type
+            into. Debounced, in the address bar, and it keeps the chosen role and
+            rows-per-page -- the same control Inventory and Drips use. */}
+        <SearchBox
+          basePath="/admin/users"
+          q={q}
+          keep={{ role, pageSize: pageSize !== "25" ? pageSize : undefined }}
+          placeholder="Name, email or phone"
+          label="Search people"
+          className="w-full sm:ml-auto sm:w-[300px]"
+        />
       </div>
 
       {users.length === 0 ? (
@@ -245,7 +263,7 @@ export default async function UsersPage({
             {users.map((u) => (
               <TR key={String(u._id)}>
                 <TD nowrap>
-                  <span className="font-medium">{u.name}</span>
+                  <NameLink href={`/admin/users/${String(u._id)}`}>{u.name}</NameLink>
                 </TD>
                 <TD nowrap>
                   <span className="t-small text-[var(--color-ink-2)]">{ROLE_LABEL[u.role]}</span>
@@ -256,7 +274,7 @@ export default async function UsersPage({
                   </span>
                 </TD>
                 <TD>
-                  <span className="t-small text-[var(--color-ink-2)]"><Pieces items={detailFor(u).split(" · ")} separator=" · " /></span>
+                  <span className="t-small text-[var(--color-ink-2)]"><Pieces items={detailFor(u, session.role === "superadmin").split(" · ")} separator=" · " /></span>
                 </TD>
                 <TD mono nowrap>{formatDate(u.createdAt)}</TD>
                 <TD mono nowrap>{u.lastLoginAt ? formatDate(u.lastLoginAt) : "Never"}</TD>

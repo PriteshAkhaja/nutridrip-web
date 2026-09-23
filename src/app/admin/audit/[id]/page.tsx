@@ -10,7 +10,15 @@ import { Card } from "@/components/ui/Card";
 import { Pill } from "@/components/ui/Pill";
 import { Arrow } from "@/components/ui/Arrow";
 import { formatDate, formatTime } from "@/lib/data/inventory";
-import { actionLabel, describeChange, entityLabel, groupFor, isNotable } from "@/lib/data/audit";
+import {
+  actionLabel,
+  CLINICAL_WITHHELD,
+  describeChange,
+  entityLabel,
+  groupFor,
+  isNotable,
+  withholdsDetail,
+} from "@/lib/data/audit";
 import { nameEntities, nameKey } from "@/lib/data/audit-names";
 
 export const metadata: Metadata = { title: "Audit entry" };
@@ -62,7 +70,8 @@ export default async function AuditEntryPage({ params }: { params: Promise<{ id:
   const targetName =
     row.entity && row.entityId ? (names.get(nameKey(row.entity, row.entityId)) ?? null) : null;
 
-  const changes = describeChange(row.before, row.after);
+  const withheld = withholdsDetail(session.role, row.action);
+  const changes = withheld ? [] : describeChange(row.before, row.after);
   const target =
     row.entity && row.entityId ? (LINK_FOR[row.entity]?.(row.entityId) ?? null) : null;
 
@@ -132,7 +141,12 @@ export default async function AuditEntryPage({ params }: { params: Promise<{ id:
               nothing truncated the way the table has to truncate it. */}
           <Card padding="p-6">
             <h2 className="t-h3 mb-1">What changed</h2>
-            {changes.length === 0 ? (
+            {withheld ? (
+              <p className="t-body text-[var(--color-ink-2)] mt-2">
+                {CLINICAL_WITHHELD}. This record holds what a patient told a physician, or what a physician found, so an
+                Admin sees that it happened, who did it and when, but not the detail. The super admin can read it.
+              </p>
+            ) : changes.length === 0 ? (
               <p className="t-body text-[var(--color-ink-2)] mt-2">
                 Nothing was recorded as changing. Some actions are events rather than edits —
                 a record being opened, a session being started — and carry no before and after.

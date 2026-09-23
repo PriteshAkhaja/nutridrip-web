@@ -10,15 +10,21 @@ import { normalisePhone } from "@/lib/auth/phone";
 import { checkGstin } from "@/lib/billing/gst";
 import { paginate } from "@/lib/pagination-db";
 import { pageInfo, parsePaging } from "@/lib/pagination";
+import { adminSafeUser } from "@/lib/data/admin-view";
+import { accountReadyBody, joinedTeam } from "@/lib/data/team-notices";
 import { ok, fail, handleError } from "@/lib/api";
 
+// The messages are what somebody adding a nurse reads in the form, so they say
+// what to do ("use at least 8 characters"), not what the validator saw
+// ("Too small: expected string to have >=8 characters"). handleError puts the
+// field name in front: "password: use at least 8 characters".
 const CreateUser = z.object({
-  name: z.string().min(1).max(120),
+  name: z.string().min(1, "enter a name").max(120, "that name is too long"),
   role: z.enum(ROLES),
-  email: z.string().email().optional().or(z.literal("")),
-  phone: z.string().min(6).max(20).optional().or(z.literal("")),
+  email: z.string().email("that address does not look right").optional().or(z.literal("")),
+  phone: z.string().min(6, "that number does not look right").max(20, "that number does not look right").optional().or(z.literal("")),
   /** Staff sign in with a password; patients use a phone code and need none. */
-  password: z.string().min(8).max(72).optional(),
+  password: z.string().min(8, "use at least 8 characters").max(72, "use 72 characters or fewer").optional(),
 
   specialization: z.string().max(120).optional(),
   licenseNo: z.string().max(60).optional(),
@@ -57,7 +63,12 @@ export async function GET(req: Request) {
 
     const paging = parsePaging({ page: params.get("page"), pageSize: params.get("pageSize") });
     const { rows: users, meta } = await paginate(User, filter, { sort: { createdAt: -1 }, paging });
-    return ok({ users, pagination: pageInfo(meta) });
+    // A patient's medical profile is not an Admin's to read: they get contact and
+    // place only. A super admin, who may open the full record, gets it whole.
+    return ok({
+      users: session!.role === "admin" ? users.map((u) => adminSafeUser(u)) : users,
+      pagination: pageInfo(meta),
+    });
   } catch (err) {
     return handleError(err);
   }
@@ -112,12 +123,14 @@ export async function POST(req: Request) {
         registrationCouncil: input.registrationCouncil,
       };
     }
+    let doctorName: string | undefined;
     if (input.role === "nurse") {
       // Checked rather than trusted: a nurse pointed at a patient account would
       // put that patient's name in a physician's dispatch list.
       if (input.doctorId) {
-        const doctor = await User.findById(input.doctorId).lean<{ role: string } | null>();
+        const doctor = await User.findById(input.doctorId).lean<{ role: string; name: string } | null>();
         if (!doctor || doctor.role !== "doctor") return fail("That is not a physician account", 422);
+        doctorName = doctor.name;
       }
       doc.nurse = {
         licenseNo: input.licenseNo,
@@ -152,10 +165,18 @@ export async function POST(req: Request) {
     await notify(
       String(user._id),
       "Your NutriDrip account is ready",
-      input.email ? `Sign in with ${input.email}.` : "Sign in with your phone number.",
+      accountReadyBody({ email: input.email, doctorName }),
       "success",
       "/login"
     );
+
+    // The physician a nurse works under dispatches them and answers for their
+    // sessions, so they hear about it now -- not when the name first turns up in
+    // the middle of an approval.
+    if (input.role === "nurse" && input.doctorId) {
+      const n = joinedTeam({ name: input.name, zones: input.serviceAreas }, input.doctorId);
+      await notify(n.userId, n.title, n.body, n.type, n.link);
+    }
     await AuditLog.create({
       actorId: session!.sub,
       actorRole: session!.role,

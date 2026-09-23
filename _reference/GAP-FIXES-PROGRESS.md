@@ -642,3 +642,100 @@ The smoke "page 2 differs" check read each row's `_id`, but product and kit rows
 | P.18 | Unit tests, typecheck, lint | ✅ 439 pass, clean |
 
 The only smoke failures (7) are the order confirm and dispatch checks, which need MongoDB running as a replica set.
+
+
+## People details, patient records, and what an Admin may read
+
+Found while walking the Super admin menu module by module (Approvals, People). Two questions came out of it: "why can I not click a patient's name?" and "should an Admin see a patient's health information at all?".
+
+### Decisions (from the product owner, for now)
+
+| Question | Decision |
+|---|---|
+| What does an **Admin** see of a patient? | **Limited view (option B).** Who they are, where, their sessions and counts. Nothing clinical. |
+| Which patients may a **physician** open? | **Any patient, for now.** The client may tighten it later. |
+| The **super admin**? | Everything, including the full clinical record. |
+
+### What was built
+
+- **A details page for every person in People**, opened by clicking their name: `/admin/users/[id]`. It works for patient, doctor, nurse, clinic and admin:
+  - Patient: account, contact, where they live, "care at a glance" (assessment status, plan count, lab-report count, reaction count, numbers only), and a paged list of sessions.
+  - Doctor: registration details, nurses working under them, assessments reviewed, plans written, and their sessions.
+  - Nurse: council number, who they work under, zones, whether a home location is set for dispatch, patient rating, and their sessions.
+  - Clinic: address, GSTIN, monthly target, this month's revenue, order counts by status, and their sessions.
+  - Every page has an **Activity** button (that person's rows in the audit trail). The super admin also has **Edit**, and on a patient, **Open clinical record**.
+- **Names are links**: People, Approvals (waiting and reviewed), Overview "Recent sessions", the physician's Patients list (which never linked to a patient before), and a **Patient record** button on the review page.
+- **One rule in one place**: `patientRecordView(role)` in `lib/auth/rbac.ts` answers "full", "limited" or "none". Physicians are "full" today. To tighten it later ("only patients this physician reviewed or is on call for"), change that one function and its tests.
+- **Opening a patient's page is logged** as `record.opened` (kind "patient profile"), like every other read of a patient's record. The privacy policy's promise stays true.
+
+### What an Admin no longer sees
+
+| Where | Before | Now |
+|---|---|---|
+| Approvals | Age, gender, vitality score, allergy and medication flags | Name, booking, requested drip, submitted time and SLA only. The super admin keeps the rest. |
+| People | "Vitality 62" beside every patient | The patient's city |
+| `/api/lab-reports` and lab files | Readable (the permission list included Admin) | **403**. Physicians, the patient and the super admin keep access. |
+| `/api/plans` | Readable | **403** for Admin |
+| `/api/bookings` | Whole document: vitals, checklist, consent, reactions, doses | Scheduling fields only (allow-list) |
+| `/api/users` | Patient's allergies, history, medication, emergency contact | Address, city and pincode only |
+| Audit trail: list, detail page and CSV export | Symptoms, question and answer, lab file names | "Clinical detail: for the treating physician". The row stays: who, what, when. |
+
+The lists are **allow-lists**, so a field added to a booking or a patient later stays hidden from an Admin until someone decides otherwise. A test reads the real booking schema and fails if a new field has not been decided.
+
+### Tests
+
+| # | Test | Result |
+|---|---|---|
+| 6.1 | Access rule: physician and super admin full, Admin limited, everyone else none; every role answers | ✅ |
+| 6.2 | Admin cannot hold `labs.view` or `plans.view`; no clinical-named permission lists Admin | ✅ |
+| 6.3 | Admin-safe user keeps only address, city and pincode; staff records unchanged; input not mutated | ✅ |
+| 6.4 | Booking allow-list names only real fields, holds nothing clinical, and every schema field is decided | ✅ |
+| 6.5 | Audit detail withheld for Admin on 7 clinical actions and shown to the super admin; other actions unaffected | ✅ |
+| 6.6 | Live, as Admin: lab list, lab file by id and plans all 403; bookings carry no clinical field; patient profile keys are 3 | ✅ |
+| 6.7 | Live: Riya Mehta (sulfa allergy, lab reports, a plan) shows no clinical word, on the page or in the data the server sends, to Admin or super admin | ✅ |
+| 6.8 | Live: the page opens for Admin and super admin; a doctor, nurse, clinic or patient is turned away; a bad id is a 404 | ✅ |
+| 6.9 | Live: a physician opens the full record; Admin, nurse, clinic and patient are turned away from it | ✅ |
+| 6.10 | Live: opening a patient's page appears in the audit trail | ✅ |
+| 6.11 | Live: Admin's audit CSV shows the withheld notice on clinical rows; the super admin's shows the detail | ✅ |
+| 6.12 | Pages at 390 / 768 / 1440 px | ✅ no sideways scroll |
+
+### For the client to decide
+
+- **The website tells patients "nobody else".** The privacy policy, the pricing FAQ, the patient profile and the reports page say a patient's record is visible to "you, the reviewing physician and the attending nurse. Nobody else." With any physician allowed to open any patient, and the super admin able to, that is no longer accurate. Suggested wording: *"Physicians at NutriDrip who are involved in your care, and the attending nurse. Every time your record is opened, it is logged."* Not changed here: the words are the client's.
+- **Who counts as "their patient".** When the client wants physicians limited to their own patients, a proposal: patients they reviewed, wrote a plan for, or have a booking with, plus anyone with an open emergency (an adverse reaction, or vitals that blocked an infusion) and anyone whose assessment is waiting for any physician. Change `patientRecordView` and add the check to the physician's patient page and Patients list.
+- **Patient "Pending" status.** The app never creates a Pending patient (a first phone sign-in creates them Active), and a Pending account cannot sign in. The seed had set one patient to Pending; that is fixed, and V. Iyer now has a birth date and gender too.
+
+
+### Found in the People walkthrough: account form messages
+
+When adding or editing a person, a short password, a malformed email, a short phone number and an empty name were refused with the validator's own words ("password: Too small: expected string to have >=8 characters"). They now read "password: use at least 8 characters", "email: that address does not look right", "phone: that number does not look right" and "name: enter a name". Smoke checks two of them, so the wording cannot slip back.
+
+### Found in the People walkthrough: no search box
+
+The People page has always filtered by a search in the address bar (`?q=`), but there was no box to type into, for either the super admin or the Admin. It now has the same debounced search box as Inventory and Drips ("Name, email or phone"). It keeps the chosen role and rows-per-page, and the role chips now keep the search too, so "emma" then "Nurse" is nurses called emma. Checked live as both roles, and on a phone. Smoke covers it.
+
+
+### A physician is told when their team changes
+
+Raised during the People walkthrough: a nurse is created "under" a physician, and that physician dispatches them and answers for their sessions, but only the new nurse was told anything. The physician met the name for the first time in the middle of an approval, and editing a nurse told nobody.
+
+| Event | Who is told |
+|---|---|
+| A nurse is created under a physician | That physician: "Test Nurse has joined your team. Covers Koramangala, HSR Layout." |
+| A nurse is moved to another physician, or to none | Both physicians and the nurse: "has left your team. Now works under Dr. Amit Rao." / "You now work under Dr. Amit Rao" |
+| A nurse under a physician stops being active (inactive, suspended, pending) | That physician: "is no longer active" |
+| ...and comes back | That physician: "is active again" |
+| A name or phone is corrected | Nobody (that would only teach people to stop reading the bell) |
+
+The new nurse's own welcome now names the physician ("You will work under Dr. Sarah Menon"). Every message links to a new **Your nurses** section on the physician's home (`/doctor#team`): each nurse, their zones, their open sessions and their status. Only a physician has a team, so the super admin is not shown it.
+
+The rules are one small pure module (`lib/data/team-notices.ts`, 18 unit tests); the two account routes only send what it returns. Checked live with a throwaway nurse (created, moved between physicians, switched off and on, renamed, then deleted along with the messages the test made): every message arrived, in the right bell, once; the rename said nothing. Checked on a phone; the columns line up.
+
+
+### Found in the People walkthrough: most account edits left no trace
+
+Reading the audit trail after the Part 4 tests: the edit that moved a nurse to another physician appeared as `—` (nothing changed). The trail recorded only a person's **name and status** on an edit. A change to who a nurse works under, her zones, a council number, a phone number, a home location, or a clinic's **GSTIN**, address, pincode and monthly target was saved with no record of what it had been. The GSTIN is the sharp case: it decides whether an invoice carries CGST + SGST or IGST.
+
+Now every one of those is recorded as a before and after (`worksUnder` by the physician's name; `zones` as a sorted list, because a list of "2 items" made swapping one zone for another look like nothing). A password is never written down, but the row now says `credentials: new password set`. A clinic's `pincode` had also been hidden as a secret (it contains "code"); that is fixed.
+
+Checked live on the test accounts with reversible edits (council number, a zone swapped for another, GSTIN, pincode, a password), all restored afterwards. 13 unit tests (`tests/user-audit.test.ts`).

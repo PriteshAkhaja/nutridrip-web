@@ -13,6 +13,7 @@ import { nextReference, createWithReference } from "@/lib/sequence";
 import { zoneForPincode } from "@/lib/zones";
 import { paginate } from "@/lib/pagination-db";
 import { pageInfo, parsePaging } from "@/lib/pagination";
+import { ADMIN_BOOKING_SELECT } from "@/lib/data/admin-view";
 import { ok, fail, handleError } from "@/lib/api";
 
 const CreateBooking = z.object({
@@ -43,7 +44,14 @@ export async function GET(req: Request) {
 
     const params = new URL(req.url).searchParams;
     const paging = parsePaging({ page: params.get("page"), pageSize: params.get("pageSize") });
-    const { rows: bookings, meta } = await paginate(Booking, filter, { sort: { scheduledAt: -1 }, paging });
+    // An Admin schedules sessions; they do not read the clinical record inside one
+    // (vitals, checklist, reactions, consent, doses). Those fields never leave the
+    // database for that role -- see lib/data/admin-view.ts.
+    const { rows: bookings, meta } = await paginate(Booking, filter, {
+      sort: { scheduledAt: -1 },
+      paging,
+      ...(session!.role === "admin" ? { select: ADMIN_BOOKING_SELECT } : {}),
+    });
     return ok({ bookings, pagination: pageInfo(meta) });
   } catch (err) {
     return handleError(err);
