@@ -18,6 +18,7 @@ import { ROLES, type Role } from "@/lib/models/types";
 import { PagedResults, PagedView, Pagination } from "@/components/ui/Paged";
 import { hrefWith, parsePaging } from "@/lib/pagination";
 import { paginate } from "@/lib/pagination-db";
+import { getZones } from "@/lib/zones-store";
 
 export const metadata: Metadata = { title: "People" };
 export const dynamic = "force-dynamic";
@@ -114,7 +115,7 @@ export default async function UsersPage({
           latitude?: number;
           longitude?: number;
         };
-        clinic?: { address?: string; city?: string; pincode?: string; gstin?: string; monthlyVolumeTarget?: number };
+        clinic?: { address?: string; city?: string; pincode?: string; gstin?: string; monthlyVolumeTarget?: number; onCredit?: boolean };
         patient?: { address?: string; city?: string; pincode?: string };
       } | null>()
     : null;
@@ -126,6 +127,8 @@ export default async function UsersPage({
   const editHref = (id: string) => hrefWith("/admin/users", here, { edit: id });
 
   // Offered when adding a nurse: the physician they work under.
+  // Every zone, paused ones too: a nurse can keep a paused zone they already cover.
+  const zoneOptions = (await getZones()).map((z) => ({ name: z.name, status: z.status }));
   const doctorOptions = (
     await User.find({ role: "doctor", status: "active" })
       .select("name")
@@ -156,6 +159,7 @@ export default async function UsersPage({
           {editing ? (
             <EditPerson
               doctors={doctorOptions}
+              zones={zoneOptions}
               closeHref={listHref}
               user={{
                 id: String(editing._id),
@@ -181,11 +185,12 @@ export default async function UsersPage({
                     editing.clinic?.monthlyVolumeTarget != null
                       ? String(editing.clinic.monthlyVolumeTarget)
                       : "",
+                  onCredit: editing.clinic?.onCredit ? "yes" : "no",
                 },
               }}
             />
           ) : (
-            <AddPerson doctors={doctorOptions} />
+            <AddPerson doctors={doctorOptions} zones={zoneOptions} />
           )}
         </div>
       )}

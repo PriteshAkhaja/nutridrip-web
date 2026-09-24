@@ -10,6 +10,10 @@ import { formatDate, formatTime } from "@/lib/data/inventory";
 import { formatInr } from "@/lib/inventory/units";
 import { RateSession } from "../../sessions/SessionActions";
 import { PATIENT_TABS } from "../../tabs";
+import { VitalsCorrected } from "@/components/ui/VitalsCorrected";
+import type { VitalsCorrection } from "@/lib/clinical/checklist";
+import { readFeedback, type StoredFeedback } from "@/lib/clinical/feedback";
+import { LateCharges } from "@/components/ui/LateCharges";
 
 export const metadata: Metadata = { title: "Session report" };
 export const dynamic = "force-dynamic";
@@ -39,12 +43,14 @@ export default async function ReportPage({ params }: { params: Promise<{ id: str
       spo2?: number;
       temperatureF?: number;
       outOfRange?: string[];
+      corrections?: VitalsCorrection[];
     }>;
     componentsGiven: Array<{ name?: string; dose?: number; unit?: string; batchNo?: string }>;
     observations: Array<{ at: Date; text: string }>;
     adverseEvents: Array<{ at: Date; symptoms: string[]; severity?: string }>;
     aftercareNotes?: string;
-    feedback?: { rating?: number; comment?: string };
+    feedback?: StoredFeedback;
+    charges?: Array<{ kind: "late_reschedule" | "late_cancel"; amount: number; at: Date; note?: string; settledAs?: "paid" | "waived" }>;
   } | null>();
 
   if (!booking) notFound();
@@ -150,6 +156,8 @@ export default async function ReportPage({ params }: { params: Promise<{ id: str
               </tbody>
             </table>
           </div>
+          <VitalsCorrected corrections={baseline.corrections} name={closing ? "Before" : undefined} />
+          {closing && <VitalsCorrected corrections={closing.corrections} name="After" />}
           {(baseline.outOfRange ?? []).length > 0 && (
             <p className="t-small text-[var(--color-critical-text)] mt-3">
               {baseline.outOfRange!.join(", ")} was outside the reference range at the start. Your nurse escalated it
@@ -192,6 +200,21 @@ export default async function ReportPage({ params }: { params: Promise<{ id: str
       )}
 
       {/* ---------------- Aftercare + who ---------------- */}
+      {/* A late-change fee on this session, said where the session is. */}
+      {(booking.charges ?? []).length > 0 && (
+        <div className="-mt-3 mb-4">
+          <LateCharges
+            charges={(booking.charges ?? []).map((c) => ({
+              kind: c.kind,
+              amount: c.amount,
+              at: new Date(c.at).toISOString(),
+              note: c.note ?? null,
+              settledAs: c.settledAs ?? null,
+            }))}
+          />
+        </div>
+      )}
+
       {booking.aftercareNotes && (
         <div className="rounded-[var(--radius-lg)] border border-[var(--color-primary-line)] bg-[var(--color-primary-soft)] p-5 mb-4">
           <span className="t-micro text-[var(--color-primary-dark)] block mb-2">Aftercare</span>
@@ -201,14 +224,7 @@ export default async function ReportPage({ params }: { params: Promise<{ id: str
 
       {booking.status === "completed" && (
         <div className="mb-4">
-          <RateSession
-            bookingId={id}
-            existing={
-              booking.feedback?.rating
-                ? { rating: booking.feedback.rating, comment: booking.feedback.comment }
-                : null
-            }
-          />
+          <RateSession bookingId={id} nurseName={nurse?.name ?? null} existing={readFeedback(booking.feedback)} />
         </div>
       )}
 

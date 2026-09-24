@@ -3,6 +3,7 @@ import { ButtonLink } from "@/components/ui/Button";
 import { Card } from "@/components/ui/Card";
 import { FillSegments } from "@/components/ui/Fill";
 import { CHECKLIST_STEPS, PHASE_ORDER, VITAL_RANGES } from "@/lib/clinical/checklist";
+import { QuizButton } from "@/components/layout/QuizButton";
 
 export const metadata: Metadata = {
   title: "Safety",
@@ -199,9 +200,9 @@ export default function SafetyPage() {
               </p>
             </div>
             <div className="flex flex-col gap-3">
-              <ButtonLink href="/quiz" size="lg" block>
+              <QuizButton size="lg" block>
                 Take the health quiz
-              </ButtonLink>
+              </QuizButton>
               <ButtonLink href="/drips" variant="secondary" block>
                 Read the formulas
               </ButtonLink>

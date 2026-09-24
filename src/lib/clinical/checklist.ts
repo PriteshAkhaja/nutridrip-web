@@ -147,3 +147,72 @@ export function outOfRange(vitals: Partial<Record<VitalKey, number>>): VitalKey[
     return v < range.min || v > range.max;
   });
 }
+
+/* --------------------------------------------------------- vitals corrections */
+
+/** Why a reading was changed after it was recorded. Offered to the nurse as choices. */
+export const CORRECTION_REASONS = ["Typing mistake", "Measured again", "Typed in the wrong box", "Other"] as const;
+
+export type VitalsValues = Partial<Record<VitalKey | "weightKg", number>>;
+
+export type VitalsReading = VitalsValues & {
+  takenAt?: Date | string;
+  outOfRange?: string[];
+  corrections?: VitalsCorrection[];
+};
+
+/** A reading as it stood before a correction, and who changed it, when and why. */
+export type VitalsCorrection = {
+  at: Date | string;
+  byId?: unknown;
+  reason: string;
+  before: VitalsValues & { outOfRange?: string[] };
+};
+
+const READING_KEYS = ["systolic", "diastolic", "heartRate", "spo2", "temperatureF", "weightKg"] as const;
+
+/**
+ * Which reading a vitals step records: 0 for the first step that opens vitals
+ * (baseline, before cannulation), 1 for the second (closing), and so on. By
+ * position, the same way the checklist decides that the Nth vitals step needs
+ * the Nth reading -- a reading's own `label` is not reliable for this.
+ * -1 for a step that does not record vitals.
+ */
+export function vitalsReadingIndex(stepKey: string): number {
+  const steps = CHECKLIST_STEPS.filter((s) => s.opens === "vitals");
+  return steps.findIndex((s) => s.key === stepKey);
+}
+
+/**
+ * A reading corrected in place.
+ *
+ * In place, not added: the checklist counts readings to know that baseline and
+ * closing vitals are both on file, so a corrected baseline added as a second
+ * reading would pass for the closing one. Nothing is lost -- what it said
+ * before goes into `corrections`, with who, when and why -- and whether it is
+ * out of range is worked out again from the new values, so a reading corrected
+ * into range stops blocking the infusion and one corrected out of range starts.
+ */
+export function correctReading(
+  reading: VitalsReading,
+  values: VitalsValues,
+  reason: string,
+  byId: unknown,
+  at: Date = new Date()
+): VitalsReading {
+  const before: VitalsCorrection["before"] = { outOfRange: [...(reading.outOfRange ?? [])] };
+  for (const k of READING_KEYS) if (reading[k] !== undefined) before[k] = reading[k];
+  const next: VitalsReading = { ...reading };
+  for (const k of READING_KEYS) next[k] = values[k] ?? (k === "weightKg" ? reading.weightKg : undefined);
+  next.outOfRange = outOfRange(next);
+  next.corrections = [...(reading.corrections ?? []), { at, byId, reason, before }];
+  return next;
+}
+
+/** "190/100 · 88 bpm · SpO₂ 97% · 98.4°F" -- a reading as a line, for reports and notices. */
+export function vitalsLine(v: VitalsValues | null | undefined): string {
+  if (!v) return "—";
+  return `${v.systolic ?? "—"}/${v.diastolic ?? "—"} · ${v.heartRate ?? "—"} bpm · SpO₂ ${v.spo2 ?? "—"}% · ${
+    v.temperatureF ?? "—"
+  }°F`;
+}

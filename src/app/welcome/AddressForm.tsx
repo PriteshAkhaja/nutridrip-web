@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Field";
 import { AddressPicker, type PickedAddress } from "@/components/ui/AddressPicker";
-import { zoneForPincode } from "@/lib/zones";
+import { zoneForPincode, type Zone } from "@/lib/zones";
 
 export type AddressInitial = PickedAddress & { name: string };
 
@@ -18,10 +18,12 @@ export function AddressForm({
   initial,
   mapsKey,
   searchEnabled,
+  zones,
 }: {
   initial: AddressInitial;
   mapsKey: string | null;
   searchEnabled: boolean;
+  zones: Zone[];
 }) {
   const router = useRouter();
   const [name, setName] = useState(initial.name);
@@ -44,7 +46,7 @@ export function AddressForm({
   // An address outside the served zones is saved anyway: the patient can still
   // read the catalogue and take the quiz, and the booking screen gives them a
   // straight answer rather than us refusing to create an account at all.
-  const served = Boolean(zoneForPincode(place.pincode));
+  const served = Boolean(zoneForPincode(place.pincode, zones));
 
   const save = async () => {
     setBusy(true);
@@ -95,7 +97,7 @@ export function AddressForm({
         onChange={(e) => setName(e.target.value)}
       />
 
-      <AddressPicker value={place} onChange={setPlace} mapsKey={mapsKey} searchEnabled={searchEnabled} />
+      <AddressPicker value={place} onChange={setPlace} mapsKey={mapsKey} searchEnabled={searchEnabled} zones={zones} />
 
       {place.pincode.length === 6 && !served && (
         <div className="rounded-[var(--radius-md)] border border-[var(--color-caution)] bg-[var(--color-caution-soft)] px-4 py-3">

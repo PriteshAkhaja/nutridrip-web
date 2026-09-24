@@ -37,6 +37,7 @@ export const STATUS_TONE: Record<string, PillTone> = {
   Rejected: "critical",
   info_needed: "info",
   "Needs more information": "info",
+  superseded: "neutral",
   nurse_assigned: "info",
   en_route: "info",
   in_progress: "primary",
@@ -60,6 +61,7 @@ const READABLE: Record<string, string> = {
   // Without this the fallback capitalises the raw value and a patient is shown
   // "Info_needed", which is a database column, not a sentence.
   info_needed: "Needs more information",
+  superseded: "Replaced by newer answers",
   nurse_assigned: "Nurse assigned",
   en_route: "En route",
   in_progress: "In progress",

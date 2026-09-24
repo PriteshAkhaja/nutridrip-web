@@ -1,4 +1,4 @@
-import { zoneForPincode } from "@/lib/zones";
+import { zoneForPincode, type Zone } from "@/lib/zones";
 
 /**
  * The nurses a physician is offered when approving a protocol.
@@ -10,7 +10,7 @@ import { zoneForPincode } from "@/lib/zones";
  * beside every name, because a dropdown of bare names is not a decision aid.
  *
  * Pure on purpose, and that is load-bearing rather than tidy: the admin form
- * is a client component and reads ZONE_NAMES through this area. Importing
+ * is a client component and reaches this area. Importing
  * anything here that touches Mongoose puts the driver in the browser bundle,
  * which fails at module evaluation with "Cannot read properties of undefined".
  * So the capacity rule and the distance maths live HERE, and `assign.ts` — the
@@ -112,9 +112,11 @@ function describe(o: {
 export function nurseOptions(
   nurses: NurseRow[],
   patient: PatientPoint,
-  doctorId: string | null
+  doctorId: string | null,
+  /** The saved zones (lib/zones-store), so this stays pure and runs in the browser. */
+  zones: Zone[]
 ): NurseOptions {
-  const zone = zoneForPincode(patient.pincode ?? undefined);
+  const zone = zoneForPincode(patient.pincode ?? undefined, zones);
 
   const rank = (n: NurseRow): NurseOption => {
     const hasGeo =

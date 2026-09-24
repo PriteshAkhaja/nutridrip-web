@@ -11,6 +11,7 @@ import {
   consultReady,
   pincodeHint,
 } from "@/lib/data/consult";
+import type { Zone } from "@/lib/zones";
 
 const HINT_COLOUR = {
   safe: "var(--color-safe-text)",
@@ -28,7 +29,7 @@ const HINT_COLOUR = {
  * wording of what happens next is editable site copy, so the business, not the
  * developer, decides what it commits to.
  */
-export function ConsultForm({ response }: { response: string }) {
+export function ConsultForm({ response, zones }: { response: string; zones: Zone[] }) {
   const [form, setForm] = useState({
     name: "",
     phone: "",
@@ -48,7 +49,7 @@ export function ConsultForm({ response }: { response: string }) {
   const toggle = (t: string) =>
     setTopics((cur) => (cur.includes(t) ? cur.filter((x) => x !== t) : [...cur, t]));
 
-  const hint = pincodeHint(form.pincode);
+  const hint = pincodeHint(form.pincode, zones);
   const pin = form.pincode.replace(/\D/g, "");
 
   const submit = async () => {

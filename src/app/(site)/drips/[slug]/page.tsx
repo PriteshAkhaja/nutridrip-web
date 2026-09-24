@@ -5,7 +5,6 @@ import { getDrip, listDrips } from "@/lib/data/drips";
 import { formatInr } from "@/lib/inventory/units";
 import { checkAvailability } from "@/lib/inventory/availability";
 import { FillBar } from "@/components/ui/Fill";
-import { ButtonLink } from "@/components/ui/Button";
 import { Pill } from "@/components/ui/Pill";
 import {
   Section,
@@ -18,6 +17,11 @@ import {
 } from "@/components/ui/Marketing";
 import { TESTIMONIALS, AGGREGATE, COMPARISON, FAQS, TRANSFORMATION } from "@/lib/data/marketing";
 import { Arrow } from "@/components/ui/Arrow";
+import { QuizButton } from "@/components/layout/QuizButton";
+import { getLatePolicy } from "@/lib/billing/settings";
+import { fillLatePolicy } from "@/lib/billing/late-policy";
+import { getZones } from "@/lib/zones-store";
+import { fillZoneCount } from "@/lib/zones";
 
 export const dynamic = "force-dynamic";
 
@@ -48,6 +52,8 @@ const KIT_CONTENTS = [
 ];
 
 export default async function DripDetailPage({ params }: { params: Promise<{ slug: string }> }) {
+  // The late-change rule, with today's fees (set on the Billing page).
+  const [latePolicy, zones] = await Promise.all([getLatePolicy(), getZones()]);
   const { slug } = await params;
   const drip = await getDrip(slug);
   if (!drip) notFound();
@@ -222,9 +228,9 @@ export default async function DripDetailPage({ params }: { params: Promise<{ slu
                   ))}
                 </div>
 
-                <ButtonLink href={`/quiz?drip=${drip.slug}`} size="lg" block>
+                <QuizButton drip={drip.slug} size="lg" block>
                   Take the quiz to book this
-                </ButtonLink>
+                </QuizButton>
 
                 {bottleneck && available <= 3 && available > 0 && (
                   <p className="t-small text-[var(--color-ink-2)] mt-3">
@@ -342,9 +348,9 @@ export default async function DripDetailPage({ params }: { params: Promise<{ slu
           ))}
         </div>
         <div className="flex justify-center mt-10">
-          <ButtonLink href={`/quiz?drip=${drip.slug}`} size="lg">
+          <QuizButton drip={drip.slug} size="lg">
             Start with the quiz · 3 min
-          </ButtonLink>
+          </QuizButton>
         </div>
       </Section>
 
@@ -376,7 +382,7 @@ export default async function DripDetailPage({ params }: { params: Promise<{ slu
       <Section tone="soft">
         <div className="grid grid-cols-1 gap-10 lg:grid-cols-[0.8fr_1.2fr] items-start">
           <SectionHeading eyebrow="Before you book" title="Questions people actually ask" />
-          <FaqList items={FAQS} />
+          <FaqList items={FAQS.map((f) => ({ ...f, a: fillZoneCount(fillLatePolicy(f.a, latePolicy), zones) }))} />
         </div>
       </Section>
 
@@ -399,9 +405,9 @@ export default async function DripDetailPage({ params }: { params: Promise<{ slu
             tell you what is right instead.
           </p>
           <div className="mt-2">
-            <ButtonLink href={`/quiz?drip=${drip.slug}`} size="lg">
+            <QuizButton drip={drip.slug} size="lg">
               Take the health quiz
-            </ButtonLink>
+            </QuizButton>
           </div>
         </div>
       </Section>

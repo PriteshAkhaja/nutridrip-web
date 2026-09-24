@@ -20,6 +20,7 @@ import { ageFrom } from "@/lib/data/clinical";
 import { PagedResults, PagedView, Pagination } from "@/components/ui/Paged";
 import { paginate } from "@/lib/pagination-db";
 import { parsePaging } from "@/lib/pagination";
+import { readFeedback, type FeedbackView, type StoredFeedback } from "@/lib/clinical/feedback";
 
 export const metadata: Metadata = { title: "Patient" };
 export const dynamic = "force-dynamic";
@@ -103,6 +104,7 @@ export default async function PatientDetailPage({
       amount: number;
       adverseEvents?: Array<{ symptoms: string[] }>;
       vitals?: Array<{ outOfRange?: string[] }>;
+      feedback?: StoredFeedback;
     }>(Booking, { patientId: id }, { sort: { scheduledAt: -1 }, paging: parsePaging({ page, pageSize }) }),
     LabReport.find({ patientId: id })
       .sort({ uploadedAt: -1 })
@@ -240,6 +242,7 @@ export default async function PatientDetailPage({
                     <TH>When</TH>
                     <TH>Flags</TH>
                     <TH>Status</TH>
+                    <TH>Feedback</TH>
                     <TH numeric>Amount</TH>
                   </TR>
                 </THead>
@@ -265,6 +268,9 @@ export default async function PatientDetailPage({
                         </TD>
                         <TD>
                           <StatusPill status={b.status} dot />
+                        </TD>
+                        <TD>
+                          <SessionFeedback feedback={readFeedback(b.feedback)} />
                         </TD>
                         <TD numeric>{formatInr(b.amount ?? 0)}</TD>
                       </TR>
@@ -396,5 +402,36 @@ export default async function PatientDetailPage({
         </div>
       </div>
     </ConsoleShell>
+  );
+}
+
+/** "Nurse 5/5 · Session 2/5" and what was said, for one row of the sessions table. */
+function SessionFeedback({ feedback }: { feedback: FeedbackView | null }) {
+  if (!feedback) return <span className="t-small text-[var(--color-ink-3)]">—</span>;
+  const parts = (
+    [
+      ["Nurse", feedback.nurse],
+      ["Session", feedback.session],
+    ] as const
+  ).filter(([, part]) => part);
+  const said = [feedback.nurse?.comment, feedback.session?.comment].filter(Boolean).join(" · ");
+  return (
+    <span className="flex flex-col gap-[2px] min-w-[160px]">
+      <span className="t-small whitespace-nowrap">
+        {parts.map(([label, part], i) => (
+          <span key={label}>
+            {i > 0 ? " · " : ""}
+            {label}{" "}
+            <span
+              className="t-data text-[13px]"
+              style={{ color: (part?.rating ?? 5) <= 2 ? "var(--color-caution-text)" : "var(--color-ink)" }}
+            >
+              {part?.rating}/5
+            </span>
+          </span>
+        ))}
+      </span>
+      {said && <span className="t-small text-[var(--color-ink-2)] max-w-[36ch]">{said}</span>}
+    </span>
   );
 }

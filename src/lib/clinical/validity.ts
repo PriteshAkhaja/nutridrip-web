@@ -17,7 +17,13 @@ const DAY = 86_400_000;
 export type ApprovalState = {
   /** Can this patient book right now? */
   canBook: boolean;
-  status: "none" | "pending" | "rejected" | "valid" | "expiring" | "expired";
+  /**
+   * May they hold a slot that waits for the physician? True while a physician
+   * has yet to decide -- still reading, or waiting on the patient's answer to a
+   * question. A held slot is never approved, and no nurse is sent, until then.
+   */
+  canHold: boolean;
+  status: "none" | "pending" | "info_needed" | "rejected" | "valid" | "expiring" | "expired";
   daysLeft: number | null;
   reviewedAt: string | null;
   /** Plain-language explanation, shown to the patient verbatim. */
@@ -30,6 +36,7 @@ export function approvalState(
   if (!quiz) {
     return {
       canBook: false,
+      canHold: false,
       status: "none",
       daysLeft: null,
       reviewedAt: null,
@@ -40,6 +47,36 @@ export function approvalState(
   if (quiz.reviewStatus === "pending") {
     return {
       canBook: false,
+      canHold: true,
+      status: "pending",
+      daysLeft: null,
+      reviewedAt: null,
+      message: "A physician is reading your answers now — usually within two hours. You can hold a slot meanwhile.",
+    };
+  }
+
+  // A question is not an approval. Until the patient answers and a physician
+  // decides, this is as undecided as a submission nobody has read -- it used to
+  // fall through to the date check below and read as "Approved", which let a
+  // booking skip review and dispatch a nurse.
+  if (quiz.reviewStatus === "info_needed") {
+    return {
+      canBook: false,
+      canHold: true,
+      status: "info_needed",
+      daysLeft: null,
+      reviewedAt: null,
+      message: "Your physician asked you a question. Answer it on your results and they will decide. You can hold a slot meanwhile.",
+    };
+  }
+
+  // Only a physician's yes starts the approval window. Anything else not named
+  // above -- a submission replaced by newer answers, or a status added later --
+  // is read as undecided, never as approved.
+  if (quiz.reviewStatus !== "approved" && quiz.reviewStatus !== "modified" && quiz.reviewStatus !== "rejected") {
+    return {
+      canBook: false,
+      canHold: true,
       status: "pending",
       daysLeft: null,
       reviewedAt: null,
@@ -50,6 +87,7 @@ export function approvalState(
   if (quiz.reviewStatus === "rejected") {
     return {
       canBook: false,
+      canHold: false,
       status: "rejected",
       daysLeft: null,
       reviewedAt: quiz.reviewedAt?.toISOString() ?? null,
@@ -63,6 +101,7 @@ export function approvalState(
   if (daysLeft <= 0) {
     return {
       canBook: false,
+      canHold: false,
       status: "expired",
       daysLeft,
       reviewedAt: from.toISOString(),
@@ -73,15 +112,17 @@ export function approvalState(
   if (daysLeft <= APPROVAL_WARN_DAYS) {
     return {
       canBook: true,
+      canHold: false,
       status: "expiring",
       daysLeft,
       reviewedAt: from.toISOString(),
-      message: `Your approval lapses in ${daysLeft} day${daysLeft === 1 ? "" : "s"}. Retake the quiz whenever suits — you can keep booking until then.`,
+      message: `Your approval lapses in ${daysLeft} day${daysLeft === 1 ? "" : "s"}. You can keep booking until then. Retake the quiz whenever suits — a physician reads your new answers before your next booking is confirmed.`,
     };
   }
 
   return {
     canBook: true,
+    canHold: false,
     status: "valid",
     daysLeft,
     reviewedAt: from.toISOString(),

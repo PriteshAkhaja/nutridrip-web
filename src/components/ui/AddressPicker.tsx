@@ -4,6 +4,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Field";
 import { CoverageNote } from "@/app/app/book/BookingFlow";
+import type { Zone } from "@/lib/zones";
 
 export type PickedAddress = {
   address: string;
@@ -94,6 +95,7 @@ export function AddressPicker({
   onChange,
   mapsKey,
   searchEnabled,
+  zones,
 }: {
   value: PickedAddress;
   onChange: (next: PickedAddress) => void;
@@ -101,6 +103,8 @@ export function AddressPicker({
   mapsKey: string | null;
   /** Whether the server holds a geocoding key — decides if search is offered. */
   searchEnabled: boolean;
+  /** The zones a patient can book in, for the "do we come here" line under the pincode. */
+  zones: Zone[];
 }) {
   const [query, setQuery] = useState("");
   const [suggestions, setSuggestions] = useState<Suggestion[]>([]);
@@ -390,7 +394,7 @@ export function AddressPicker({
         />
       </div>
 
-      <CoverageNote pincode={value.pincode} />
+      <CoverageNote pincode={value.pincode} zones={zones} />
     </div>
   );
 }

@@ -13,6 +13,7 @@ import {
   stateCodeFromGstin,
   stateName,
 } from "@/lib/billing/gst";
+import { PAY_METHOD_LABEL, type PayMethod } from "@/lib/billing/order-payment";
 
 export type InvoiceParty = {
   name: string;
@@ -65,7 +66,21 @@ type OrderDoc = {
   status: string;
   dispatchedAt?: Date;
   lines: Array<{ dripId?: unknown; dripName?: string; quantity: number; unitPrice: number }>;
+  payment?: { state?: string; method?: string; reference?: string; paidOn?: Date };
 };
+
+/**
+ * The invoice's terms line. An order the clinic paid for first says so, with
+ * the payment, rather than the credit terms ("payable within 30 days") that
+ * would ask for the money a second time.
+ */
+export function termsFor(order: Pick<OrderDoc, "payment">, creditTerms: string): string {
+  const p = order.payment;
+  if (p?.state !== "received") return creditTerms;
+  const how = PAY_METHOD_LABEL[p.method as PayMethod] ?? "payment";
+  const on = p.paidOn ? ` on ${new Date(p.paidOn).toLocaleDateString("en-IN", { day: "2-digit", month: "short", year: "numeric" })}` : "";
+  return `Paid in advance${on} by ${how}${p.reference ? `, ref ${p.reference}` : ""}. Nothing further is due.`;
+}
 
 /**
  * Who may see a clinic's bill.
@@ -216,7 +231,7 @@ export async function ensureInvoice(
         placeOfSupply,
         interState,
         pricesIncludeGst: PRICES_INCLUDE_GST,
-        terms: billing.terms,
+        terms: termsFor(order, billing.terms),
         lines,
         taxableTotal,
         cgstTotal,

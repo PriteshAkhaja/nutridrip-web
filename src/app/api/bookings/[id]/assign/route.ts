@@ -6,6 +6,7 @@ import { canManageBooking } from "@/lib/auth/ownership";
 import { notify } from "@/lib/notify";
 import { pickNurse } from "@/lib/clinical/assign";
 import { ok, fail, handleError } from "@/lib/api";
+import { BETWEEN_SESSIONS_MIN, HOLDING_STATUSES, clashes, istParts } from "@/lib/clinical/slots";
 
 const Input = z.object({
   /** Omit to let the engine choose the nearest nurse under capacity. */
@@ -43,6 +44,24 @@ export async function POST(req: Request, { params }: { params: Promise<{ id: str
       const nurse = await User.findById(nurseId).lean<{ name: string; role: string; status: string } | null>();
       if (!nurse || nurse.role !== "nurse") return fail("That is not a nurse account", 422);
       if (nurse.status !== "active") return fail(`${nurse.name} is not active`, 409);
+      // One nurse, one door at a time: the session plus the travel after it.
+      const theirs = await Booking.find({
+        _id: { $ne: booking._id },
+        nurseId,
+        status: { $in: HOLDING_STATUSES },
+        scheduledAt: { $gte: new Date(booking.scheduledAt.getTime() - 86_400_000), $lte: new Date(booking.scheduledAt.getTime() + 86_400_000) },
+      })
+        .select("bookingNo scheduledAt durationMin")
+        .lean<Array<{ bookingNo: string; scheduledAt: Date; durationMin?: number }>>();
+      const clash = theirs.find((b) =>
+        clashes(booking.scheduledAt.getTime(), booking.durationMin ?? 45, new Date(b.scheduledAt).getTime(), b.durationMin ?? 45)
+      );
+      if (clash) {
+        return fail(
+          `${nurse.name} already has ${clash.bookingNo} at ${istParts(new Date(clash.scheduledAt)).time}, and needs ${BETWEEN_SESSIONS_MIN} minutes to travel on. Choose another nurse, or move one of the sessions.`,
+          409
+        );
+      }
       booking.nurseId = nurseId;
     } else {
       const patient = await User.findById(booking.patientId).lean<{
@@ -54,8 +73,11 @@ export async function POST(req: Request, { params }: { params: Promise<{ id: str
           longitude: patient?.patient?.longitude,
           pincode: patient?.patient?.pincode,
         },
-        // Never hand it straight back to the nurse being replaced.
-        { excludeNurseId: previousNurseId }
+        // Never hand it straight back to the nurse being replaced, nor to anyone busy then.
+        {
+          excludeNurseId: previousNurseId,
+          session: { start: booking.scheduledAt, durationMin: booking.durationMin ?? 45, bookingId: String(booking._id) },
+        }
       );
       if (!pick) return fail("No other nurse is available under capacity right now", 409);
       booking.nurseId = pick.nurseId;

@@ -6,6 +6,9 @@ import { HOME_FOR_ROLE } from "@/lib/auth/rbac";
 import { getContent } from "@/lib/content";
 import { MobileNav } from "./MobileNav";
 import { Arrow } from "@/components/ui/Arrow";
+import { QuizButton } from "@/components/layout/QuizButton";
+import { getZones } from "@/lib/zones-store";
+import { servedZones } from "@/lib/zones";
 
 const NAV = [
   { label: "Drips", href: "/drips" },
@@ -17,7 +20,8 @@ const NAV = [
 ];
 
 export async function SiteHeader() {
-  const session = await getSession();
+  const [session, zones] = await Promise.all([getSession(), getZones()]);
+  const zoneCount = servedZones(zones).length;
 
   return (
     <header className="sticky top-0 z-40">
@@ -27,7 +31,7 @@ export async function SiteHeader() {
       >
         <div className="mx-auto max-w-[1280px] px-6 md:px-10 py-[7px] flex items-center justify-center gap-3 flex-wrap">
           <span className="t-small" style={{ color: "rgba(255,255,255,.86)" }}>
-            Physician-reviewed before every session · 14 zones across Bengaluru
+            Physician-reviewed before every session · {zoneCount} {zoneCount === 1 ? "zone" : "zones"} across Bengaluru
           </span>
           <Link
             href="/safety"
@@ -68,7 +72,7 @@ export async function SiteHeader() {
               </ButtonLink>
             )}
           </span>
-          <ButtonLink href="/quiz">Take the quiz</ButtonLink>
+          <QuizButton compact>Take the quiz</QuizButton>
           <MobileNav
             links={NAV}
             account={

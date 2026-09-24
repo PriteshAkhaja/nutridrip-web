@@ -8,6 +8,8 @@ import { geocodingConfigured } from "@/lib/geo/geocode";
 import { LogoMark } from "@/components/layout/Logo";
 import { SignOutButton } from "@/components/layout/SignOutButton";
 import { AddressForm } from "./AddressForm";
+import { getZones } from "@/lib/zones-store";
+import { servedZones } from "@/lib/zones";
 
 export const metadata: Metadata = { title: "Where should we come?" };
 export const dynamic = "force-dynamic";
@@ -80,6 +82,7 @@ export default async function WelcomePage() {
           }}
           mapsKey={process.env.NEXT_PUBLIC_GOOGLE_MAPS_BROWSER_KEY ?? null}
           searchEnabled={geocodingConfigured()}
+          zones={servedZones(await getZones())}
         />
       </main>
     </div>

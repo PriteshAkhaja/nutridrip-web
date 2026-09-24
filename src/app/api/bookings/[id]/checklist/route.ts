@@ -127,7 +127,7 @@ export async function POST(req: Request, { params }: { params: Promise<{ id: str
       await notify(
         String(booking.patientId),
         "Your session report is ready",
-        `${booking.dripName ?? "Your drip"} · vitals, doses, batch numbers and aftercare.`,
+        `${booking.dripName ?? "Your drip"} · vitals, doses, batch numbers and aftercare. Tell us how it went.`,
         "success",
         `/app/report/${String(booking._id)}`
       );

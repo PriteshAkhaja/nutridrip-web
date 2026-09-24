@@ -9,6 +9,10 @@ import { StatusPill } from "@/components/ui/Pill";
 import { phaseProgress, PHASE_ORDER } from "@/lib/clinical/checklist";
 import { formatTime } from "@/lib/data/inventory";
 import { PATIENT_TABS } from "../../tabs";
+import { VitalsCorrected } from "@/components/ui/VitalsCorrected";
+import type { VitalsCorrection } from "@/lib/clinical/checklist";
+import { NurseCodes } from "../../NurseCodes";
+import { liveCodesFor } from "@/lib/data/session-codes";
 
 export const metadata: Metadata = { title: "Your session" };
 export const dynamic = "force-dynamic";
@@ -31,7 +35,7 @@ export default async function LiveSessionPage({ params }: { params: Promise<{ id
     remainingMl?: number;
     rateMlHr?: number;
     checklist: Array<{ phase: string; doneAt?: Date }>;
-    vitals: Array<{ takenAt: Date; systolic?: number; diastolic?: number; heartRate?: number; spo2?: number; temperatureF?: number }>;
+    vitals: Array<{ takenAt: Date; systolic?: number; diastolic?: number; heartRate?: number; spo2?: number; temperatureF?: number; corrections?: VitalsCorrection[] }>;
     observations: Array<{ at: Date; text: string }>;
   } | null>();
 
@@ -48,6 +52,9 @@ export default async function LiveSessionPage({ params }: { params: Promise<{ id
   const minutesLeft = booking.rateMlHr ? Math.round((remaining / booking.rateMlHr) * 60) : null;
   const progress = phaseProgress(booking.checklist ?? []);
   const baseline = booking.vitals?.[0];
+  // Only this session's codes, and only while a nurse can be asking for one.
+  const sessionOn = ["approved", "nurse_assigned", "en_route", "in_progress"].includes(booking.status);
+  const codes = sessionOn && session.role === "patient" ? await liveCodesFor(session.sub) : [];
 
   return (
     <MobileShell
@@ -61,6 +68,8 @@ export default async function LiveSessionPage({ params }: { params: Promise<{ id
       tabs={PATIENT_TABS}
       activeHref="/app"
     >
+      <NurseCodes initial={codes} active={sessionOn && session.role === "patient"} bookingNo={booking.bookingNo} />
+
       {/* ---------------- The bag ---------------- */}
       <div className="rounded-[var(--radius-lg)] border border-[var(--color-line)] bg-[var(--color-surface)] p-6 flex gap-6 items-center mb-4">
         <FillColumn pct={pct} ariaLabel={`${remaining} of ${bag} millilitres remaining`} />
@@ -112,6 +121,7 @@ export default async function LiveSessionPage({ params }: { params: Promise<{ id
               </div>
             ))}
           </div>
+          <VitalsCorrected corrections={baseline.corrections} />
         </div>
       )}
 

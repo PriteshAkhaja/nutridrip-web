@@ -2,6 +2,8 @@ import { connectDB } from "@/lib/db/mongoose";
 import { AuditLog, HealthQuiz, QuizQuestion } from "@/lib/models";
 import { getSession } from "@/lib/auth/session";
 import { can } from "@/lib/auth/rbac";
+import { loadQuestions } from "@/lib/clinical/quiz-store";
+import { dependentsOf } from "@/lib/clinical/quiz-rules";
 import { ok, fail, handleError } from "@/lib/api";
 
 export async function DELETE(_req: Request, { params }: { params: Promise<{ qid: string }> }) {
@@ -14,6 +16,19 @@ export async function DELETE(_req: Request, { params }: { params: Promise<{ qid:
 
     const question = await QuizQuestion.findOne({ qid });
     if (!question) return fail("Question not found", 404);
+
+    // Removing a question another one follows would silently stop that one being
+    // asked -- the follow-up needs this answer to decide. Say which, and why.
+    const live = (await loadQuestions(true)).filter((q) => q.isActive !== false && q.id !== qid);
+    const followers = dependentsOf(qid, live);
+    if (followers.length) {
+      const names = followers.map((q) => `“${q.question}”`).join(", ");
+      return fail(
+        `${names} ${followers.length === 1 ? "is" : "are"} only asked depending on the answer to this question. Change ${followers.length === 1 ? "that rule" : "those rules"} first.`,
+        409,
+        { dependents: followers.map((q) => q.id) }
+      );
+    }
 
     // Submissions store the question text they were answered against, but the
     // key still appears in old records — deactivating keeps history readable,

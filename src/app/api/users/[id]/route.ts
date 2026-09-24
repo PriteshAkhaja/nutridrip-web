@@ -37,6 +37,8 @@ const UpdateUser = z.object({
    * that clinic's invoice carries CGST+SGST or IGST.
    */
   gstin: z.string().max(20).optional(),
+  /** A clinic on credit is invoiced after dispatch; otherwise it pays for each order first. */
+  onCredit: z.boolean().optional(),
 });
 
 export async function PATCH(req: Request, { params }: { params: Promise<{ id: string }> }) {
@@ -136,6 +138,7 @@ export async function PATCH(req: Request, { params }: { params: Promise<{ id: st
         ...(input.pincode !== undefined && { pincode: input.pincode }),
         ...(input.monthlyVolumeTarget !== undefined && { monthlyVolumeTarget: input.monthlyVolumeTarget }),
         ...(input.gstin !== undefined && { gstin: input.gstin }),
+        ...(input.onCredit !== undefined && { onCredit: input.onCredit }),
       };
     }
 

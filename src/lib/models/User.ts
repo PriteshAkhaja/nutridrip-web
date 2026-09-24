@@ -63,6 +63,12 @@ const UserSchema = new Schema(
       partnerSince: Date,
       monthlyVolumeTarget: Number,
       gstin: String,
+      /**
+       * On credit: orders go ahead unpaid and are invoiced, payable within 30
+       * days, as before. Off (the default): the clinic pays for each order
+       * before it is confirmed.
+       */
+      onCredit: { type: Boolean, default: false },
     },
 
     patient: {

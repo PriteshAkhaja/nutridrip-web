@@ -5,7 +5,10 @@ import { requireRole } from "@/lib/auth/guard";
 import { clinicNav } from "@/lib/nav";
 import { ConsoleShell } from "@/components/layout/ConsoleShell";
 import { connectDB } from "@/lib/db/mongoose";
-import { Allocation, BatchLot, Consumption, Order, ProductMaster } from "@/lib/models";
+import { Allocation, BatchLot, Consumption, Order, ProductMaster, User } from "@/lib/models";
+import { PAY_METHOD_LABEL, payState, type OrderPayment, type PayMethod } from "@/lib/billing/order-payment";
+import { getPayee, hasPayee } from "@/lib/billing/settings";
+import { PayOrderForm } from "./PayOrderForm";
 import { DataTable, THead, TH, TR, TD } from "@/components/ui/Table";
 import { StatusPill, Pill } from "@/components/ui/Pill";
 import { Card } from "@/components/ui/Card";
@@ -40,6 +43,8 @@ export default async function ClinicOrderPage({ params }: { params: Promise<{ id
     dispatchedAt?: Date;
     cancelledAt?: Date;
     scheduledDelivery?: Date;
+    onCredit?: boolean;
+    payment?: OrderPayment & { paidOn?: Date; submittedAt?: Date; verifiedAt?: Date };
   } | null>();
 
   // A clinic only ever sees its own orders.
@@ -70,12 +75,45 @@ export default async function ClinicOrderPage({ params }: { params: Promise<{ id
   const masterById = new Map(masters.map((m) => [String(m._id), m]));
 
   const cancelled = order.status === "CANCELLED";
+
+  // Paying first, unless the clinic is on credit (see lib/billing/order-payment).
+  const clinic = order.clinicId
+    ? await User.findById(order.clinicId).select("clinic.onCredit").lean<{ clinic?: { onCredit?: boolean } } | null>()
+    : null;
+  const pay = payState(order, clinic?.clinic?.onCredit ?? false);
+  const payFirst = pay !== "credit";
+  const payee = pay === "awaiting" || pay === "submitted" ? await getPayee() : null;
+  const today = new Date().toLocaleDateString("en-CA", { timeZone: "Asia/Kolkata" });
+  const method = order.payment?.method ? PAY_METHOD_LABEL[order.payment.method as PayMethod] : null;
+  const paid = pay === "received";
   const timeline: TimelineItem[] = [
     { label: "Raised", time: stamp(order.createdAt), state: "done" },
+    // Paid first: the step between placing the order and the pharmacy taking it.
+    ...(payFirst
+      ? [
+          {
+            label: "Paid — payment received",
+            time: paid
+              ? stamp(order.payment?.verifiedAt)
+              : cancelled
+                ? "—"
+                : pay === "submitted"
+                  ? "Payment recorded — NutriDrip is checking it"
+                  : "Waiting for your payment",
+            state: (paid ? "done" : cancelled ? "next" : "now") as TimelineItem["state"],
+          },
+        ]
+      : []),
     {
       label: "Confirmed — stock reserved",
-      time: order.confirmedAt ? stamp(order.confirmedAt) : cancelled ? "—" : "Waiting on the pharmacy",
-      state: order.confirmedAt ? "done" : cancelled ? "next" : "now",
+      time: order.confirmedAt
+        ? stamp(order.confirmedAt)
+        : cancelled
+          ? "—"
+          : payFirst && !paid
+            ? "Once your payment is received"
+            : "Waiting on the pharmacy",
+      state: order.confirmedAt ? "done" : cancelled || (payFirst && !paid) ? "next" : "now",
     },
     {
       label: "Dispatched — batches on their way",
@@ -105,6 +143,94 @@ export default async function ClinicOrderPage({ params }: { params: Promise<{ id
 
       <div className="grid grid-cols-1 gap-6 xl:grid-cols-[minmax(0,1.4fr)_minmax(0,1fr)] items-start">
         <div className="flex flex-col gap-6">
+          {!cancelled && (pay === "awaiting" || pay === "submitted") && (
+            <Card padding="p-6" tone={pay === "awaiting" ? "primary" : undefined}>
+              {pay === "awaiting" ? (
+                <>
+                  <span className="t-micro block">Payment needed</span>
+                  <h2 className="t-h3 mt-1">Pay {formatInr(order.amount ?? 0)} to confirm this order</h2>
+                  <p className="t-body text-[var(--color-ink-2)] mt-1 max-w-[62ch]">
+                    The pharmacy prepares it once your payment has arrived. Pay by UPI or bank transfer, then record
+                    it here.
+                  </p>
+                  {order.payment?.note && (
+                    <div className="rounded-[var(--radius-md)] border border-[var(--color-caution)] bg-[var(--color-caution-soft)] px-4 py-3 mt-4">
+                      <span className="t-body font-semibold block">We could not find your payment</span>
+                      <span className="t-body text-[var(--color-ink-2)]">{order.payment.note}</span>
+                    </div>
+                  )}
+                </>
+              ) : (
+                <>
+                  <span className="t-micro block">Payment recorded</span>
+                  <h2 className="t-h3 mt-1">NutriDrip is checking it has arrived</h2>
+                  <p className="t-body text-[var(--color-ink-2)] mt-1">
+                    <span className="t-data text-[14px]">{formatInr(order.amount ?? 0)}</span> by {method}, ref{" "}
+                    <span className="t-data text-[14px]">{order.payment?.reference}</span>
+                    {order.payment?.paidOn ? `, paid ${formatDate(order.payment.paidOn)}` : ""}. Your order goes to the
+                    pharmacy once it has.
+                  </p>
+                </>
+              )}
+
+              {payee && (
+                <div className="rounded-[var(--radius-md)] border border-[var(--color-line)] bg-[var(--color-surface)] px-4 py-3 mt-4">
+                  <span className="t-micro block mb-2">Pay to</span>
+                  {hasPayee(payee) ? (
+                    <dl className="grid grid-cols-[auto_1fr] gap-x-4 gap-y-1 m-0">
+                      {(
+                        [
+                          ["UPI ID", payee.upiId],
+                          ["Account name", payee.accountName],
+                          ["Bank", payee.bankName],
+                          ["Account number", payee.accountNo],
+                          ["IFSC", payee.ifsc],
+                        ] as const
+                      )
+                        .filter(([, v]) => v)
+                        .map(([k, v]) => (
+                          <div key={k} className="contents">
+                            <dt className="t-small text-[var(--color-ink-2)]">{k}</dt>
+                            <dd className="t-data text-[14px] m-0 break-all">{v}</dd>
+                          </div>
+                        ))}
+                    </dl>
+                  ) : (
+                    <span className="t-body text-[var(--color-ink-2)]">
+                      Payment details have not been set up yet. Contact NutriDrip for where to pay.
+                    </span>
+                  )}
+                </div>
+              )}
+
+              <div className="mt-5">
+                {pay === "awaiting" ? (
+                  <PayOrderForm orderId={id} today={today} />
+                ) : (
+                  <details>
+                    <summary className="t-body font-medium cursor-pointer text-[var(--color-primary-text)]">
+                      Correct the payment details
+                    </summary>
+                    <div className="mt-4">
+                      <PayOrderForm
+                        orderId={id}
+                        today={today}
+                        submitLabel="Save the correction"
+                        initial={{
+                          method: (order.payment?.method as PayMethod) ?? "upi",
+                          reference: order.payment?.reference ?? "",
+                          paidOn: order.payment?.paidOn
+                            ? new Date(order.payment.paidOn).toLocaleDateString("en-CA", { timeZone: "Asia/Kolkata" })
+                            : today,
+                        }}
+                      />
+                    </div>
+                  </details>
+                )}
+              </div>
+            </Card>
+          )}
+
           <section>
             <h2 className="t-h3 mb-3">Order lines</h2>
             <DataTable>
@@ -204,12 +330,33 @@ export default async function ClinicOrderPage({ params }: { params: Promise<{ id
             <span className="t-micro block mb-4">Where it is</span>
             <Timeline items={timeline} />
           </Card>
+          {paid && (
+            <Card padding="p-5" tone="safe">
+              <span className="t-micro block mb-1">Paid</span>
+              <span className="t-body">
+                {formatInr(order.amount ?? 0)} by {method}, ref{" "}
+                <span className="t-data text-[14px]">{order.payment?.reference}</span>
+              </span>
+              <span className="t-small text-[var(--color-ink-2)] block mt-1">
+                Received {order.payment?.verifiedAt ? stamp(order.payment.verifiedAt) : ""}
+              </span>
+            </Card>
+          )}
+          {cancelled && order.payment?.refundDue && (
+            <Card padding="p-5" tone="caution">
+              <span className="t-micro block mb-1">Refund due</span>
+              <span className="t-body">
+                This order was cancelled after your payment arrived. {formatInr(order.amount ?? 0)} is due back to you.
+              </span>
+            </Card>
+          )}
           <Card padding="p-5">
             <span className="t-micro">Summary</span>
             <div className="flex flex-col gap-2 mt-4">
               {[
                 ["Patient reference", order.patientRef ?? "—"],
                 ["Session kits", order.includeKits ? "Included" : "Excluded"],
+                ["Payment", payFirst ? "Paid before it is confirmed" : "On credit — invoice, 30 days"],
                 ["Total", formatInr(order.amount ?? 0)],
               ].map(([k, v]) => (
                 <div key={k} className="flex justify-between gap-4 items-baseline">

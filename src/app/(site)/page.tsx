@@ -24,6 +24,11 @@ import {
   CATEGORIES,
 } from "@/lib/data/marketing";
 import { Arrow } from "@/components/ui/Arrow";
+import { QuizButton } from "@/components/layout/QuizButton";
+import { getLatePolicy } from "@/lib/billing/settings";
+import { fillLatePolicy } from "@/lib/billing/late-policy";
+import { getZones } from "@/lib/zones-store";
+import { fillZoneCount } from "@/lib/zones";
 
 export const dynamic = "force-dynamic";
 
@@ -34,7 +39,9 @@ const HERO_BULLETS = [
 ];
 
 export default async function HomePage() {
-  const [drips, copy] = await Promise.all([listDrips(), getContent()]);
+  // The late-change rule, with today's fees (set on the Billing page).
+  const latePolicy = await getLatePolicy();
+  const [drips, copy, zones] = await Promise.all([listDrips(), getContent(), getZones()]);
 
   const bestSellers = ["myers-revive", "immune-shield", "glow-protocol", "hydrate-plus"]
     .map((slug) => drips.find((d) => d.slug === slug))
@@ -95,9 +102,9 @@ export default async function HomePage() {
               </ul>
 
               <div className="flex gap-3 flex-wrap">
-                <ButtonLink href="/quiz" size="lg">
+                <QuizButton size="lg">
                   {copy["home.cta"]}
-                </ButtonLink>
+                </QuizButton>
                 <ButtonLink href="/drips" size="lg" variant="secondary">
                   Browse all {drips.length} drips
                 </ButtonLink>
@@ -107,7 +114,7 @@ export default async function HomePage() {
                 {[
                   [copy["home.stat1.value"], copy["home.stat1.label"]],
                   [copy["home.stat2.value"], copy["home.stat2.label"]],
-                  [copy["home.stat3.value"], copy["home.stat3.label"]],
+                  [fillZoneCount(copy["home.stat3.value"], zones), copy["home.stat3.label"]],
                 ].map(([value, label]) => (
                   <div key={label} className="flex flex-col gap-1">
                     <span className="t-data" style={{ fontSize: 28, lineHeight: 1.1 }}>
@@ -315,9 +322,9 @@ export default async function HomePage() {
             <ButtonLink href="/safety" size="lg" block>
               Read the full contraindication list
             </ButtonLink>
-            <ButtonLink href="/quiz" size="lg" variant="secondary" block>
+            <QuizButton size="lg" variant="secondary" block>
               Take the quiz · 3 min
-            </ButtonLink>
+            </QuizButton>
           </div>
         </div>
       </Section>
@@ -326,7 +333,7 @@ export default async function HomePage() {
       <Section tone="soft">
         <div className="grid grid-cols-1 gap-10 lg:grid-cols-[0.8fr_1.2fr] items-start">
           <SectionHeading eyebrow="Before you book" title="Questions people actually ask" />
-          <FaqList items={FAQS} />
+          <FaqList items={FAQS.map((f) => ({ ...f, a: fillZoneCount(fillLatePolicy(f.a, latePolicy), zones) }))} />
         </div>
       </Section>
 
@@ -349,9 +356,9 @@ export default async function HomePage() {
             what is.
           </p>
           <div className="flex gap-3 flex-wrap justify-center mt-2">
-            <ButtonLink href="/quiz" size="lg">
+            <QuizButton size="lg">
               Take the health quiz
-            </ButtonLink>
+            </QuizButton>
             <Link
               href="/drips"
               className="inline-flex items-center justify-center min-h-[52px] px-6 rounded-[var(--radius-sm)] border font-semibold text-[14.5px] no-underline hover:no-underline"

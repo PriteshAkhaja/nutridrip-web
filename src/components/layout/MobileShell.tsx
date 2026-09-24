@@ -1,8 +1,8 @@
-import Link from "next/link";
 import type { ReactNode } from "react";
 import { LogoMark } from "./Logo";
 import { NotificationBell } from "./NotificationBell";
-import { Arrow } from "@/components/ui/Arrow";
+import { BackLink } from "./NavTrail";
+import { NavLink, PageReset } from "./PageReset";
 
 export type Tab = { label: string; href: string; badge?: number };
 
@@ -32,14 +32,10 @@ export function MobileShell({
     <div className="min-h-dvh bg-[var(--color-paper)] flex flex-col">
       <header className="sticky top-0 z-30 bg-[var(--color-paper)] border-b border-[var(--color-line)]">
         <div className="mx-auto w-full max-w-[560px] px-5 py-3 flex items-center gap-3">
+          {/* `back` is the page's usual parent; the arrow goes where the page was
+              actually entered from when that is known (see NavTrail). */}
           {back ? (
-            <Link
-              href={back.href}
-              aria-label={back.label}
-              className="w-11 h-11 -ml-2 inline-flex items-center justify-center rounded-[var(--radius-sm)] text-[var(--color-ink-2)] no-underline hover:no-underline hover:bg-[var(--color-surface-2)]"
-            >
-              <Arrow dir="left" />
-            </Link>
+            <BackLink fallback={back} />
           ) : (
             <LogoMark size={22} />
           )}
@@ -53,7 +49,9 @@ export function MobileShell({
         </div>
       </header>
 
-      <main className="flex-1 mx-auto w-full max-w-[560px] px-5 py-5 pb-28">{children}</main>
+      <main className="flex-1 mx-auto w-full max-w-[560px] px-5 py-5 pb-28">
+        <PageReset>{children}</PageReset>
+      </main>
 
       {tabs && (
         <nav
@@ -64,7 +62,7 @@ export function MobileShell({
             {tabs.map((t) => {
               const active = activeHref === t.href;
               return (
-                <Link
+                <NavLink
                   key={t.href}
                   href={t.href}
                   aria-current={active ? "page" : undefined}
@@ -90,7 +88,7 @@ export function MobileShell({
                   {t.badge !== undefined && t.badge > 0 && (
                     <span className="t-data text-[11px] text-[var(--color-ink-3)] leading-none">{t.badge}</span>
                   )}
-                </Link>
+                </NavLink>
               );
             })}
           </div>

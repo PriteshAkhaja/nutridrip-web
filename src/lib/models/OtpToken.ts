@@ -13,10 +13,15 @@ const OtpTokenSchema = new Schema(
   {
     phone: { type: String, required: true, index: true },
     /** What this code entitles the bearer to do. */
-    purpose: { type: String, enum: ["login", "prescription"], default: "login", index: true },
-    /** Prescription codes are good for one session only. */
+    purpose: { type: String, enum: ["login", "prescription", "consent"], default: "login", index: true },
+    /** Prescription and consent codes are good for one session only. */
     bookingId: { type: Schema.Types.ObjectId, ref: "Booking" },
     codeHash: { type: String, required: true },
+    /**
+     * The code, sealed (see lib/auth/code-box), so the patient's own screen can
+     * show them what to read to the nurse. Session codes only; never sign-in codes.
+     */
+    sealed: String,
     attempts: { type: Number, default: 0 },
     consumedAt: Date,
     expiresAt: { type: Date, required: true },

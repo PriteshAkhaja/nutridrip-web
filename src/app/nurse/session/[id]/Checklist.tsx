@@ -20,6 +20,11 @@ const SUB_SCREEN: Record<string, { label: string; path: string }> = {
  * Steps are done in order. The current step is expanded and actionable;
  * completed steps collapse to a timestamped line; the rest stay dimmed, so the
  * nurse always has exactly one thing to do.
+ *
+ * A completed step can be put right. Vitals open their reading to be corrected
+ * (with a reason, the old values kept); any other step can be reopened and
+ * ticked again. Reopening one step leaves the later ones as they are, but it
+ * becomes the step to do: nothing further can be ticked until it is closed again.
  */
 export function Checklist({
   bookingId,
@@ -41,6 +46,18 @@ export function Checklist({
   const router = useRouter();
   const [busy, setBusy] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
+  // A problem reopening a completed step, shown under that step.
+  const [rowError, setRowError] = useState<{ key: string; message: string } | null>(null);
+
+  const reopen = async (key: string, label: string) => {
+    setBusy(key);
+    setRowError(null);
+    const result = await queuedPost(`/api/bookings/${bookingId}/checklist`, { key, done: false }, `Reopen: ${label}`);
+    setBusy(null);
+    if (result.queued) setRowError({ key, message: "Offline — this is queued and will sync when you reconnect." });
+    else if (!result.json.success) setRowError({ key, message: result.json.error ?? "That step could not be reopened" });
+    else router.refresh();
+  };
 
   const complete = async (key: string, label: string) => {
     setBusy(key);
@@ -143,6 +160,15 @@ export function Checklist({
                 </span>
               )}
 
+              {done && rowError?.key === step.key && (
+                <div
+                  role="alert"
+                  className="rounded-[var(--radius-sm)] border border-[var(--color-caution)] bg-[var(--color-caution-soft)] px-3 py-2 mt-2"
+                >
+                  <span className="t-small text-[var(--color-ink-2)]">{rowError.message}</span>
+                </div>
+              )}
+
               {current && (
                 <>
                   {step.detail && <p className="t-body text-[var(--color-ink-2)] mt-2">{step.detail}</p>}
@@ -219,6 +245,30 @@ export function Checklist({
                 </>
               )}
             </div>
+
+            {done &&
+              (step.opens === "vitals" ? (
+                <Link
+                  href={`/nurse/session/${bookingId}/vitals?correct=${step.key}`}
+                  className="no-underline hover:no-underline flex-none"
+                  aria-label={`Edit: ${step.label}`}
+                >
+                  <Button variant="secondary" size="sm">
+                    Edit
+                  </Button>
+                </Link>
+              ) : (
+                <Button
+                  variant="secondary"
+                  size="sm"
+                  className="flex-none"
+                  loading={busy === step.key}
+                  onClick={() => reopen(step.key, step.label)}
+                  aria-label={`Reopen: ${step.label}`}
+                >
+                  Reopen
+                </Button>
+              ))}
           </div>
         );
       })}

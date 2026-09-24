@@ -53,6 +53,12 @@ export const PERMISSIONS = {
    */
   "billing.manage": ["superadmin", "admin"],
   /**
+   * The service zones and their pincodes. Super admin only: a zone decides
+   * where a nurse is sent and which patients are told "yes", so it is not an
+   * operations tweak.
+   */
+  "zones.manage": ["superadmin"],
+  /**
    * Reading the trail is its own capability.
    *
    * It carries who was refused what and when, across every role — closer to a

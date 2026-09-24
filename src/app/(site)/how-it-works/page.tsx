@@ -4,8 +4,10 @@ import { Card } from "@/components/ui/Card";
 import { Section } from "@/components/ui/Marketing";
 import { CHECKLIST_STEPS, PHASE_ORDER } from "@/lib/clinical/checklist";
 import { APPROVAL_VALID_DAYS } from "@/lib/clinical/validity";
-import { LATE_CANCEL_FEE_INR, LATE_CHANGE_HOURS } from "@/lib/clinical/slots";
+import { getLatePolicy } from "@/lib/billing/settings";
+import { latePolicySentence } from "@/lib/billing/late-policy";
 import { getContent } from "@/lib/content";
+import { QuizButton } from "@/components/layout/QuizButton";
 
 export const metadata: Metadata = {
   title: "How it works",
@@ -19,6 +21,8 @@ export const dynamic = "force-dynamic";
 type Step = { title: string; who: string; body: string; note?: string };
 
 export default async function HowItWorksPage() {
+  // The late-change rule, with today's fees (set on the Billing page).
+  const latePolicy = await getLatePolicy();
   const copy = await getContent();
   const stepsByPhase = PHASE_ORDER.map((phase) => ({
     phase,
@@ -42,7 +46,7 @@ export default async function HowItWorksPage() {
       title: "You choose a drip and a slot",
       who: "You",
       body: "Pick the formula, a date and a time — at home, or at a partner clinic. Enter your pincode and you get a straight yes or no on whether we can reach you.",
-      note: `Free to cancel or move up to ${LATE_CHANGE_HOURS} hours before. Inside that, a session cannot be moved and cancelling carries a ₹${LATE_CANCEL_FEE_INR.toLocaleString("en-IN")} fee, because the nurse is already dispatched with your batch drawn.`,
+      note: latePolicySentence(latePolicy),
     },
     {
       title: "Your nurse sets off",
@@ -153,9 +157,9 @@ export default async function HowItWorksPage() {
             </p>
           </div>
           <div className="flex flex-col gap-3">
-            <ButtonLink href="/quiz" size="lg" block>
+            <QuizButton size="lg" block>
               Take the health quiz
-            </ButtonLink>
+            </QuizButton>
             <ButtonLink href="/consult" variant="secondary" block>
               Ask a clinician first
             </ButtonLink>

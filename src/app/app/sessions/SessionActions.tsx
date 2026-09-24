@@ -4,7 +4,9 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/Button";
 import { Textarea, Select } from "@/components/ui/Field";
-import { SLOTS, slotDate, LATE_CHANGE_HOURS, LATE_CANCEL_FEE_INR } from "@/lib/clinical/slots";
+import { SlotPicker } from "@/components/ui/SlotPicker";
+import { inr, lateFee, type LatePolicy } from "@/lib/billing/late-policy";
+import type { FeedbackView } from "@/lib/clinical/feedback";
 
 const REASONS = [
   "Something came up",
@@ -15,8 +17,9 @@ const REASONS = [
 ];
 
 /**
- * The window and the fee are the server's rules, imported rather than restated
- * so this dialog cannot quietly disagree with what the API will actually do.
+ * The window and the fees are the Billing settings, handed down by the page --
+ * the same values the server charges from -- so a dialog cannot quietly
+ * disagree with what the API will actually do.
  */
 
 const hoursUntil = (iso: string) => (new Date(iso).getTime() - Date.now()) / 3_600_000;
@@ -25,10 +28,12 @@ export function CancelSession({
   bookingId,
   bookingNo,
   scheduledAt,
+  policy,
 }: {
   bookingId: string;
   bookingNo: string;
   scheduledAt: string;
+  policy: LatePolicy;
 }) {
   const router = useRouter();
   const [open, setOpen] = useState(false);
@@ -36,9 +41,9 @@ export function CancelSession({
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const hoursOut = hoursUntil(scheduledAt);
   // Matches the server: a slot already past is the deepest part of the window.
-  const late = hoursOut < LATE_CHANGE_HOURS;
+  const fee = lateFee(policy, hoursUntil(scheduledAt), "late_cancel");
+  const late = fee > 0;
 
   const cancel = async () => {
     setBusy(true);
@@ -84,8 +89,8 @@ export function CancelSession({
         <span className="t-body text-[var(--color-ink-2)]">
           {late ? (
             <>
-              Your slot is in under {LATE_CHANGE_HOURS} hours, so a{" "}
-              <span className="t-data text-[14.5px]">₹{LATE_CANCEL_FEE_INR}</span> fee applies — the nurse is already dispatched
+              Your slot is in under {policy.windowHours} hours, so a{" "}
+              <span className="t-data text-[14.5px]">{inr(fee)}</span> fee applies — the nurse is already dispatched
               with your batch drawn.
             </>
           ) : (
@@ -114,20 +119,43 @@ export function CancelSession({
   );
 }
 
-/** Rating is asked for once, after the session, and never nagged. */
+/**
+ * Feedback after a finished session, in two parts: the nurse who looked after
+ * the patient, and the session itself. Asked for once, and never nagged.
+ *
+ * A rating of two or less on either goes to the physician as well; the nurse
+ * hears their own rating whatever it is.
+ */
 export function RateSession({
   bookingId,
+  nurseName,
   existing,
+  onDone,
+  bare = false,
+  refresh = true,
 }: {
   bookingId: string;
-  existing: { rating: number; comment?: string } | null;
+  /** Null when no nurse ran the session: then only the session is rated. */
+  nurseName: string | null;
+  existing: FeedbackView | null;
+  /** Without its own card: for a place that already frames it (the Home card). */
+  bare?: boolean;
+  /** Reload the page's data once sent. Home keeps its thank-you on screen instead. */
+  refresh?: boolean;
+  /** Called once it is sent (the Home card uses it to say thank you and step aside). */
+  onDone?: () => void;
 }) {
   const router = useRouter();
-  const [rating, setRating] = useState(existing?.rating ?? 0);
-  const [comment, setComment] = useState(existing?.comment ?? "");
+  const [nurseRating, setNurseRating] = useState(existing?.nurse?.rating ?? 0);
+  const [nurseComment, setNurseComment] = useState(existing?.nurse?.comment ?? "");
+  const [sessionRating, setSessionRating] = useState(existing?.session?.rating ?? 0);
+  const [sessionComment, setSessionComment] = useState(existing?.session?.comment ?? "");
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [sent, setSent] = useState(Boolean(existing));
+  const first = nurseName?.split(" ")[0] ?? null;
+
+  const ready = sessionRating > 0 && (!nurseName || nurseRating > 0);
 
   const submit = async () => {
     setBusy(true);
@@ -136,13 +164,18 @@ export function RateSession({
       const res = await fetch(`/api/bookings/${bookingId}/feedback`, {
         method: "POST",
         headers: { "content-type": "application/json" },
-        body: JSON.stringify({ rating, comment: comment || undefined }),
+        body: JSON.stringify({
+          ...(nurseName ? { nurseRating, nurseComment: nurseComment || undefined } : {}),
+          sessionRating,
+          sessionComment: sessionComment || undefined,
+        }),
       });
       const json = await res.json();
       if (!json.success) setError(json.error ?? "Could not save that");
       else {
         setSent(true);
-        router.refresh();
+        onDone?.();
+        if (refresh) router.refresh();
       }
     } catch {
       setError("Could not reach the server. Nothing was sent.");
@@ -152,39 +185,103 @@ export function RateSession({
   };
 
   if (sent) {
+    const low = (nurseName && nurseRating > 0 && nurseRating <= 2) || (sessionRating > 0 && sessionRating <= 2);
     return (
       <div className="rounded-[var(--radius-md)] border border-[var(--color-safe)] bg-[var(--color-safe-soft)] px-4 py-3">
         <span className="t-body font-semibold">
-          You rated this {rating}/5
+          {nurseName && nurseRating > 0
+            ? `You rated ${first} ${nurseRating}/5 and the session ${sessionRating}/5`
+            : `You rated this session ${sessionRating}/5`}
         </span>
         <p className="t-body text-[var(--color-ink-2)] mt-1">
-          {rating <= 2
+          {low
             ? "Your physician has been told, and someone will follow up."
-            : "Thank you — your nurse sees this on their record."}
+            : nurseName
+              ? `Thank you — ${first} sees your rating on their record.`
+              : "Thank you."}
         </p>
       </div>
     );
   }
 
   return (
-    <div className="rounded-[var(--radius-lg)] border border-[var(--color-line)] bg-[var(--color-surface)] p-5 flex flex-col gap-4">
+    <div
+      className={
+        bare
+          ? "flex flex-col gap-5"
+          : "rounded-[var(--radius-lg)] border border-[var(--color-line)] bg-[var(--color-surface)] p-5 flex flex-col gap-5"
+      }
+    >
+      {nurseName && (
+        <RatingPart
+          title={`Your nurse, ${nurseName}`}
+          question={`How was ${first}'s care?`}
+          value={nurseRating}
+          onValue={setNurseRating}
+          comment={nurseComment}
+          onComment={setNurseComment}
+          placeholder={nurseRating <= 2 ? "What went wrong?" : `What did ${first} do well?`}
+        />
+      )}
+
+      <RatingPart
+        title="Your session"
+        question="How do you feel after your drip?"
+        value={sessionRating}
+        onValue={setSessionRating}
+        comment={sessionComment}
+        onComment={setSessionComment}
+        placeholder={sessionRating <= 2 ? "What went wrong?" : "Anything you noticed afterwards"}
+      />
+
+      <span className="t-small text-[var(--color-ink-2)]">
+        A rating of two or less goes straight to the physician who approved your protocol.
+      </span>
+
+      {error && <span className="t-small text-[var(--color-critical-text)]">{error}</span>}
+
+      <Button block loading={busy} disabled={!ready} onClick={submit}>
+        Send
+      </Button>
+    </div>
+  );
+}
+
+/** One half of the feedback: a question, five buttons, and a note once rated. */
+function RatingPart({
+  title,
+  question,
+  value,
+  onValue,
+  comment,
+  onComment,
+  placeholder,
+}: {
+  title: string;
+  question: string;
+  value: number;
+  onValue: (n: number) => void;
+  comment: string;
+  onComment: (s: string) => void;
+  placeholder: string;
+}) {
+  return (
+    <div className="flex flex-col gap-3">
       <div>
-        <span className="t-micro block mb-1">How was it?</span>
-        <span className="t-small text-[var(--color-ink-2)]">
-          A rating of two or less goes straight to the physician who approved your protocol.
-        </span>
+        <span className="t-micro block mb-1">{title}</span>
+        <span className="t-body">{question}</span>
       </div>
 
-      <div className="flex gap-2" role="group" aria-label="Rating out of five">
+      <div className="flex gap-2" role="group" aria-label={`${question} Rating out of five`}>
         {[1, 2, 3, 4, 5].map((n) => {
-          const on = rating >= n;
+          const on = value >= n;
           return (
             <button
               key={n}
               type="button"
               aria-label={`${n} out of 5`}
-              aria-pressed={rating === n}
-              onClick={() => setRating(n)}
+              aria-pressed={value === n}
+              onClick={() => onValue(n)}
               className="flex-1 min-h-[52px] rounded-[var(--radius-sm)] border cursor-pointer t-data text-[16px]"
               style={{
                 borderColor: on ? "var(--color-primary)" : "var(--color-line-2)",
@@ -199,22 +296,16 @@ export function RateSession({
         })}
       </div>
 
-      {rating > 0 && (
+      {value > 0 && (
         <Textarea
           label="Anything to add"
           hint="optional"
           rows={2}
           value={comment}
-          onChange={(e) => setComment(e.target.value)}
-          placeholder={rating <= 2 ? "What went wrong?" : "What went well?"}
+          onChange={(e) => onComment(e.target.value)}
+          placeholder={placeholder}
         />
       )}
-
-      {error && <span className="t-small text-[var(--color-critical-text)]">{error}</span>}
-
-      <Button block loading={busy} disabled={rating === 0} onClick={submit}>
-        Send
-      </Button>
     </div>
   );
 }
@@ -228,24 +319,26 @@ export function RescheduleSession({
   bookingId,
   bookingNo,
   scheduledAt,
-  releasedDays,
+  policy,
 }: {
   bookingId: string;
   bookingNo: string;
   scheduledAt: string;
-  /** Decided on the server, so the list cannot differ after hydration. */
-  releasedDays: string[];
+  policy: LatePolicy;
 }) {
   const router = useRouter();
   const [open, setOpen] = useState(false);
-  const days = releasedDays.map((iso) => new Date(iso));
-  const [day, setDay] = useState(days[0]);
-  const [slot, setSlot] = useState(SLOTS[1]);
+  /** The new time, from the slot picker: only times a nurse can come. */
+  const [slotAt, setSlotAt] = useState<string | null>(null);
+  const [slotReload, setSlotReload] = useState(0);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const hoursOut = hoursUntil(scheduledAt);
-  const locked = hoursOut > 0 && hoursOut < LATE_CHANGE_HOURS;
+  // Inside the late window it can still be moved -- for the fee, said up front
+  // and agreed to on the button. The server says so too, with the amount, if
+  // the window was crossed while this was open.
+  const [serverFee, setServerFee] = useState<number | null>(null);
+  const fee = serverFee ?? lateFee(policy, hoursUntil(scheduledAt), "late_reschedule");
 
   const move = async () => {
     setBusy(true);
@@ -254,11 +347,14 @@ export function RescheduleSession({
       const res = await fetch(`/api/bookings/${bookingId}/reschedule`, {
         method: "POST",
         headers: { "content-type": "application/json" },
-        body: JSON.stringify({ scheduledAt: slotDate(day, slot).toISOString() }),
+        body: JSON.stringify({ scheduledAt: slotAt, ...(fee > 0 ? { acceptFee: true } : {}) }),
       });
       const json = await res.json();
-      if (!json.success) setError(json.error ?? "Could not move that session");
-      else {
+      if (!json.success) {
+        if (typeof json.fee === "number" && json.fee > 0 && fee === 0) setServerFee(json.fee);
+        setError(json.error ?? "Could not move that session");
+        if (res.status === 409 || res.status === 422) setSlotReload((n) => n + 1);
+      } else {
         setOpen(false);
         router.refresh();
       }
@@ -271,7 +367,7 @@ export function RescheduleSession({
 
   if (!open) {
     return (
-      <Button variant="ghost" onClick={() => setOpen(true)} disabled={locked} title={locked ? `Inside the ${LATE_CHANGE_HOURS}-hour window` : undefined}>
+      <Button variant="ghost" onClick={() => setOpen(true)}>
         Move it
       </Button>
     );
@@ -281,59 +377,17 @@ export function RescheduleSession({
     <div className="rounded-[var(--radius-md)] border border-[var(--color-line)] bg-[var(--color-surface-2)] p-4 flex flex-col gap-4 mt-3">
       <span className="t-body font-semibold">Move {bookingNo}</span>
 
-      <div>
-        <span className="t-micro block mb-2">Which day</span>
-        <div className="grid grid-cols-5 gap-2">
-          {days.map((d) => {
-            const selected = d.getTime() === day.getTime();
-            return (
-              <button
-                key={d.toISOString()}
-                type="button"
-                aria-pressed={selected}
-                onClick={() => setDay(d)}
-                className="py-2 rounded-[var(--radius-sm)] border flex flex-col items-center gap-[2px] cursor-pointer min-h-[56px]"
-                style={{
-                  borderColor: selected ? "var(--color-primary)" : "var(--color-line)",
-                  background: selected ? "var(--color-primary-soft)" : "var(--color-surface)",
-                }}
-              >
-                <span className="t-micro" style={{ color: selected ? "var(--color-primary-dark)" : "var(--color-ink-3)" }}>
-                  {d.toLocaleDateString("en-IN", { weekday: "short" })}
-                </span>
-                <span className="t-data text-[16px]" style={{ color: selected ? "var(--color-primary-dark)" : "var(--color-ink)" }}>
-                  {d.getDate()}
-                </span>
-              </button>
-            );
-          })}
+      {fee > 0 && (
+        <div className="rounded-[var(--radius-sm)] px-3 py-2 border border-[var(--color-caution)] bg-[var(--color-caution-soft)]">
+          <span className="t-body text-[var(--color-ink-2)]">
+            Your slot is less than {policy.windowHours} hours away, so moving it now costs{" "}
+            <span className="t-data text-[14.5px]">{inr(fee)}</span>, added to this session. The nurse is already on
+            their way with your batch drawn.
+          </span>
         </div>
-      </div>
+      )}
 
-      <div>
-        <span className="t-micro block mb-2">What time</span>
-        <div className="grid grid-cols-3 gap-2">
-          {SLOTS.map((s) => {
-            const selected = s === slot;
-            return (
-              <button
-                key={s}
-                type="button"
-                aria-pressed={selected}
-                onClick={() => setSlot(s)}
-                className="min-h-[40px] rounded-[var(--radius-sm)] border cursor-pointer t-data text-[13px]"
-                style={{
-                  borderColor: selected ? "var(--color-primary)" : "var(--color-line)",
-                  background: selected ? "var(--color-primary-soft)" : "var(--color-surface)",
-                  color: selected ? "var(--color-primary-dark)" : "var(--color-ink)",
-                }}
-              >
-                {s}
-              </button>
-            );
-          })}
-        </div>
-      </div>
+      <SlotPicker query={`booking=${bookingId}`} value={slotAt} onChange={setSlotAt} reloadKey={slotReload} compact />
 
       {error && <span className="t-small text-[var(--color-critical-text)]">{error}</span>}
 
@@ -341,8 +395,8 @@ export function RescheduleSession({
         <Button variant="secondary" block onClick={() => setOpen(false)}>
           Keep it
         </Button>
-        <Button block loading={busy} onClick={move}>
-          Move the session
+        <Button block loading={busy} disabled={!slotAt} onClick={move}>
+          {fee > 0 ? `Move for ${inr(fee)}` : "Move the session"}
         </Button>
       </div>
     </div>

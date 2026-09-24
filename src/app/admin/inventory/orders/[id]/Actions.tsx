@@ -13,10 +13,13 @@ export function OrderActions({
   orderId,
   status,
   canConfirm,
+  confirmNote = null,
 }: {
   orderId: string;
   status: string;
   canConfirm: boolean;
+  /** Why Confirm is off when it is the clinic's payment holding it up. */
+  confirmNote?: string | null;
 }) {
   const router = useRouter();
   const [busy, setBusy] = useState<string | null>(null);
@@ -65,6 +68,9 @@ export function OrderActions({
           </>
         )}
       </div>
+      {status === "DRAFT" && confirmNote && !error && (
+        <span className="t-small text-[var(--color-ink-2)] max-w-[420px] text-right">{confirmNote}</span>
+      )}
       {error && <span className="t-small text-[var(--color-critical-text)] max-w-[420px] text-right">{error}</span>}
     </div>
   );

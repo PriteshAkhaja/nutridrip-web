@@ -34,14 +34,32 @@ const HealthQuizSchema = new Schema(
     categoryScores: { type: Map, of: Number },
     suggestedDripIds: [{ type: Schema.Types.ObjectId, ref: "Drip" }],
 
+    /**
+     * The screening answers a physician must see before approving anything --
+     * "Are you pregnant…? — Yes" -- in words, as the questions read when the
+     * patient answered them. Kept on the submission because the questionnaire
+     * can be edited afterwards, and a flag must not quietly disappear with it.
+     * Absent (not empty) on submissions made before it existed.
+     */
+    screeningFlags: { type: [String], default: undefined },
+
     reviewedBy: { type: Schema.Types.ObjectId, ref: "User" },
     reviewedAt: Date,
     reviewStatus: {
       type: String,
-      enum: ["pending", "approved", "modified", "rejected", "info_needed"],
+      enum: ["pending", "approved", "modified", "rejected", "info_needed", "superseded"],
       default: "pending",
       index: true,
     },
+
+    /**
+     * Set when the patient retook the quiz before a physician had decided on
+     * this one. The newer answers replace these: this submission leaves the
+     * queue ("superseded") and points here, so nobody reviews answers the
+     * patient has already corrected, and the history still shows both.
+     */
+    supersededBy: { type: Schema.Types.ObjectId, ref: "HealthQuiz" },
+
     /** For the NURSE: rate, order of additives, anything to do at the chair. */
     doctorNotes: String,
 

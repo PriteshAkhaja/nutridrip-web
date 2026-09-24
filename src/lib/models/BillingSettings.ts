@@ -20,6 +20,21 @@ const BillingSettingsSchema = new Schema(
     address: String,
     terms: String,
 
+    /**
+     * Late changes by patients (see lib/billing/late-policy). Absent until set,
+     * which reads as the defaults: 4 hours, ₹500 to move, ₹500 to cancel.
+     */
+    lateWindowHours: Number,
+    lateRescheduleFee: Number,
+    lateCancelFee: Number,
+
+    /** Where clinics pay for their orders: shown to them on every unpaid order. */
+    payeeUpiId: String,
+    payeeAccountName: String,
+    payeeBankName: String,
+    payeeAccountNo: String,
+    payeeIfsc: String,
+
     updatedBy: { type: Schema.Types.ObjectId, ref: "User" },
   },
   { timestamps: true }

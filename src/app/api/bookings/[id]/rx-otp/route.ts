@@ -8,6 +8,7 @@ import { nurseOwns } from "@/lib/auth/ownership";
 import { notify } from "@/lib/notify";
 import { canOpenPrescription, RX_OTP_MAX_ATTEMPTS, RX_OTP_TTL_MS } from "@/lib/clinical/prescription";
 import { ok, fail, handleError } from "@/lib/api";
+import { sealCode } from "@/lib/auth/code-box";
 
 export const dynamic = "force-dynamic";
 
@@ -73,6 +74,8 @@ export async function POST(req: Request, { params }: { params: Promise<{ id: str
         purpose: "prescription",
         bookingId: booking._id,
         codeHash: await bcrypt.hash(code, 10),
+        // Sealed as well, so it can be shown on the patient's home screen.
+        sealed: sealCode(code),
         expiresAt: new Date(Date.now() + RX_OTP_TTL_MS),
       });
 
@@ -84,7 +87,7 @@ export async function POST(req: Request, { params }: { params: Promise<{ id: str
         "Your nurse is asking for your code",
         `Read this code to the nurse to open your prescription: ${code}`,
         "info",
-        `/app/session/${String(booking._id)}`
+        "/app"
       );
       if (process.env.NODE_ENV !== "production") {
         console.log(`[rx-otp] ${booking.bookingNo} → ${patient.phone} → ${code}`);

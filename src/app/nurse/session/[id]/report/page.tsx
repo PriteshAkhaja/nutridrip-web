@@ -11,6 +11,9 @@ import { ButtonLink } from "@/components/ui/Button";
 import { PHASE_ORDER, phaseProgress, VITAL_RANGES, type VitalKey } from "@/lib/clinical/checklist";
 import { formatDate, formatTime } from "@/lib/data/inventory";
 import { nurseOwns } from "@/lib/auth/ownership";
+import { VitalsCorrected } from "@/components/ui/VitalsCorrected";
+import type { VitalsCorrection } from "@/lib/clinical/checklist";
+import { isLow, readFeedback, type StoredFeedback } from "@/lib/clinical/feedback";
 
 export const metadata: Metadata = { title: "Session report" };
 export const dynamic = "force-dynamic";
@@ -41,6 +44,7 @@ export default async function NurseReportPage({ params }: { params: Promise<{ id
       spo2?: number;
       temperatureF?: number;
       outOfRange?: string[];
+      corrections?: VitalsCorrection[];
     }>;
     consent?: {
       givenAt?: Date;
@@ -53,7 +57,7 @@ export default async function NurseReportPage({ params }: { params: Promise<{ id
     adverseEvents: Array<{ at: Date; symptoms: string[]; severity?: string; actionsTaken?: string[] }>;
     componentsGiven: Array<{ name?: string; dose?: number; unit?: string; batchNo?: string }>;
     aftercareNotes?: string;
-    feedback?: { rating?: number; comment?: string; givenAt?: Date };
+    feedback?: StoredFeedback;
   } | null>();
 
   if (!booking || !nurseOwns(session, booking)) notFound();
@@ -62,6 +66,9 @@ export default async function NurseReportPage({ params }: { params: Promise<{ id
   const progress = phaseProgress(booking.checklist ?? []);
   const doneCount = progress.reduce((s, p) => s + p.done, 0);
   const totalCount = progress.reduce((s, p) => s + p.total, 0);
+
+  // What the patient said, in both parts -- or an older single rating, read as both.
+  const said = readFeedback(booking.feedback);
 
   return (
     <MobileShell
@@ -187,6 +194,7 @@ export default async function NurseReportPage({ params }: { params: Promise<{ id
                     );
                   })}
                 </div>
+                <VitalsCorrected corrections={v.corrections} detail />
               </div>
             ))}
           </div>
@@ -266,34 +274,43 @@ export default async function NurseReportPage({ params }: { params: Promise<{ id
       {/* The patient is told "your nurse sees this on their record" when they
           rate a session. This is that record. A rating that only ever travelled
           back to the person who gave it was a promise made and not kept. */}
-      {typeof booking.feedback?.rating === "number" && (
+      {said && (
         <div
-          className="rounded-[var(--radius-lg)] border p-5 mb-4"
+          className="rounded-[var(--radius-lg)] border p-5 mb-4 flex flex-col gap-4"
           style={{
-            borderColor: booking.feedback.rating <= 2 ? "var(--color-caution)" : "var(--color-safe)",
-            background: booking.feedback.rating <= 2 ? "var(--color-caution-soft)" : "var(--color-safe-soft)",
+            borderColor: isLow(said) ? "var(--color-caution)" : "var(--color-safe)",
+            background: isLow(said) ? "var(--color-caution-soft)" : "var(--color-safe-soft)",
           }}
         >
-          <div className="flex items-baseline justify-between gap-3">
-            <span
-              className="t-micro"
-              style={{
-                color:
-                  booking.feedback.rating <= 2 ? "var(--color-caution-text)" : "var(--color-safe-text)",
-              }}
-            >
-              {patient?.name ?? "The patient"} rated this session
-            </span>
-            <span className="t-data text-[18px]">{booking.feedback.rating}/5</span>
-          </div>
-          {booking.feedback.comment?.trim() ? (
-            <p className="t-body-lg mt-3">{booking.feedback.comment.trim()}</p>
-          ) : (
-            <p className="t-small text-[var(--color-ink-2)] mt-2">No comment left.</p>
+          <span
+            className="t-micro"
+            style={{ color: isLow(said) ? "var(--color-caution-text)" : "var(--color-safe-text)" }}
+          >
+            {patient?.name ?? "The patient"}&rsquo;s feedback
+          </span>
+          {(
+            [
+              ["Your care", said.nurse],
+              ["The session", said.session],
+            ] as const
+          ).map(([label, part]) =>
+            part ? (
+              <div key={label} className="flex flex-col gap-1">
+                <div className="flex items-baseline justify-between gap-3">
+                  <span className="t-body font-medium">{label}</span>
+                  <span className="t-data text-[18px]">{part.rating}/5</span>
+                </div>
+                {part.comment ? (
+                  <p className="t-body text-[var(--color-ink-2)]">{part.comment}</p>
+                ) : (
+                  <span className="t-small text-[var(--color-ink-2)]">No comment left.</span>
+                )}
+              </div>
+            ) : null
           )}
-          {booking.feedback.givenAt && (
-            <span className="t-small text-[var(--color-ink-3)] block mt-2">
-              {formatDate(booking.feedback.givenAt)} · {formatTime(booking.feedback.givenAt)}
+          {said.givenAt && (
+            <span className="t-small text-[var(--color-ink-3)]">
+              {formatDate(said.givenAt)} · {formatTime(said.givenAt)}
             </span>
           )}
         </div>

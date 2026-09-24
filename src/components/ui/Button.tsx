@@ -91,7 +91,7 @@ export function Button({
   );
 }
 
-type ButtonLinkProps = AnchorHTMLAttributes<HTMLAnchorElement> & {
+export type ButtonLinkProps = AnchorHTMLAttributes<HTMLAnchorElement> & {
   href: string;
   variant?: ButtonVariant;
   size?: ButtonSize;

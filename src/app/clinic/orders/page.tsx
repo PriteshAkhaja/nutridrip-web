@@ -4,7 +4,7 @@ import { requireRole } from "@/lib/auth/guard";
 import { clinicNav } from "@/lib/nav";
 import { ConsoleShell } from "@/components/layout/ConsoleShell";
 import { connectDB } from "@/lib/db/mongoose";
-import { Order } from "@/lib/models";
+import { Order, User } from "@/lib/models";
 import { listDrips } from "@/lib/data/drips";
 import { checkAvailability } from "@/lib/inventory/availability";
 import { DataTable, THead, TH, TR, TD, Pieces } from "@/components/ui/Table";
@@ -16,6 +16,8 @@ import { OrderComposer } from "@/components/orders/OrderComposer";
 import { PagedResults, PagedView, Pagination } from "@/components/ui/Paged";
 import { parsePaging } from "@/lib/pagination";
 import { paginate } from "@/lib/pagination-db";
+import { OrderPayPill } from "@/components/ui/OrderPayPill";
+import type { OrderPayment } from "@/lib/billing/order-payment";
 
 export const metadata: Metadata = { title: "Orders" };
 export const dynamic = "force-dynamic";
@@ -41,6 +43,9 @@ export default async function ClinicOrdersPage({
     lines: Array<{ dripName?: string; quantity: number }>;
     createdAt: Date;
     scheduledDelivery?: Date;
+    clinicId?: unknown;
+    onCredit?: boolean;
+    payment?: OrderPayment;
   };
   // Scoped by the session's clinic id, in the query, as everything here is.
   const { rows: orders, meta } = await paginate<OrderRow>(
@@ -48,6 +53,10 @@ export default async function ClinicOrdersPage({
     { clinicId: session.sub },
     { sort: { createdAt: -1 }, paging }
   );
+
+  // This clinic's terms, for orders placed before each order kept its own.
+  const me = await User.findById(session.sub).select("clinic.onCredit").lean<{ clinic?: { onCredit?: boolean } } | null>();
+  const onCreditNow = me?.clinic?.onCredit ?? false;
 
   const drips = await listDrips();
   const { results } = await checkAvailability(
@@ -101,7 +110,10 @@ export default async function ClinicOrdersPage({
                     <TD mono nowrap>{formatDate(o.createdAt)}</TD>
                     <TD mono nowrap>{o.scheduledDelivery ? formatDate(o.scheduledDelivery) : "—"}</TD>
                     <TD>
-                      <StatusPill status={o.status} dot />
+                      <span className="flex gap-2 flex-wrap items-center">
+                        <StatusPill status={o.status} dot />
+                        <OrderPayPill order={o} clinicOnCredit={onCreditNow} audience="clinic" />
+                      </span>
                     </TD>
                     <TD numeric>{formatInr(o.amount ?? 0)}</TD>
                   </TR>

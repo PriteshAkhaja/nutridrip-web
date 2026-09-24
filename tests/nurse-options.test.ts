@@ -1,6 +1,11 @@
 import { describe, expect, it } from "vitest";
-import { nurseOptions, NURSE_CAPACITY, type NurseRow } from "@/lib/clinical/nurse-options";
-import { ZONE_NAMES } from "@/lib/zones";
+import { nurseOptions as rank, NURSE_CAPACITY, type NurseRow, type PatientPoint } from "@/lib/clinical/nurse-options";
+import { ZONE_DEFAULTS, zoneNames } from "@/lib/zones";
+
+/** Ranked against the launch zones. */
+const nurseOptions = (nurses: NurseRow[], patient: PatientPoint, doctorId: string | null) =>
+  rank(nurses, patient, doctorId, ZONE_DEFAULTS);
+const ZONE_NAMES = zoneNames(ZONE_DEFAULTS);
 
 const DOC = "doc-1";
 const OTHER_DOC = "doc-2";

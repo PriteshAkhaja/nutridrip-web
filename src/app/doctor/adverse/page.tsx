@@ -18,6 +18,8 @@ import { AdverseDecision } from "./AdverseDecision";
 import { PagedResults, PagedView, Pagination } from "@/components/ui/Paged";
 import { parsePaging } from "@/lib/pagination";
 import { paginate } from "@/lib/pagination-db";
+import { VitalsCorrected } from "@/components/ui/VitalsCorrected";
+import type { VitalsCorrection } from "@/lib/clinical/checklist";
 
 export const metadata: Metadata = { title: "Escalations" };
 export const dynamic = "force-dynamic";
@@ -33,6 +35,7 @@ type Vitals = {
   spo2?: number;
   temperatureF?: number;
   outOfRange?: string[];
+  corrections?: VitalsCorrection[];
 };
 
 /** "SpO₂ 91 %, below 95–100" — the reading and the band it broke, in words. */
@@ -336,6 +339,8 @@ export default async function EscalationsPage({
                             {latest.temperatureF} °F
                           </p>
                         )}
+                        {/* A reading the nurse corrected and is still out of range: what it said before. */}
+                        <VitalsCorrected corrections={latest?.corrections} detail />
                       </div>
 
                       <div className="flex gap-2 flex-wrap mt-3">

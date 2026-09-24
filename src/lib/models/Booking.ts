@@ -17,6 +17,29 @@ const ChecklistStepSchema = new Schema(
   { _id: false }
 );
 
+/**
+ * A vitals reading as it stood before a nurse corrected it. The reading itself
+ * is corrected in place (see correctReading); this keeps what it said, and who
+ * changed it, when and why, so the record never quietly loses a value.
+ */
+const VitalsCorrectionSchema = new Schema(
+  {
+    at: { type: Date, required: true },
+    byId: { type: Schema.Types.ObjectId, ref: "User" },
+    reason: { type: String, required: true },
+    before: {
+      systolic: Number,
+      diastolic: Number,
+      heartRate: Number,
+      spo2: Number,
+      temperatureF: Number,
+      weightKg: Number,
+      outOfRange: [String],
+    },
+  },
+  { _id: false }
+);
+
 const VitalsSchema = new Schema(
   {
     takenAt: { type: Date, default: Date.now },
@@ -27,8 +50,9 @@ const VitalsSchema = new Schema(
     spo2: Number,
     temperatureF: Number,
     weightKg: Number,
-    /** Names of readings outside the safe band at capture time. */
+    /** Names of readings outside the safe band at capture time (or at the last correction). */
     outOfRange: [String],
+    corrections: { type: [VitalsCorrectionSchema], default: undefined },
   },
   { _id: false }
 );
@@ -199,6 +223,36 @@ const BookingSchema = new Schema(
 
     /* Commercials */
     amount: { type: Number, default: 0 },
+    /**
+     * Fees on top of the drip: moving or cancelling inside the late window.
+     * Recorded when charged, with the amount then in force, so a later change to
+     * the fee never rewrites what somebody was told they owed.
+     */
+    charges: {
+      type: [
+        new Schema(
+          {
+            kind: { type: String, enum: ["late_reschedule", "late_cancel"], required: true },
+            amount: { type: Number, required: true, min: 0 },
+            at: { type: Date, required: true },
+            byId: { type: Schema.Types.ObjectId, ref: "User" },
+            /** "Moved from 25 Sept, 10:00 am" / the reason given for cancelling. */
+            note: String,
+            /**
+             * Paid (and how), or waived; absent means still owed. Nothing sets
+             * it yet: there is no payment in the app, so every fee is unpaid
+             * until the payment integration records the patient paying it.
+             */
+            settledAs: { type: String, enum: ["paid", "waived"] },
+            settledAt: Date,
+            settledById: { type: Schema.Types.ObjectId, ref: "User" },
+            paidMethod: { type: String, enum: ["cash", "upi", "card", "bank_transfer"] },
+          },
+          { _id: false }
+        ),
+      ],
+      default: undefined,
+    },
     paymentStatus: {
       type: String,
       enum: ["unpaid", "paid", "refund_pending", "refunded"],
@@ -209,9 +263,18 @@ const BookingSchema = new Schema(
     rescheduledFrom: Date,
     rescheduleCount: { type: Number, default: 0 },
 
+    /**
+     * What the patient said afterwards, in two parts: the nurse, and the session.
+     * `rating` / `comment` are the single rating given before the two parts
+     * existed; read through readFeedback, which counts them as both.
+     */
     feedback: {
       rating: { type: Number, min: 1, max: 5 },
       comment: String,
+      nurseRating: { type: Number, min: 1, max: 5 },
+      nurseComment: String,
+      sessionRating: { type: Number, min: 1, max: 5 },
+      sessionComment: String,
       givenAt: Date,
     },
   },

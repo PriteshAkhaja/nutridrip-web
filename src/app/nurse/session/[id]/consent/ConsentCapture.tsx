@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/Button";
 import { CURRENT_CONSENT_VERSION } from "@/lib/clinical/consent";
 import { queuedPost } from "@/lib/offline/queue";
+import { OtpBoxes } from "@/components/ui/OtpBoxes";
 
 
 
@@ -98,19 +99,37 @@ function SignaturePad({ onChange }: { onChange: (dataUrl: string | null) => void
 
 export function ConsentCapture({
   bookingId,
-  phone,
   alreadyGivenAt,
 }: {
   bookingId: string;
-  phone?: string;
   alreadyGivenAt: string | null;
 }) {
   const router = useRouter();
   const [mode, setMode] = useState<"signature" | "otp">("signature");
   const [signature, setSignature] = useState<string | null>(null);
   const [otp, setOtp] = useState("");
+  // The code goes to the patient's app; the nurse only ever sees where it went.
+  const [sentTo, setSentTo] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  const sendCode = async () => {
+    setBusy(true);
+    setError(null);
+    try {
+      const res = await fetch(`/api/bookings/${bookingId}/consent-otp`, { method: "POST" });
+      const json = (await res.json()) as { success: boolean; data?: { sentTo?: string }; error?: string };
+      if (!json.success) setError(json.error ?? "Could not send the code");
+      else {
+        setSentTo(json.data?.sentTo ?? "the patient's phone");
+        setOtp("");
+      }
+    } catch {
+      setError("Could not reach the server. Try again.");
+    } finally {
+      setBusy(false);
+    }
+  };
 
   if (alreadyGivenAt) {
     return (
@@ -139,12 +158,25 @@ export function ConsentCapture({
     setBusy(true);
     setError(null);
     try {
+      // A code is checked against the one sent a moment ago, so it is sent now,
+      // not queued for later: by the time a queue replays, it may have expired.
+      if (mode === "otp") {
+        const res = await fetch(`/api/bookings/${bookingId}/consent`, {
+          method: "POST",
+          headers: { "content-type": "application/json" },
+          body: JSON.stringify({ version: CURRENT_CONSENT_VERSION, viaOtp: otp }),
+        });
+        const json = (await res.json()) as { success: boolean; error?: string };
+        if (!json.success) setError(json.error ?? "Could not record consent");
+        else router.push(`/nurse/session/${bookingId}`);
+        return;
+      }
       const result = await queuedPost(
         `/api/bookings/${bookingId}/consent`,
         {
+          // A signature needs no answer from the server, so it can wait offline.
           version: CURRENT_CONSENT_VERSION,
-          signatureDataUrl: mode === "signature" ? signature ?? undefined : undefined,
-          viaOtp: mode === "otp" ? otp : undefined,
+          signatureDataUrl: signature ?? undefined,
         },
         "Consent"
       );
@@ -162,7 +194,7 @@ export function ConsentCapture({
     }
   };
 
-  const ready = mode === "signature" ? Boolean(signature) : otp.length === 4;
+  const ready = mode === "signature" ? Boolean(signature) : Boolean(sentTo) && otp.length === 6;
 
   return (
     <div className="flex flex-col gap-4">
@@ -184,21 +216,34 @@ export function ConsentCapture({
       {mode === "signature" ? (
         <SignaturePad onChange={setSignature} />
       ) : (
-        <div className="flex flex-col gap-2">
-          <span className="t-micro">Last 4 digits of {phone ?? "the patient's number"}</span>
-          <input
-            inputMode="numeric"
-            maxLength={4}
-            value={otp}
-            onChange={(e) => setOtp(e.target.value.replace(/\D/g, ""))}
-            placeholder="4471"
-            className="min-h-[52px] w-full px-[14px] rounded-[var(--radius-sm)] border border-[var(--color-line-2)] bg-[var(--color-surface)] text-[18px] text-center"
-            style={{ fontFamily: "var(--font-mono)", fontWeight: 500 }}
-            aria-label="Verification digits"
-          />
-          <span className="t-small text-[var(--color-ink-3)]">
-            The patient reads these from their own phone, which is what makes it their consent and not yours.
-          </span>
+        <div className="flex flex-col gap-3">
+          {!sentTo ? (
+            <>
+              <p className="t-body text-[var(--color-ink-2)]">
+                A code goes to the patient&rsquo;s NutriDrip app. When they read it out to you, that is their
+                consent, and not yours.
+              </p>
+              <Button variant="secondary" block loading={busy} onClick={sendCode}>
+                Send the code to the patient
+              </Button>
+            </>
+          ) : (
+            <>
+              <div className="rounded-[var(--radius-md)] border border-[var(--color-info)] bg-[var(--color-info-soft)] px-4 py-3">
+                <span className="t-body text-[var(--color-ink-2)]">
+                  Code sent to <span className="t-data text-[13px]">{sentTo}</span>. It shows at the top of the
+                  patient&rsquo;s home screen and lasts ten minutes. Ask them to read it to you.
+                </span>
+              </div>
+              <div className="flex flex-col gap-[7px]">
+                <span className="t-micro">The six digits they read out</span>
+                <OtpBoxes value={otp} onChange={setOtp} autoFocus />
+              </div>
+              <Button variant="ghost" size="sm" loading={busy} onClick={sendCode} className="self-start">
+                Send a new code
+              </Button>
+            </>
+          )}
         </div>
       )}
 

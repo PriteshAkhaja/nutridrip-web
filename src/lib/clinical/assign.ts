@@ -1,7 +1,9 @@
 import { connectDB } from "@/lib/db/mongoose";
 import { Booking, User } from "@/lib/models";
 import { zoneForPincode } from "@/lib/zones";
+import { getZones } from "@/lib/zones-store";
 import { NURSE_CAPACITY, distanceKm } from "./nurse-options";
+import { HOLDING_STATUSES, busyNurses } from "./slots";
 
 // Defined in nurse-options because that file must stay free of any database
 // import — the admin form reaches it from the browser. Re-exported here so
@@ -28,14 +30,23 @@ export type NursePick = {
  * Pick the nearest active nurse who is still under capacity. If a specific
  * nurse was requested but cannot take it, fall back to the nearest one and say
  * so — never swap silently, because the doctor asked for a reason.
+ *
+ * Given the session's time, a nurse already busy then (another session, or the
+ * travel after it) is not picked: the booking screen only offered the time
+ * because somebody was free, and that somebody is who should go.
  */
 export async function pickNurse(
   patient: { latitude?: number | null; longitude?: number | null; pincode?: string | null },
-  opts: { requestedNurseId?: string | null; excludeNurseId?: string | null } = {}
+  opts: {
+    requestedNurseId?: string | null;
+    excludeNurseId?: string | null;
+    /** The session being staffed; it does not clash with itself. */
+    session?: { start: Date; durationMin: number; bookingId?: string | null };
+  } = {}
 ): Promise<NursePick | null> {
   await connectDB();
 
-  const [nurses, openBookings] = await Promise.all([
+  const [nurses, openBookings, zones] = await Promise.all([
     User.find({ role: "nurse", status: "active" }).lean<
       Array<{
         _id: unknown;
@@ -44,20 +55,39 @@ export async function pickNurse(
         nurse?: { latitude?: number; longitude?: number; serviceAreas?: string[] };
       }>
     >(),
-    Booking.find({ status: { $in: OPEN_STATUSES }, nurseId: { $ne: null } })
-      .select("nurseId")
-      .lean<Array<{ nurseId: unknown }>>(),
+    Booking.find({ status: { $in: HOLDING_STATUSES }, nurseId: { $ne: null } })
+      .select("nurseId status scheduledAt durationMin")
+      .lean<Array<{ _id: unknown; nurseId: unknown; status: string; scheduledAt: Date; durationMin?: number }>>(),
+    getZones(),
   ]);
 
   const load = new Map<string, number>();
   for (const b of openBookings) {
+    if (!OPEN_STATUSES.includes(b.status)) continue;
     const k = String(b.nurseId);
     load.set(k, (load.get(k) ?? 0) + 1);
   }
 
+  const s = opts.session;
+  const busy = s
+    ? busyNurses(
+        openBookings
+          .filter((b) => String(b._id) !== String(s.bookingId ?? ""))
+          .map((b) => ({
+            id: String(b._id),
+            nurseId: String(b.nurseId),
+            start: new Date(b.scheduledAt).getTime(),
+            durationMin: b.durationMin ?? 45,
+            zoneName: null,
+          })),
+        s.start.getTime(),
+        s.durationMin
+      )
+    : new Set<string>();
+
   // The zone the address falls in, so a nurse who does not cover it is not sent
   // there just because nobody has coordinates on file.
-  const zone = zoneForPincode(patient.pincode ?? undefined);
+  const zone = zoneForPincode(patient.pincode ?? undefined, zones);
 
   const ranked = nurses
     .filter((n) => String(n._id) !== opts.excludeNurseId)
@@ -84,7 +114,7 @@ export async function pickNurse(
           : 9999,
       };
     })
-    .filter((r) => r.load < NURSE_CAPACITY)
+    .filter((r) => r.load < NURSE_CAPACITY && !busy.has(String(r.nurse._id)))
     // Whoever covers the zone comes first, then the nearest, then the least busy.
     .sort((a, b) =>
       a.covers !== b.covers ? (a.covers ? -1 : 1) : a.km !== b.km ? a.km - b.km : a.load - b.load

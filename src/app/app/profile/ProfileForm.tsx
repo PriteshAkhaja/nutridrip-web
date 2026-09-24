@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/Button";
 import { Input, Select, Textarea } from "@/components/ui/Field";
 import { DatePicker } from "@/components/ui/DatePicker";
 import { AddressPicker, type PickedAddress } from "@/components/ui/AddressPicker";
+import type { Zone } from "@/lib/zones";
 
 export type ProfileInitial = {
   name: string;
@@ -41,10 +42,12 @@ export function ProfileForm({
   initial,
   mapsKey,
   searchEnabled,
+  zones,
 }: {
   initial: ProfileInitial;
   mapsKey: string | null;
   searchEnabled: boolean;
+  zones: Zone[];
 }) {
   const router = useRouter();
   const [open, setOpen] = useState(false);
@@ -189,7 +192,7 @@ export function ProfileForm({
 
       <section className="flex flex-col gap-3">
         <span className="t-micro">Where a nurse comes</span>
-        <AddressPicker value={place} onChange={setPlace} mapsKey={mapsKey} searchEnabled={searchEnabled} />
+        <AddressPicker value={place} onChange={setPlace} mapsKey={mapsKey} searchEnabled={searchEnabled} zones={zones} />
       </section>
 
       <section className="flex flex-col gap-3">

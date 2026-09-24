@@ -7,7 +7,9 @@ import { CHECKLIST_STEPS } from "@/lib/clinical/checklist";
 import { APPROVAL_VALID_DAYS } from "@/lib/clinical/validity";
 import { getContent } from "@/lib/content";
 import { listDrips } from "@/lib/data/drips";
-import { ZONES } from "@/lib/zones";
+import { servedZones } from "@/lib/zones";
+import { getZones } from "@/lib/zones-store";
+import { QuizButton } from "@/components/layout/QuizButton";
 
 export const metadata: Metadata = {
   title: "About",
@@ -34,13 +36,13 @@ const ROLES = [
 ];
 
 export default async function AboutPage() {
-  const [copy, drips] = await Promise.all([getContent(), listDrips()]);
+  const [copy, drips, zones] = await Promise.all([getContent(), listDrips(), getZones()]);
 
   // Counted, not claimed. Nothing here is a customer or revenue figure, because
   // none is recorded anywhere this page could honestly read it from.
   const FIGURES = [
     { value: String(drips.length), label: "formulas on the menu" },
-    { value: String(ZONES.length), label: "zones across Bengaluru" },
+    { value: String(servedZones(zones).length), label: "zones across Bengaluru" },
     { value: String(CHECKLIST_STEPS.length), label: "steps in every session" },
     { value: `${APPROVAL_VALID_DAYS} days`, label: "how long an approval lasts" },
   ];
@@ -137,9 +139,9 @@ export default async function AboutPage() {
             </p>
           </div>
           <div className="flex flex-col gap-3">
-            <ButtonLink href="/quiz" size="lg" block>
+            <QuizButton size="lg" block>
               Take the health quiz
-            </ButtonLink>
+            </QuizButton>
             <ButtonLink href="/consult" variant="secondary" block>
               Ask a clinician
             </ButtonLink>

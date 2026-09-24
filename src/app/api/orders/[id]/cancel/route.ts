@@ -14,15 +14,22 @@ export async function POST(req: Request, { params }: { params: Promise<{ id: str
     await connectDB();
     const body = await req.json().catch(() => ({}));
     // Read before cancelling, so the notification can say what actually happened.
-    const order0 = await Order.findById(id).select("status").lean<{ status: string } | null>();
+    const order0 = await Order.findById(id)
+      .select("status payment amount")
+      .lean<{ status: string; amount?: number; payment?: { state?: string } } | null>();
     const wasConfirmed = order0?.status === "CONFIRMED";
     const order = await cancelOrder(id, body?.reason, session!.sub);
+    // Paid for and now not happening: the clinic is owed its money back.
+    const refundDue = order0?.payment?.state === "received";
+    if (refundDue) await Order.updateOne({ _id: id }, { $set: { "payment.refundDue": true } });
     await notify(
       order.clinicId ? String(order.clinicId) : String(order.orderedBy),
       "Your order was cancelled",
       // A draft never held anything, so saying stock was released would be a
       // claim about the shelf that never happened.
-      `${order.orderNo}${wasConfirmed ? " · The reserved stock has been released." : ""}`,
+      `${order.orderNo}${wasConfirmed ? " · The reserved stock has been released." : ""}${
+        refundDue ? ` · Your payment of ₹${(order0?.amount ?? 0).toLocaleString("en-IN")} is due back to you.` : ""
+      }`,
       "warning",
       "/clinic/orders"
     );
@@ -34,7 +41,12 @@ export async function POST(req: Request, { params }: { params: Promise<{ id: str
       entity: "Order",
       entityId: id,
       before: { status: order0?.status },
-      after: { orderNo: order.orderNo, status: order.status, reason: body?.reason ?? "—" },
+      after: {
+        orderNo: order.orderNo,
+        status: order.status,
+        reason: body?.reason ?? "—",
+        ...(refundDue ? { refundDue: true } : {}),
+      },
     });
 
     return ok({ order });

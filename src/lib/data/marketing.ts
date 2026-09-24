@@ -1,3 +1,6 @@
+import { LATE_POLICY_TOKEN } from "@/lib/billing/late-policy";
+import { ZONE_COUNT_TOKEN } from "@/lib/zones";
+
 /**
  * Public-site proof and comparison content. Written here rather than seeded so
  * it is reviewable in one place — every claim on the site should be something
@@ -158,11 +161,13 @@ export const FAQS = [
   },
   {
     q: "Can I cancel or reschedule?",
-    a: "Freely, up to 4 hours before the slot. Inside 4 hours a ₹500 fee applies, because the nurse is already dispatched with your batch drawn and those vials cannot go back on the shelf.",
+    // Filled in when the page is drawn, from the fees set on the Billing page.
+    a: LATE_POLICY_TOKEN,
   },
   {
     q: "Do you serve my pincode?",
-    a: "We cover 14 zones across Bengaluru. Enter your pincode at booking and you get a straight yes or no, not a waitlist.",
+    // The number is filled in when the page is drawn, from the Service zones page.
+    a: `We cover ${ZONE_COUNT_TOKEN} zones across Bengaluru. Enter your pincode at booking and you get a straight yes or no, not a waitlist.`,
   },
   {
     q: "What happens to my health data?",

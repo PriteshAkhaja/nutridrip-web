@@ -20,6 +20,8 @@ export const ADMIN_PATIENT_FIELDS = ["address", "city", "pincode"] as const;
 /** A booking, less everything clinical: the session as a piece of scheduling. */
 export const ADMIN_BOOKING_FIELDS = [
   "bookingNo",
+  // Late-change fees: what the patient owes, not anything clinical.
+  "charges",
   "patientId",
   "dripId",
   "dripName",

@@ -6,13 +6,22 @@ import { connectDB } from "@/lib/db/mongoose";
 import { Booking, User } from "@/lib/models";
 import { VitalsForm } from "./VitalsForm";
 import { nurseOwns } from "@/lib/auth/ownership";
+import { vitalsReadingIndex } from "@/lib/clinical/checklist";
 
 export const metadata: Metadata = { title: "Vitals" };
 export const dynamic = "force-dynamic";
 
-export default async function VitalsPage({ params }: { params: Promise<{ id: string }> }) {
+export default async function VitalsPage({
+  params,
+  searchParams,
+}: {
+  params: Promise<{ id: string }>;
+  /** `correct` names the checklist step whose reading is being corrected. */
+  searchParams: Promise<{ correct?: string }>;
+}) {
   const session = await requireRole("nurse", "superadmin");
   const { id } = await params;
+  const { correct } = await searchParams;
 
   await connectDB();
   const booking = await Booking.findById(id).lean<{
@@ -40,9 +49,16 @@ export default async function VitalsPage({ params }: { params: Promise<{ id: str
 
   const previous = booking.vitals?.[booking.vitals.length - 1];
 
+  // Correcting: the reading this step recorded -- baseline for the first vitals
+  // step, closing for the second. Asked for a reading that is not there yet,
+  // the page simply records one, as it always has.
+  const index = correct ? vitalsReadingIndex(correct) : -1;
+  const reading = index >= 0 ? booking.vitals?.[index] : undefined;
+  const which = index === 0 ? "baseline" : "closing";
+
   return (
     <MobileShell
-      title="Baseline vitals"
+      title={reading ? `Correct the ${which} reading` : "Baseline vitals"}
       subtitle={
         <span className="t-data text-[13px]">
           {patient?.name} · {booking.bookingNo}
@@ -51,13 +67,30 @@ export default async function VitalsPage({ params }: { params: Promise<{ id: str
       back={{ href: `/nurse/session/${id}`, label: "Back to checklist" }}
     >
       <p className="t-body text-[var(--color-ink-2)] mb-5">
-        BP, HR, SpO₂, temperature and weight before any cannulation. A reading outside its reference range blocks the
-        infusion and escalates to the reviewing physician.
+        {reading
+          ? "Fix the values that were entered wrongly and say why. The recorded reading is kept on the session, marked as corrected. If a reading was out of range, the physician is told straight away."
+          : "BP, HR, SpO₂, temperature and weight before any cannulation. A reading outside its reference range blocks the infusion and escalates to the reviewing physician."}
       </p>
 
       <VitalsForm
         bookingId={id}
         defaultWeight={previous?.weightKg ?? patient?.patient?.weightKg}
+        correcting={
+          reading
+            ? {
+                index,
+                which,
+                takenAt: reading.takenAt.toISOString(),
+                outOfRange: reading.outOfRange ?? [],
+                systolic: reading.systolic,
+                diastolic: reading.diastolic,
+                heartRate: reading.heartRate,
+                spo2: reading.spo2,
+                temperatureF: reading.temperatureF,
+                weightKg: reading.weightKg,
+              }
+            : null
+        }
         previous={
           previous
             ? {

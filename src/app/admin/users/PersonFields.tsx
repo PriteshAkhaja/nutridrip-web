@@ -1,7 +1,7 @@
 "use client";
 
 import { Input, Select } from "@/components/ui/Field";
-import { ZONE_NAMES } from "@/lib/zones";
+import type { Zone } from "@/lib/zones";
 import type { Role } from "@/lib/models/types";
 import { checkGstin, stateCodeFromGstin, stateName } from "@/lib/billing/gst";
 
@@ -30,6 +30,8 @@ export type PersonForm = {
   pincode: string;
   gstin: string;
   monthlyVolumeTarget: string;
+  /** A clinic's terms: "no" pays for each order first (the default), "yes" is on credit. */
+  onCredit: string;
 };
 
 export const EMPTY_PERSON: PersonForm = {
@@ -48,6 +50,7 @@ export const EMPTY_PERSON: PersonForm = {
   pincode: "",
   gstin: "",
   monthlyVolumeTarget: "",
+  onCredit: "no",
 };
 
 export const NEEDS_PASSWORD: Role[] = ["superadmin", "admin", "doctor", "nurse", "clinic"];
@@ -60,6 +63,7 @@ export function PersonFields({
   toggleArea,
   doctors,
   mode,
+  zones,
 }: {
   role: Role;
   form: PersonForm;
@@ -68,6 +72,8 @@ export function PersonFields({
   toggleArea: (zone: string) => void;
   doctors: Array<{ id: string; name: string }>;
   mode: "create" | "edit";
+  /** Every saved zone, paused ones marked, from the Service zones page. */
+  zones: Array<Pick<Zone, "name" | "status">>;
 }) {
   // Only a clinic carries one, but computing it unconditionally keeps the
   // hooks-free path simple — checkGstin("") is not an error.
@@ -156,10 +162,10 @@ export function PersonFields({
               so "HSR layout" silently covered nowhere at all. */}
           <div className="mt-4">
             <span className="t-micro block mb-2">
-              Zones covered{areas.length > 0 ? ` · ${areas.length} of ${ZONE_NAMES.length}` : ""}
+              Zones covered{areas.length > 0 ? ` · ${areas.length} of ${zones.length}` : ""}
             </span>
             <div className="flex flex-wrap gap-2">
-              {ZONE_NAMES.map((z) => {
+              {zones.map(({ name: z, status }) => {
                 const on = areas.includes(z);
                 return (
                   <button
@@ -176,6 +182,7 @@ export function PersonFields({
                     }}
                   >
                     {z}
+                    {status === "paused" ? " · paused" : ""}
                   </button>
                 );
               })}
@@ -233,6 +240,13 @@ export function PersonFields({
             value={form.monthlyVolumeTarget}
             onChange={set("monthlyVolumeTarget")}
           />
+          {/* Paid first by default: the order waits for the clinic's payment
+              before the pharmacy confirms it. On credit is the old way --
+              prepared first, invoiced, payable within 30 days. */}
+          <Select label="Payment for orders" value={form.onCredit} onChange={set("onCredit")}>
+            <option value="no">Pays before each order is confirmed</option>
+            <option value="yes">On credit — pays within 30 days of the invoice</option>
+          </Select>
         </div>
       )}
     </>

@@ -1,6 +1,7 @@
 import { connectDB } from "@/lib/db/mongoose";
 import { QuizQuestion } from "@/lib/models";
-import { QUESTIONS, type QuizQuestion as QuizQuestionDef } from "./quiz";
+import { QUESTIONS, type QuizQuestion as QuizQuestionDef, type ShowIf } from "./quiz";
+import { groupBySection, tidyShowIf } from "./quiz-rules";
 
 /**
  * The questionnaire is edited in the database, but the bundled defaults in
@@ -15,10 +16,15 @@ type LeanQuestion = {
   question: string;
   help?: string;
   type: "single" | "multi" | "text" | "number";
-  options: Array<{ value: string; label: string; score: number; order: number }>;
+  options: Array<{ value: string; label: string; score: number; order: number; exclusive?: boolean }>;
   affects: Map<string, number> | Record<string, number>;
   optional?: boolean;
   contraindicationIf?: string[];
+  min?: number | null;
+  max?: number | null;
+  unit?: string | null;
+  decimals?: boolean;
+  showIf?: ShowIf | null;
   isActive: boolean;
 };
 
@@ -33,11 +39,40 @@ function toDef(q: LeanQuestion): QuizQuestionDef {
     type: q.type,
     options: [...(q.options ?? [])]
       .sort((a, b) => a.order - b.order)
-      .map(({ value, label, score }) => ({ value, label, score })),
+      .map(({ value, label, score, exclusive }) => ({ value, label, score, ...(exclusive ? { exclusive: true } : {}) })),
     affects,
     optional: q.optional,
     contraindicationIf: q.contraindicationIf?.length ? q.contraindicationIf : undefined,
+    // Only what is set, so the props sent to the browser stay plain and small.
+    ...(typeof q.min === "number" ? { min: q.min } : {}),
+    ...(typeof q.max === "number" ? { max: q.max } : {}),
+    ...(q.unit ? { unit: q.unit } : {}),
+    ...(q.decimals ? { decimals: true } : {}),
+    ...(tidyShowIf(q.showIf) ? { showIf: tidyShowIf(q.showIf) } : {}),
+    isActive: q.isActive !== false,
   };
+}
+
+/**
+ * Store the order the editor and the patient both see: sections in the order
+ * they first appear, questions within them in their own order. Only the rows
+ * whose position actually changed are written.
+ */
+export async function applyOrder(qidsInOrder: string[]): Promise<number> {
+  await connectDB();
+  const current = await QuizQuestion.find({}).select("qid order").lean<Array<{ qid: string; order: number }>>();
+  const was = new Map(current.map((r) => [r.qid, r.order]));
+  const writes = qidsInOrder
+    .map((qid, order) => ({ qid, order }))
+    .filter(({ qid, order }) => was.get(qid) !== order)
+    .map(({ qid, order }) => ({ updateOne: { filter: { qid }, update: { $set: { order } } } }));
+  if (writes.length) await QuizQuestion.bulkWrite(writes);
+  return writes.length;
+}
+
+/** The whole questionnaire in its stored order, grouped as the editor shows it. */
+export function orderedIds(questions: QuizQuestionDef[]): string[] {
+  return groupBySection(questions).map((q) => q.id);
 }
 
 /** Writes the bundled defaults in, once, so the database becomes the source. */

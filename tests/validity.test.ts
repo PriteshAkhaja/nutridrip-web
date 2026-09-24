@@ -55,3 +55,32 @@ describe("physician approval window", () => {
     expect(s.canBook).toBe(true);
   });
 });
+
+describe("a physician's question, or answers replaced", () => {
+  it("does not read a question from the physician as an approval", () => {
+    // It used to: "info_needed" fell through to the date check and came out
+    // "valid", so a booking skipped review and a nurse was dispatched.
+    const s = approvalState({ reviewStatus: "info_needed", reviewedAt: daysAgo(0), completedAt: daysAgo(1) });
+    expect(s.canBook).toBe(false);
+    expect(s.canHold).toBe(true);
+    expect(s.status).toBe("info_needed");
+    expect(s.message).not.toMatch(/Approved/);
+  });
+
+  it("lets only an undecided submission hold a slot", () => {
+    expect(approvalState(null).canHold).toBe(false);
+    expect(approvalState({ reviewStatus: "pending", completedAt: daysAgo(0) }).canHold).toBe(true);
+    expect(approvalState({ reviewStatus: "rejected", reviewedAt: daysAgo(1), completedAt: daysAgo(1) }).canHold).toBe(false);
+    expect(approvalState({ reviewStatus: "approved", reviewedAt: daysAgo(1), completedAt: daysAgo(1) }).canHold).toBe(false);
+  });
+
+  it("never reads an unknown status as approved", () => {
+    const s = approvalState({ reviewStatus: "superseded", completedAt: daysAgo(1) });
+    expect(s.canBook).toBe(false);
+  });
+
+  it("counts an approval with changes as an approval", () => {
+    const s = approvalState({ reviewStatus: "modified", reviewedAt: daysAgo(1), completedAt: daysAgo(1) });
+    expect(s.canBook).toBe(true);
+  });
+});

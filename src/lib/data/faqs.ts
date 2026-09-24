@@ -1,6 +1,7 @@
 import { APPROVAL_VALID_DAYS } from "@/lib/clinical/validity";
-import { LATE_CANCEL_FEE_INR, LATE_CHANGE_HOURS, SLOTS } from "@/lib/clinical/slots";
-import { ZONES } from "@/lib/zones";
+import { BETWEEN_SESSIONS_MIN } from "@/lib/clinical/slots";
+import { LATE_POLICY_DEFAULTS, LATE_POLICY_TOKEN, fillLatePolicy, type LatePolicy } from "@/lib/billing/late-policy";
+import { ZONE_DEFAULTS, servedZones, type Zone } from "@/lib/zones";
 import { CHECKLIST_STEPS } from "@/lib/clinical/checklist";
 
 /**
@@ -9,8 +10,8 @@ import { CHECKLIST_STEPS } from "@/lib/clinical/checklist";
  * Every answer here describes something the app actually does today. That is
  * a rule, not a nicety: an FAQ is read as a promise, and this one is read by
  * people deciding whether to let a stranger put a needle in their arm. So the
- * numbers come from the constants that enforce them — change the 90-day
- * approval or the ₹500 fee and this page follows — and nothing is claimed that
+ * numbers come from what enforces them — change the 90-day approval, or the
+ * late-change fees on the Billing page, and this page follows — and nothing is claimed that
  * has no code behind it. There is no payment gateway, so there is no answer
  * about refunds. There is no export button, so there is no answer promising
  * one.
@@ -22,15 +23,28 @@ import { CHECKLIST_STEPS } from "@/lib/clinical/checklist";
 export type Faq = { q: string; a: string };
 export type FaqCategory = { id: string; label: string; blurb: string; items: Faq[] };
 
-const limitedZones = ZONES.filter((z) => z.status === "limited").map((z) => z.name);
-
 /** "Whitefield, Sarjapur Road and Hebbal" */
 function listOf(names: string[]): string {
   if (names.length <= 1) return names.join("");
   return `${names.slice(0, -1).join(", ")} and ${names[names.length - 1]}`;
 }
 
-export const FAQ_CATEGORIES: FaqCategory[] = [
+const ZONES_ANSWER_TOKEN = "{{zones-answer}}";
+
+/** "Do you serve my pincode?", from the zones a patient can book in today. */
+export function zonesAnswer(zones: Zone[]): string {
+  const served = servedZones(zones);
+  const limited = served.filter((z) => z.status === "limited").map((z) => z.name);
+  const count = served.length === 1 ? "1 zone" : `${served.length} zones`;
+  return `We cover ${count} across Bengaluru. Enter your pincode at booking and you get a straight yes or no, not a waitlist. ${
+    limited.length
+      ? `${listOf(limited)} ${limited.length === 1 ? "runs" : "run"} shorter service hours; the Zones page lists every window.`
+      : "The Zones page lists every window."
+  }`;
+}
+
+/** As written: the late-change and zones answers still hold their placeholders. Read through faqCategories. */
+const RAW_CATEGORIES: FaqCategory[] = [
   {
     id: "before",
     label: "Before you book",
@@ -54,26 +68,24 @@ export const FAQ_CATEGORIES: FaqCategory[] = [
       },
       {
         q: "Do you serve my pincode?",
-        a: `We cover ${ZONES.length} zones across Bengaluru. Enter your pincode at booking and you get a straight yes or no, not a waitlist. ${
-          limitedZones.length
-            ? `${listOf(limitedZones)} run shorter service hours; the Zones page lists every window.`
-            : "The Zones page lists every window."
-        }`,
+        // Filled in when the page is drawn, from the Service zones page.
+        a: ZONES_ANSWER_TOKEN,
       },
     ],
   },
   {
     id: "booking",
     label: "Booking and changes",
-    blurb: "Slots, cancelling, and the four-hour line.",
+    blurb: "Slots, moving and cancelling.",
     items: [
       {
         q: "How do I book a session?",
-        a: `Take the quiz and wait for the physician's approval. Then choose your drip, a date and a time slot — the day's slots run from ${SLOTS[0]} to ${SLOTS[SLOTS.length - 1]} — and whether the nurse comes to your home or you go to a partner clinic.`,
+        a: `Take the quiz and wait for the physician's approval. Then choose your drip, whether the nurse comes to your home or you go to a partner clinic, and a day and time. The times follow your zone's hours on the Zones page, and only times a nurse is free for are offered — a nurse needs the length of your session plus about ${BETWEEN_SESSIONS_MIN} minutes to reach the next door, so a busy hour shows as taken rather than being double-booked.`,
       },
       {
         q: "Can I cancel or reschedule?",
-        a: `Freely, up to ${LATE_CHANGE_HOURS} hours before the slot. Inside ${LATE_CHANGE_HOURS} hours a session cannot be moved, because the nurse is already dispatched with your batch drawn. You can still cancel, and a ₹${LATE_CANCEL_FEE_INR.toLocaleString("en-IN")} late fee applies.`,
+        // Filled in when the page is drawn, from the fees set on the Billing page.
+        a: LATE_POLICY_TOKEN,
       },
       {
         q: "Can I have the session at a clinic instead of at home?",
@@ -151,6 +163,21 @@ export const FAQ_CATEGORIES: FaqCategory[] = [
     ],
   },
 ];
+
+/**
+ * The questions with the late-change rule written in, from the fees and window
+ * set on the Billing page. The FAQ page passes today's; without one, the
+ * defaults (which is also what FAQ_CATEGORIES holds).
+ */
+export function faqCategories(policy: LatePolicy = LATE_POLICY_DEFAULTS, zones: Zone[] = ZONE_DEFAULTS): FaqCategory[] {
+  const zoneText = zonesAnswer(zones);
+  return RAW_CATEGORIES.map((c) => ({
+    ...c,
+    items: c.items.map((i) => ({ ...i, a: fillLatePolicy(i.a, policy).replaceAll(ZONES_ANSWER_TOKEN, zoneText) })),
+  }));
+}
+
+export const FAQ_CATEGORIES: FaqCategory[] = faqCategories();
 
 export const FAQ_TOTAL = FAQ_CATEGORIES.reduce((n, c) => n + c.items.length, 0);
 

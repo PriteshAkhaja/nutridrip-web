@@ -9,6 +9,8 @@ import { formatDate } from "@/lib/data/inventory";
 import { PATIENT_TABS } from "../tabs";
 import { ProfileForm } from "./ProfileForm";
 import { geocodingConfigured } from "@/lib/geo/geocode";
+import { getZones } from "@/lib/zones-store";
+import { servedZones } from "@/lib/zones";
 
 export const metadata: Metadata = { title: "Profile" };
 export const dynamic = "force-dynamic";
@@ -122,6 +124,7 @@ export default async function PatientProfilePage() {
             initial={initial}
             mapsKey={process.env.NEXT_PUBLIC_GOOGLE_MAPS_BROWSER_KEY ?? null}
             searchEnabled={geocodingConfigured()}
+            zones={servedZones(await getZones())}
           />
       </div>
 
@@ -153,7 +156,7 @@ export default async function PatientProfilePage() {
       </div>
 
       <div className="mt-6 flex flex-col gap-3">
-        <ButtonLink href="/quiz" variant="secondary" block>
+        <ButtonLink href="/quiz?retake=1" variant="secondary" block>
           Retake the health quiz
         </ButtonLink>
         <ButtonLink href="/app/reports" variant="ghost" block>

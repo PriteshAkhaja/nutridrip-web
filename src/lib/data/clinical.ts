@@ -1,6 +1,9 @@
 import { connectDB } from "@/lib/db/mongoose";
 import { Booking, HealthQuiz, LabReport, User } from "@/lib/models";
 import { riskBand, riskColor } from "@/lib/models/types";
+import type { QuizQuestion as QuizQuestionDef } from "@/lib/clinical/quiz";
+import { screeningHit } from "@/lib/clinical/quiz-rules";
+import { loadQuestions } from "@/lib/clinical/quiz-store";
 
 const HOUR = 3_600_000;
 /** How long a physician has to review a submission before it breaches. */
@@ -59,6 +62,36 @@ function flagsFor(patient: {
   return flags;
 }
 
+type StoredAnswer = { questionId?: string; answer?: unknown };
+
+/**
+ * The screening answers on a submission, in words.
+ *
+ * Read from the submission when it carries them. One made before they were
+ * kept does not, so they are worked out again from its stored answers against
+ * the questions as they are now -- retired ones included, because the patient
+ * may have answered a question that has since been taken out of the quiz.
+ */
+function screeningOf(
+  quiz: { screeningFlags?: string[]; answers?: StoredAnswer[] },
+  questions: QuizQuestionDef[]
+): string[] {
+  if (Array.isArray(quiz.screeningFlags)) return quiz.screeningFlags;
+  const byId = new Map(questions.map((q) => [q.id, q]));
+  return (quiz.answers ?? []).flatMap((a) => {
+    const q = byId.get(a?.questionId ?? "");
+    const given = Array.isArray(a?.answer) ? a.answer.map(String) : typeof a?.answer === "string" ? a.answer : undefined;
+    const hit = q ? screeningHit(q, given) : [];
+    return hit.length ? [`${q!.question} — ${hit.join(", ")}`] : [];
+  });
+}
+
+/** In the queue a screening answer is one short pill; the review screen spells each one out. */
+function screeningPill(screening: string[]): ReviewFlag[] {
+  const n = screening.length;
+  return n ? [{ label: n === 1 ? "Screening answer" : `${n} screening answers`, kind: "crit" }] : [];
+}
+
 function slaOf(submittedAt: Date): { msLeft: number; label: string; pct: number } {
   const deadline = submittedAt.getTime() + REVIEW_SLA_HOURS * HOUR;
   const msLeft = deadline - Date.now();
@@ -85,8 +118,13 @@ export async function reviewQueue(): Promise<QueueItem[]> {
         patientId: unknown;
         vitalityScore: number;
         completedAt: Date;
+        screeningFlags?: string[];
+        answers?: StoredAnswer[];
       }>
     >();
+
+  // Only submissions older than the stored flags need the questions to work theirs out.
+  const questions = quizzes.some((q) => !Array.isArray(q.screeningFlags)) ? await loadQuestions(true) : [];
 
   const patients = await User.find({ _id: { $in: quizzes.map((q) => q.patientId) } }).lean<
     Array<{
@@ -139,7 +177,7 @@ export async function reviewQueue(): Promise<QueueItem[]> {
           })
         : null,
       vitalityScore: q.vitalityScore,
-      flags: patient ? flagsFor(patient) : [],
+      flags: [...screeningPill(screeningOf(q, questions)), ...(patient ? flagsFor(patient) : [])],
       msLeft: sla.msLeft,
       slaLabel: sla.label,
       slaPct: sla.pct,
@@ -176,6 +214,15 @@ export type PatientReview = {
   markers: NutrientMarker[];
   history: Array<{ label: string; value: string; tone: "plain" | "alert" | "data" }>;
   flags: ReviewFlag[];
+  /** Screening answers, each as "question — answer", for the physician to clear before approving. */
+  screening: string[];
+  /** When the patient answered again before a decision: the newer submission, which replaced this one. */
+  supersededBy: string | null;
+  /**
+   * Sessions already confirmed under an earlier approval. Approving these new
+   * answers keeps them; declining calls them off -- so the physician is told.
+   */
+  bookedSessions: Array<{ bookingNo: string; dripName: string | null; when: string; status: string }>;
   answers: Array<{ section?: string; question?: string; answer: unknown }>;
   suggestedDrips: Array<{ id: string; name: string; slug: string }>;
   submittedAt: string;
@@ -209,7 +256,9 @@ export async function patientReview(quizId: string): Promise<PatientReview | nul
     patientId: unknown;
     vitalityScore: number;
     nutrientRisks: Array<{ name: string; group?: string; pct: number }>;
-    answers: Array<{ section?: string; question?: string; answer: unknown }>;
+    answers: Array<{ questionId?: string; section?: string; question?: string; answer: unknown }>;
+    screeningFlags?: string[];
+    supersededBy?: unknown;
     suggestedDripIds: unknown[];
     completedAt: Date;
     reviewStatus: string;
@@ -256,6 +305,13 @@ export async function patientReview(quizId: string): Promise<PatientReview | nul
   const suggested = await Drip.find({ _id: { $in: quiz.suggestedDripIds } }).lean<
     Array<{ _id: unknown; name: string; slug: string }>
   >();
+
+  const booked = await Booking.find({
+    patientId: quiz.patientId,
+    status: { $in: ["approved", "nurse_assigned", "en_route"] },
+  })
+    .sort({ scheduledAt: 1 })
+    .lean<Array<{ bookingNo: string; dripName?: string; scheduledAt: Date; status: string }>>();
 
   const past = await Booking.find({ patientId: quiz.patientId, status: "completed" })
     .sort({ completedAt: -1 })
@@ -317,6 +373,20 @@ export async function patientReview(quizId: string): Promise<PatientReview | nul
       },
     ],
     flags: flagsFor(patient),
+    screening: screeningOf(quiz, Array.isArray(quiz.screeningFlags) ? [] : await loadQuestions(true)),
+    supersededBy: quiz.supersededBy ? String(quiz.supersededBy) : null,
+    bookedSessions: booked.map((b) => ({
+      bookingNo: b.bookingNo,
+      dripName: b.dripName ?? null,
+      when: b.scheduledAt.toLocaleString("en-IN", {
+        day: "2-digit",
+        month: "short",
+        hour: "2-digit",
+        minute: "2-digit",
+        hour12: true,
+      }),
+      status: b.status,
+    })),
     answers: quiz.answers ?? [],
     suggestedDrips: suggested.map((d) => ({ id: String(d._id), name: d.name, slug: d.slug })),
     submittedAt: quiz.completedAt.toISOString(),

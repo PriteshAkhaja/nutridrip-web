@@ -8,7 +8,8 @@ import { ok, fail, handleError } from "@/lib/api";
 
 const Input = z.object({ reason: z.string().max(500).optional() });
 
-import { LATE_CHANGE_HOURS as LATE_CANCEL_HOURS, LATE_CANCEL_FEE_INR as LATE_CANCEL_FEE } from "@/lib/clinical/slots";
+import { getLatePolicy } from "@/lib/billing/settings";
+import { lateFee } from "@/lib/billing/late-policy";
 
 export async function POST(req: Request, { params }: { params: Promise<{ id: string }> }) {
   try {
@@ -33,13 +34,28 @@ export async function POST(req: Request, { params }: { params: Promise<{ id: str
     // Once the slot is inside the window the nurse is dispatched with the batch
     // drawn, and that stays true after the slot time passes — a negative
     // hoursOut is the latest possible cancellation, not an early one.
+    //
+    // The fee is the patient's for their own late cancellation. A clinic or the
+    // team cancelling is their decision, not the patient's, and costs the
+    // patient nothing. It is recorded on the booking now -- it used to be worked
+    // out and then kept nowhere but the audit trail.
     const hoursOut = (booking.scheduledAt.getTime() - Date.now()) / 3_600_000;
-    const fee = hoursOut < LATE_CANCEL_HOURS ? LATE_CANCEL_FEE : 0;
+    const fee = isOwner ? lateFee(await getLatePolicy(), hoursOut, "late_cancel") : 0;
+
+    // A server started before charges existed would cancel and lose the fee.
+    if (fee > 0 && !Booking.schema.path("charges")) {
+      return fail("The server is running an older version and would not record the fee. Restart it (stop it and run npm run dev again).", 500);
+    }
 
     booking.status = "cancelled";
     booking.cancelledAt = new Date();
     booking.cancelReason = reason;
-    if (fee > 0) booking.paymentStatus = "unpaid";
+    if (fee > 0) {
+      booking.charges = [
+        ...(booking.charges ?? []),
+        { kind: "late_cancel", amount: fee, at: new Date(), byId: session.sub, note: reason || undefined },
+      ];
+    }
     await booking.save();
 
     // The nurse has this on their route; they need to know it is off.

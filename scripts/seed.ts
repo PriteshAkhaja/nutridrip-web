@@ -31,7 +31,9 @@ import {
   QuizQuestion,
   ContentBlock,
   AIModel,
+  Zone,
 } from "../src/lib/models";
+import { ZONE_DEFAULTS } from "../src/lib/zones";
 import { connectDB } from "../src/lib/db/mongoose";
 import { blockedByVitals, CHECKLIST_STEPS } from "../src/lib/clinical/checklist";
 import { planAllocation } from "../src/lib/inventory/dispatch";
@@ -69,6 +71,7 @@ async function wipe() {
       QuizQuestion,
       ContentBlock,
       AIModel,
+      Zone,
     ].map((m) => m.deleteMany({}))
   );
 }
@@ -969,7 +972,8 @@ async function seedClinical(
       patientId: iyer._id,
       dripId: myers._id,
       dripName: myers.name,
-      scheduledAt: days(2),
+      // On the slot grid (hourly), like any booking made through the app.
+      scheduledAt: new Date(days(2).setHours(11, 0, 0, 0)),
       location: "clinic",
       city: "Bengaluru",
       pincode: "560103",
@@ -1323,6 +1327,15 @@ async function main() {
     kit._id,
     users.superadmin._id
   );
+
+  console.log("Seeding service zones…");
+  // On an empty database the unique indexes (name, pincode) do not exist yet;
+  // build them first so the launch zones go in under the same rules as edits.
+  await Zone.init();
+  await Zone.insertMany(
+    ZONE_DEFAULTS.map(({ name, pincodes, opensAt, closesAt, slotMinutes, status }, position) => ({ name, pincodes, opensAt, closesAt, slotMinutes, status, position }))
+  );
+  console.log(`  ${ZONE_DEFAULTS.length} zones — editable at /admin/zones`);
 
   console.log("Seeding the questionnaire…");
   const questionCount = await seedQuizQuestions(true);

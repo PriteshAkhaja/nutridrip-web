@@ -1,6 +1,7 @@
 import { z } from "zod";
 import { connectDB } from "@/lib/db/mongoose";
-import { AuditLog, Booking, Drip } from "@/lib/models";
+import { AuditLog, Booking, Drip, User } from "@/lib/models";
+import { checkSessionCode } from "@/lib/clinical/session-code";
 import { getSession } from "@/lib/auth/session";
 import { can } from "@/lib/auth/rbac";
 import { nurseOwns } from "@/lib/auth/ownership";
@@ -13,7 +14,8 @@ import { ok, fail, handleError } from "@/lib/api";
 
 const Input = z.object({
   signatureDataUrl: z.string().max(500_000).optional(),
-  viaOtp: z.string().max(8).optional(),
+  /** The six digits the patient read out from their own screen. */
+  viaOtp: z.string().regex(/^\d{6}$/, "Enter the six digits the patient reads out").optional(),
   /**
    * Which wording the screen showed. Only the *name* of the document is taken
    * from the caller — the text itself is looked up here, so a crafted request
@@ -56,6 +58,23 @@ export async function POST(req: Request, { params }: { params: Promise<{ id: str
       return fail("Consent needs either a signature or a verified code", 422);
     }
 
+    /**
+     * A code is consent only if it is the one sent to this patient for this
+     * session. It used to be any four digits -- the last four of the patient's
+     * number, which the nurse had on screen -- and nothing checked it.
+     */
+    if (input.viaOtp && !input.signatureDataUrl) {
+      const patient = await User.findById(booking.patientId).select("phone").lean<{ phone?: string } | null>();
+      if (!patient?.phone) return fail("This patient has no phone number on file. Use the signature instead.", 409);
+      const checked = await checkSessionCode({
+        bookingId: booking._id,
+        phone: patient.phone,
+        purpose: "consent",
+        code: input.viaOtp,
+      });
+      if (!checked.ok) return fail(checked.error, checked.status);
+    }
+
     const doc = consentDocument(input.version);
     if (!doc) {
       // The screen sent a version this server does not publish — it is running
@@ -72,6 +91,9 @@ export async function POST(req: Request, { params }: { params: Promise<{ id: str
 
     booking.consent = {
       ...input,
+      // That a checked code was given, not the code itself: it is spent, and
+      // the record says how consent was given, not a secret.
+      viaOtp: input.viaOtp && !input.signatureDataUrl ? "verified" : undefined,
       version: doc.version,
       affirmation: doc.affirmation,
       risks: doc.risks,

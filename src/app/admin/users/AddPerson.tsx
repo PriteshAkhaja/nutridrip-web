@@ -7,6 +7,7 @@ import { Input, Select } from "@/components/ui/Field";
 import { PersonFields, EMPTY_PERSON, type PersonForm } from "./PersonFields";
 import { Card } from "@/components/ui/Card";
 import { ROLES, type Role } from "@/lib/models/types";
+import type { Zone } from "@/lib/zones";
 
 const ROLE_LABEL: Record<Role, string> = {
   superadmin: "Super admin",
@@ -28,7 +29,13 @@ const ROLE_BLURB: Record<Role, string> = {
 };
 
 
-export function AddPerson({ doctors = [] }: { doctors?: Array<{ id: string; name: string }> }) {
+export function AddPerson({
+  doctors = [],
+  zones,
+}: {
+  doctors?: Array<{ id: string; name: string }>;
+  zones: Array<Pick<Zone, "name" | "status">>;
+}) {
   const router = useRouter();
   const [open, setOpen] = useState(false);
   const [role, setRole] = useState<Role>("nurse");
@@ -72,6 +79,7 @@ export function AddPerson({ doctors = [] }: { doctors?: Array<{ id: string; name
           pincode: form.pincode || undefined,
           gstin: form.gstin || undefined,
           monthlyVolumeTarget: form.monthlyVolumeTarget ? Number(form.monthlyVolumeTarget) : undefined,
+          onCredit: role === "clinic" ? form.onCredit === "yes" : undefined,
         }),
       });
       const json = await res.json();
@@ -129,6 +137,7 @@ export function AddPerson({ doctors = [] }: { doctors?: Array<{ id: string; name
         toggleArea={toggleArea}
         doctors={doctors}
         mode="create"
+        zones={zones}
       />
 
       {error && (

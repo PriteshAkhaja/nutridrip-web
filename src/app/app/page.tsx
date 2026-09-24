@@ -16,6 +16,13 @@ import { plansFor } from "@/lib/data/plans";
 import { etaLabel } from "@/lib/clinical/nurse-options";
 import { PATIENT_TABS } from "./tabs";
 import { Arrow } from "@/components/ui/Arrow";
+import { NurseCodes } from "./NurseCodes";
+import { liveCodesFor } from "@/lib/data/session-codes";
+import { FeedbackPrompt } from "./FeedbackPrompt";
+import { sessionToRate } from "@/lib/data/feedback-prompt";
+import { getLatePolicy } from "@/lib/billing/settings";
+import { LateCharges } from "@/components/ui/LateCharges";
+import { CancelSession, RescheduleSession } from "./sessions/SessionActions";
 
 export const metadata: Metadata = { title: "Home" };
 export const dynamic = "force-dynamic";
@@ -128,6 +135,7 @@ export default async function PatientHomePage() {
         bagVolumeMl?: number;
         enRouteAt?: Date;
         etaMinutes?: number;
+        charges?: Array<{ kind: "late_reschedule" | "late_cancel"; amount: number; at: Date; note?: string; settledAs?: "paid" | "waived" }>;
       } | null>(),
     // Drafts are excluded inside plansFor — a plan the physician has not
     // shared yet is not the patient's to read.
@@ -141,6 +149,32 @@ export default async function PatientHomePage() {
     ? [...quiz.nutrientRisks].sort((a, b) => a.pct - b.pct).slice(0, 3)
     : [];
   const approval = approvalState(quiz);
+  // For moving or cancelling the next session from here, on the same terms as Sessions.
+  const policy = await getLatePolicy();
+
+  // A nurse can be at the door for any of these, and may ask for a code.
+  const sessionOn = await Booking.exists({
+    patientId: session.sub,
+    status: { $in: ["approved", "nurse_assigned", "en_route", "in_progress"] },
+  });
+  const codes = sessionOn ? await liveCodesFor(session.sub) : [];
+  // A finished session not yet rated, asked about while it is fresh.
+  const toRate = await sessionToRate(session.sub);
+
+  /** What to do next when nothing is booked, by where the approval stands. */
+  const next: { label: string; href: string } | null = !quiz
+    ? null
+    : approval.canBook
+      ? { label: "Book a session", href: "/app/book" }
+      : approval.status === "info_needed"
+        ? { label: "Answer the question", href: `/app/results/${String(quiz._id)}` }
+        : approval.canHold
+          ? { label: "Hold a slot", href: "/app/book" }
+          : approval.status === "expired"
+            ? { label: "Retake the health quiz", href: "/quiz?retake=1" }
+            : approval.status === "rejected"
+              ? { label: "See your results", href: `/app/results/${String(quiz._id)}` }
+              : null;
 
   return (
     <MobileShell
@@ -149,6 +183,12 @@ export default async function PatientHomePage() {
       tabs={PATIENT_TABS}
       activeHref="/app"
     >
+      {/* ---------------- A code the nurse is waiting on ---------------- */}
+      <NurseCodes initial={codes} active={Boolean(sessionOn)} />
+
+      {/* ---------------- How was it? ---------------- */}
+      {toRate && <FeedbackPrompt session={toRate} />}
+
       {/* ---------------- Vitality ---------------- */}
       {quiz ? (
         <div className="rounded-[var(--radius-lg)] border border-[var(--color-line)] bg-[var(--color-surface)] p-6 mb-4">
@@ -251,48 +291,86 @@ export default async function PatientHomePage() {
               approval, an adjusted protocol, or a decline with the reason.
             </p>
           )}
-        </div>
-      ) : (
-        <EmptyState
-          kind="first-run"
-          title={
-            approval.canBook
-              ? "Nothing booked yet"
-              : approval.status === "pending"
-                ? "Waiting on the physician"
-                : approval.status === "expired"
-                  ? "Your approval has lapsed"
-                  : approval.status === "rejected"
-                    ? "IV therapy is not right for you now"
-                    : "Start with the quiz"
-          }
-          body={approval.message}
-          actionLabel={approval.canBook ? "Book a session" : approval.status === "pending" ? undefined : "Take the quiz"}
-          actionHref={approval.canBook ? "/app/book" : approval.status === "pending" ? undefined : "/quiz"}
-        />
-      )}
 
-      {/* The one line that answers "do I have to do this every time?" */}
+          <LateCharges
+            charges={(upcoming.charges ?? []).map((c) => ({
+              kind: c.kind,
+              amount: c.amount,
+              at: new Date(c.at).toISOString(),
+              note: c.note ?? null,
+              settledAs: c.settledAs ?? null,
+            }))}
+          />
+
+          {/* Moving or cancelling it, from where the patient first sees it --
+              not only from the Sessions tab. Not once it has started. */}
+          {upcoming.status !== "in_progress" && (
+            <div className="mt-4 pt-3 border-t border-[var(--color-line)] flex justify-end gap-2 flex-wrap">
+              <RescheduleSession
+                bookingId={String(upcoming._id)}
+                bookingNo={upcoming.bookingNo}
+                scheduledAt={upcoming.scheduledAt.toISOString()}
+                policy={policy}
+              />
+              <CancelSession
+                bookingId={String(upcoming._id)}
+                bookingNo={upcoming.bookingNo}
+                scheduledAt={upcoming.scheduledAt.toISOString()}
+                policy={policy}
+              />
+            </div>
+          )}
+        </div>
+      ) : null}
+
+      {/* ---------------- Your physician approval ----------------
+          One card says where the patient stands and what to do next. With no
+          session booked it carries the next step; with one booked it sits under
+          it. It used to be two cards -- "Nothing booked yet" and this box --
+          printing the same sentence twice. With no quiz at all, the "No
+          assessment yet" card above is the only thing to say. */}
       {quiz && approval.status !== "none" && (
         <div
-          className="rounded-[var(--radius-md)] border px-4 py-3 mt-4"
+          className={`rounded-[var(--radius-md)] border px-4 py-3${upcoming ? " mt-4" : ""}`}
           style={{
             borderColor:
               approval.status === "valid"
                 ? "var(--color-safe)"
                 : approval.status === "expiring"
                   ? "var(--color-caution)"
-                  : "var(--color-line)",
+                  : approval.status === "rejected"
+                    ? "var(--color-critical)"
+                    : "var(--color-line)",
             background:
               approval.status === "valid"
                 ? "var(--color-safe-soft)"
                 : approval.status === "expiring"
                   ? "var(--color-caution-soft)"
-                  : "var(--color-surface-2)",
+                  : approval.status === "rejected"
+                    ? "var(--color-critical-soft)"
+                    : "var(--color-surface-2)",
           }}
         >
           <span className="t-micro block mb-1">Your physician approval</span>
           <span className="t-body text-[var(--color-ink-2)]">{approval.message}</span>
+
+          {/* With a session booked, the booking card above is the next step --
+              except for a physician's question, which nothing moves without. */}
+          {next && (!upcoming || approval.status === "info_needed") && (
+            <div className="mt-3">
+              <ButtonLink href={next.href}>{next.label}</ButtonLink>
+            </div>
+          )}
+
+          {/* Retaking is a choice made here or on Profile, never by a website
+              button. New answers replace any the physician has not decided on
+              yet, so it is safe at any point. When the approval has lapsed it
+              is the main button instead. */}
+          {approval.status !== "expired" && (
+            <Link href="/quiz?retake=1" className="t-body font-medium block mt-3">
+              Retake the health quiz&nbsp;<Arrow />
+            </Link>
+          )}
         </div>
       )}
     </MobileShell>

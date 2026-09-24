@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState, type ReactNode } from "react";
 import Link from "next/link";
+import { PAGE_RESET_EVENT } from "./PageReset";
 import { usePathname } from "next/navigation";
 import { LogoMark } from "./Logo";
 
@@ -51,6 +52,14 @@ export function ConsoleRail({
     setOpen(false);
     if (restoreFocus) toggleRef.current?.focus();
   };
+
+  // The menu entry for the page already open resets it without a new
+  // address, so the path check above never sees it: close on that too.
+  useEffect(() => {
+    const onReset = () => setOpen(false);
+    window.addEventListener(PAGE_RESET_EVENT, onReset);
+    return () => window.removeEventListener(PAGE_RESET_EVENT, onReset);
+  }, []);
 
   useEffect(() => {
     if (!open) return;

@@ -2,8 +2,11 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { ButtonLink } from "@/components/ui/Button";
 import { Card } from "@/components/ui/Card";
-import { FAQ_CATEGORIES } from "@/lib/data/faqs";
+import { faqCategories } from "@/lib/data/faqs";
 import { FaqBrowser } from "./FaqBrowser";
+import { QuizButton } from "@/components/layout/QuizButton";
+import { getLatePolicy } from "@/lib/billing/settings";
+import { getZones } from "@/lib/zones-store";
 
 export const metadata: Metadata = {
   title: "FAQs",
@@ -11,7 +14,10 @@ export const metadata: Metadata = {
     "Who reads your quiz, how long an approval lasts, the cancellation line, why your nurse asks for a code, and who can see your record.",
 };
 
-export default function FaqsPage() {
+export default async function FaqsPage() {
+  // The late-change answer carries today's fees.
+  const [policy, zones] = await Promise.all([getLatePolicy(), getZones()]);
+  const categories = faqCategories(policy, zones);
   return (
     <div className="mx-auto max-w-[1280px] px-6 md:px-10 py-12">
       <div className="max-w-[66ch] mb-10">
@@ -24,7 +30,7 @@ export default function FaqsPage() {
         </p>
       </div>
 
-      <FaqBrowser categories={FAQ_CATEGORIES} />
+      <FaqBrowser categories={categories} />
 
       <div className="mt-16">
         <Card tone="muted" padding="p-8">
@@ -41,9 +47,9 @@ export default function FaqsPage() {
               <ButtonLink href="/consult" size="lg" block>
                 Ask a clinician
               </ButtonLink>
-              <ButtonLink href="/quiz" variant="secondary" block>
+              <QuizButton variant="secondary" block>
                 Take the health quiz
-              </ButtonLink>
+              </QuizButton>
             </div>
           </div>
         </Card>

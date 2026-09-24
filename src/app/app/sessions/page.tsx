@@ -12,8 +12,10 @@ import { EmptyState } from "@/components/ui/States";
 import { FillBar } from "@/components/ui/Fill";
 import { formatDate, formatTime } from "@/lib/data/inventory";
 import { CancelSession, RescheduleSession } from "./SessionActions";
-import { releasedDays } from "@/lib/clinical/slots";
 import { PATIENT_TABS } from "../tabs";
+import { quizCtaFor } from "@/lib/data/quiz-cta";
+import { getLatePolicy } from "@/lib/billing/settings";
+import { LateCharges } from "@/components/ui/LateCharges";
 
 export const metadata: Metadata = { title: "Sessions" };
 export const dynamic = "force-dynamic";
@@ -26,7 +28,9 @@ export default async function SessionsPage({
   const session = await requireRole("patient", "superadmin");
   const { page, pageSize } = await searchParams;
   const { upcoming, past, meta } = await patientSessionsPaged(session.sub, parsePaging({ page, pageSize }));
-  const days = releasedDays();
+  // With no sessions yet, the way on depends on whether the quiz has been taken.
+  const next = await quizCtaFor(session);
+  const policy = await getLatePolicy();
 
   await connectDB();
   // The vitality trend is only meaningful across more than one assessment.
@@ -85,12 +89,13 @@ export default async function SessionsPage({
                         bookingId={s.id}
                         bookingNo={s.bookingNo}
                         scheduledAt={s.scheduledAt}
-                        releasedDays={days}
+                        policy={policy}
                       />
-                      <CancelSession bookingId={s.id} bookingNo={s.bookingNo} scheduledAt={s.scheduledAt} />
+                      <CancelSession bookingId={s.id} bookingNo={s.bookingNo} scheduledAt={s.scheduledAt} policy={policy} />
                     </div>
                   </div>
                 )}
+                <LateCharges charges={s.charges} />
               </div>
             ))}
           </div>
@@ -104,8 +109,8 @@ export default async function SessionsPage({
             kind="first-run"
             title="No sessions yet"
             body="Once a physician approves a protocol, your sessions appear here with their full timeline."
-            actionLabel="Take the health quiz"
-            actionHref="/quiz"
+            actionLabel={next?.label ?? "Take the health quiz"}
+            actionHref={next?.href ?? "/quiz"}
           />
         ) : (
           <PagedView>
@@ -131,6 +136,7 @@ export default async function SessionsPage({
                   </div>
                   <StatusPill status={s.status} dot />
                 </div>
+                <LateCharges charges={s.charges} />
               </Link>
             ))}
           </div>

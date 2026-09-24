@@ -8,6 +8,7 @@ import { Input, Select } from "@/components/ui/Field";
 import { Card } from "@/components/ui/Card";
 import { USER_STATUS, type Role } from "@/lib/models/types";
 import { PersonFields, type PersonForm } from "./PersonFields";
+import type { Zone } from "@/lib/zones";
 
 const STATUS_BLURB: Record<string, string> = {
   active: "Can sign in and work normally.",
@@ -41,6 +42,7 @@ export function EditPerson({
   user,
   doctors,
   closeHref,
+  zones,
 }: {
   user: {
     id: string;
@@ -50,6 +52,7 @@ export function EditPerson({
     serviceAreas: string[];
   };
   doctors: Array<{ id: string; name: string }>;
+  zones: Array<Pick<Zone, "name" | "status">>;
   /** Back to the list, keeping whatever filter was on. */
   closeHref: string;
 }) {
@@ -117,6 +120,7 @@ export function EditPerson({
           // change: a clinic that deregisters has to be able to say so, and an
           // absent key would leave the old number on their next invoice.
           ...(user.role === "clinic" && { gstin: form.gstin }),
+          ...(user.role === "clinic" && { onCredit: form.onCredit === "yes" }),
         }),
       });
       const json = await res.json();
@@ -187,6 +191,7 @@ export function EditPerson({
           toggleArea={toggleArea}
           doctors={doctors}
           mode="edit"
+          zones={zones}
         />
       </div>
 

@@ -7,8 +7,11 @@ import { connectDB } from "@/lib/db/mongoose";
 import { HealthQuiz, User } from "@/lib/models";
 import { EmptyState } from "@/components/ui/States";
 import { BookingFlow } from "./BookingFlow";
-import { releasedDays } from "@/lib/clinical/slots";
 import { PATIENT_TABS } from "../tabs";
+import { approvalState } from "@/lib/clinical/validity";
+import { getLatePolicy } from "@/lib/billing/settings";
+import { getZones } from "@/lib/zones-store";
+import { servedZones } from "@/lib/zones";
 
 export const metadata: Metadata = { title: "Book a session" };
 export const dynamic = "force-dynamic";
@@ -25,7 +28,10 @@ export default async function BookPage({
   const quiz = await HealthQuiz.findOne({ patientId: session.sub })
     .sort({ completedAt: -1 })
     .lean<{
+      _id: unknown;
       reviewStatus: string;
+      reviewedAt?: Date;
+      completedAt: Date;
       suggestedDripIds?: unknown[];
       recommendedDripIds?: unknown[];
     } | null>();
@@ -51,6 +57,23 @@ export default async function BookPage({
           kind="not-permitted"
           title="A physician declined this protocol"
           body="IV therapy is not right for you at the moment. Check your notifications for the reason — it usually points to a different route rather than no route."
+        />
+      </MobileShell>
+    );
+  }
+
+  // The same rule the booking itself is checked against, so the form is never
+  // offered to someone it would refuse at the last step.
+  const approval = approvalState(quiz);
+  if (!approval.canBook && !approval.canHold) {
+    return (
+      <MobileShell title="Book a session" tabs={PATIENT_TABS} activeHref="/app">
+        <EmptyState
+          kind="not-permitted"
+          title="Your approval has lapsed"
+          body={approval.message}
+          actionLabel="Retake the health quiz"
+          actionHref="/quiz?retake=1"
         />
       </MobileShell>
     );
@@ -89,9 +112,11 @@ export default async function BookPage({
     <MobileShell
       title="Book a session"
       subtitle={
-        quiz.reviewStatus === "pending"
-          ? "Your quiz is still with the physician"
-          : "Approved — pick a slot"
+        approval.status === "info_needed"
+          ? "Your physician asked you a question"
+          : approval.canHold
+            ? "Your quiz is still with the physician"
+            : "Approved — pick a slot"
       }
       tabs={PATIENT_TABS}
       activeHref="/app"
@@ -109,12 +134,13 @@ export default async function BookPage({
           keywords: [...d.headline, ...d.tags],
         }))}
         clinics={clinics.map((c) => ({ id: String(c._id), name: c.name, city: c.clinic?.city ?? "" }))}
-        releasedDays={releasedDays()}
         recommendedIds={recommendedIds}
         preferredSlug={preferred ?? null}
         defaultAddress={user?.patient?.address ?? ""}
         defaultPincode={user?.patient?.pincode ?? ""}
-        pendingReview={quiz.reviewStatus === "pending"}
+        zones={servedZones(await getZones())}
+        pendingReview={approval.canHold}
+        latePolicy={await getLatePolicy()}
       />
     </MobileShell>
   );

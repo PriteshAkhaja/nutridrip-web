@@ -21,3 +21,4 @@ export { default as Lead } from "./Lead";
 export { default as QuizQuestion } from "./QuizQuestion";
 export { default as ContentBlock } from "./ContentBlock";
 export { default as AIModel } from "./AIModel";
+export { default as Zone } from "./Zone";

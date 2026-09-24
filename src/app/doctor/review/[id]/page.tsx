@@ -62,6 +62,40 @@ export default async function PatientReviewPage({ params }: { params: Promise<{ 
         <HeaderCounts items={[`Submitted ${formatDate(review.submittedAt)}`, formatTime(review.submittedAt)]} />
       }
     >
+      {/* Answers the patient has since corrected. Kept, because history is
+          never deleted, but nobody should decide on them. */}
+      {review.reviewStatus === "superseded" && (
+        <div className="rounded-[var(--radius-md)] border border-[var(--color-line-2)] bg-[var(--color-surface-2)] px-4 py-3 mb-6 flex items-center justify-between gap-4 flex-wrap">
+          <span className="t-body">
+            <span className="font-semibold">Replaced by newer answers.</span>{" "}
+            <span className="text-[var(--color-ink-2)]">
+              The patient answered the quiz again before a decision, so these answers are no longer in the queue.
+            </span>
+          </span>
+          {review.supersededBy && (
+            <ButtonLink href={`/doctor/review/${review.supersededBy}`} variant="secondary" size="sm">
+              Open the newer answers
+            </ButtonLink>
+          )}
+        </div>
+      )}
+
+      {review.screening.length > 0 && (
+        <div className="rounded-[var(--radius-md)] border border-[var(--color-critical)] bg-[var(--color-critical-soft)] px-4 py-3 mb-6">
+          <span className="t-body font-semibold text-[var(--color-critical-text)]">
+            {review.screening.length === 1 ? "Screening answer" : `${review.screening.length} screening answers`} — check
+            before approving
+          </span>
+          <ul className="mt-2 flex flex-col gap-1 list-disc pl-5">
+            {review.screening.map((s) => (
+              <li key={s} className="t-body text-[var(--color-ink)]">
+                {s}
+              </li>
+            ))}
+          </ul>
+        </div>
+      )}
+
       {review.flags.length > 0 && (
         <div className="flex gap-2 flex-wrap mb-6">
           {review.flags.map((f) => (
@@ -130,7 +164,10 @@ export default async function PatientReviewPage({ params }: { params: Promise<{ 
                   >
                     {a.section && <span className="t-micro">{a.section}</span>}
                     <span className="t-body text-[var(--color-ink-2)]">{a.question}</span>
-                    <span className="t-body font-medium">{String(a.answer)}</span>
+                    <span className="t-body font-medium">
+                      {/* A ticked list reads as a list; blank is shown as a dash, never as nothing. */}
+                      {Array.isArray(a.answer) ? a.answer.join(", ") : String(a.answer ?? "") || "—"}
+                    </span>
                   </div>
                 ))}
               </Card>
@@ -198,6 +235,7 @@ export default async function PatientReviewPage({ params }: { params: Promise<{ 
             suggestedDrips={review.suggestedDrips}
             allDrips={catalogue.map((d) => ({ id: d.id, name: d.name }))}
             nurses={nurses}
+            bookedSessions={review.bookedSessions}
           />
 
           <Card padding="p-5">

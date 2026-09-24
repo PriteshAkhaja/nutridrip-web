@@ -57,14 +57,19 @@ export async function POST(req: Request) {
     // A clinic's order is always its own; only the platform roles may attribute
     // one to somebody else.
     let clinicId: string | undefined;
+    // The clinic's terms today: paid first, unless it is on credit.
+    let onCredit: boolean | undefined;
     if (session!.role === "clinic") {
       clinicId = session!.sub;
+      const me = await User.findById(clinicId).select("clinic.onCredit").lean<{ clinic?: { onCredit?: boolean } } | null>();
+      onCredit = me?.clinic?.onCredit ?? false;
     } else if (input.clinicId) {
       const clinic = await User.findOne({ _id: input.clinicId, role: "clinic", status: "active" })
-        .select("_id")
-        .lean<{ _id: unknown } | null>();
+        .select("_id clinic.onCredit")
+        .lean<{ _id: unknown; clinic?: { onCredit?: boolean } } | null>();
       if (!clinic) return fail("That is not an active partner clinic", 422);
       clinicId = input.clinicId;
+      onCredit = clinic.clinic?.onCredit ?? false;
     }
 
     const drips = await Drip.find({ _id: { $in: input.lines.map((l) => l.dripId) } }).lean<
@@ -98,6 +103,9 @@ export async function POST(req: Request) {
           includeKits: input.includeKits,
           lines,
           amount,
+          // Kept on the order: a clinic moved on or off credit later does not
+          // change what was agreed for orders already placed.
+          ...(clinicId ? { onCredit, ...(onCredit ? {} : { payment: { state: "awaiting" } }) } : {}),
           notes: input.notes,
           scheduledDelivery: input.scheduledDelivery ? new Date(input.scheduledDelivery) : undefined,
         }),

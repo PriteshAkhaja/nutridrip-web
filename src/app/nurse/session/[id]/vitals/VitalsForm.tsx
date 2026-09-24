@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/Button";
-import { VITAL_RANGES, type VitalKey } from "@/lib/clinical/checklist";
+import { CORRECTION_REASONS, VITAL_RANGES, type VitalKey } from "@/lib/clinical/checklist";
 import { queuedPost } from "@/lib/offline/queue";
 
 type Values = {
@@ -47,13 +47,36 @@ function isOut(key: VitalKey | null, raw: string): boolean {
   return v < range.min || v > range.max;
 }
 
+type Correcting = {
+  /** 0 baseline, 1 closing. */
+  index: number;
+  which: "baseline" | "closing";
+  takenAt: string;
+  outOfRange: string[];
+  systolic?: number;
+  diastolic?: number;
+  heartRate?: number;
+  spo2?: number;
+  temperatureF?: number;
+  weightKg?: number;
+};
+
+/** "SpO₂, Heart rate" -- the readings' names as the nurse knows them, not the field names. */
+const rangeNames = (keys: string[]) =>
+  [...new Set(keys.map((k) => VITAL_RANGES[k as VitalKey]?.label ?? k))].join(", ");
+
+const text = (n: number | undefined) => (n === undefined || n === null ? "" : String(n));
+
 export function VitalsForm({
   bookingId,
   defaultWeight,
+  correcting = null,
   previous,
 }: {
   bookingId: string;
   defaultWeight?: number;
+  /** Set when a reading entered wrongly is being corrected, with what it says now. */
+  correcting?: Correcting | null;
   previous: {
     takenAt: string;
     label: string;
@@ -66,20 +89,49 @@ export function VitalsForm({
   } | null;
 }) {
   const router = useRouter();
-  const [values, setValues] = useState<Values>({
-    systolic: "",
-    diastolic: "",
-    heartRate: "",
-    spo2: "",
-    temperatureF: "",
-    weightKg: defaultWeight ? String(defaultWeight) : "",
-  });
+  // Correcting starts from the reading as recorded, so only the wrong value is retyped.
+  const [values, setValues] = useState<Values>(
+    correcting
+      ? {
+          systolic: text(correcting.systolic),
+          diastolic: text(correcting.diastolic),
+          heartRate: text(correcting.heartRate),
+          spo2: text(correcting.spo2),
+          temperatureF: text(correcting.temperatureF),
+          weightKg: text(correcting.weightKg),
+        }
+      : {
+          systolic: "",
+          diastolic: "",
+          heartRate: "",
+          spo2: "",
+          temperatureF: "",
+          weightKg: defaultWeight ? String(defaultWeight) : "",
+        }
+  );
+  const [reason, setReason] = useState<string>("");
+  const [note, setNote] = useState("");
   const [busy, setBusy] = useState(false);
   const [result, setResult] = useState<{ outOfRange: string[]; blocks: boolean } | null>(null);
   const [error, setError] = useState<string | null>(null);
 
   const flagged = FIELDS.filter((f) => isOut(f.vitalKey, values[f.key])).map((f) => f.label);
   const complete = FIELDS.filter((f) => f.vitalKey).every((f) => values[f.key] !== "");
+  // A correction has to change something, and say why.
+  const changed =
+    !correcting || FIELDS.some((f) => values[f.key] !== text(correcting[f.key as keyof Correcting] as number | undefined));
+  const explained = !correcting || (reason !== "" && (reason !== "Other" || note.trim() !== ""));
+  // Said under the button while it is off: a greyed-out Save with no reason
+  // given read as broken, when it was only waiting for a choice above it.
+  const missing = !complete
+    ? "Fill in every reading to save."
+    : !changed
+      ? "Change the value that was entered wrongly."
+      : !explained
+        ? reason === "Other"
+          ? "Say what was wrong with it, above."
+          : "Choose why it is being corrected, above."
+        : null;
 
   const submit = async () => {
     setBusy(true);
@@ -90,17 +142,20 @@ export function VitalsForm({
           .filter(([, v]) => v !== "")
           .map(([k, v]) => [k, Number(v)])
       );
-      const result = await queuedPost(
-        `/api/bookings/${bookingId}/vitals`,
-        { label: "baseline", ...payload },
-        "Baseline vitals"
-      );
+      const result = correcting
+        ? await queuedPost(
+            `/api/bookings/${bookingId}/vitals/correct`,
+            { index: correcting.index, reason, ...(reason === "Other" ? { note: note.trim() } : {}), ...payload },
+            `Correct ${correcting.which} vitals`
+          )
+        : await queuedPost(`/api/bookings/${bookingId}/vitals`, { label: "baseline", ...payload }, "Baseline vitals");
       if (result.queued) {
         setError("Offline — this reading is queued and will sync when you reconnect.");
       } else if (!result.json.success) {
         setError(result.json.error ?? "Could not record the vitals");
       } else {
         const data = result.json.data as { outOfRange: string[]; blocksInfusion: boolean };
+        // Both the record and the correction answer with blocksInfusion.
         setResult({ outOfRange: data.outOfRange, blocks: data.blocksInfusion });
         router.refresh();
       }
@@ -113,7 +168,25 @@ export function VitalsForm({
 
   return (
     <div className="flex flex-col gap-5">
-      {previous && (
+      {correcting && (
+        <div className="rounded-[var(--radius-md)] border border-[var(--color-line)] bg-[var(--color-surface-2)] px-4 py-3">
+          <span className="t-micro">
+            Recorded ·{" "}
+            {new Date(correcting.takenAt).toLocaleTimeString("en-IN", { hour: "2-digit", minute: "2-digit", hour12: true })}
+          </span>
+          <div className="t-data text-[14.5px] mt-1">
+            {correcting.systolic}/{correcting.diastolic} · {correcting.heartRate} bpm · SpO₂ {correcting.spo2}% ·{" "}
+            {correcting.temperatureF}°F
+          </div>
+          {correcting.outOfRange.length > 0 && (
+            <span className="t-small text-[var(--color-critical-text)] block mt-1">
+              {rangeNames(correcting.outOfRange)} out of range
+            </span>
+          )}
+        </div>
+      )}
+
+      {!correcting && previous && (
         <div className="rounded-[var(--radius-md)] border border-[var(--color-line)] bg-[var(--color-surface-2)] px-4 py-3">
           <span className="t-micro">
             Last reading ·{" "}
@@ -129,7 +202,7 @@ export function VitalsForm({
           </div>
           {previous.outOfRange.length > 0 && (
             <span className="t-small text-[var(--color-critical-text)] block mt-1">
-              {previous.outOfRange.join(", ")} out of range
+              {rangeNames(previous.outOfRange)} out of range
             </span>
           )}
         </div>
@@ -172,9 +245,50 @@ export function VitalsForm({
         <div className="rounded-[var(--radius-md)] border border-[var(--color-critical)] bg-[var(--color-critical-soft)] px-4 py-3">
           <span className="t-body font-semibold">{flagged.join(", ")} outside the reference range</span>
           <p className="t-body text-[var(--color-ink-2)] mt-1">
-            Record it anyway. The infusion will be blocked and the reviewing physician notified — that is the correct
-            outcome, not a failure.
+            {correcting
+              ? "Save it anyway if that is the real reading. The infusion stays blocked and the physician is told."
+              : "Record it anyway. The infusion will be blocked and the reviewing physician notified — that is the correct outcome, not a failure."}
           </p>
+        </div>
+      )}
+
+      {correcting && !result && (
+        <div role="radiogroup" aria-label="Why is it being corrected?" className="flex flex-col gap-[7px]">
+          <span className="t-micro">Why is it being corrected?</span>
+          <div className="flex gap-2 flex-wrap">
+            {CORRECTION_REASONS.map((r) => {
+              const on = reason === r;
+              return (
+                <button
+                  key={r}
+                  type="button"
+                  role="radio"
+                  aria-checked={on}
+                  onClick={() => setReason(r)}
+                  className="min-h-[40px] px-4 rounded-full border cursor-pointer text-[14px]"
+                  style={{
+                    borderColor: on ? "var(--color-primary)" : "var(--color-line-2)",
+                    background: on ? "var(--color-primary-soft)" : "var(--color-surface)",
+                    color: on ? "var(--color-primary-dark)" : "var(--color-ink)",
+                    fontWeight: on ? 600 : 400,
+                  }}
+                >
+                  {r}
+                </button>
+              );
+            })}
+          </div>
+          {reason === "Other" && (
+            <input
+              type="text"
+              value={note}
+              maxLength={200}
+              onChange={(e) => setNote(e.target.value)}
+              placeholder="What was wrong with it"
+              aria-label="What was wrong with it"
+              className="min-h-[44px] w-full px-[14px] rounded-[var(--radius-sm)] border border-[var(--color-line-2)] bg-[var(--color-surface)] text-[14.5px] mt-1"
+            />
+          )}
         </div>
       )}
 
@@ -189,12 +303,20 @@ export function VitalsForm({
           }}
         >
           <span className="t-body font-semibold">
-            {result.blocks ? "Recorded — infusion blocked" : "Recorded — all readings in range"}
+            {correcting
+              ? result.blocks
+                ? "Corrected — infusion still blocked"
+                : "Corrected — all readings in range"
+              : result.blocks
+                ? "Recorded — infusion blocked"
+                : "Recorded — all readings in range"}
           </span>
           <p className="t-body text-[var(--color-ink-2)] mt-1">
             {result.blocks
               ? "The physician has been notified. Do not cannulate until they clear it."
-              : "You can move on to consent."}
+              : correcting
+                ? "The block has lifted. You can carry on with the checklist."
+                : "You can move on to consent."}
           </p>
           <div className="mt-3">
             <Button variant="secondary" block onClick={() => router.push(`/nurse/session/${bookingId}`)}>
@@ -203,9 +325,23 @@ export function VitalsForm({
           </div>
         </div>
       ) : (
-        <Button size="lg" block loading={busy} disabled={!complete} onClick={submit}>
-          Record vitals
-        </Button>
+        <div className="flex flex-col gap-2">
+          <Button
+            size="lg"
+            block
+            loading={busy}
+            disabled={missing !== null}
+            onClick={submit}
+            aria-describedby={missing ? "vitals-missing" : undefined}
+          >
+            {correcting ? "Save the correction" : "Record vitals"}
+          </Button>
+          {missing && (
+            <span id="vitals-missing" className="t-small text-[var(--color-ink-2)] text-center">
+              {missing}
+            </span>
+          )}
+        </div>
       )}
     </div>
   );

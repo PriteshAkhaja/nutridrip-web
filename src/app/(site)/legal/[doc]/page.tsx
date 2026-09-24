@@ -1,8 +1,16 @@
 import { notFound } from "next/navigation";
 import type { Metadata } from "next";
 import { Card } from "@/components/ui/Card";
+import { getLatePolicy } from "@/lib/billing/settings";
+import { LATE_POLICY_TOKEN, fillLatePolicy } from "@/lib/billing/late-policy";
 
-export const dynamic = "force-static";
+/**
+ * Drawn on each visit, like the rest of the site. It was built once, at build
+ * time, which froze the late-change fees into the terms (they are set on the
+ * Billing page and can change) and showed a signed-in patient "Sign in" in the
+ * header, because a page built in advance cannot know who is looking.
+ */
+export const dynamic = "force-dynamic";
 
 /**
  * The operational facts behind each policy — what we actually do, written
@@ -31,7 +39,8 @@ const DOCS = {
       {
         heading: "Cancellation",
         body: [
-          "Cancel or reschedule freely up to 4 hours before your slot. Inside 4 hours a ₹500 fee applies, because the nurse is already dispatched with your batch drawn and those vials cannot go back on the shelf.",
+          // Filled in when the page is drawn, from the fees set on the Billing page.
+          LATE_POLICY_TOKEN,
           "If we cancel — a nurse falls ill, stock fails a check, a physician withdraws approval — you are charged nothing and we say which of those it was.",
         ],
       },
@@ -107,10 +116,6 @@ const DOCS = {
 
 type DocKey = keyof typeof DOCS;
 
-export function generateStaticParams() {
-  return Object.keys(DOCS).map((doc) => ({ doc }));
-}
-
 export async function generateMetadata({
   params,
 }: {
@@ -122,6 +127,8 @@ export async function generateMetadata({
 }
 
 export default async function LegalPage({ params }: { params: Promise<{ doc: string }> }) {
+  // The late-change rule, with today's fees (set on the Billing page).
+  const latePolicy = await getLatePolicy();
   const { doc } = await params;
   const entry = DOCS[doc as DocKey];
   if (!entry) notFound();
@@ -142,7 +149,7 @@ export default async function LegalPage({ params }: { params: Promise<{ doc: str
               <div className="flex flex-col gap-3">
                 {s.body.map((p, i) => (
                   <p key={i} className="t-body text-[var(--color-ink-2)]" style={{ textWrap: "pretty" }}>
-                    {p}
+                    {fillLatePolicy(p, latePolicy)}
                   </p>
                 ))}
               </div>

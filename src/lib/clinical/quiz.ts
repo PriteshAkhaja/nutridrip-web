@@ -1,24 +1,61 @@
 import type { NutrientGroup } from "@/lib/models/types";
+import { visibleQuestions } from "./quiz-rules";
 
 export type QuizOption = {
   value: string;
   label: string;
   /** 0–100. Higher is better; it raises the markers this question feeds. */
   score: number;
+  /**
+   * Multiple choice only: an answer that stands alone, like "None of these".
+   * Ticking it clears the others, and ticking another clears it.
+   */
+  exclusive?: boolean;
 };
+
+export type QuizType = "single" | "multi" | "text" | "number";
+
+/**
+ * How a condition compares an earlier answer. Which of these a condition may use
+ * depends on the type of the question it looks at -- see OPS_FOR_TYPE.
+ */
+export type CondOp = "is" | "isNot" | "answered" | "gt" | "gte" | "lt" | "lte";
+
+export type Condition = {
+  /** The earlier question this looks at. */
+  qid: string;
+  op: CondOp;
+  /** For "is" / "isNot": the answers that count. */
+  values?: string[];
+  /** For the number comparisons. */
+  value?: number;
+};
+
+/** "Show this question only when…" -- all of the conditions, or any one of them. */
+export type ShowIf = { match: "all" | "any"; conditions: Condition[] };
 
 export type QuizQuestion = {
   id: string;
   section: string;
   question: string;
   help?: string;
-  type: "single" | "multi" | "text" | "number";
+  type: QuizType;
   options?: QuizOption[];
-  /** Markers this answer moves, and how strongly (0–1). */
+  /** Markers this answer moves, and how strongly (0–1). Choice questions only. */
   affects: Partial<Record<string, number>>;
   optional?: boolean;
   /** Answering this way is a hard stop a physician must see. */
   contraindicationIf?: string[];
+  /** Number questions: the range a real answer falls in, and what it is counted in. */
+  min?: number;
+  max?: number;
+  unit?: string;
+  /** Number questions: whether 7.5 is an answer, or only 7 and 8. */
+  decimals?: boolean;
+  /** Absent: everybody is asked. Present: only patients whose earlier answers match. */
+  showIf?: ShowIf;
+  /** Only the editor sees retired questions, and needs to know they are retired. */
+  isActive?: boolean;
 };
 
 /** The sixteen markers the results screen reports, in their display groups. */
@@ -326,7 +363,9 @@ export const QUESTIONS: QuizQuestion[] = [
 
 export const SECTIONS = [...new Set(QUESTIONS.map((q) => q.section))];
 
-export type Answers = Record<string, string>;
+/** A choice or typed answer is one string; a multiple-choice answer is the list ticked. */
+export type Answer = string | string[];
+export type Answers = Record<string, Answer | undefined>;
 
 export type ScoredQuiz = {
   vitalityScore: number;
@@ -336,29 +375,51 @@ export type ScoredQuiz = {
 };
 
 /**
+ * The score one question contributes, or null when it contributes nothing.
+ *
+ * A multiple-choice answer scores as the LOWEST option ticked. An average would
+ * let a patient improve their result by ticking one more mild symptom next to a
+ * serious one; the lowest cannot go up by ticking more, which is the only
+ * direction a screening answer should ever move.
+ */
+export function answerScore(q: QuizQuestion, raw: Answer | undefined): number | null {
+  if (q.type !== "single" && q.type !== "multi") return null;
+  const picked = (Array.isArray(raw) ? raw : raw ? [raw] : [])
+    .map((v) => q.options?.find((o) => o.value === v))
+    .filter((o): o is QuizOption => Boolean(o));
+  if (picked.length === 0) return null;
+  return Math.min(...picked.map((o) => o.score));
+}
+
+/**
  * Each marker is a weighted average of the answers that feed it. An unanswered
  * question contributes nothing rather than counting as a zero, so a partially
  * finished quiz is not punished for the questions it has not reached.
+ *
+ * Only the questions this patient was actually shown are counted. An answer to a
+ * question their other answers hid -- one given, then made irrelevant by going
+ * back and changing an earlier answer -- is not evidence of anything.
  */
 export function scoreQuiz(answers: Answers, questions: QuizQuestion[] = QUESTIONS): ScoredQuiz {
   const totals = new Map<string, { sum: number; weight: number }>();
 
   const contraindications: string[] = [];
 
-  for (const q of questions) {
+  for (const q of visibleQuestions(questions, answers)) {
     const raw = answers[q.id];
-    if (raw === undefined || raw === "") continue;
+    if (raw === undefined || raw === "" || (Array.isArray(raw) && raw.length === 0)) continue;
 
-    if (q.contraindicationIf?.includes(raw)) {
+    const picked = Array.isArray(raw) ? raw : [raw];
+    if (picked.some((v) => q.contraindicationIf?.includes(v))) {
       contraindications.push(q.question);
     }
 
-    const option = q.options?.find((o) => o.value === raw);
-    if (!option) continue;
+    const score = answerScore(q, raw);
+    if (score === null) continue;
 
     for (const [marker, weight] of Object.entries(q.affects)) {
       const cur = totals.get(marker) ?? { sum: 0, weight: 0 };
-      cur.sum += option.score * (weight ?? 0);
+      cur.sum += score * (weight ?? 0);
       cur.weight += weight ?? 0;
       totals.set(marker, cur);
     }

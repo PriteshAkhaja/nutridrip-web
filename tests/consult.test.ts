@@ -4,9 +4,12 @@ import {
   CONSULT_TOPICS,
   composeConsultMessage,
   consultReady,
-  pincodeHint,
+  pincodeHint as hintFor,
 } from "@/lib/data/consult";
-import { ZONES } from "@/lib/zones";
+import { ZONE_DEFAULTS as ZONES, type Zone } from "@/lib/zones";
+
+/** Against the launch zones unless a test hands in its own list. */
+const pincodeHint = (pin: string | undefined, zones: Zone[] = ZONES) => hintFor(pin, zones);
 
 describe("composeConsultMessage", () => {
   it("writes the topics, the time and the question in a fixed shape", () => {
@@ -125,5 +128,14 @@ describe("pincodeHint", () => {
 
   it("calls out a pincode that is too long", () => {
     expect(pincodeHint("5600955")?.tone).toBe("critical");
+  });
+
+  it("follows the saved zones: a pincode added today is served, a paused zone is not", () => {
+    const zones: Zone[] = [
+      { name: "Yelahanka", pincodes: ["560064"], opensAt: "08:00", closesAt: "18:00", window: "08:00 – 18:00", slotMinutes: 60, status: "open" },
+      { ...open, status: "paused" },
+    ];
+    expect(pincodeHint("560064", zones)?.text).toContain("Yelahanka");
+    expect(pincodeHint(open.pincodes[0], zones)?.tone).toBe("critical");
   });
 });

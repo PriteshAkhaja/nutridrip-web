@@ -1,4 +1,5 @@
 import { Booking } from "@/lib/models";
+import { readFeedback, type StoredFeedback } from "@/lib/clinical/feedback";
 
 /**
  * What patients said about a nurse's sessions.
@@ -30,13 +31,19 @@ export type NurseFeedback = {
 type Row = {
   _id: unknown;
   bookingNo: string;
-  feedback?: { rating?: number; comment?: string; givenAt?: Date };
+  feedback?: StoredFeedback;
 };
 
 export async function nurseFeedback(nurseId: string, limit = 5): Promise<NurseFeedback> {
   // The rating must BE a number, not merely be present: a booking whose rating
   // was written as something else must not count towards an average.
-  const filter = { nurseId, "feedback.rating": { $type: "number" } };
+  // The nurse's own rating, or -- for feedback given before it was asked
+  // separately -- the single rating for the visit.
+  const filter = {
+    nurseId,
+    $or: [{ "feedback.nurseRating": { $type: "number" } }, { "feedback.rating": { $type: "number" } }],
+  };
+  const value = { $ifNull: ["$feedback.nurseRating", "$feedback.rating"] };
 
   // The three figures are sums over a nurse's whole career, so the database
   // sums them, and only the few comments actually shown are fetched. This used
@@ -49,8 +56,8 @@ export async function nurseFeedback(nurseId: string, limit = 5): Promise<NurseFe
         $group: {
           _id: null,
           count: { $sum: 1 },
-          total: { $sum: "$feedback.rating" },
-          poor: { $sum: { $cond: [{ $lte: ["$feedback.rating", 2] }, 1, 0] } },
+          total: { $sum: value },
+          poor: { $sum: { $cond: [{ $lte: [value, 2] }, 1, 0] } },
         },
       },
     ]),
@@ -68,12 +75,15 @@ export async function nurseFeedback(nurseId: string, limit = 5): Promise<NurseFe
     // Rounded to one place. A nurse's record is not improved by "4.333333".
     average: count ? Math.round(((totals[0]?.total ?? 0) / count) * 10) / 10 : null,
     poor: totals[0]?.poor ?? 0,
-    recent: rows.map((r) => ({
-      bookingId: String(r._id),
-      bookingNo: r.bookingNo,
-      rating: r.feedback?.rating as number,
-      comment: r.feedback?.comment?.trim() || null,
-      givenAt: r.feedback?.givenAt ?? null,
-    })),
+    recent: rows.map((r) => {
+      const nurse = readFeedback(r.feedback)?.nurse;
+      return {
+        bookingId: String(r._id),
+        bookingNo: r.bookingNo,
+        rating: nurse?.rating as number,
+        comment: nurse?.comment ?? null,
+        givenAt: r.feedback?.givenAt ? new Date(r.feedback.givenAt) : null,
+      };
+    }),
   };
 }

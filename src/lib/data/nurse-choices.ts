@@ -1,6 +1,7 @@
 import { connectDB } from "@/lib/db/mongoose";
 import { Booking, User } from "@/lib/models";
 import { nurseOptions, type NurseOptions, type PatientPoint } from "@/lib/clinical/nurse-options";
+import { getZones } from "@/lib/zones-store";
 
 /** The statuses that count against a nurse's capacity — the same list dispatch uses. */
 const OPEN_STATUSES = ["approved", "nurse_assigned", "en_route", "in_progress"];
@@ -18,7 +19,7 @@ export async function nurseChoicesFor(
 ): Promise<NurseOptions> {
   await connectDB();
 
-  const [nurses, openBookings] = await Promise.all([
+  const [nurses, openBookings, zones] = await Promise.all([
     User.find({ role: "nurse", status: "active" })
       .select("name nurse")
       .lean<
@@ -36,6 +37,7 @@ export async function nurseChoicesFor(
     Booking.find({ status: { $in: OPEN_STATUSES }, nurseId: { $ne: null } })
       .select("nurseId")
       .lean<Array<{ nurseId: unknown }>>(),
+    getZones(),
   ]);
 
   const load = new Map<string, number>();
@@ -55,6 +57,7 @@ export async function nurseChoicesFor(
       load: load.get(String(n._id)) ?? 0,
     })),
     patient,
-    doctorId
+    doctorId,
+    zones
   );
 }

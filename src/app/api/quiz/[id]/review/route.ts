@@ -42,6 +42,9 @@ export async function POST(req: Request, { params }: { params: Promise<{ id: str
 
     const quiz = await HealthQuiz.findById(id);
     if (!quiz) return fail("Quiz not found", 404);
+    if (quiz.reviewStatus === "superseded") {
+      return fail("The patient answered the quiz again, so these answers were replaced. Review the newer submission.", 409);
+    }
     if (quiz.reviewStatus !== "pending") return fail("This submission has already been reviewed", 409);
 
     /**
@@ -143,7 +146,11 @@ export async function POST(req: Request, { params }: { params: Promise<{ id: str
           longitude: patient?.patient?.longitude,
           pincode: patient?.patient?.pincode,
         },
-        { requestedNurseId: nurseId || (booking.nurseId ? String(booking.nurseId) : null) }
+        {
+          requestedNurseId: nurseId || (booking.nurseId ? String(booking.nurseId) : null),
+          // Nobody busy at the session's own time, the requested nurse included.
+          session: { start: booking.scheduledAt, durationMin: booking.durationMin ?? 45, bookingId: String(booking._id) },
+        }
       );
 
       if (pick) {
@@ -161,8 +168,46 @@ export async function POST(req: Request, { params }: { params: Promise<{ id: str
       await booking.save();
     }
 
+    /**
+     * A decline also stops sessions already confirmed under an EARLIER approval.
+     *
+     * A patient who was approved, booked, and then answered the quiz again may
+     * have told the physician something new -- a pregnancy, a new medication.
+     * Declining those answers used to release only bookings still waiting for
+     * review, so a session confirmed last week would still go ahead. One that
+     * has started is left to the nurse at the chair.
+     */
+    const calledOff: Array<{ bookingNo: string; nurseId: string | null; when: Date }> = [];
+    if (decision === "rejected") {
+      const confirmed = await Booking.find({
+        patientId: quiz.patientId,
+        status: { $in: ["approved", "nurse_assigned", "en_route"] },
+      });
+      for (const booking of confirmed) {
+        booking.status = "rejected";
+        booking.rejectionReason = declineReason?.trim() || notes || "The physician declined the patient's latest answers.";
+        await booking.save();
+        calledOff.push({
+          bookingNo: booking.bookingNo,
+          nurseId: booking.nurseId ? String(booking.nurseId) : null,
+          when: booking.scheduledAt,
+        });
+      }
+    }
+
     /* ---- Tell everyone who now has something to do ---- */
     const patientName = patient?.name ?? "the patient";
+
+    // The nurse has these on their route; they need to know they are off.
+    for (const c of calledOff) {
+      await notify(
+        c.nurseId,
+        `Session called off · ${c.bookingNo}`,
+        `A physician declined ${patientName}'s latest answers, so this session will not go ahead.`,
+        "warning",
+        "/nurse"
+      );
+    }
 
     /**
      * Every outcome now carries the physician's own words to the patient.
@@ -173,8 +218,15 @@ export async function POST(req: Request, { params }: { params: Promise<{ id: str
       await notify(
         String(quiz.patientId),
         "A physician reviewed your assessment",
-        [declineReason?.trim(), patientNote?.trim()].filter(Boolean).join(" — ") ||
-          "IV therapy is not suitable for you right now. Tap to read why.",
+        [
+          declineReason?.trim(),
+          patientNote?.trim(),
+          calledOff.length
+            ? `${calledOff.length === 1 ? `Your session ${calledOff[0].bookingNo} will` : `Your ${calledOff.length} booked sessions will`} not go ahead.`
+            : undefined,
+        ]
+          .filter(Boolean)
+          .join(" — ") || "IV therapy is not suitable for you right now. Tap to read why.",
         "warning",
         `/app/results/${id}`
       );
@@ -234,6 +286,7 @@ export async function POST(req: Request, { params }: { params: Promise<{ id: str
         notes,
         patientNote,
         declineReason,
+        ...(calledOff.length ? { sessionsCalledOff: calledOff.map((c) => c.bookingNo) } : {}),
         strength,
         recommended: recommended.map((d) => d.name),
         infoRequest,

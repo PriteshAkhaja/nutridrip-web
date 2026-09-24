@@ -178,7 +178,6 @@ export default async function ConsentPage({ params }: { params: Promise<{ id: st
 
       <ConsentCapture
         bookingId={id}
-        phone={patient?.phone}
         alreadyGivenAt={booking.consent?.givenAt ? booking.consent.givenAt.toISOString() : null}
       />
     </MobileShell>

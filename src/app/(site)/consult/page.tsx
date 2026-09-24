@@ -3,6 +3,8 @@ import Link from "next/link";
 import { Card } from "@/components/ui/Card";
 import { getContent } from "@/lib/content";
 import { ConsultForm } from "./ConsultForm";
+import { getZones } from "@/lib/zones-store";
+import { servedZones } from "@/lib/zones";
 
 export const metadata: Metadata = {
   title: "Ask a clinician",
@@ -54,7 +56,7 @@ export default async function ConsultPage() {
           </div>
         </div>
 
-        <ConsultForm response={copy["consult.response"]} />
+        <ConsultForm response={copy["consult.response"]} zones={servedZones(await getZones())} />
       </div>
     </div>
   );

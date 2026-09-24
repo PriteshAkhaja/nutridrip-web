@@ -11,6 +11,9 @@ import { notify, notifyRole } from "@/lib/notify";
 import { pickNurse } from "@/lib/clinical/assign";
 import { nextReference, createWithReference } from "@/lib/sequence";
 import { zoneForPincode } from "@/lib/zones";
+import { getZones } from "@/lib/zones-store";
+import { MIN_LEAD_MS, slotProblem } from "@/lib/clinical/slots";
+import { slotContext } from "@/lib/clinical/slot-availability";
 import { paginate } from "@/lib/pagination-db";
 import { pageInfo, parsePaging } from "@/lib/pagination";
 import { ADMIN_BOOKING_SELECT } from "@/lib/data/admin-view";
@@ -26,9 +29,6 @@ const CreateBooking = z.object({
   clinicId: z.string().optional(),
   notes: z.string().max(1000).optional(),
 });
-
-/** Slots inside this window cannot be booked — the nurse needs the lead time. */
-const MIN_LEAD_MS = 60 * 60_000;
 
 export async function GET(req: Request) {
   try {
@@ -131,11 +131,17 @@ export async function POST(req: Request) {
       pincode = clinic.clinic?.pincode ?? pincode;
     } else {
       if (!pincode) return fail("Add your pincode so we can check a nurse can reach you", 422);
-      const zone = zoneForPincode(pincode);
+      const zone = zoneForPincode(pincode, await getZones());
       if (!zone) {
         return fail(`We do not serve pincode ${pincode} yet. The zones we cover are listed under Zones.`, 409);
       }
     }
+
+    // The time must be one the zone offers, with a nurse free for it — the
+    // same rule that greyed the others out on the booking screen, applied
+    // again here because the screen may be minutes old.
+    const slot = slotProblem(await slotContext({ pincode, from: when, to: when }), when, drip.durationMin);
+    if (slot) return fail(slot.error, slot.status);
 
     // A booking is only approved once a physician has read a quiz that is
     // still inside its review window.
@@ -143,8 +149,9 @@ export async function POST(req: Request) {
       .sort({ completedAt: -1 })
       .lean<{ reviewStatus: string; reviewedAt?: Date; reviewedBy?: unknown; completedAt: Date } | null>();
     const approval = approvalState(quiz);
-    // Pending is the one blocked state a patient may still hold a slot against.
-    if (!approval.canBook && approval.status !== "pending") {
+    // Undecided -- still being read, or waiting on the patient's answer to a
+    // question -- is the one blocked state a patient may hold a slot against.
+    if (!approval.canBook && !approval.canHold) {
       return fail(approval.message, 409);
     }
 
@@ -164,8 +171,9 @@ export async function POST(req: Request) {
           clinicId: clinic?._id,
           // The physician who approved the standing protocol owns this session.
           doctorId: approval.canBook && quiz?.reviewedBy ? quiz.reviewedBy : undefined,
-          status: approval.status === "pending" ? "awaiting_review" : "approved",
-          approvedAt: approval.status === "pending" ? undefined : new Date(),
+          // Only a physician's yes confirms a booking; anything else is a held slot.
+          status: approval.canBook ? "approved" : "awaiting_review",
+          approvedAt: approval.canBook ? new Date() : undefined,
           checklist: CHECKLIST_STEPS.map((s) => ({ ...s })),
           amount: drip.priceInr,
           paymentStatus: "unpaid",
@@ -194,11 +202,14 @@ export async function POST(req: Request) {
       );
     } else {
       // Already-approved patients skip the queue, so dispatch a nurse now.
-      const pick = await pickNurse({
-        latitude: patient?.patient?.latitude,
-        longitude: patient?.patient?.longitude,
-        pincode,
-      });
+      const pick = await pickNurse(
+        {
+          latitude: patient?.patient?.latitude,
+          longitude: patient?.patient?.longitude,
+          pincode,
+        },
+        { session: { start: when, durationMin: drip.durationMin, bookingId: String(booking._id) } }
+      );
       if (pick) {
         booking.nurseId = pick.nurseId;
         booking.status = "nurse_assigned";

@@ -17,6 +17,8 @@ import { OrderComposer } from "@/components/orders/OrderComposer";
 import { PagedResults, PagedView, Pagination } from "@/components/ui/Paged";
 import { hrefWith, parsePaging } from "@/lib/pagination";
 import { paginate } from "@/lib/pagination-db";
+import { OrderPayPill } from "@/components/ui/OrderPayPill";
+import type { OrderPayment } from "@/lib/billing/order-payment";
 
 export const metadata: Metadata = { title: "Preparation orders" };
 export const dynamic = "force-dynamic";
@@ -44,6 +46,9 @@ export default async function OrdersPage({
       lines: Array<{ dripName?: string; quantity: number }>;
       createdAt: Date;
       scheduledDelivery?: Date;
+    clinicId?: unknown;
+    onCredit?: boolean;
+    payment?: OrderPayment;
   };
   const { rows: orders, meta } = await paginate<OrderRow>(Order, filter, { sort: { createdAt: -1 }, paging });
 
@@ -58,8 +63,10 @@ export default async function OrdersPage({
     listDrips(),
     User.find({ role: "clinic", status: "active" })
       .sort({ name: 1 })
-      .lean<Array<{ _id: unknown; name: string; clinic?: { city?: string } }>>(),
+      .lean<Array<{ _id: unknown; name: string; clinic?: { city?: string; onCredit?: boolean } }>>(),
   ]);
+  // Each clinic's terms today, for orders placed before each order kept its own.
+  const creditById = new Map(clinics.map((c) => [String(c._id), c.clinic?.onCredit ?? false]));
   const { results } = await checkAvailability(
     drips.map((d) => ({ dripId: d.id, quantity: 1 })),
     true
@@ -144,7 +151,10 @@ export default async function OrdersPage({
                 <TD mono nowrap>{formatDate(o.createdAt)}</TD>
                 <TD mono nowrap>{o.scheduledDelivery ? formatDate(o.scheduledDelivery) : "—"}</TD>
                 <TD>
-                  <StatusPill status={o.status} dot />
+                  <span className="flex gap-2 flex-wrap items-center">
+                    <StatusPill status={o.status} dot />
+                    <OrderPayPill order={o} clinicOnCredit={creditById.get(String(o.clinicId)) ?? false} audience="team" />
+                  </span>
                 </TD>
                 <TD numeric>{formatInr(o.amount ?? 0)}</TD>
               </TR>

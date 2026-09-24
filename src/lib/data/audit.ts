@@ -77,6 +77,8 @@ const NOTABLE = new Set([
   // Removing a patient's medical document. The file goes with the row.
   "lab.delete",
   "quiz.reset",
+  // A nurse changing a recorded reading can lift a block on the infusion.
+  "vitals.corrected",
 ]);
 
 export function isNotable(action: string): boolean {

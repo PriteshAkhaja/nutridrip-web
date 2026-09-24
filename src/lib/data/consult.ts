@@ -1,4 +1,4 @@
-import { zoneForPincode } from "@/lib/zones";
+import { zoneForPincode, type Zone } from "@/lib/zones";
 import { CATEGORIES } from "@/lib/data/marketing";
 
 /**
@@ -59,12 +59,12 @@ export type PincodeHint = { tone: "safe" | "caution" | "critical"; text: string 
  * a request from outside the zones is still worth having, and the same shape
  * as the booking guard's straight yes or no.
  */
-export function pincodeHint(pincode: string | null | undefined): PincodeHint | null {
+export function pincodeHint(pincode: string | null | undefined, zones: Zone[]): PincodeHint | null {
   const pin = (pincode ?? "").replace(/\D/g, "");
   if (pin.length < 6) return null;
   if (pin.length > 6) return { tone: "critical", text: "A pincode is six digits." };
 
-  const zone = zoneForPincode(pin);
+  const zone = zoneForPincode(pin, zones);
   if (!zone) {
     return {
       tone: "critical",

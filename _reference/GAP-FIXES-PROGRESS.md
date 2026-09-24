@@ -739,3 +739,145 @@ Reading the audit trail after the Part 4 tests: the edit that moved a nurse to a
 Now every one of those is recorded as a before and after (`worksUnder` by the physician's name; `zones` as a sorted list, because a list of "2 items" made swapping one zone for another look like nothing). A password is never written down, but the row now says `credentials: new password set`. A clinic's `pincode` had also been hidden as a secret (it contains "code"); that is fixed.
 
 Checked live on the test accounts with reversible edits (council number, a zone swapped for another, GSTIN, pincode, a password), all restored afterwards. 13 unit tests (`tests/user-audit.test.ts`).
+
+
+## Quiz builder: old vs new, and what was built
+
+Compared the old Quiz Builder (`nutridrip-old/…/admin/studio/QuizEditor.tsx`) with the new one question-type by question-type, including what a patient actually sees. Four gaps, all now closed, decided by the product owner: fix the Number bug, build multi-select properly, add a modern reorder, and build branching.
+
+### What was wrong
+
+| # | Gap | Effect |
+|---|---|---|
+| 1 | **"Number" answer type drew nothing** | The builder offered it, but the patient screen only knew text boxes and option buttons. A Number question showed no box and no buttons, Continue stayed off, and the quiz could never be finished. Nobody had picked it yet. |
+| 2 | **"Multi-select" was a word, not a feature** | No builder screen for it, the patient screen treated it as single choice, and scoring read one answer only. |
+| 3 | **No reordering** | Old had ▲/▼; new had nothing — a question kept the position it was created in, forever. |
+| 4 | **No branching** | Old could ask a question only when an earlier answer called for it; new asked everybody everything. |
+
+Found on the way and fixed:
+
+- **A question added to an early section was asked at the very end.** The editor grouped it under its section; the stored order put it after Screening, so a patient met it last. Order is now kept in step with the editor's grouping.
+- **Editing a retired question silently made it live again** (the editor did not know which questions were retired). Retired questions now show "Not live", dimmed, and keep their state.
+- **A new question with a key already in use silently replaced that question.** Now refused: "The key … is already used by …".
+- **"Restore the default set" wiped every edit with one click.** It now asks first, in words, and says what is lost.
+- **The server accepted any answer at all** — "banana" to a yes/no question was stored. Every answer is now checked against its question.
+
+### What it does now
+
+- **Answer types:** Single choice · Multiple choice (tick all that apply) · Number · Free text, picked from four cards.
+- **Multiple choice:** square tick boxes for the patient. An answer can be marked **"only this"** (like "None of these"): ticking it clears the others, and ticking anything else clears it. The question **scores as its lowest-scoring answer ticked**, so ticking one more symptom can never make a result look better. A screening answer flags if any ticked answer is one.
+- **Number:** a number box with its unit beside it ("12 cigarettes"), an optional lowest/highest answer and whole-numbers-only unless decimals are allowed. A wrong number is refused in words: "Enter a number between 0 and 60 cigarettes." Number and free-text answers are not scored, so the builder no longer shows score weights for them (they did nothing).
+- **Reorder:** drag a question by its six-dot handle; the row lifts, the others slide aside, and the order is saved in **one** request when it is let go (old: two separate writes). Works with a mouse, a finger and from the keyboard (focus the handle, arrow keys; each move is announced to a screen reader). Within a section; to change section, open the question.
+- **Branching — "Who is asked this question":** *Everyone*, or *Only some patients*, with one or more conditions on **earlier** questions, matched as *all* or *any*. The comparisons offered depend on the earlier question's type (is / is not; includes any of / none of; more than / at least / less than / at most; has been answered). The rule is shown as a sentence ("Asked only when “Do you smoke?” is Occasionally or Daily"), in the editor and on the list.
+- **Rules cannot be broken by accident.** A rule may only look at a question asked before it. Moving a follow-up above its question, renaming or removing an answer a rule uses, taking a question out of the quiz while another depends on it, or deleting it, is refused with the reason, naming the question affected. The editor shows the same problems while the rule is being written, and lists which questions depend on the one being edited.
+- **The patient's answers:** the list of questions is worked out again from the answers on every change; going back and changing an earlier answer removes a follow-up that no longer applies. Answers to questions a patient was not asked are dropped — on the server too — so they are neither scored nor stored.
+- **The record:** a multiple-choice answer is kept as the list ticked ("Tired, Chest pain"); a number is kept with its unit ("20 cigarettes").
+- **Audit:** creating or changing a question records before and after, including the rule in words; a reorder records each section's order before and after.
+- **Stale-server guard:** a dev server started before this change would silently drop the new fields on save. The save reads the row back and, if the rule or range did not stick, says so and asks for a restart instead of losing it (checked live on the old server: it refused, with the message).
+
+The rules are one pure module, `src/lib/clinical/quiz-rules.ts`, used by the patient screen, the server and the builder alike, so the three can never disagree.
+
+### Tests
+
+| # | Test | Result |
+|---|---|---|
+| Q.1 | Rules module: conditions by type, hidden questions and chains, answers dropped when hidden, answer checks, ticking and "only this", lowest-answer scoring, rule problems, descriptions (`tests/quiz-rules.test.ts`) | ✅ 40 |
+| Q.2 | The bundled 21 questions score exactly as before (no rules in them) | ✅ existing 13 quiz tests unchanged |
+| Q.3 | Live: build questions of all four types with rules; refusals for a taken key, renaming a used answer, retiring or deleting a depended-on question, a rule on a later question, a comparison that does not fit, an upside-down range, an unknown screening answer | ✅ |
+| Q.4 | Live: reorder in one request; a follow-up above its question refused; a stale order refused; a question added to an early section lands in that section | ✅ |
+| Q.5 | Live patient submissions: out-of-range and decimal numbers refused in words; "None of these" with a symptom refused; unknown answer refused; a hidden question's answer dropped; the screening flag from a ticked answer; the old-style submission still accepted; the physician sees "Tired, Chest pain" and "20 cigarettes" | ✅ 38 live checks |
+| Q.6 | Browser, builder: handles on every row (44 px), rule lines and "decides whether…", mouse drag lifts and saves, a rule-breaking drag snaps back with the reason, arrow keys move and keep focus and are announced, the editor for a Number question, no sideways scroll at 1440 and 390 px | ✅ 22 |
+| Q.7 | Browser, patient on a 390 px phone: tick boxes, a follow-up appearing and leaving as answers change, "None of these" clearing the rest, the number box refusing 999 and accepting 12, going back and changing an answer, submitting to the results page | ✅ 22 |
+| Q.8 | Unit tests, lint, typecheck | ✅ 531 pass, clean |
+
+Everything the live tests created was removed afterwards: the test questions, the four test submissions and their notifications, and the demo patient's profile fields were put back; the questionnaire is again the original 21 in its original order. The audit rows those tests wrote remain, as audit rows always do.
+
+The dev server was restarted to load the new question model (it now runs from the assistant's session; if that closes, run `npm run dev` again).
+
+### Found while testing the quiz builder: spaces saved inside answers
+
+An answer typed as "Tired " (with a space at the end) was saved with the space, so the stored answer and any rule using it would have carried "Tired " rather than "Tired". The server now trims spaces from both ends of every answer (and from screening answers and rule values) and refuses an answer that is only spaces. The test question was re-saved and now reads "Tired"; its "only this" and screening settings were kept.
+
+Not a bug: "How many a day?" did not appear when "Do you smoke?" was answered No. That is the rule working. Checked against the live questions: No gives 23 questions with the follow-up skipped; Occasionally or Daily gives 24, with the follow-up asked sixth.
+
+
+### Found while testing the quiz builder: screening answers never reached the physician
+
+The builder says a flagged answer ("Yes" to "Are you pregnant…?", a ticked "Chest pain") "is shown to the reviewing physician as a screening flag". It was not. The flag was counted when the quiz was sent and appeared only in the bell ("1 screening flag(s)"). It was not saved with the submission, the review page did not show it, and the Approvals queue did not show it. A physician opening the review could approve without ever seeing it.
+
+Now:
+
+- **Saved with the submission** (`screeningFlags` on the assessment), in words: "Are you pregnant, breastfeeding, or trying to conceive? — Yes". Saved at the time of answering, so editing the questionnaire later cannot make a flag disappear.
+- **Review page:** a red box at the top, "Screening answer — check before approving", listing each one in full.
+- **Approvals queue:** a red "Screening answer" pill on the row (or "2 screening answers"). The question is too long for a pill, so the queue gives the count and the review page gives the words.
+- **Older submissions**, sent before this change, have nothing saved. Their flags are worked out from their stored answers against the questions, retired questions included.
+- Only questions the patient was actually asked can flag. An answer left on a hidden follow-up cannot.
+
+| # | Test | Result |
+|---|---|---|
+| S.1 | Unit: names the question and answer; only ticked screening answers, by label; a question not asked does not flag (`tests/quiz-rules.test.ts`) | ✅ 3 new, 534 total |
+| S.2 | Live: a patient answers Yes to pregnancy → the queue shows one "Screening answer" pill, on that row only; the review page shows the red box with the question and "Yes" | ✅ |
+| S.3 | Live, on a dev server started before the change (so the new field is not yet saved): the flag still shows, worked out from the answers | ✅ |
+| S.4 | 1440 px and 390 px phone: box 12/16 px padding like the app's other red boxes, 24 px to the card below, no sideways scroll | ✅ |
+| S.5 | Typecheck, lint | ✅ clean |
+
+The test submission and its 3 notifications were removed and the demo patient's profile put back; the audit row stays. **Restart the dev server** (stop it, `npm run dev`) so new submissions save their flags; until then they are worked out on each view, which shows the same thing.
+
+
+## Quiz is taken once: website buttons no longer restart it
+
+Client report: a patient who had already taken the quiz, then signed out and in again, was still offered "Take the quiz" in the site header and "Take the quiz to book this" on a drip page, and both started the whole quiz again. A second run also puts a second submission in front of the physician. Separately, a patient with no quiz saw two cards on Home saying the same thing ("No assessment yet" and "Start with the quiz").
+
+Now every "Take the quiz" button on the website decides from the patient's latest quiz (`src/lib/data/quiz-cta.ts`, drawn by `QuizButton`):
+
+| Who | The button says | Goes to |
+|---|---|---|
+| Not signed in, staff, or a patient with no quiz | as before ("Take the quiz", "Take the quiz to book this", …) | the quiz |
+| Quiz approved, or still with the physician | **Book a session** · on a drip page **Book this drip** | booking (that drip picked) |
+| Quiz declined | **See your results** | the results, where the reason is |
+| Approval lapsed (90 days) | **Retake the health quiz** | the quiz, as a retake |
+
+- Covered: header, public home (3), drip page (3), pricing, safety, zones, FAQs, about, how it works, and the Sessions page's empty state.
+- **The quiz page itself** sends a patient who already answered to the same place, so an old bookmark or a link somewhere else cannot restart it either.
+- **Retaking is a choice**, made from **Profile → Retake the health quiz** or the new **Retake the health quiz** link in the "Your physician approval" box on Home. Both open `/quiz?retake=1`. The Home link is hidden while a physician is still reading the last submission.
+- **Home with no quiz** shows one card, "No assessment yet". With a quiz, the second card's button says what to do next: Book a session, Retake the health quiz (lapsed), See your results (declined), or nothing while waiting.
+
+| # | Test | Result |
+|---|---|---|
+| T.1 | Signed out: header and all three drip-page buttons lead to the quiz, the drip carried | ✅ |
+| T.2 | Riya, quiz with the physician: header, public home, drip page, pricing, safety, zones, FAQs, about, how it works and Sessions offer booking, never the quiz; `/quiz` goes to booking; `/quiz?drip=` to booking that drip; `/quiz?retake=1` opens the quiz; Profile's retake uses it; no retake link on Home while pending | ✅ 15 |
+| T.3 | S. Krishnan, approved: header "Book a session"; Home has "Retake the health quiz", 12 px from the message and the box edge like the box's padding, no sideways scroll at 390 px | ✅ |
+| T.4 | Darshan, no quiz: header still "Take the quiz"; Home shows one card; the quiz opens | ✅ |
+| T.5 | Typecheck, lint, unit tests | ✅ clean, 534 pass |
+
+Not tested live: the declined and lapsed states (no demo patient is in them); they follow the same approval rules as the booking page.
+
+
+## Retaking the quiz safely, and a physician's question read as an approval
+
+### Bug found: "Needs more information" counted as approved
+
+When a physician chose **Ask for more information**, the approval rules only knew "pending" and "declined", so the question fell through to the date check and came out **valid**. The patient's Home said "Approved. You can book freely for the next 90 days", and a booking made then was **confirmed with a nurse dispatched**, with no physician having approved anything. Now a question is its own state: the patient is told to answer it, may hold a slot, and nothing is confirmed until the physician decides. Only an actual approval ("approved" or "approved with changes") starts the 90 days; any other status is read as undecided, never as approved. The booking page now also uses the same rules, so a lapsed approval is told to retake before the form rather than refused at the last step.
+
+### Retake decisions (product owner)
+
+1. **Retake while the physician has not decided → the new answers replace the old.** The earlier submission (unread, or waiting on an answer to a question) becomes **"Replaced by newer answers"**, leaves the queue, and points to the new one. Before, both sat in the queue and the physician could approve the old answers while the corrected ones waited. Deciding on, or answering a question on, a replaced submission is refused in words. Both the physician's review page and the patient's results say it was replaced and link the newer answers; neither shows it as approved.
+2. **Retake while approved → the physician reads the new answers first.** New bookings are held until then. Sessions already booked stay; the physician sees them on the review ("Already booked under an earlier approval: ND-…"), and **if the physician declines, those sessions are called off** and the patient and the nurse are both told. Before, a decline only released bookings still waiting, so a session confirmed earlier would still go ahead after the physician said no. A decided submission (approved, declined) is kept as history, never replaced.
+
+The patient is told what a retake will do before the first question ("Answering again: …"), in words that match their situation.
+
+### Home: each sentence once
+
+With no session booked, Home showed two cards that said the same sentence: "Nothing booked yet" (or "Waiting on the physician", etc.) and the "Your physician approval" box. There is now one card: where the approval stands, the next step as a button (Book a session · Hold a slot · Answer the question · Retake the health quiz · See your results), and a **Retake the health quiz** link. With a session booked, the booking card comes first and the approval card sits under it (a physician's question still shows its button). A declined approval is now shown in red, like the other clinical states.
+
+| # | Test | Result |
+|---|---|---|
+| R.1 | Unit: a question is not an approval; only undecided states may hold a slot; an unknown status is never approved; "approved with changes" is approved (`tests/validity.test.ts`) | ✅ 4 new, 538 total |
+| R.2 | Live, Riya with an unread submission retakes: the old one becomes "replaced" and points to the new; the queue shows her once; approving the old one is refused; its review page says replaced, links the newer, offers no decision | ✅ |
+| R.3 | Live, physician asks a question: Home no longer says "Approved"; "Answer the question" shown even with a session booked; website header "Answer your physician"; **a booking made now is only held (awaiting review)**, previously confirmed | ✅ |
+| R.4 | Live, retake while a question is open: the old question can no longer be answered (refused in words); its results say replaced and link the new ones, with no "Approved" and no Book button | ✅ |
+| R.5 | Live, S. Krishnan approved books (nurse assigned), retakes: the approved submission is kept; Home shows the session and "A physician is reading" once; the physician sees the booked session in yellow, and in red once Decline is chosen; declining calls it off; the patient is told "Your session ND-… will not go ahead" and the nurse "Session called off" | ✅ |
+| R.6 | Screens at 390 px and 1440 px: approval card 12/16 px padding, 12 px between button and link, 16 px from the card above; booked-sessions box 16 px from its neighbours; no sideways scroll | ✅ |
+| R.7 | Typecheck, lint | ✅ clean |
+
+Everything the live tests created was removed (the test submissions and bookings, the notifications and sign-in codes made during the run) and the two patients' records put back exactly (6/6 documents identical). Audit rows stay. **Restart the dev server** after pulling this: the quiz model gained the "replaced" status and its link.

@@ -68,6 +68,19 @@ async function call(j, method, path, body) {
 
 const get = (j, p) => call(j, "GET", p);
 const post = (j, p, b) => call(j, "POST", p, b ?? {});
+
+/**
+ * A clinic pays for its order before it is confirmed: the clinic records the
+ * payment, the team marks it received. The payment date is today in India.
+ */
+const today = () => new Date().toLocaleDateString("en-CA", { timeZone: "Asia/Kolkata" });
+async function payFor(clinicJar, staffJar, orderId, reference = "SMOKE-UTR-0001") {
+  const submitted = await post(clinicJar, `/api/orders/${orderId}/payment`, {
+    action: "submit", method: "upi", reference, paidOn: today(),
+  });
+  const received = await post(staffJar, `/api/orders/${orderId}/payment`, { action: "received" });
+  return { submitted, received };
+}
 const patch = (j, p, b) => call(j, "PATCH", p, b ?? {});
 const put = (j, p, b) => call(j, "PUT", p, b ?? {});
 const del = (j, p) => call(j, "DELETE", p);
@@ -198,6 +211,21 @@ async function main() {
   const clinicCantConfirm = await post(clinic.jar, `/api/orders/${orderId}/confirm`);
   ok("a clinic cannot confirm its own order", clinicCantConfirm.status === 403);
 
+  // Paid first: the pharmacy cannot confirm an order nobody has paid for.
+  ok("a clinic's order starts awaiting payment", created.json?.data?.order?.payment?.state === "awaiting");
+  const unpaid = await post(superadmin.jar, `/api/orders/${orderId}/confirm`);
+  ok("an unpaid order cannot be confirmed", unpaid.status === 409 && /Not paid yet/.test(unpaid.json?.error ?? ""), unpaid.json?.error);
+  const selfReceived = await post(clinic.jar, `/api/orders/${orderId}/payment`, { action: "received" });
+  ok("a clinic cannot mark its own payment received", selfReceived.status === 403);
+  const recorded = await post(clinic.jar, `/api/orders/${orderId}/payment`, {
+    action: "submit", method: "upi", reference: "SMOKE-UTR-0001", paidOn: today(),
+  });
+  ok("the clinic records its payment", recorded.json?.success === true, recorded.json?.error);
+  const stillUnchecked = await post(superadmin.jar, `/api/orders/${orderId}/confirm`);
+  ok("a recorded but unchecked payment still holds the order", stillUnchecked.status === 409, stillUnchecked.json?.error);
+  const received = await post(superadmin.jar, `/api/orders/${orderId}/payment`, { action: "received" });
+  ok("the team marks the payment received", received.json?.success === true, received.json?.error);
+
   const confirmed = await post(superadmin.jar, `/api/orders/${orderId}/confirm`);
   ok("the pharmacy confirms it", confirmed.json?.success === true, confirmed.json?.error);
   ok("confirmation moves it to CONFIRMED", confirmed.json?.data?.order?.status === "CONFIRMED");
@@ -238,11 +266,14 @@ async function main() {
     patientRef: "SMOKE-02", includeKits: true, lines: [{ dripId: immune._id, quantity: 1, withKit: true }],
   });
   const secondId = second.json.data.order._id;
+  await payFor(clinic.jar, superadmin.jar, secondId, "SMOKE-UTR-0002");
   await post(superadmin.jar, `/api/orders/${secondId}/confirm`);
   const midway = await get(superadmin.jar, "/api/inventory/masters?q=Ascorbic%20acid");
   const vitcHeld = midway.json.data.masters.find((m) => m.name === "Ascorbic acid").available;
   const cancelled = await post(superadmin.jar, `/api/orders/${secondId}/cancel`, { reason: "smoke test" });
   ok("cancelling releases the reservation", cancelled.json?.data?.order?.status === "CANCELLED");
+  const refunded = (await get(clinic.jar, "/api/orders")).json?.data?.orders?.find((o) => o._id === secondId);
+  ok("cancelling a paid order marks a refund due", refunded?.payment?.refundDue === true);
   const released = await get(superadmin.jar, "/api/inventory/masters?q=Ascorbic%20acid");
   ok("the released units are available again",
     released.json.data.masters.find((m) => m.name === "Ascorbic acid").available > vitcHeld);
@@ -324,6 +355,7 @@ async function main() {
     patientRef: "SMOKE-LOCK", includeKits: true, lines: [{ dripId: myers._id, quantity: 1, withKit: true }],
   });
   const lockOrderId = lockOrder.json?.data?.order?._id;
+  await payFor(clinic.jar, superadmin.jar, lockOrderId, "SMOKE-UTR-0003");
   const lockConfirm = await post(superadmin.jar, `/api/orders/${lockOrderId}/confirm`);
   if (lockConfirm.json?.success) {
     const lockedDrip = await patch(superadmin.jar, `/api/drips/${myers._id}`, {
@@ -368,12 +400,75 @@ async function main() {
   /* ---------------- Booking guards ---------------- */
   section("Booking");
   const jetlag = drips.json.data.drips.find((d) => d.slug === "jetlag-reset");
-  const tomorrow = new Date(Date.now() + 36 * 3600_000).toISOString();
+  // Times come from the zone's grid now, and only while a nurse is free, so the
+  // smoke books a real free slot rather than "36 hours from now".
+  const grid = await get(patient.jar, `/api/bookings/slots?dripId=${jetlag._id}&location=home&pincode=560095`);
+  const freeSlots = (grid.json?.data?.days ?? []).flatMap((d) => d.slots).filter((x) => x.state === "free");
+  ok("the slot grid follows the zone's hours", grid.json?.data?.zone?.name === "Koramangala" && freeSlots.length > 0, grid.json?.error);
+  // Mid-day, so it sits inside the smoke zone's 08:00–18:00 too.
+  const tomorrow = (freeSlots.find((x) => { const h = Number(new Date(x.at).toLocaleTimeString("en-GB", { hour: "2-digit", timeZone: "Asia/Kolkata" })); return h >= 10 && h <= 15; }) ?? freeSlots[0])?.at;
+  const offGrid = await post(patient.jar, "/api/bookings", {
+    dripId: jetlag._id, scheduledAt: new Date(new Date(tomorrow).getTime() + 30 * 60_000).toISOString(),
+    location: "home", address: "Koramangala 8th Block", pincode: "560095",
+  });
+  ok("a time off the zone's grid is refused", offGrid.status === 422 && /not a bookable time/.test(offGrid.json?.error ?? ""), offGrid.json?.error);
 
   const badZone = await post(patient.jar, "/api/bookings", {
     dripId: jetlag._id, scheduledAt: tomorrow, location: "home", address: "Somewhere", pincode: "110001",
   });
   ok("an unserved pincode gets a straight no", badZone.status === 409, badZone.json?.error);
+
+  // Service zones are the super admin's to edit, and booking follows them at once.
+  const opsZones = await get(admin.jar, "/api/admin/zones");
+  ok("an ordinary admin cannot edit service zones", opsZones.status === 403);
+  const zoneList = (await get(superadmin.jar, "/api/admin/zones")).json?.data?.zones ?? [];
+  ok("the super admin reads the zones", zoneList.length > 0 && zoneList.every((z) => z.id && z.pincodes?.length));
+  const clash = await post(superadmin.jar, "/api/admin/zones", {
+    name: "Smoke Zone", pincodes: "560064, 560095", opensAt: "08:00", closesAt: "18:00", status: "open",
+  });
+  ok("a pincode already in another zone is refused, naming it", clash.status === 422 && /560095 is already in Koramangala/.test(clash.json?.error ?? ""), clash.json?.error);
+  const added = await post(superadmin.jar, "/api/admin/zones", {
+    name: "Smoke Zone", pincodes: "560064", opensAt: "08:00", closesAt: "18:00", status: "open",
+  });
+  const smokeZoneId = added.json?.data?.id;
+  ok("the super admin adds a zone", added.status === 201 && smokeZoneId, added.json?.error);
+  if (smokeZoneId) {
+    const newlyServed = await post(patient.jar, "/api/bookings", {
+      dripId: jetlag._id, scheduledAt: tomorrow, location: "home", address: "Yelahanka New Town", pincode: "560064",
+    });
+    ok("a pincode books the moment its zone is added", newlyServed.status === 201, newlyServed.json?.error);
+    const newId = newlyServed.json?.data?.booking?._id;
+    if (newId) await post(patient.jar, `/api/bookings/${newId}/cancel`, { reason: "smoke test" });
+
+    await patch(superadmin.jar, `/api/admin/zones/${smokeZoneId}`, {
+      name: "Smoke Zone", pincodes: "560064", opensAt: "08:00", closesAt: "18:00", status: "paused",
+    });
+    const pausedTry = await post(patient.jar, "/api/bookings", {
+      dripId: jetlag._id, scheduledAt: tomorrow, location: "home", address: "Yelahanka New Town", pincode: "560064",
+    });
+    ok("a paused zone is not offered", pausedTry.status === 409, pausedTry.json?.error);
+
+    const gone = await del(superadmin.jar, `/api/admin/zones/${smokeZoneId}`);
+    ok("a zone no nurse covers can be deleted", gone.json?.success === true, gone.json?.error);
+  } else skip("booking in a new zone", "the zone was not created");
+
+  const koramangala = zoneList.find((z) => z.name === "Koramangala");
+  const covered = koramangala ? await del(superadmin.jar, `/api/admin/zones/${koramangala.id}`) : null;
+  if (covered) ok("a zone a nurse covers cannot be deleted", covered.status === 409 && /Pause it instead/.test(covered.json?.error ?? ""), covered.json?.error);
+  else skip("deleting a covered zone", "Koramangala is not in the list");
+
+  const ejipura = zoneList.find((z) => z.name === "Ejipura");
+  if (ejipura) {
+    const asBody = (name) => ({ name, pincodes: ejipura.pincodes, opensAt: ejipura.opensAt, closesAt: ejipura.closesAt, status: ejipura.status });
+    const renamed = await patch(superadmin.jar, `/api/admin/zones/${ejipura.id}`, asBody("Ejipura East"));
+    const nurses = (await get(superadmin.jar, "/api/users?role=nurse&pageSize=50")).json?.data?.users ?? [];
+    ok(
+      "renaming a zone carries the new name to the nurses who cover it",
+      renamed.json?.data?.nursesRenamed > 0 && nurses.some((n) => n.nurse?.serviceAreas?.includes("Ejipura East")) && !nurses.some((n) => n.nurse?.serviceAreas?.includes("Ejipura")),
+      renamed.json?.error
+    );
+    await patch(superadmin.jar, `/api/admin/zones/${ejipura.id}`, asBody("Ejipura"));
+  } else skip("renaming a zone", "Ejipura is not in the list");
 
   const tooSoon = await post(patient.jar, "/api/bookings", {
     dripId: jetlag._id, scheduledAt: new Date(Date.now() + 60_000).toISOString(),
@@ -395,9 +490,9 @@ async function main() {
   ok("only a patient books a session", clinicCantBook.status === 403);
 
   if (bookingId) {
-    const moved = await post(patient.jar, `/api/bookings/${bookingId}/reschedule`, {
-      scheduledAt: new Date(Date.now() + 60 * 3600_000).toISOString(),
-    });
+    const moveGrid = (await get(patient.jar, `/api/bookings/slots?booking=${bookingId}`)).json?.data?.days ?? [];
+    const later = moveGrid.at(-1)?.slots?.filter((x) => x.state === "free").at(-1)?.at;
+    const moved = await post(patient.jar, `/api/bookings/${bookingId}/reschedule`, { scheduledAt: later });
     ok("a patient can move a slot outside the window", moved.json?.success === true, moved.json?.error);
 
     const movedBack = await post(patient.jar, `/api/bookings/${bookingId}/reschedule`, {
@@ -429,7 +524,9 @@ async function main() {
       const sent = await post(nurse.jar, `/api/bookings/${booking._id}/rx-otp`, { mode: "request" });
       if (sent.json?.data?.alreadyUnlocked) return true;
       const code = sent.json?.data?.devCode;
-      if (!code) return false;
+      // Only a development server hands the code back; in production it goes to
+      // the patient alone. Null means "cannot be tested here", not "failed".
+      if (!code) return null;
       const verified = await post(nurse.jar, `/api/bookings/${booking._id}/rx-otp`, { mode: "verify", code });
       return verified.json?.data?.unlocked === true;
     };
@@ -515,7 +612,12 @@ async function main() {
             lockedConsent.status === 409 && /prescription/i.test(lockedConsent.json?.error ?? ""),
             `${lockedConsent.status}: ${lockedConsent.json?.error}`);
         } else skip("prescription gate on the checklist", "the fresh session is already unlocked — reseed for this check");
-        ok("the patient's code opens the prescription", await unlockRx(freshBooking));
+        const unlocked = await unlockRx(freshBooking);
+        if (unlocked === null) {
+          skip("the patient's code opens the prescription, and the vitals and consent steps behind it",
+            "the code is only echoed by a development server — run the smoke against npm run dev");
+        } else {
+        ok("the patient's code opens the prescription", unlocked);
 
         // Close everything before it so the sequence rule is not what refuses us.
         for (const s of freshBooking.checklist) {
@@ -537,6 +639,7 @@ async function main() {
           ok("the consent step cannot be ticked before consent is captured",
             early.status === 409, `expected 409, got ${early.status}: ${early.json?.error}`);
         } else skip("consent step gating", "no open consent step");
+        }
       } else skip("sub-screen step gating", "no open vitals step on a fresh session");
     } else skip("sub-screen step gating", "every session already has readings — run `npm run seed` for this check");
 
@@ -555,9 +658,12 @@ async function main() {
     const needsConsent = workable.find((b) => !b.consent?.givenAt);
     if (needsConsent) {
       // Opened first, so the 422 below is the missing signature talking and not the lock.
-      await unlockRx(needsConsent);
-      const emptyConsent = await post(nurse.jar, `/api/bookings/${needsConsent._id}/consent`, {});
-      ok("consent needs a signature or a code", emptyConsent.status === 422, emptyConsent.json?.error);
+      if ((await unlockRx(needsConsent)) === null) {
+        skip("consent needs a signature or a code", "the prescription code is only echoed by a development server");
+      } else {
+        const emptyConsent = await post(nurse.jar, `/api/bookings/${needsConsent._id}/consent`, {});
+        ok("consent needs a signature or a code", emptyConsent.status === 422, emptyConsent.json?.error);
+      }
     } else skip("consent needs a signature or a code", "every session already has consent");
 
     const hasConsent = workable.find((b) => b.consent?.givenAt);

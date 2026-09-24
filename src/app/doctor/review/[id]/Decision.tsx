@@ -47,8 +47,11 @@ export function ReviewDecision({
   suggestedDrips,
   allDrips = [],
   nurses,
+  bookedSessions = [],
 }: {
   quizId: string;
+  /** Sessions already confirmed under an earlier approval; a decline calls them off. */
+  bookedSessions?: Array<{ bookingNo: string; dripName: string | null; when: string }>;
   reviewStatus: string;
   suggestedDrips: Array<{ id: string; name: string; slug: string }>;
   /** The whole catalogue, so a physician can recommend something else. */
@@ -127,8 +130,9 @@ export function ReviewDecision({
           <StatusPill status={reviewStatus} dot />
         </div>
         <p className="t-small text-[var(--color-ink-2)] mt-3">
-          Recorded against your registration number. Reopening a decision creates a new review entry rather than
-          editing this one.
+          {reviewStatus === "superseded"
+            ? "Nothing to decide here: the patient answered again before a decision, and the newer answers are in the queue."
+            : "Recorded against your registration number. Reopening a decision creates a new review entry rather than editing this one."}
         </p>
       </Card>
     );
@@ -196,6 +200,37 @@ export function ReviewDecision({
               </option>
             ))}
           </Select>
+        )}
+
+        {/* Said before the choice, not after: approving keeps these, declining
+            stops them, and the physician should know which before deciding. */}
+        {bookedSessions.length > 0 && (
+          <div
+            className={`rounded-[var(--radius-md)] border px-4 py-3 ${
+              declining
+                ? "border-[var(--color-critical)] bg-[var(--color-critical-soft)]"
+                : "border-[var(--color-caution)] bg-[var(--color-caution-soft)]"
+            }`}
+          >
+            <span className="t-body font-semibold">
+              {declining
+                ? `Declining also calls off ${bookedSessions.length === 1 ? "this booked session" : `these ${bookedSessions.length} booked sessions`}`
+                : `Already booked under an earlier approval`}
+            </span>
+            <ul className="mt-1 flex flex-col gap-[2px]">
+              {bookedSessions.map((b) => (
+                <li key={b.bookingNo} className="t-small text-[var(--color-ink-2)]">
+                  <span className="t-data">{b.bookingNo}</span> · {b.dripName ?? "Drip"} · {b.when}
+                </li>
+              ))}
+            </ul>
+            {!declining && (
+              <span className="t-small text-[var(--color-ink-2)] block mt-1">
+                Approving keeps {bookedSessions.length === 1 ? "it" : "them"}. Declining calls{" "}
+                {bookedSessions.length === 1 ? "it" : "them"} off and tells the patient and the nurse.
+              </span>
+            )}
+          </div>
         )}
 
         {declining ? (

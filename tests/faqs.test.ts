@@ -1,8 +1,8 @@
 import { describe, expect, it } from "vitest";
-import { countFaqs, FAQ_CATEGORIES, FAQ_TOTAL, filterFaqs } from "@/lib/data/faqs";
+import { countFaqs, FAQ_CATEGORIES, FAQ_TOTAL, faqCategories, filterFaqs } from "@/lib/data/faqs";
 import { APPROVAL_VALID_DAYS } from "@/lib/clinical/validity";
 import { LATE_CANCEL_FEE_INR, LATE_CHANGE_HOURS } from "@/lib/clinical/slots";
-import { ZONES } from "@/lib/zones";
+import { ZONE_DEFAULTS as ZONES, type Zone } from "@/lib/zones";
 
 const answerTo = (q: string) => {
   for (const c of FAQ_CATEGORIES) {
@@ -54,6 +54,14 @@ describe("the FAQ numbers follow the rules that enforce them", () => {
     expect(a).toContain(`₹${LATE_CANCEL_FEE_INR}`);
   });
 
+  it("quotes the fees set on the Billing page when the page passes them", () => {
+    const set = faqCategories({ windowHours: 24, rescheduleFee: 300, cancelFee: 800 });
+    const a = set.flatMap((c) => c.items).find((i) => i.q === "Can I cancel or reschedule?")?.a ?? "";
+    expect(a).toContain("24 hours");
+    expect(a).toContain("a late fee applies (₹300 to move, ₹800 to cancel)");
+    expect(a).not.toContain("{{");
+  });
+
   it("quotes the real number of zones", () => {
     expect(answerTo("Do you serve my pincode?")).toContain(`${ZONES.length} zones`);
   });
@@ -64,6 +72,20 @@ describe("the FAQ numbers follow the rules that enforce them", () => {
     for (const name of limited) expect(a).toContain(name);
     // And none of the fully open ones are mislabelled as limited.
     expect(a).not.toContain("Koramangala");
+  });
+
+  it("follows the zones the super admin saves, and leaves paused ones out of the count", () => {
+    const zones: Zone[] = [
+      { ...ZONES[0], status: "open" },
+      { ...ZONES[1], status: "paused" },
+      { ...ZONES[2], name: "Hebbal", status: "limited" },
+    ];
+    const a = faqCategories(undefined, zones)
+      .flatMap((c) => c.items)
+      .find((i) => i.q === "Do you serve my pincode?")!.a;
+    expect(a).toContain("We cover 2 zones");
+    expect(a).toContain("Hebbal runs shorter service hours");
+    expect(a).not.toContain("{{");
   });
 });
 

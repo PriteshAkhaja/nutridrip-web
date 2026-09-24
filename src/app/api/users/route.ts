@@ -40,6 +40,8 @@ const CreateUser = z.object({
   pincode: z.string().max(10).optional(),
   gstin: z.string().max(20).optional(),
   monthlyVolumeTarget: z.number().int().min(0).max(10000).optional(),
+  /** A clinic on credit is invoiced after dispatch; otherwise it pays for each order first. */
+  onCredit: z.boolean().optional(),
 });
 
 /** Roles that must be able to sign in with a password, so one is required. */
@@ -147,6 +149,7 @@ export async function POST(req: Request) {
         pincode: input.pincode,
         gstin: input.gstin,
         monthlyVolumeTarget: input.monthlyVolumeTarget,
+        onCredit: input.onCredit ?? false,
         partnerSince: new Date(),
       };
     }

@@ -1,8 +1,8 @@
-import Link from "next/link";
 import type { ReactNode } from "react";
 import { SignOutButton } from "./SignOutButton";
 import { NotificationBell } from "./NotificationBell";
 import { ConsoleRail } from "./ConsoleRail";
+import { NavLink, PageReset } from "./PageReset";
 import type { SessionPayload } from "@/lib/auth/session";
 import { can, type Permission } from "@/lib/auth/rbac";
 
@@ -76,9 +76,12 @@ export function ConsoleShell({
   const hasExact = visible.some((n) => n.href === activeHref);
   return (
     <div className="min-h-dvh grid content-start lg:content-stretch lg:grid-cols-[240px_1fr] bg-[var(--color-paper)]">
-      {/* `content-start` below lg: a grid gives its spare height to its rows, and on a
-        tall screen with a short page (an iPad, Approvals) the top bar's row took
-        an 89px share and showed as an empty band under the bar. At lg there is
+      {/* `content-start` below lg: a grid gives its spare height to its rows, and on a
+
+        tall screen with a short page (an iPad, Approvals) the top bar's row took
+
+        an 89px share and showed as an empty band under the bar. At lg there is
+
         one row and it must fill the screen, so it stretches again there. */}
       {/* ---------------- Rail ----------------
           A column at lg, a drawer below it — see ConsoleRail. */}
@@ -124,7 +127,7 @@ export function ConsoleShell({
                           ? "var(--color-primary-dark)"
                           : "var(--color-ink-3)";
                   return (
-                    <Link
+                    <NavLink
                       key={n.href}
                       href={n.href}
                       aria-current={active ? "page" : undefined}
@@ -149,7 +152,7 @@ export function ConsoleShell({
                           {n.badge}
                         </span>
                       )}
-                    </Link>
+                    </NavLink>
                   );
                 })}
               </div>
@@ -203,7 +206,10 @@ export function ConsoleShell({
           </div>
         </header>
 
-        <div className="flex-1 px-6 lg:px-7 py-6">{children}</div>
+        {/* The menu entry for this page starts it afresh (see PageReset). */}
+        <div className="flex-1 px-6 lg:px-7 py-6">
+          <PageReset>{children}</PageReset>
+        </div>
       </div>
     </div>
   );

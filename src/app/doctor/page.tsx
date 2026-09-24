@@ -10,6 +10,8 @@ import { StatCard } from "@/components/ui/Card";
 import { Pill, StatusPill } from "@/components/ui/Pill";
 import { EmptyState } from "@/components/ui/States";
 import { Button } from "@/components/ui/Button";
+import { recentFeedbackForDoctor } from "@/lib/data/session-feedback";
+import { formatDate } from "@/lib/data/inventory";
 
 export const metadata: Metadata = { title: "Approvals" };
 export const dynamic = "force-dynamic";
@@ -42,6 +44,9 @@ export default async function DoctorQueuePage() {
   const escalations = openAdverse + blockedVitals;
 
   const breaching = queue.filter((q) => q.msLeft < 3_600_000).length;
+
+  // What patients said about this physician's sessions.
+  const feedback = session.role === "doctor" ? await recentFeedbackForDoctor(session.sub) : null;
 
   // The nurses posted under this physician: who they are, where they work, and
   // what they are carrying right now. Only a physician has a team -- the super
@@ -236,6 +241,80 @@ export default async function DoctorQueuePage() {
                   </div>
                 );
               })}
+            </div>
+          )}
+        </section>
+      )}
+
+      {/* Where "Low rating on …" and every other rating can be read. */}
+      {feedback && (
+        <section id="feedback" className="mt-10 scroll-mt-20">
+          <div className="flex items-baseline justify-between gap-4 mb-3 flex-wrap">
+            <h2 className="t-h3">Patient feedback</h2>
+            <span className="t-data text-[13px] text-[var(--color-ink-3)]">
+              {feedback.lowLast30 === 0
+                ? "No low ratings in the last 30 days"
+                : `${feedback.lowLast30} low rating${feedback.lowLast30 === 1 ? "" : "s"} in the last 30 days`}
+            </span>
+          </div>
+          {feedback.rows.length === 0 ? (
+            <p className="t-body text-[var(--color-ink-2)] max-w-[62ch]">
+              No feedback on your sessions yet. Patients are asked once a session is finished: about their nurse, and
+              about how they felt afterwards.
+            </p>
+          ) : (
+            <div className="flex flex-col gap-3">
+              {feedback.rows.map((f) => (
+                <div
+                  key={f.bookingId}
+                  className="rounded-[var(--radius-lg)] border bg-[var(--color-surface)] p-5 grid gap-4 lg:grid-cols-[1fr_1.6fr] items-start"
+                  style={{ borderColor: f.low ? "var(--color-caution)" : "var(--color-line)" }}
+                >
+                  <div className="flex flex-col gap-1 min-w-0">
+                    <div className="flex items-center gap-2 flex-wrap">
+                      <Link href={`/doctor/patients/${f.patientId}`} className="t-h3 no-underline hover:no-underline">
+                        {f.patientName}
+                      </Link>
+                      {f.low && <Pill tone="caution">Low rating</Pill>}
+                    </div>
+                    <span className="t-small text-[var(--color-ink-2)]">
+                      <span className="t-data text-[12.5px]">{f.bookingNo}</span>
+                      {f.dripName ? ` · ${f.dripName}` : ""}
+                      {f.feedback.givenAt ? ` · ${formatDate(f.feedback.givenAt)}` : ""}
+                    </span>
+                  </div>
+                  {/* Each rating sits with its own label and comment. Spread to the
+                      column's far edge, the nurse's score landed beside the word
+                      "Session" and read as the session's. */}
+                  <div className="grid gap-4 sm:grid-cols-2 sm:gap-6">
+                    {(
+                      [
+                        [f.nurseName ? `Nurse · ${f.nurseName}` : "Nurse", f.feedback.nurse],
+                        ["Session", f.feedback.session],
+                      ] as const
+                    ).map(([label, part]) =>
+                      part ? (
+                        <div key={label} className="flex flex-col gap-1 min-w-0">
+                          <span className="t-micro">{label}</span>
+                          <div className="flex items-baseline gap-3">
+                            <span
+                              className="t-data text-[16px] font-semibold flex-none"
+                              style={{ color: part.rating <= 2 ? "var(--color-caution-text)" : "var(--color-ink)" }}
+                            >
+                              {part.rating}/5
+                            </span>
+                            {part.comment ? (
+                              <span className="t-body min-w-0">{part.comment}</span>
+                            ) : (
+                              <span className="t-small text-[var(--color-ink-3)]">No comment</span>
+                            )}
+                          </div>
+                        </div>
+                      ) : null
+                    )}
+                  </div>
+                </div>
+              ))}
             </div>
           )}
         </section>

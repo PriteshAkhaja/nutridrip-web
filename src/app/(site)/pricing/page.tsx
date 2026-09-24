@@ -1,8 +1,12 @@
 import type { Metadata } from "next";
-import { ButtonLink } from "@/components/ui/Button";
 import { Card } from "@/components/ui/Card";
 import { formatInr } from "@/lib/inventory/units";
 import { listDrips } from "@/lib/data/drips";
+import { QuizButton } from "@/components/layout/QuizButton";
+import { getLatePolicy } from "@/lib/billing/settings";
+import { LATE_POLICY_TOKEN, fillLatePolicy } from "@/lib/billing/late-policy";
+import { getZones } from "@/lib/zones-store";
+import { ZONE_COUNT_TOKEN, fillZoneCount } from "@/lib/zones";
 
 export const metadata: Metadata = { title: "Pricing" };
 
@@ -41,11 +45,12 @@ const FAQ = [
   },
   {
     q: "Can I cancel or reschedule?",
-    a: "Freely, up to 4 hours before the slot. Inside 4 hours a ₹500 fee applies, because the nurse is already dispatched with your batch drawn.",
+    // Filled in when the page is drawn, from the fees set on the Billing page.
+    a: LATE_POLICY_TOKEN,
   },
   {
     q: "Do you serve my pincode?",
-    a: "We currently cover 14 zones across Bengaluru. Enter your pincode at booking and you will get a straight yes or no, not a waitlist.",
+    a: `We currently cover ${ZONE_COUNT_TOKEN} zones across Bengaluru. Enter your pincode at booking and you will get a straight yes or no, not a waitlist.`,
   },
   {
     q: "Is this covered by insurance?",
@@ -58,6 +63,8 @@ const FAQ = [
 ];
 
 export default async function PricingPage() {
+  // The late-change rule, with today's fees (set on the Billing page).
+  const [latePolicy, zones] = await Promise.all([getLatePolicy(), getZones()]);
   const drips = await listDrips();
   const base = drips.find((d) => d.slug === "myers-revive")?.priceInr ?? 8400;
 
@@ -105,9 +112,9 @@ export default async function PricingPage() {
               <p className="t-small text-[var(--color-ink-2)] mt-4 mb-6">{p.blurb}</p>
 
               <div className="mt-auto">
-                <ButtonLink href="/quiz" variant={featured ? "primary" : "secondary"} block>
+                <QuizButton variant={featured ? "primary" : "secondary"} block>
                   {featured ? "Start with the quiz" : "Choose this"}
-                </ButtonLink>
+                </QuizButton>
               </div>
             </Card>
           );
@@ -136,7 +143,7 @@ export default async function PricingPage() {
                   <span className="hidden group-open:inline">−</span>
                 </span>
               </summary>
-              <p className="t-body text-[var(--color-ink-2)] px-5 pb-5 -mt-1 max-w-[66ch]">{f.a}</p>
+              <p className="t-body text-[var(--color-ink-2)] px-5 pb-5 -mt-1 max-w-[66ch]">{fillZoneCount(fillLatePolicy(f.a, latePolicy), zones)}</p>
             </details>
           ))}
         </div>

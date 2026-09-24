@@ -50,6 +50,7 @@ export default async function ResultsPage({
     infoRequest?: string;
     infoAnswer?: string;
     infoAnsweredAt?: Date;
+    supersededBy?: unknown;
     completedAt: Date;
   } | null>();
 
@@ -194,7 +195,24 @@ export default async function ResultsPage({
           Every outcome now says it here, on the page. The decline used to send
           the patient off to hunt through their notifications for the reason,
           and "approved with changes" said nothing at all. */}
-      {quiz.reviewStatus === "pending" ? (
+      {quiz.reviewStatus === "superseded" ? (
+        // Answers the patient replaced by taking the quiz again. Never read as a
+        // decision: the physician decides on the newer answers, not these.
+        <div className="rounded-[var(--radius-lg)] border border-[var(--color-line-2)] bg-[var(--color-surface-2)] p-5 flex flex-col gap-3 items-start">
+          <div>
+            <span className="t-body font-semibold">Replaced by your newer answers</span>
+            <p className="t-body text-[var(--color-ink-2)] mt-1">
+              You took the quiz again before a physician decided on this one, so they will read your newer answers
+              instead.
+            </p>
+          </div>
+          {quiz.supersededBy ? (
+            <ButtonLink href={`/app/results/${String(quiz.supersededBy)}`} variant="secondary">
+              See your newer results
+            </ButtonLink>
+          ) : null}
+        </div>
+      ) : quiz.reviewStatus === "pending" ? (
         <div className="rounded-[var(--radius-lg)] border border-[var(--color-info)] bg-[var(--color-info-soft)] p-5">
           <span className="t-body font-semibold">With a physician now</span>
           <p className="t-body text-[var(--color-ink-2)] mt-1">

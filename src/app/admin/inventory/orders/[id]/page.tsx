@@ -14,6 +14,9 @@ import { Card } from "@/components/ui/Card";
 import { formatInr } from "@/lib/inventory/units";
 import { formatDate, formatTime } from "@/lib/data/inventory";
 import { OrderActions } from "./Actions";
+import { VerifyPayment } from "./VerifyPayment";
+import { User } from "@/lib/models";
+import { PAY_METHOD_LABEL, confirmBlockedBy, payState, type OrderPayment, type PayMethod } from "@/lib/billing/order-payment";
 
 export const dynamic = "force-dynamic";
 export const metadata: Metadata = { title: "Order" };
@@ -39,9 +42,20 @@ export default async function OrderDetailPage({ params }: { params: Promise<{ id
     dispatchedAt?: Date;
     cancelledAt?: Date;
     scheduledDelivery?: Date;
+    clinicId?: unknown;
+    onCredit?: boolean;
+    payment?: OrderPayment & { paidOn?: Date; submittedAt?: Date; verifiedAt?: Date };
   } | null>();
 
   if (!order) notFound();
+
+  // A clinic that pays first: where its payment stands, and whether that holds the order up.
+  const clinic = order.clinicId
+    ? await User.findById(order.clinicId).select("name clinic.onCredit").lean<{ name: string; clinic?: { onCredit?: boolean } } | null>()
+    : null;
+  const pay = payState(order, clinic?.clinic?.onCredit ?? false);
+  const payBlock = order.status === "DRAFT" ? confirmBlockedBy(order, clinic?.clinic?.onCredit ?? false) : null;
+  const method = order.payment?.method ? PAY_METHOD_LABEL[order.payment.method as PayMethod] : null;
 
   const isDraft = order.status === "DRAFT";
   const isConfirmed = order.status === "CONFIRMED";
@@ -107,7 +121,8 @@ export default async function OrderDetailPage({ params }: { params: Promise<{ id
         <OrderActions
           orderId={String(order._id)}
           status={order.status}
-          canConfirm={canFulfil && shortfalls.length === 0}
+          canConfirm={canFulfil && shortfalls.length === 0 && !payBlock}
+          confirmNote={payBlock}
         />
       }
     >
@@ -128,6 +143,54 @@ export default async function OrderDetailPage({ params }: { params: Promise<{ id
           <span className="t-small text-[var(--color-ink-3)]">Cancelled {formatDate(order.cancelledAt)}</span>
         )}
       </div>
+
+      {/* ---------------- The clinic's payment ---------------- */}
+      {pay !== "credit" && (order.status === "DRAFT" || pay === "received" || order.payment?.refundDue) && (
+        <Card
+          tone={pay === "received" ? "safe" : pay === "submitted" ? "info" : order.payment?.refundDue ? "caution" : "muted"}
+          padding="p-5"
+          className="mb-6"
+        >
+          {order.payment?.refundDue ? (
+            <>
+              <span className="t-body font-semibold block">Refund due to the clinic</span>
+              <span className="t-body text-[var(--color-ink-2)]">
+                Cancelled after the payment arrived: {formatInr(order.amount ?? 0)} ({method}, ref{" "}
+                <span className="t-data text-[14px]">{order.payment?.reference}</span>) is owed back to{" "}
+                {clinic?.name ?? "the clinic"}.
+              </span>
+            </>
+          ) : pay === "received" ? (
+            <>
+              <span className="t-body font-semibold block">Paid</span>
+              <span className="t-body text-[var(--color-ink-2)]">
+                {formatInr(order.amount ?? 0)} by {method}, ref <span className="t-data text-[14px]">{order.payment?.reference}</span>
+                {order.payment?.verifiedAt ? ` · received ${formatDate(order.payment.verifiedAt)}` : ""}
+              </span>
+            </>
+          ) : pay === "submitted" ? (
+            <>
+              <span className="t-body font-semibold block">Payment to check</span>
+              <p className="t-body text-[var(--color-ink-2)] mt-1 mb-4">
+                {clinic?.name ?? "The clinic"} says it paid <span className="t-data text-[14px]">{formatInr(order.amount ?? 0)}</span> by{" "}
+                {method}, ref <span className="t-data text-[14px]">{order.payment?.reference}</span>
+                {order.payment?.paidOn ? `, on ${formatDate(order.payment.paidOn)}` : ""}. Check it is in the account, then
+                mark it received — the order can be confirmed after that.
+              </p>
+              <VerifyPayment orderId={String(order._id)} />
+            </>
+          ) : (
+            <>
+              <span className="t-body font-semibold block">Waiting for the clinic&rsquo;s payment</span>
+              <span className="t-body text-[var(--color-ink-2)]">
+                {clinic?.name ?? "The clinic"} pays {formatInr(order.amount ?? 0)} first; this order can be confirmed once
+                the payment is received.
+                {order.payment?.note ? ` Last sent back: “${order.payment.note}”` : ""}
+              </span>
+            </>
+          )}
+        </Card>
+      )}
 
       {isDraft && shortfalls.length > 0 && (
         <Card tone="critical" className="mb-6">
@@ -249,6 +312,8 @@ export default async function OrderDetailPage({ params }: { params: Promise<{ id
                 ["Patient reference", order.patientRef ?? order.patientName ?? "—"],
                 ["Session kits", order.includeKits ? "Included" : "Excluded"],
                 ["Delivery", order.scheduledDelivery ? formatDate(order.scheduledDelivery) : "—"],
+                ...(clinic ? [["Clinic", clinic.name]] : []),
+                ...(order.clinicId ? [["Payment", pay === "credit" ? "On credit — invoice, 30 days" : "Paid before it is confirmed"]] : []),
                 ["Total", formatInr(order.amount ?? 0)],
               ].map(([k, v]) => (
                 <div key={k} className="flex justify-between gap-4 items-baseline">

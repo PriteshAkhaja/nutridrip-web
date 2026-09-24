@@ -6,8 +6,9 @@ import { Button } from "@/components/ui/Button";
 import { Input, Select } from "@/components/ui/Field";
 import { Pill } from "@/components/ui/Pill";
 import { formatInr } from "@/lib/inventory/units";
-import { zoneForPincode } from "@/lib/zones";
-import { SLOTS, slotDate, LATE_CHANGE_HOURS, LATE_CANCEL_FEE_INR } from "@/lib/clinical/slots";
+import { zoneForPincode, type Zone } from "@/lib/zones";
+import { SlotPicker, slotLabel } from "@/components/ui/SlotPicker";
+import { latePolicySentence, type LatePolicy } from "@/lib/billing/late-policy";
 import { filterDrips, noMatchMessage } from "@/lib/data/drip-search";
 
 type DripOption = {
@@ -33,9 +34,9 @@ const LOCATIONS = [
 ] as const;
 
 /** Where a pincode stands: served, served with limited cover, or not yet. */
-export function CoverageNote({ pincode }: { pincode: string }) {
+export function CoverageNote({ pincode, zones }: { pincode: string; zones: Zone[] }) {
   if (pincode.length !== 6) return null;
-  const zone = zoneForPincode(pincode);
+  const zone = zoneForPincode(pincode, zones);
   if (!zone) {
     return (
       <span className="t-small text-[var(--color-critical-text)]">
@@ -46,7 +47,7 @@ export function CoverageNote({ pincode }: { pincode: string }) {
   }
   return (
     <span className="t-small" style={{ color: zone.status === "open" ? "var(--color-safe)" : "var(--color-caution)" }}>
-      {zone.name} · slots {zone.window}
+      {zone.name} · open {zone.window}
       {zone.status === "limited" ? " · limited cover, expect a narrower choice of times" : ""}
     </span>
   );
@@ -55,26 +56,28 @@ export function CoverageNote({ pincode }: { pincode: string }) {
 export function BookingFlow({
   drips,
   clinics,
-  releasedDays,
   recommendedIds = [],
   preferredSlug,
   defaultAddress,
   defaultPincode,
   pendingReview,
+  zones,
+  latePolicy,
 }: {
   drips: DripOption[];
   clinics: ClinicOption[];
   /** What the physician recommended, or the quiz suggested. Leads the list. */
   recommendedIds?: string[];
-  /** Decided on the server, so the list cannot differ after hydration. */
-  releasedDays: string[];
   preferredSlug: string | null;
   defaultAddress: string;
   defaultPincode: string;
   pendingReview: boolean;
+  /** The zones a patient can book in, from the Service zones page. */
+  zones: Zone[];
+  /** The late-change rule and fees, from the Billing page. */
+  latePolicy: LatePolicy;
 }) {
   const router = useRouter();
-  const days = releasedDays.map((iso) => new Date(iso));
 
   /**
    * Ordered so what was recommended comes first, and in stock before out.
@@ -101,8 +104,9 @@ export function BookingFlow({
       ordered.find((d) => d.available > 0)?.id ??
       ""
   );
-  const [day, setDay] = useState(days[0]);
-  const [slot, setSlot] = useState(SLOTS[1]);
+  /** The chosen time, as an ISO moment, from the slot picker. None until the patient picks one. */
+  const [slotAt, setSlotAt] = useState<string | null>(null);
+  const [slotReload, setSlotReload] = useState(0);
   const [location, setLocation] = useState<(typeof LOCATIONS)[number]["value"]>("home");
   const [clinicId, setClinicId] = useState(clinics[0]?.id ?? "");
   const [address, setAddress] = useState(defaultAddress);
@@ -113,7 +117,7 @@ export function BookingFlow({
 
   const drip = drips.find((d) => d.id === dripId);
   const atClinic = location === "clinic";
-  const served = Boolean(zoneForPincode(pincode));
+  const served = Boolean(zoneForPincode(pincode, zones));
 
   // The chosen drip stays on screen even when it falls outside the search, so a
   // half-typed word never silently hides what the patient already selected.
@@ -129,7 +133,7 @@ export function BookingFlow({
         headers: { "content-type": "application/json" },
         body: JSON.stringify({
           dripId,
-          scheduledAt: slotDate(day, slot).toISOString(),
+          scheduledAt: slotAt,
           location,
           address: atClinic ? undefined : address,
           pincode: atClinic ? undefined : pincode,
@@ -137,7 +141,11 @@ export function BookingFlow({
         }),
       });
       const json = await res.json();
-      if (!json.success) setError(json.error ?? "Could not book that slot");
+      if (!json.success) {
+        setError(json.error ?? "Could not book that slot");
+        // Taken since the grid loaded: show the times as they are now.
+        if (res.status === 409 || res.status === 422) setSlotReload((n) => n + 1);
+      }
       else {
         router.push("/app");
         router.refresh();
@@ -149,8 +157,17 @@ export function BookingFlow({
     }
   };
 
+  // What the slot picker asks about: this drip's length, at this address.
+  const slotQuery =
+    !dripId || (atClinic ? !clinicId : pincode.length !== 6 || !served)
+      ? null
+      : new URLSearchParams(
+          atClinic ? { dripId, location, clinicId } : { dripId, location, pincode }
+        ).toString();
+
   const canSubmit =
     Boolean(dripId) &&
+    Boolean(slotAt) &&
     (atClinic ? Boolean(clinicId) : Boolean(address) && pincode.length === 6 && served);
 
   return (
@@ -235,68 +252,6 @@ export function BookingFlow({
         </div>
       </div>
 
-      {/* ---------------- Day ---------------- */}
-      <div>
-        <span className="t-micro block mb-3">Which day</span>
-        <div className="grid grid-cols-5 gap-2">
-          {days.map((d) => {
-            const selected = d.getTime() === day.getTime();
-            return (
-              <button
-                key={d.toISOString()}
-                type="button"
-                aria-pressed={selected}
-                onClick={() => setDay(d)}
-                className="py-3 rounded-[var(--radius-md)] border flex flex-col items-center gap-1 cursor-pointer min-h-[68px]"
-                style={{
-                  borderColor: selected ? "var(--color-primary)" : "var(--color-line)",
-                  background: selected ? "var(--color-primary-soft)" : "var(--color-surface)",
-                }}
-              >
-                <span
-                  className="t-micro"
-                  style={{ color: selected ? "var(--color-primary-dark)" : "var(--color-ink-3)" }}
-                >
-                  {d.toLocaleDateString("en-IN", { weekday: "short" })}
-                </span>
-                <span
-                  className="t-data text-[18px]"
-                  style={{ color: selected ? "var(--color-primary-dark)" : "var(--color-ink)" }}
-                >
-                  {d.getDate()}
-                </span>
-              </button>
-            );
-          })}
-        </div>
-      </div>
-
-      {/* ---------------- Slot ---------------- */}
-      <div>
-        <span className="t-micro block mb-3">What time</span>
-        <div className="grid grid-cols-3 gap-2">
-          {SLOTS.map((s) => {
-            const selected = s === slot;
-            return (
-              <button
-                key={s}
-                type="button"
-                aria-pressed={selected}
-                onClick={() => setSlot(s)}
-                className="min-h-[48px] rounded-[var(--radius-md)] border cursor-pointer t-data text-[14.5px]"
-                style={{
-                  borderColor: selected ? "var(--color-primary)" : "var(--color-line)",
-                  background: selected ? "var(--color-primary-soft)" : "var(--color-surface)",
-                  color: selected ? "var(--color-primary-dark)" : "var(--color-ink)",
-                }}
-              >
-                {s}
-              </button>
-            );
-          })}
-        </div>
-      </div>
-
       {/* ---------------- Where ---------------- */}
       <div className="flex flex-col gap-4">
         <Select
@@ -332,18 +287,29 @@ export function BookingFlow({
             <div className="flex flex-col gap-[7px]">
               <Input
                 label="Pincode"
-                hint="14 zones served"
+                hint={`${zones.length} ${zones.length === 1 ? "zone" : "zones"} served`}
                 mono
                 inputMode="numeric"
                 maxLength={6}
                 value={pincode}
                 onChange={(e) => setPincode(e.target.value.replace(/\D/g, ""))}
               />
-              <CoverageNote pincode={pincode} />
+              <CoverageNote pincode={pincode} zones={zones} />
             </div>
           </>
         )}
       </div>
+
+      {/* ---------------- When ---------------- */}
+      <SlotPicker
+        query={slotQuery}
+        value={slotAt}
+        onChange={setSlotAt}
+        reloadKey={slotReload}
+        idleMessage={
+          atClinic ? "Choose the clinic to see the times." : "Enter your pincode to see the times a nurse can come."
+        }
+      />
 
       {/* ---------------- Summary ---------------- */}
       {drip && (
@@ -354,7 +320,7 @@ export function BookingFlow({
               ["Drip", drip.name],
               [
                 "When",
-                `${day.toLocaleDateString("en-IN", { day: "2-digit", month: "short" })} · ${slot}`,
+                slotAt ? slotLabel(slotAt) : "Pick a time",
               ],
               ["Where", atClinic ? (clinics.find((c) => c.id === clinicId)?.name ?? "Clinic") : LOCATIONS.find((l) => l.value === location)?.label ?? ""],
               ["Duration", `${drip.durationMin} min`],
@@ -366,11 +332,7 @@ export function BookingFlow({
               </div>
             ))}
           </div>
-          <p className="t-small text-[var(--color-ink-3)] mt-4">
-            Move or cancel freely up to {LATE_CHANGE_HOURS} hours before. Inside that window a{" "}
-            <span className="t-data text-[13px]">₹{LATE_CANCEL_FEE_INR}</span> cancellation fee applies, because the
-            nurse is already dispatched with your batch drawn.
-          </p>
+          <p className="t-small text-[var(--color-ink-3)] mt-4">{latePolicySentence(latePolicy)}</p>
         </div>
       )}
 

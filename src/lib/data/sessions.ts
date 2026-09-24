@@ -21,6 +21,18 @@ export type SessionCard = {
   progress: PhaseProgress[];
   stepsDone: number;
   stepsTotal: number;
+  /** Late-change fees on this session, oldest first. */
+  charges: LateCharge[];
+  paymentStatus: string;
+};
+
+export type LateCharge = {
+  kind: "late_reschedule" | "late_cancel";
+  amount: number;
+  at: string;
+  note: string | null;
+  /** Settled by the team: paid or waived. Null while still owed. */
+  settledAs?: "paid" | "waived" | null;
 };
 
 function timeOf(d: Date): string {
@@ -40,6 +52,8 @@ type LeanBooking = {
   status: BookingStatus;
   componentsGiven?: Array<{ batchNo?: string }>;
   checklist: Array<{ phase: string; doneAt?: Date }>;
+  charges?: Array<{ kind: LateCharge["kind"]; amount: number; at: Date; note?: string; settledAs?: "paid" | "waived" }>;
+  paymentStatus?: string;
 };
 
 function toCard(b: LeanBooking, patientName: string): SessionCard {
@@ -62,6 +76,14 @@ function toCard(b: LeanBooking, patientName: string): SessionCard {
     progress,
     stepsDone: progress.reduce((s, p) => s + p.done, 0),
     stepsTotal: progress.reduce((s, p) => s + p.total, 0),
+    charges: (b.charges ?? []).map((c) => ({
+      kind: c.kind,
+      amount: c.amount,
+      at: new Date(c.at).toISOString(),
+      note: c.note?.trim() || null,
+      settledAs: c.settledAs ?? null,
+    })),
+    paymentStatus: b.paymentStatus ?? "unpaid",
   };
 }
 

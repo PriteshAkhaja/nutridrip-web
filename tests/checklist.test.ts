@@ -1,6 +1,8 @@
 import { describe, expect, it } from "vitest";
 import {
   CHECKLIST_STEPS,
+  correctReading,
+  vitalsReadingIndex,
   PHASE_ORDER,
   PRESCRIPTION_FROM,
   VITAL_RANGES,
@@ -109,5 +111,36 @@ describe("vital reference ranges", () => {
 
   it("reports every breach, not just the first", () => {
     expect(outOfRange({ spo2: 88, heartRate: 130 }).sort()).toEqual(["heartRate", "spo2"]);
+  });
+});
+
+describe("correcting a vitals reading", () => {
+  const typo = { systolic: 1200, diastolic: 80, heartRate: 72, spo2: 98, temperatureF: 98.4, weightKg: 60, outOfRange: ["systolic"] };
+
+  it("fixes the reading in place and keeps what it said before", () => {
+    const fixed = correctReading(typo, { systolic: 120, diastolic: 80, heartRate: 72, spo2: 98, temperatureF: 98.4 }, "Typing mistake", "nurse-1", new Date("2026-09-24T07:00:00Z"));
+    expect(fixed.systolic).toBe(120);
+    expect(fixed.weightKg).toBe(60);
+    expect(fixed.corrections).toHaveLength(1);
+    expect(fixed.corrections?.[0]).toMatchObject({ reason: "Typing mistake", byId: "nurse-1", before: { systolic: 1200, outOfRange: ["systolic"] } });
+  });
+
+  it("stops blocking when corrected into range, and starts when corrected out of it", () => {
+    const fixed = correctReading(typo, { systolic: 120, diastolic: 80, heartRate: 72, spo2: 98, temperatureF: 98.4 }, "Typing mistake", "n");
+    expect(fixed.outOfRange).toEqual([]);
+    const worse = correctReading(fixed, { systolic: 120, diastolic: 80, heartRate: 140, spo2: 98, temperatureF: 98.4 }, "Measured again", "n");
+    expect(worse.outOfRange).toEqual(["heartRate"]);
+    expect(worse.corrections).toHaveLength(2);
+  });
+
+  it("does not change the reading it was given", () => {
+    correctReading(typo, { systolic: 120, diastolic: 80, heartRate: 72, spo2: 98, temperatureF: 98.4 }, "Typing mistake", "n");
+    expect(typo.systolic).toBe(1200);
+  });
+
+  it("knows which reading each vitals step records, by position", () => {
+    expect(vitalsReadingIndex("pr-01")).toBe(0);
+    expect(vitalsReadingIndex("po-03")).toBe(1);
+    expect(vitalsReadingIndex("ps-01")).toBe(-1);
   });
 });
