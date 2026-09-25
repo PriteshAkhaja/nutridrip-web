@@ -85,8 +85,7 @@ export function EditPerson({
 
   const set = (k: keyof PersonForm) => (e: { target: { value: string } }) =>
     setForm((f) => ({ ...f, [k]: e.target.value }));
-  const toggleArea = (zone: string) =>
-    setAreas((a) => (a.includes(zone) ? a.filter((z) => z !== zone) : [...a, zone]));
+  const toggleArea = (zone: string) => setAreas((a) => (a.includes(zone) ? a.filter((z) => z !== zone) : [...a, zone]));
 
   const num = (v: string) => (v.trim() === "" ? undefined : Number(v));
 
@@ -139,79 +138,79 @@ export function EditPerson({
 
   return (
     <div ref={cardRef} className="scroll-mt-6">
-    <Card padding="p-6" className="w-full">
-      <div className="flex items-baseline justify-between gap-4 mb-5 flex-wrap">
-        <div className="flex items-baseline gap-3 flex-wrap">
-          {/* tabIndex -1 makes it focusable without putting it in tab order. */}
-          <h2 ref={headingRef} tabIndex={-1} className="t-h3">
-            {user.form.name}
-          </h2>
-          <span className="t-small text-[var(--color-ink-3)]">
-            {ROLE_LABEL[user.role] ?? user.role} · role cannot be changed
-          </span>
+      <Card padding="p-6" className="w-full">
+        <div className="flex items-baseline justify-between gap-4 mb-5 flex-wrap">
+          <div className="flex items-baseline gap-3 flex-wrap">
+            {/* tabIndex -1 makes it focusable without putting it in tab order. */}
+            <h2 ref={headingRef} tabIndex={-1} className="t-h3">
+              {user.form.name}
+            </h2>
+            <span className="t-small text-[var(--color-ink-3)]">
+              {ROLE_LABEL[user.role] ?? user.role} · role cannot be changed
+            </span>
+          </div>
+          <Link href={closeHref} className="no-underline hover:no-underline">
+            <Button variant="ghost">Close</Button>
+          </Link>
         </div>
-        <Link href={closeHref} className="no-underline hover:no-underline">
-          <Button variant="ghost">Close</Button>
-        </Link>
-      </div>
 
-      {done && (
-        <div className="rounded-[var(--radius-md)] border border-[var(--color-safe)] bg-[var(--color-safe-soft)] px-4 py-3 mb-5">
-          <span className="t-body text-[var(--color-ink-2)]">Saved.</span>
+        {done && (
+          <div className="rounded-[var(--radius-md)] border border-[var(--color-safe)] bg-[var(--color-safe-soft)] px-4 py-3 mb-5">
+            <span className="t-body text-[var(--color-ink-2)]">Saved.</span>
+          </div>
+        )}
+
+        <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
+          <Input label="Full name" value={form.name} onChange={set("name")} />
+          <Select label="Status" value={status} onChange={(e) => setStatus(e.target.value)}>
+            {USER_STATUS.map((s) => (
+              <option key={s} value={s}>
+                {s.charAt(0).toUpperCase() + s.slice(1)}
+              </option>
+            ))}
+          </Select>
         </div>
-      )}
+        <p className="t-small text-[var(--color-ink-2)] mt-2">{STATUS_BLURB[status]}</p>
 
-      <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
-        <Input label="Full name" value={form.name} onChange={set("name")} />
-        <Select label="Status" value={status} onChange={(e) => setStatus(e.target.value)}>
-          {USER_STATUS.map((s) => (
-            <option key={s} value={s}>
-              {s.charAt(0).toUpperCase() + s.slice(1)}
-            </option>
-          ))}
-        </Select>
-      </div>
-      <p className="t-small text-[var(--color-ink-2)] mt-2">{STATUS_BLURB[status]}</p>
+        {["doctor", "nurse"].includes(user.role) && status !== "active" && (
+          <div className="rounded-[var(--radius-md)] border border-[var(--color-caution)] bg-[var(--color-caution-soft)] px-4 py-3 mt-4">
+            <span className="t-body text-[var(--color-ink-2)]">
+              If they still hold live sessions this will be refused — reassign those first, so no patient is left with a
+              nurse who can no longer open the checklist.
+            </span>
+          </div>
+        )}
 
-      {["doctor", "nurse"].includes(user.role) && status !== "active" && (
-        <div className="rounded-[var(--radius-md)] border border-[var(--color-caution)] bg-[var(--color-caution-soft)] px-4 py-3 mt-4">
-          <span className="t-body text-[var(--color-ink-2)]">
-            If they still hold live sessions this will be refused — reassign those first, so no patient is left with a
-            nurse who can no longer open the checklist.
-          </span>
+        <div className="mt-4">
+          <PersonFields
+            role={user.role}
+            form={form}
+            set={set}
+            areas={areas}
+            toggleArea={toggleArea}
+            doctors={doctors}
+            mode="edit"
+            zones={zones}
+          />
         </div>
-      )}
 
-      <div className="mt-4">
-        <PersonFields
-          role={user.role}
-          form={form}
-          set={set}
-          areas={areas}
-          toggleArea={toggleArea}
-          doctors={doctors}
-          mode="edit"
-          zones={zones}
-        />
-      </div>
+        {error && (
+          <div className="rounded-[var(--radius-md)] border border-[var(--color-critical)] bg-[var(--color-critical-soft)] px-4 py-3 mt-5">
+            <span className="t-body text-[var(--color-ink-2)]">{error}</span>
+          </div>
+        )}
 
-      {error && (
-        <div className="rounded-[var(--radius-md)] border border-[var(--color-critical)] bg-[var(--color-critical-soft)] px-4 py-3 mt-5">
-          <span className="t-body text-[var(--color-ink-2)]">{error}</span>
-        </div>
-      )}
-
-      <div className="mt-6 flex gap-3 flex-wrap">
-        <Button size="md" loading={busy} disabled={!form.name} onClick={save}>
-          Save changes
-        </Button>
-        <Link href={closeHref} className="no-underline hover:no-underline">
-          <Button variant="secondary" size="md">
-            Done
+        <div className="mt-6 flex gap-3 flex-wrap">
+          <Button size="md" loading={busy} disabled={!form.name} onClick={save}>
+            Save changes
           </Button>
-        </Link>
-      </div>
-    </Card>
+          <Link href={closeHref} className="no-underline hover:no-underline">
+            <Button variant="secondary" size="md">
+              Done
+            </Button>
+          </Link>
+        </div>
+      </Card>
     </div>
   );
 }

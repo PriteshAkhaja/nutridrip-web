@@ -176,8 +176,8 @@ export function OrderComposer({
                   ))}
                 </Select>
                 <span className="t-small text-[var(--color-ink-3)] -mt-2">
-                  Attributing it to a clinic is what puts the order on their screen and sends them the
-                  confirmation. Leave it unset and the order stays the pharmacy&apos;s own.
+                  Attributing it to a clinic is what puts the order on their screen and sends them the confirmation.
+                  Leave it unset and the order stays the pharmacy&apos;s own.
                 </span>
               </>
             )}
@@ -187,12 +187,7 @@ export function OrderComposer({
               value={patientName}
               onChange={(e) => setPatientName(e.target.value)}
             />
-            <DatePicker
-              label="Needed by"
-              hint="optional"
-              value={delivery}
-              onChange={setDelivery}
-            />
+            <DatePicker label="Needed by" hint="optional" value={delivery} onChange={setDelivery} />
             <Textarea
               label="Notes for dispatch"
               hint="optional"

@@ -63,9 +63,7 @@ export function FaqBrowser({ categories }: { categories: FaqCategory[] }) {
         {/* Said aloud to a screen reader, because the list changing under a
             typing finger is otherwise silent. */}
         <p className="t-small text-[var(--color-ink-3)]" aria-live="polite">
-          {searching || category !== "all"
-            ? `Showing ${shownCount} of ${total} answers`
-            : `${total} answers`}
+          {searching || category !== "all" ? `Showing ${shownCount} of ${total} answers` : `${total} answers`}
         </p>
       </div>
 
@@ -73,8 +71,8 @@ export function FaqBrowser({ categories }: { categories: FaqCategory[] }) {
         <Card tone="muted" padding="p-8">
           <h2 className="t-h3 mb-2">No answer matches that</h2>
           <p className="t-body text-[var(--color-ink-2)] max-w-[56ch] mb-5">
-            Try fewer or different words, or clear the topic. If it is not here, ask us — the form on the
-            consultation page goes straight to our clinical team.
+            Try fewer or different words, or clear the topic. If it is not here, ask us — the form on the consultation
+            page goes straight to our clinical team.
           </p>
           <Button
             variant="secondary"

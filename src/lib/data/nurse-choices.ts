@@ -13,27 +13,22 @@ const OPEN_STATUSES = ["approved", "nurse_assigned", "en_route", "in_progress"];
  * bookings, counted in memory. The ranking itself is pure and lives in
  * `nurse-options.ts`, so this file is only the part that needs a database.
  */
-export async function nurseChoicesFor(
-  patient: PatientPoint,
-  doctorId: string | null
-): Promise<NurseOptions> {
+export async function nurseChoicesFor(patient: PatientPoint, doctorId: string | null): Promise<NurseOptions> {
   await connectDB();
 
   const [nurses, openBookings, zones] = await Promise.all([
-    User.find({ role: "nurse", status: "active" })
-      .select("name nurse")
-      .lean<
-        Array<{
-          _id: unknown;
-          name: string;
-          nurse?: {
-            serviceAreas?: string[];
-            latitude?: number;
-            longitude?: number;
-            doctorId?: unknown;
-          };
-        }>
-      >(),
+    User.find({ role: "nurse", status: "active" }).select("name nurse").lean<
+      Array<{
+        _id: unknown;
+        name: string;
+        nurse?: {
+          serviceAreas?: string[];
+          latitude?: number;
+          longitude?: number;
+          doctorId?: unknown;
+        };
+      }>
+    >(),
     Booking.find({ status: { $in: OPEN_STATUSES }, nurseId: { $ne: null } })
       .select("nurseId")
       .lean<Array<{ nurseId: unknown }>>(),

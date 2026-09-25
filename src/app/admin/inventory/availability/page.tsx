@@ -44,9 +44,9 @@ export default async function AvailabilityPage({
       meta="Live · recomputed on every load"
     >
       <p className="t-body text-[var(--color-ink-2)] max-w-[76ch] mb-6" style={{ textWrap: "pretty" }}>
-        Stock does not divide evenly. A vial opened for one patient cannot be pooled into the next, so the honest
-        answer to &ldquo;how many drips can we run today&rdquo; is always lower than the arithmetic. Both numbers are
-        below, and the bottleneck is named.
+        Stock does not divide evenly. A vial opened for one patient cannot be pooled into the next, so the honest answer
+        to &ldquo;how many drips can we run today&rdquo; is always lower than the arithmetic. Both numbers are below,
+        and the bottleneck is named.
       </p>
 
       <AvailabilityControls
@@ -163,9 +163,7 @@ export default async function AvailabilityPage({
                         <div className="px-5 py-[14px] flex flex-col min-w-0">
                           <span className="t-body font-medium truncate">{ing.drugName}</span>
                           <span className="t-data text-[13px] text-[var(--color-ink-3)] truncate">
-                            {ing.batches.length
-                              ? ing.batches.map((b) => b.batchNo).join(" · ")
-                              : "no in-date batches"}
+                            {ing.batches.length ? ing.batches.map((b) => b.batchNo).join(" · ") : "no in-date batches"}
                           </span>
                         </div>
                         <div className="px-3 py-[14px] text-right t-data text-[14.5px]">
@@ -187,9 +185,7 @@ export default async function AvailabilityPage({
                           className="px-5 py-[14px] text-right t-data text-[14.5px]"
                           style={{ color: ing.wastedContent > 0 ? "var(--color-caution)" : "var(--color-ink-3)" }}
                         >
-                          {ing.wastedContent > 0
-                            ? `${ing.wastedContent.toLocaleString("en-IN")} ${ing.doseUnit}`
-                            : "—"}
+                          {ing.wastedContent > 0 ? `${ing.wastedContent.toLocaleString("en-IN")} ${ing.doseUnit}` : "—"}
                         </div>
                       </div>
                     );
@@ -220,9 +216,7 @@ export default async function AvailabilityPage({
               </div>
               <p className="t-small text-[var(--color-ink-2)] mt-4">
                 Wastage across the run:{" "}
-                <span className="t-data text-[13px]">
-                  {result.pooledAvailability - result.wholeVialAvailability}
-                </span>{" "}
+                <span className="t-data text-[13px]">{result.pooledAvailability - result.wholeVialAvailability}</span>{" "}
                 drips&apos; worth of active content, at roughly{" "}
                 <span className="t-data text-[13px]">
                   {formatInr((result.pooledAvailability - result.wholeVialAvailability) * 700)}

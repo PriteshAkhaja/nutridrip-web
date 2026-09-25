@@ -26,16 +26,22 @@ export function LateChangesForm({ policy }: { policy: LatePolicy }) {
   const n = (s: string) => (s.trim() === "" ? NaN : Number(s));
   const bad = {
     windowHours:
-      !Number.isInteger(n(windowHours)) || n(windowHours) < 1 || n(windowHours) > 72 ? "Whole hours, 1 to 72" : undefined,
+      !Number.isInteger(n(windowHours)) || n(windowHours) < 1 || n(windowHours) > 72
+        ? "Whole hours, 1 to 72"
+        : undefined,
     rescheduleFee: !Number.isInteger(n(rescheduleFee)) || n(rescheduleFee) < 0 ? "Whole rupees, 0 or more" : undefined,
     cancelFee: !Number.isInteger(n(cancelFee)) || n(cancelFee) < 0 ? "Whole rupees, 0 or more" : undefined,
   };
   const valid = !bad.windowHours && !bad.rescheduleFee && !bad.cancelFee;
   const preview = latePolicySentence(
-    tidyPolicy(valid ? { windowHours: n(windowHours), rescheduleFee: n(rescheduleFee), cancelFee: n(cancelFee) } : policy)
+    tidyPolicy(
+      valid ? { windowHours: n(windowHours), rescheduleFee: n(rescheduleFee), cancelFee: n(cancelFee) } : policy
+    )
   );
   const changed =
-    n(windowHours) !== policy.windowHours || n(rescheduleFee) !== policy.rescheduleFee || n(cancelFee) !== policy.cancelFee;
+    n(windowHours) !== policy.windowHours ||
+    n(rescheduleFee) !== policy.rescheduleFee ||
+    n(cancelFee) !== policy.cancelFee;
 
   const save = async () => {
     setBusy(true);

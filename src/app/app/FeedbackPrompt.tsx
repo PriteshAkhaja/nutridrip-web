@@ -61,8 +61,7 @@ export function FeedbackPrompt({ session }: { session: SessionToRate }) {
         <span className="t-micro block">Your session is done</span>
         <h2 className="t-h3 mt-1">How was it{first ? ` with ${first}` : ""}?</h2>
         <span className="t-small text-[var(--color-ink-2)] block mt-1">
-          {session.dripName ?? "Your drip"} ·{" "}
-          <span className="t-data text-[12.5px]">{session.bookingNo}</span> ·{" "}
+          {session.dripName ?? "Your drip"} · <span className="t-data text-[12.5px]">{session.bookingNo}</span> ·{" "}
           {new Date(session.completedAt).toLocaleDateString("en-IN", { day: "2-digit", month: "short" })}
         </span>
       </div>

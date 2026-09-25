@@ -109,22 +109,16 @@ export async function pickNurse(
         covers,
         // Without coordinates, fall back to whether the nurse covers the area
         // at all; an unknown distance must not beat a known one.
-        km: hasGeo
-          ? distanceKm(patient.latitude!, patient.longitude!, n.nurse!.latitude!, n.nurse!.longitude!)
-          : 9999,
+        km: hasGeo ? distanceKm(patient.latitude!, patient.longitude!, n.nurse!.latitude!, n.nurse!.longitude!) : 9999,
       };
     })
     .filter((r) => r.load < NURSE_CAPACITY && !busy.has(String(r.nurse._id)))
     // Whoever covers the zone comes first, then the nearest, then the least busy.
-    .sort((a, b) =>
-      a.covers !== b.covers ? (a.covers ? -1 : 1) : a.km !== b.km ? a.km - b.km : a.load - b.load
-    );
+    .sort((a, b) => (a.covers !== b.covers ? (a.covers ? -1 : 1) : a.km !== b.km ? a.km - b.km : a.load - b.load));
 
   if (!ranked.length) return null;
 
-  const requested = opts.requestedNurseId
-    ? ranked.find((r) => String(r.nurse._id) === opts.requestedNurseId)
-    : null;
+  const requested = opts.requestedNurseId ? ranked.find((r) => String(r.nurse._id) === opts.requestedNurseId) : null;
   const chosen = requested ?? ranked[0];
   const overridden = Boolean(opts.requestedNurseId) && String(chosen.nurse._id) !== opts.requestedNurseId;
 

@@ -28,7 +28,10 @@ export async function POST(req: Request, { params }: { params: Promise<{ id: str
     if (!booking) return fail("Session not found", 404);
     if (!nurseOwns(session, booking)) return fail("This session is not on your route", 403);
     if (!WORKABLE.includes(booking.status)) {
-      return fail(`This session is ${labelFor(booking.status).toLowerCase()} — the checklist opens once a physician approves it`, 409);
+      return fail(
+        `This session is ${labelFor(booking.status).toLowerCase()} — the checklist opens once a physician approves it`,
+        409
+      );
     }
 
     const index = booking.checklist.findIndex((s: { key: string }) => s.key === key);
@@ -38,10 +41,7 @@ export async function POST(req: Request, { params }: { params: Promise<{ id: str
     // doorstep checks nothing moves until the patient's code has been read.
     // Reopening a step is still allowed — undoing a tick needs no proof.
     if (done && needsPrescription(key) && !booking.rxUnlockedAt) {
-      return fail(
-        "Open the prescription first — ask the patient to read out the code sent to their phone",
-        409
-      );
+      return fail("Open the prescription first — ask the patient to read out the code sent to their phone", 409);
     }
 
     // The checklist is a sequence: a step cannot be ticked while an earlier
@@ -85,11 +85,12 @@ export async function POST(req: Request, { params }: { params: Promise<{ id: str
     // Out-of-range vitals stop the infusion before it starts — and before the
     // cannula goes in, which is the point at which it stops being reversible.
     if (done && blockedByVitals(step)) {
-      const flagged = (booking.vitals ?? []).some(
-        (v: { outOfRange?: string[] }) => (v.outOfRange ?? []).length > 0
-      );
+      const flagged = (booking.vitals ?? []).some((v: { outOfRange?: string[] }) => (v.outOfRange ?? []).length > 0);
       if (flagged && !booking.vitalsClearedAt) {
-        return fail("Out-of-range vitals block this step — the reviewing physician has been asked to clear it. Do not cannulate.", 409);
+        return fail(
+          "Out-of-range vitals block this step — the reviewing physician has been asked to clear it. Do not cannulate.",
+          409
+        );
       }
     }
 

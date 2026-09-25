@@ -32,11 +32,7 @@ export default async function ContentPage() {
         leaving a blank — so nothing you do here can empty a page.
       </p>
 
-      <ContentEditor
-        groups={CONTENT_GROUPS}
-        content={content}
-        defaults={CONTENT_DEFAULTS as Record<string, string>}
-      />
+      <ContentEditor groups={CONTENT_GROUPS} content={content} defaults={CONTENT_DEFAULTS as Record<string, string>} />
     </ConsoleShell>
   );
 }

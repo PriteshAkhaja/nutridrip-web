@@ -86,7 +86,11 @@ export const emptyDrip = (): DripDraft => ({
 });
 
 const slugify = (s: string) =>
-  s.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "").slice(0, 60);
+  s
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-|-$/g, "")
+    .slice(0, 60);
 
 export function DripEditor({
   masters,
@@ -136,10 +140,12 @@ export function DripEditor({
         tags: d.tags,
         icon: d.icon || null,
         isPopular: d.isPopular,
-        benefits: d.benefits.filter((b) => b.title.trim()).map((b) => ({
-          title: b.title.trim(),
-          description: b.description.trim() || undefined,
-        })),
+        benefits: d.benefits
+          .filter((b) => b.title.trim())
+          .map((b) => ({
+            title: b.title.trim(),
+            description: b.description.trim() || undefined,
+          })),
         withKit: d.withKit,
         // null is meaningful: it clears a chosen kit back to the default.
         kitId: d.withKit ? d.kitId || null : null,
@@ -214,9 +220,7 @@ export function DripEditor({
         <Input
           label="Name"
           value={d.name}
-          onChange={(e) =>
-            setD({ ...d, name: e.target.value, slug: editing ? d.slug : slugify(e.target.value) })
-          }
+          onChange={(e) => setD({ ...d, name: e.target.value, slug: editing ? d.slug : slugify(e.target.value) })}
           placeholder="Myers' Revive"
         />
         <Input
@@ -305,11 +309,7 @@ export function DripEditor({
           placeholder="⚡"
         />
         <div className="flex items-end pb-[10px]">
-          <Checkbox
-            label="Most popular"
-            checked={d.isPopular}
-            onChange={(v) => setD({ ...d, isPopular: v })}
-          />
+          <Checkbox label="Most popular" checked={d.isPopular} onChange={(v) => setD({ ...d, isPopular: v })} />
         </div>
       </div>
 
@@ -413,10 +413,7 @@ export function DripEditor({
                 }}
                 placeholder="NAD+ restores mitochondrial energy in neurons."
               />
-              <Button
-                variant="ghost"
-                onClick={() => setD({ ...d, benefits: d.benefits.filter((_, n) => n !== i) })}
-              >
+              <Button variant="ghost" onClick={() => setD({ ...d, benefits: d.benefits.filter((_, n) => n !== i) })}>
                 Remove
               </Button>
             </div>
@@ -542,10 +539,7 @@ export function DripEditor({
         </div>
 
         <div className="mt-3">
-          <Button
-            variant="secondary"
-            onClick={() => setD({ ...d, ingredients: [...d.ingredients, blankLine()] })}
-          >
+          <Button variant="secondary" onClick={() => setD({ ...d, ingredients: [...d.ingredients, blankLine()] })}>
             Add an ingredient
           </Button>
         </div>
@@ -576,11 +570,7 @@ export function DripEditor({
       )}
 
       <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 mt-6">
-        <Checkbox
-          label="Include the session kit"
-          checked={d.withKit}
-          onChange={(v) => setD({ ...d, withKit: v })}
-        />
+        <Checkbox label="Include the session kit" checked={d.withKit} onChange={(v) => setD({ ...d, withKit: v })} />
         <Checkbox
           label="Show on the public catalogue"
           checked={d.isPublic}

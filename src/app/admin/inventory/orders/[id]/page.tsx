@@ -16,7 +16,13 @@ import { formatDate, formatTime } from "@/lib/data/inventory";
 import { OrderActions } from "./Actions";
 import { VerifyPayment } from "./VerifyPayment";
 import { User } from "@/lib/models";
-import { PAY_METHOD_LABEL, confirmBlockedBy, payState, type OrderPayment, type PayMethod } from "@/lib/billing/order-payment";
+import {
+  PAY_METHOD_LABEL,
+  confirmBlockedBy,
+  payState,
+  type OrderPayment,
+  type PayMethod,
+} from "@/lib/billing/order-payment";
 
 export const dynamic = "force-dynamic";
 export const metadata: Metadata = { title: "Order" };
@@ -51,7 +57,9 @@ export default async function OrderDetailPage({ params }: { params: Promise<{ id
 
   // A clinic that pays first: where its payment stands, and whether that holds the order up.
   const clinic = order.clinicId
-    ? await User.findById(order.clinicId).select("name clinic.onCredit").lean<{ name: string; clinic?: { onCredit?: boolean } } | null>()
+    ? await User.findById(order.clinicId)
+        .select("name clinic.onCredit")
+        .lean<{ name: string; clinic?: { onCredit?: boolean } } | null>()
     : null;
   const pay = payState(order, clinic?.clinic?.onCredit ?? false);
   const payBlock = order.status === "DRAFT" ? confirmBlockedBy(order, clinic?.clinic?.onCredit ?? false) : null;
@@ -147,7 +155,9 @@ export default async function OrderDetailPage({ params }: { params: Promise<{ id
       {/* ---------------- The clinic's payment ---------------- */}
       {pay !== "credit" && (order.status === "DRAFT" || pay === "received" || order.payment?.refundDue) && (
         <Card
-          tone={pay === "received" ? "safe" : pay === "submitted" ? "info" : order.payment?.refundDue ? "caution" : "muted"}
+          tone={
+            pay === "received" ? "safe" : pay === "submitted" ? "info" : order.payment?.refundDue ? "caution" : "muted"
+          }
           padding="p-5"
           className="mb-6"
         >
@@ -164,7 +174,8 @@ export default async function OrderDetailPage({ params }: { params: Promise<{ id
             <>
               <span className="t-body font-semibold block">Paid</span>
               <span className="t-body text-[var(--color-ink-2)]">
-                {formatInr(order.amount ?? 0)} by {method}, ref <span className="t-data text-[14px]">{order.payment?.reference}</span>
+                {formatInr(order.amount ?? 0)} by {method}, ref{" "}
+                <span className="t-data text-[14px]">{order.payment?.reference}</span>
                 {order.payment?.verifiedAt ? ` · received ${formatDate(order.payment.verifiedAt)}` : ""}
               </span>
             </>
@@ -172,10 +183,11 @@ export default async function OrderDetailPage({ params }: { params: Promise<{ id
             <>
               <span className="t-body font-semibold block">Payment to check</span>
               <p className="t-body text-[var(--color-ink-2)] mt-1 mb-4">
-                {clinic?.name ?? "The clinic"} says it paid <span className="t-data text-[14px]">{formatInr(order.amount ?? 0)}</span> by{" "}
-                {method}, ref <span className="t-data text-[14px]">{order.payment?.reference}</span>
-                {order.payment?.paidOn ? `, on ${formatDate(order.payment.paidOn)}` : ""}. Check it is in the account, then
-                mark it received — the order can be confirmed after that.
+                {clinic?.name ?? "The clinic"} says it paid{" "}
+                <span className="t-data text-[14px]">{formatInr(order.amount ?? 0)}</span> by {method}, ref{" "}
+                <span className="t-data text-[14px]">{order.payment?.reference}</span>
+                {order.payment?.paidOn ? `, on ${formatDate(order.payment.paidOn)}` : ""}. Check it is in the account,
+                then mark it received — the order can be confirmed after that.
               </p>
               <VerifyPayment orderId={String(order._id)} />
             </>
@@ -183,8 +195,8 @@ export default async function OrderDetailPage({ params }: { params: Promise<{ id
             <>
               <span className="t-body font-semibold block">Waiting for the clinic&rsquo;s payment</span>
               <span className="t-body text-[var(--color-ink-2)]">
-                {clinic?.name ?? "The clinic"} pays {formatInr(order.amount ?? 0)} first; this order can be confirmed once
-                the payment is received.
+                {clinic?.name ?? "The clinic"} pays {formatInr(order.amount ?? 0)} first; this order can be confirmed
+                once the payment is received.
                 {order.payment?.note ? ` Last sent back: “${order.payment.note}”` : ""}
               </span>
             </>
@@ -256,8 +268,12 @@ export default async function OrderDetailPage({ params }: { params: Promise<{ id
                     return (
                       <TR key={String(a._id)}>
                         <TD nowrap>{masterById.get(String(a.masterId))?.name ?? "—"}</TD>
-                        <TD mono nowrap>{lot?.batchNo ?? "—"}</TD>
-                        <TD mono nowrap>{lot ? formatDate(lot.expiry) : "—"}</TD>
+                        <TD mono nowrap>
+                          {lot?.batchNo ?? "—"}
+                        </TD>
+                        <TD mono nowrap>
+                          {lot ? formatDate(lot.expiry) : "—"}
+                        </TD>
                         <TD numeric>{a.unitsReserved}</TD>
                       </TR>
                     );
@@ -287,7 +303,9 @@ export default async function OrderDetailPage({ params }: { params: Promise<{ id
                   {consumption.map((c) => (
                     <TR key={String(c._id)}>
                       <TD nowrap>{c.drugName ?? "—"}</TD>
-                      <TD mono nowrap>{c.batchNo ?? "—"}</TD>
+                      <TD mono nowrap>
+                        {c.batchNo ?? "—"}
+                      </TD>
                       <TD numeric>{c.unitsConsumed}</TD>
                       <TD numeric nowrap>
                         {c.activeUsed.toLocaleString("en-IN")} {c.contentUnit}
@@ -313,7 +331,9 @@ export default async function OrderDetailPage({ params }: { params: Promise<{ id
                 ["Session kits", order.includeKits ? "Included" : "Excluded"],
                 ["Delivery", order.scheduledDelivery ? formatDate(order.scheduledDelivery) : "—"],
                 ...(clinic ? [["Clinic", clinic.name]] : []),
-                ...(order.clinicId ? [["Payment", pay === "credit" ? "On credit — invoice, 30 days" : "Paid before it is confirmed"]] : []),
+                ...(order.clinicId
+                  ? [["Payment", pay === "credit" ? "On credit — invoice, 30 days" : "Paid before it is confirmed"]]
+                  : []),
                 ["Total", formatInr(order.amount ?? 0)],
               ].map(([k, v]) => (
                 <div key={k} className="flex justify-between gap-4 items-baseline">
@@ -356,9 +376,7 @@ export default async function OrderDetailPage({ params }: { params: Promise<{ id
                       className="t-small"
                       style={{ color: r.canFulfil ? "var(--color-safe)" : "var(--color-critical)" }}
                     >
-                      {r.canFulfil
-                        ? "Enough in date to prepare"
-                        : `Short by ${r.requested - r.wholeVialAvailability}`}
+                      {r.canFulfil ? "Enough in date to prepare" : `Short by ${r.requested - r.wholeVialAvailability}`}
                       {r.bottleneck ? ` · limited by ${r.bottleneck.ingredient}` : ""}
                     </span>
                   </div>

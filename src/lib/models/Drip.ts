@@ -90,12 +90,7 @@ const DripSchema = new Schema(
      * `bestFor` stays for the one-line claims; this is the explained version.
      */
     benefits: {
-      type: [
-        new Schema(
-          { title: { type: String, required: true }, description: String },
-          { _id: false }
-        ),
-      ],
+      type: [new Schema({ title: { type: String, required: true }, description: String }, { _id: false })],
       default: [],
     },
     bestFor: [String],

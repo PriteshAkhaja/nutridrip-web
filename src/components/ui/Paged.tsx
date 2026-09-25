@@ -203,7 +203,9 @@ export function Pagination({
           {/* Phone: a sentence, not a row of numbers that would not fit. */}
           <span className="sm:hidden t-small text-[var(--color-ink-2)] whitespace-nowrap">
             Page <span className="t-data text-[13px] text-[var(--color-ink)]">{meta.page}</span> of{" "}
-            <span className="t-data text-[13px] text-[var(--color-ink)]">{meta.totalPages.toLocaleString("en-IN")}</span>
+            <span className="t-data text-[13px] text-[var(--color-ink)]">
+              {meta.totalPages.toLocaleString("en-IN")}
+            </span>
           </span>
 
           {/* Tablet and up: the numbered strip. */}
@@ -347,7 +349,13 @@ function Edge({
       {inner}
     </span>
   ) : (
-    <Link href={href} onClick={onFollow(href)} aria-label={label} className={`${btnBase} ${shown} ${idle} ${gap}`} prefetch={false}>
+    <Link
+      href={href}
+      onClick={onFollow(href)}
+      aria-label={label}
+      className={`${btnBase} ${shown} ${idle} ${gap}`}
+      prefetch={false}
+    >
       {inner}
     </Link>
   );

@@ -156,9 +156,7 @@ export function zoneProblems(input: ZoneInput, others: Zone[]): Partial<Record<k
   else if (bad.length) {
     problems.pincodes = `${bad.join(", ")} ${bad.length === 1 ? "is not a pincode" : "are not pincodes"} — six digits, not starting with 0`;
   } else {
-    const taken = pins
-      .map((p) => ({ p, zone: others.find((o) => o.pincodes.includes(p)) }))
-      .filter((t) => t.zone);
+    const taken = pins.map((p) => ({ p, zone: others.find((o) => o.pincodes.includes(p)) })).filter((t) => t.zone);
     if (taken.length) {
       problems.pincodes = taken.map((t) => `${t.p} is already in ${t.zone!.name}`).join("; ");
     }
@@ -194,5 +192,7 @@ export const ZONE_COUNT_TOKEN = "{{zone-count}}";
 export function fillZoneCount(text: string, zones: Zone[]): string {
   if (!text.includes(ZONE_COUNT_TOKEN)) return text;
   const n = servedZones(zones).length;
-  return text.replaceAll(`${ZONE_COUNT_TOKEN} zones`, n === 1 ? "1 zone" : `${n} zones`).replaceAll(ZONE_COUNT_TOKEN, String(n));
+  return text
+    .replaceAll(`${ZONE_COUNT_TOKEN} zones`, n === 1 ? "1 zone" : `${n} zones`)
+    .replaceAll(ZONE_COUNT_TOKEN, String(n));
 }

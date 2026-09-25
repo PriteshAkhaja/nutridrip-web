@@ -44,20 +44,17 @@ export default async function AdminOverviewPage() {
         { $match: { status: "completed", completedAt: { $gte: monthStart } } },
         { $group: { _id: null, count: { $sum: 1 }, revenue: { $sum: { $ifNull: ["$amount", 0] } } } },
       ]),
-      Booking.find({})
-        .sort({ scheduledAt: -1 })
-        .limit(8)
-        .lean<
-          Array<{
-            _id: unknown;
-            bookingNo: string;
-            dripName?: string;
-            scheduledAt: Date;
-            status: string;
-            amount: number;
-            patientId: unknown;
-          }>
-        >(),
+      Booking.find({}).sort({ scheduledAt: -1 }).limit(8).lean<
+        Array<{
+          _id: unknown;
+          bookingNo: string;
+          dripName?: string;
+          scheduledAt: Date;
+          status: string;
+          amount: number;
+          patientId: unknown;
+        }>
+      >(),
     ]);
 
   const revenue = completedThisMonth[0]?.revenue ?? 0;
@@ -165,9 +162,13 @@ export default async function AdminOverviewPage() {
               <tbody>
                 {recentBookings.map((b) => (
                   <TR key={String(b._id)}>
-                    <TD mono nowrap>{b.bookingNo}</TD>
+                    <TD mono nowrap>
+                      {b.bookingNo}
+                    </TD>
                     <TD nowrap>
-                      <NameLink href={`/admin/users/${String(b.patientId)}`}>{patientNames.get(String(b.patientId)) ?? "—"}</NameLink>
+                      <NameLink href={`/admin/users/${String(b.patientId)}`}>
+                        {patientNames.get(String(b.patientId)) ?? "—"}
+                      </NameLink>
                     </TD>
                     <TD nowrap>{b.dripName ?? "—"}</TD>
                     <TD mono nowrap>
@@ -188,7 +189,8 @@ export default async function AdminOverviewPage() {
           <div className="flex items-baseline justify-between mb-3 gap-4">
             <h2 className="t-h3">Open preparation orders</h2>
             <Link href="/admin/inventory/orders" className="t-body font-medium">
-              All orders&nbsp;<Arrow />
+              All orders&nbsp;
+              <Arrow />
             </Link>
           </div>
 

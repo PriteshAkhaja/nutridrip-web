@@ -20,10 +20,14 @@ export async function GET(req: Request) {
       items: Array<{ masterId: unknown; qty: number }>;
       isDefault: boolean;
       isActive: boolean;
-    }>(SessionKit, {}, {
-      sort: { isDefault: -1, name: 1 },
-      paging: parsePaging({ page: q.get("page"), pageSize: q.get("pageSize") }),
-    });
+    }>(
+      SessionKit,
+      {},
+      {
+        sort: { isDefault: -1, name: 1 },
+        paging: parsePaging({ page: q.get("page"), pageSize: q.get("pageSize") }),
+      }
+    );
     const masterIds = kits.flatMap((k) => (k.items ?? []).map((i) => String(i.masterId)));
     const masters = await ProductMaster.find({ _id: { $in: masterIds } }).lean<Array<{ _id: unknown; name: string }>>();
     const nameById = new Map(masters.map((m) => [String(m._id), m.name]));
@@ -34,7 +38,11 @@ export async function GET(req: Request) {
         description: k.description,
         isDefault: k.isDefault,
         isActive: k.isActive,
-        items: (k.items ?? []).map((i) => ({ masterId: String(i.masterId), name: nameById.get(String(i.masterId)) ?? "Unknown", qty: i.qty })),
+        items: (k.items ?? []).map((i) => ({
+          masterId: String(i.masterId),
+          name: nameById.get(String(i.masterId)) ?? "Unknown",
+          qty: i.qty,
+        })),
       })),
       pagination: pageInfo(meta),
     });
@@ -52,7 +60,8 @@ export async function POST(req: Request) {
 
     if (await SessionKit.exists({ name: input.name })) return fail(`A kit is already called "${input.name}"`, 409);
     const found = await ProductMaster.countDocuments({ _id: { $in: input.items.map((i) => i.masterId) } });
-    if (found !== new Set(input.items.map((i) => i.masterId)).size) return fail("One of the kit items no longer exists", 422);
+    if (found !== new Set(input.items.map((i) => i.masterId)).size)
+      return fail("One of the kit items no longer exists", 422);
 
     if (input.isDefault) await SessionKit.updateMany({ isDefault: true }, { $set: { isDefault: false } });
     const kit = await SessionKit.create(input);

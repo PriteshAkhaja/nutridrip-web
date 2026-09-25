@@ -87,9 +87,10 @@ export default async function SessionKitPage({ params }: { params: Promise<{ id:
   ]);
 
   const kit = drip?.withKit
-    ? await SessionKit.findOne(
-        drip.kitId ? { _id: drip.kitId } : { isDefault: true, isActive: true }
-      ).lean<{ name: string; items: Array<{ masterId: unknown; qty: number }> } | null>()
+    ? await SessionKit.findOne(drip.kitId ? { _id: drip.kitId } : { isDefault: true, isActive: true }).lean<{
+        name: string;
+        items: Array<{ masterId: unknown; qty: number }>;
+      } | null>()
     : null;
 
   const masterIds = [

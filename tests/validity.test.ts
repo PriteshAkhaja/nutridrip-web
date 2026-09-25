@@ -70,8 +70,12 @@ describe("a physician's question, or answers replaced", () => {
   it("lets only an undecided submission hold a slot", () => {
     expect(approvalState(null).canHold).toBe(false);
     expect(approvalState({ reviewStatus: "pending", completedAt: daysAgo(0) }).canHold).toBe(true);
-    expect(approvalState({ reviewStatus: "rejected", reviewedAt: daysAgo(1), completedAt: daysAgo(1) }).canHold).toBe(false);
-    expect(approvalState({ reviewStatus: "approved", reviewedAt: daysAgo(1), completedAt: daysAgo(1) }).canHold).toBe(false);
+    expect(approvalState({ reviewStatus: "rejected", reviewedAt: daysAgo(1), completedAt: daysAgo(1) }).canHold).toBe(
+      false
+    );
+    expect(approvalState({ reviewStatus: "approved", reviewedAt: daysAgo(1), completedAt: daysAgo(1) }).canHold).toBe(
+      false
+    );
   });
 
   it("never reads an unknown status as approved", () => {

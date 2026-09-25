@@ -35,7 +35,16 @@ export default async function AdminApprovalsPage() {
     HealthQuiz.find({ reviewStatus: { $ne: "pending" }, reviewedAt: { $gte: weekAgo } })
       .sort({ reviewedAt: -1 })
       .limit(20)
-      .lean<Array<{ _id: unknown; patientId: unknown; reviewedBy?: unknown; reviewStatus: string; reviewedAt?: Date; vitalityScore: number }>>(),
+      .lean<
+        Array<{
+          _id: unknown;
+          patientId: unknown;
+          reviewedBy?: unknown;
+          reviewStatus: string;
+          reviewedAt?: Date;
+          vitalityScore: number;
+        }>
+      >(),
     // The list below shows the twenty most recent; the figure must be the real
     // total, or a busy week silently reads as exactly twenty.
     HealthQuiz.countDocuments({ reviewStatus: { $ne: "pending" }, reviewedAt: { $gte: weekAgo } }),
@@ -66,9 +75,9 @@ export default async function AdminApprovalsPage() {
       meta={`${queue.length} waiting on a physician`}
     >
       <p className="t-body text-[var(--color-ink-2)] max-w-[76ch] mb-6" style={{ textWrap: "pretty" }}>
-        Every submission must be read by a registered physician within {REVIEW_SLA_HOURS} hours. This is the
-        operations view of that queue — who is waiting, for how long, and whether the physicians are keeping up. The
-        clinical decision itself is made in the physician console.
+        Every submission must be read by a registered physician within {REVIEW_SLA_HOURS} hours. This is the operations
+        view of that queue — who is waiting, for how long, and whether the physicians are keeping up. The clinical
+        decision itself is made in the physician console.
       </p>
 
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4 mb-6">
@@ -92,7 +101,11 @@ export default async function AdminApprovalsPage() {
           pct={Math.min(100, withinHour * 25)}
           color="var(--color-caution)"
         />
-        <StatCard label="Reviewed this week" value={String(reviewedThisWeek)} pct={Math.min(100, reviewedThisWeek * 5)} />
+        <StatCard
+          label="Reviewed this week"
+          value={String(reviewedThisWeek)}
+          pct={Math.min(100, reviewedThisWeek * 5)}
+        />
       </div>
 
       {queue.length === 0 ? (
@@ -123,7 +136,9 @@ export default async function AdminApprovalsPage() {
                     <div className="flex flex-col">
                       <NameLink href={`/admin/users/${q.patientId}`}>{q.name}</NameLink>
                       <span className="t-data text-[13px] text-[var(--color-ink-3)]">
-                        {clinical ? `${q.age} · ${q.gender}${q.bookingNo ? ` · ${q.bookingNo}` : ""}` : (q.bookingNo ?? "No booking yet")}
+                        {clinical
+                          ? `${q.age} · ${q.gender}${q.bookingNo ? ` · ${q.bookingNo}` : ""}`
+                          : (q.bookingNo ?? "No booking yet")}
                       </span>
                     </div>
                   </TD>
@@ -143,14 +158,22 @@ export default async function AdminApprovalsPage() {
                       </span>
                     </TD>
                   )}
-                  <TD nowrap>{q.dripName ?? <span className="t-small text-[var(--color-ink-3)]">No booking yet</span>}</TD>
+                  <TD nowrap>
+                    {q.dripName ?? <span className="t-small text-[var(--color-ink-3)]">No booking yet</span>}
+                  </TD>
                   <TD mono nowrap>
                     {formatDate(q.submittedAt)} · {formatTime(q.submittedAt)}
                   </TD>
                   <TD nowrap>
                     <span
                       className="t-data text-[13px]"
-                      style={{ color: overdue ? "var(--color-critical)" : q.msLeft < 3_600_000 ? "var(--color-caution)" : "var(--color-ink-2)" }}
+                      style={{
+                        color: overdue
+                          ? "var(--color-critical)"
+                          : q.msLeft < 3_600_000
+                            ? "var(--color-caution)"
+                            : "var(--color-ink-2)",
+                      }}
                     >
                       {q.slaLabel}
                     </span>
@@ -171,7 +194,9 @@ export default async function AdminApprovalsPage() {
         <section className="mt-8">
           <h2 className="t-h3 mb-3">
             Reviewed in the last seven days
-            {reviewedThisWeek > recent.length ? ` · showing the ${recent.length} most recent of ${reviewedThisWeek}` : ""}
+            {reviewedThisWeek > recent.length
+              ? ` · showing the ${recent.length} most recent of ${reviewedThisWeek}`
+              : ""}
           </h2>
           <DataTable>
             <THead>
@@ -196,7 +221,9 @@ export default async function AdminApprovalsPage() {
                     <StatusPill status={r.reviewStatus} dot />
                   </TD>
                   <TD nowrap>{r.reviewedBy ? (nameById.get(String(r.reviewedBy)) ?? "—") : "—"}</TD>
-                  <TD mono nowrap>{r.reviewedAt ? `${formatDate(r.reviewedAt)} · ${formatTime(r.reviewedAt)}` : "—"}</TD>
+                  <TD mono nowrap>
+                    {r.reviewedAt ? `${formatDate(r.reviewedAt)} · ${formatTime(r.reviewedAt)}` : "—"}
+                  </TD>
                 </TR>
               ))}
             </tbody>

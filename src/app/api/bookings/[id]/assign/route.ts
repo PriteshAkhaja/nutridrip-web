@@ -49,12 +49,20 @@ export async function POST(req: Request, { params }: { params: Promise<{ id: str
         _id: { $ne: booking._id },
         nurseId,
         status: { $in: HOLDING_STATUSES },
-        scheduledAt: { $gte: new Date(booking.scheduledAt.getTime() - 86_400_000), $lte: new Date(booking.scheduledAt.getTime() + 86_400_000) },
+        scheduledAt: {
+          $gte: new Date(booking.scheduledAt.getTime() - 86_400_000),
+          $lte: new Date(booking.scheduledAt.getTime() + 86_400_000),
+        },
       })
         .select("bookingNo scheduledAt durationMin")
         .lean<Array<{ bookingNo: string; scheduledAt: Date; durationMin?: number }>>();
       const clash = theirs.find((b) =>
-        clashes(booking.scheduledAt.getTime(), booking.durationMin ?? 45, new Date(b.scheduledAt).getTime(), b.durationMin ?? 45)
+        clashes(
+          booking.scheduledAt.getTime(),
+          booking.durationMin ?? 45,
+          new Date(b.scheduledAt).getTime(),
+          b.durationMin ?? 45
+        )
       );
       if (clash) {
         return fail(
@@ -76,7 +84,11 @@ export async function POST(req: Request, { params }: { params: Promise<{ id: str
         // Never hand it straight back to the nurse being replaced, nor to anyone busy then.
         {
           excludeNurseId: previousNurseId,
-          session: { start: booking.scheduledAt, durationMin: booking.durationMin ?? 45, bookingId: String(booking._id) },
+          session: {
+            start: booking.scheduledAt,
+            durationMin: booking.durationMin ?? 45,
+            bookingId: String(booking._id),
+          },
         }
       );
       if (!pick) return fail("No other nurse is available under capacity right now", 409);

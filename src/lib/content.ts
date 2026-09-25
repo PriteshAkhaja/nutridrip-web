@@ -43,9 +43,12 @@ export type ContentKey = keyof typeof CONTENT_DEFAULTS;
 export const CONTENT_GROUPS: Record<string, ContentKey[]> = {
   "Home — hero": ["home.badge", "home.headline", "home.sub", "home.cta"],
   "Home — the three figures": [
-    "home.stat1.value", "home.stat1.label",
-    "home.stat2.value", "home.stat2.label",
-    "home.stat3.value", "home.stat3.label",
+    "home.stat1.value",
+    "home.stat1.label",
+    "home.stat2.value",
+    "home.stat2.label",
+    "home.stat3.value",
+    "home.stat3.label",
   ],
   "Home — safety": ["home.safety.heading", "home.safety.body", "home.contra.heading", "home.contra.body"],
   "About page": ["about.headline", "about.intro", "about.mission"],
@@ -61,9 +64,7 @@ export async function getContent(): Promise<Record<ContentKey, string>> {
   try {
     await connectDB();
     const rows = await ContentBlock.find({}).lean<Array<{ key: string; value: string }>>();
-    const overrides = Object.fromEntries(
-      rows.filter((r) => r.value?.trim()).map((r) => [r.key, r.value])
-    );
+    const overrides = Object.fromEntries(rows.filter((r) => r.value?.trim()).map((r) => [r.key, r.value]));
     return { ...CONTENT_DEFAULTS, ...overrides } as Record<ContentKey, string>;
   } catch (err) {
     console.error("getContent() fell back to defaults:", err);

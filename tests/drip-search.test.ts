@@ -24,11 +24,7 @@ describe("drip search", () => {
   it("finds drips by an ingredient they contain", () => {
     // The thing people actually ask for: "the one with glutathione".
     expect(names(filterDrips(CATALOGUE, "glutathione"))).toEqual(["Glow Protocol"]);
-    expect(names(filterDrips(CATALOGUE, "ascorbic"))).toEqual([
-      "Myers' Revive",
-      "Glow Protocol",
-      "Immune Shield",
-    ]);
+    expect(names(filterDrips(CATALOGUE, "ascorbic"))).toEqual(["Myers' Revive", "Glow Protocol", "Immune Shield"]);
   });
 
   it("finds drips by category", () => {

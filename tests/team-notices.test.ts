@@ -163,7 +163,12 @@ describe("what is not news", () => {
   it("every message links somewhere real and carries a type the bell understands", () => {
     const all = [
       joinedTeam(nurse, "d1"),
-      ...noticesForNurseChange({ nurse, before: { doctorId: "d1", status: "active" }, after: { doctorId: "d2", status: "suspended" }, doctorNames: names }),
+      ...noticesForNurseChange({
+        nurse,
+        before: { doctorId: "d1", status: "active" },
+        after: { doctorId: "d2", status: "suspended" },
+        doctorNames: names,
+      }),
     ];
     for (const n of all) {
       expect(n.link).toMatch(/^\//);

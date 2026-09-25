@@ -32,9 +32,7 @@ export function DripLoader({
   const reduced = useRef(false);
 
   useEffect(() => {
-    reduced.current =
-      typeof window !== "undefined" &&
-      window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    reduced.current = typeof window !== "undefined" && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 
     // Reduced motion still gets the brand moment, just without the theatre.
     const total = reduced.current ? 380 : durationMs;
@@ -150,9 +148,13 @@ export function DripLoader({
           {LETTERS.split("").map((ch, i) => {
             // Each letter fills in turn, so the word reads as a gauge.
             const share = 100 / LETTERS.length;
-            const letterPct = Math.max(0, Math.min(100, (pct - i * share) / share * 100));
+            const letterPct = Math.max(0, Math.min(100, ((pct - i * share) / share) * 100));
             return (
-              <span key={i} className="relative" style={{ font: "700 clamp(26px,7vw,44px)/1 var(--font-display)", letterSpacing: "-0.03em" }}>
+              <span
+                key={i}
+                className="relative"
+                style={{ font: "700 clamp(26px,7vw,44px)/1 var(--font-display)", letterSpacing: "-0.03em" }}
+              >
                 <span style={{ color: "var(--color-line)" }}>{ch}</span>
                 <span
                   className="absolute inset-0 overflow-hidden"
@@ -167,10 +169,7 @@ export function DripLoader({
 
         {/* ---------------- The number, as every Fill carries one ---------------- */}
         <div className="flex items-center gap-3">
-          <span
-            className="t-micro"
-            style={{ color: "var(--color-ink-3)" }}
-          >
+          <span className="t-micro" style={{ color: "var(--color-ink-3)" }}>
             {label}
           </span>
           <span

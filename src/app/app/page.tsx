@@ -135,7 +135,13 @@ export default async function PatientHomePage() {
         bagVolumeMl?: number;
         enRouteAt?: Date;
         etaMinutes?: number;
-        charges?: Array<{ kind: "late_reschedule" | "late_cancel"; amount: number; at: Date; note?: string; settledAs?: "paid" | "waived" }>;
+        charges?: Array<{
+          kind: "late_reschedule" | "late_cancel";
+          amount: number;
+          at: Date;
+          note?: string;
+          settledAs?: "paid" | "waived";
+        }>;
       } | null>(),
     // Drafts are excluded inside plansFor — a plan the physician has not
     // shared yet is not the patient's to read.
@@ -145,9 +151,7 @@ export default async function PatientHomePage() {
 
   const plan = plans[0] ?? null;
 
-  const lowest = quiz
-    ? [...quiz.nutrientRisks].sort((a, b) => a.pct - b.pct).slice(0, 3)
-    : [];
+  const lowest = quiz ? [...quiz.nutrientRisks].sort((a, b) => a.pct - b.pct).slice(0, 3) : [];
   const approval = approvalState(quiz);
   // For moving or cancelling the next session from here, on the same terms as Sessions.
   const policy = await getLatePolicy();
@@ -195,7 +199,8 @@ export default async function PatientHomePage() {
           <div className="flex flex-col items-center gap-2">
             <FillRing score={quiz.vitalityScore} size={150} stroke={13} caption="of 100" />
             <Link href={`/app/results/${String(quiz._id)}`} className="t-body font-medium mt-2">
-              See all 16 markers&nbsp;<Arrow />
+              See all 16 markers&nbsp;
+              <Arrow />
             </Link>
           </div>
 
@@ -242,14 +247,15 @@ export default async function PatientHomePage() {
           <div className="min-w-0">
             <span className="t-micro">Your treatment plan</span>
             <h2 className="t-h3 mt-1">
-              {plan.totalWeeks} week{plan.totalWeeks === 1 ? "" : "s"} · {plan.sessions.length}{" "}
-              session{plan.sessions.length === 1 ? "" : "s"}
+              {plan.totalWeeks} week{plan.totalWeeks === 1 ? "" : "s"} · {plan.sessions.length} session
+              {plan.sessions.length === 1 ? "" : "s"}
             </h2>
             <span className="t-small text-[var(--color-ink-2)] block mt-1">
               {plan.diagnosis ?? `Written by ${plan.doctorName}`}
             </span>
             <span className="t-small text-[var(--color-ink-3)] block mt-2">
-              See every drip and dose&nbsp;<Arrow />
+              See every drip and dose&nbsp;
+              <Arrow />
             </span>
           </div>
           <div className="flex flex-col items-end flex-none">
@@ -287,8 +293,8 @@ export default async function PatientHomePage() {
 
           {upcoming.status === "awaiting_review" && (
             <p className="t-small text-[var(--color-ink-2)] mt-5">
-              A registered physician is reading your submission now. You will get a notification either way —
-              approval, an adjusted protocol, or a decline with the reason.
+              A registered physician is reading your submission now. You will get a notification either way — approval,
+              an adjusted protocol, or a decline with the reason.
             </p>
           )}
 
@@ -368,7 +374,8 @@ export default async function PatientHomePage() {
               is the main button instead. */}
           {approval.status !== "expired" && (
             <Link href="/quiz?retake=1" className="t-body font-medium block mt-3">
-              Retake the health quiz&nbsp;<Arrow />
+              Retake the health quiz&nbsp;
+              <Arrow />
             </Link>
           )}
         </div>

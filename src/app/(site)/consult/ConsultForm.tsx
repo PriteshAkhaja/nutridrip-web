@@ -4,13 +4,7 @@ import { useState } from "react";
 import { Button } from "@/components/ui/Button";
 import { Card } from "@/components/ui/Card";
 import { Input, Select, Textarea } from "@/components/ui/Field";
-import {
-  CONSULT_TOPICS,
-  CONTACT_WINDOWS,
-  composeConsultMessage,
-  consultReady,
-  pincodeHint,
-} from "@/lib/data/consult";
+import { CONSULT_TOPICS, CONTACT_WINDOWS, composeConsultMessage, consultReady, pincodeHint } from "@/lib/data/consult";
 import type { Zone } from "@/lib/zones";
 
 const HINT_COLOUR = {
@@ -46,8 +40,7 @@ export function ConsultForm({ response, zones }: { response: string; zones: Zone
   const set = (k: keyof typeof form) => (e: { target: { value: string } }) =>
     setForm((f) => ({ ...f, [k]: e.target.value }));
 
-  const toggle = (t: string) =>
-    setTopics((cur) => (cur.includes(t) ? cur.filter((x) => x !== t) : [...cur, t]));
+  const toggle = (t: string) => setTopics((cur) => (cur.includes(t) ? cur.filter((x) => x !== t) : [...cur, t]));
 
   const hint = pincodeHint(form.pincode, zones);
   const pin = form.pincode.replace(/\D/g, "");
@@ -117,7 +110,9 @@ export function ConsultForm({ response, zones }: { response: string; zones: Zone
             placeholder="you@example.com"
           />
         </div>
-        <p className="t-small text-[var(--color-ink-3)] -mt-3">Either one is enough — however you would like us to reply.</p>
+        <p className="t-small text-[var(--color-ink-3)] -mt-3">
+          Either one is enough — however you would like us to reply.
+        </p>
 
         <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 items-start">
           <div className="flex flex-col gap-[7px]">

@@ -25,11 +25,7 @@ import { fillZoneCount } from "@/lib/zones";
 
 export const dynamic = "force-dynamic";
 
-export async function generateMetadata({
-  params,
-}: {
-  params: Promise<{ slug: string }>;
-}): Promise<Metadata> {
+export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }): Promise<Metadata> {
   const { slug } = await params;
   const drip = await getDrip(slug);
   return { title: drip?.name ?? "Drip", description: drip?.description };
@@ -78,9 +74,13 @@ export default async function DripDetailPage({ params }: { params: Promise<{ slu
           aria-label="Breadcrumb"
           className="mx-auto max-w-[1240px] px-6 md:px-10 py-3 flex items-center gap-2 t-small"
         >
-          <Link href="/" className="text-[var(--color-ink-2)]">Home</Link>
+          <Link href="/" className="text-[var(--color-ink-2)]">
+            Home
+          </Link>
           <span className="text-[var(--color-ink-3)]">/</span>
-          <Link href="/drips" className="text-[var(--color-ink-2)]">Drips</Link>
+          <Link href="/drips" className="text-[var(--color-ink-2)]">
+            Drips
+          </Link>
           <span className="text-[var(--color-ink-3)]">/</span>
           <span className="text-[var(--color-ink)]">{drip.name}</span>
         </nav>
@@ -121,9 +121,7 @@ export default async function DripDetailPage({ params }: { params: Promise<{ slu
             <div>
               <div className="flex items-center gap-3 flex-wrap mb-4">
                 <Stars rating={5} size={15} />
-                <span className="t-small text-[var(--color-ink-2)]">
-                  {reviews.length} reviews for this drip
-                </span>
+                <span className="t-small text-[var(--color-ink-2)]">{reviews.length} reviews for this drip</span>
               </div>
 
               <h1
@@ -138,10 +136,7 @@ export default async function DripDetailPage({ params }: { params: Promise<{ slu
               </h1>
 
               {drip.tagline && (
-                <p
-                  className="mb-4"
-                  style={{ font: "500 18px/1.5 var(--font-sans)", color: "var(--color-primary)" }}
-                >
+                <p className="mb-4" style={{ font: "500 18px/1.5 var(--font-sans)", color: "var(--color-primary)" }}>
                   {drip.tagline}
                 </p>
               )}
@@ -158,17 +153,17 @@ export default async function DripDetailPage({ params }: { params: Promise<{ slu
                 <div className="mt-6 mb-6">
                   <span className="t-micro block mb-3">What it helps with</span>
                   <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
-                  {drip.benefits.map((b) => (
-                    <div
-                      key={b.title}
-                      className="rounded-[var(--radius-md)] border border-[var(--color-line)] bg-[var(--color-surface-2)] p-4"
-                    >
-                      <span className="t-body font-semibold block">{b.title}</span>
-                      {b.description && (
-                        <span className="t-small text-[var(--color-ink-2)] block mt-1">{b.description}</span>
-                      )}
-                    </div>
-                  ))}
+                    {drip.benefits.map((b) => (
+                      <div
+                        key={b.title}
+                        className="rounded-[var(--radius-md)] border border-[var(--color-line)] bg-[var(--color-surface-2)] p-4"
+                      >
+                        <span className="t-body font-semibold block">{b.title}</span>
+                        {b.description && (
+                          <span className="t-small text-[var(--color-ink-2)] block mt-1">{b.description}</span>
+                        )}
+                      </div>
+                    ))}
                   </div>
                 </div>
               )}
@@ -206,11 +201,17 @@ export default async function DripDetailPage({ params }: { params: Promise<{ slu
                     </span>
                   </div>
                   {available === 0 ? (
-                    <Pill tone="critical" dot>Out of stock</Pill>
+                    <Pill tone="critical" dot>
+                      Out of stock
+                    </Pill>
                   ) : available <= 3 ? (
-                    <Pill tone="caution" dot>Only {available} left today</Pill>
+                    <Pill tone="caution" dot>
+                      Only {available} left today
+                    </Pill>
                   ) : (
-                    <Pill tone="safe" dot>In stock · {available} available</Pill>
+                    <Pill tone="safe" dot>
+                      In stock · {available} available
+                    </Pill>
                   )}
                 </div>
 
@@ -240,8 +241,8 @@ export default async function DripDetailPage({ params }: { params: Promise<{ slu
                 )}
 
                 <p className="t-small text-[var(--color-ink-3)] mt-4">
-                  A physician reviews your answers before anything is scheduled. If this drip is not right for you,
-                  they will say so — and you pay nothing.
+                  A physician reviews your answers before anything is scheduled. If this drip is not right for you, they
+                  will say so — and you pay nothing.
                 </p>
               </div>
 
@@ -401,8 +402,8 @@ export default async function DripDetailPage({ params }: { params: Promise<{ slu
             You already know how the next month feels without it.
           </h2>
           <p className="t-body-lg max-w-[50ch]" style={{ color: "rgba(255,255,255,.72)" }}>
-            Three minutes of questions, read by a registered physician. If {drip.name} is wrong for you, they will
-            tell you what is right instead.
+            Three minutes of questions, read by a registered physician. If {drip.name} is wrong for you, they will tell
+            you what is right instead.
           </p>
           <div className="mt-2">
             <QuizButton drip={drip.slug} size="lg">
@@ -417,7 +418,8 @@ export default async function DripDetailPage({ params }: { params: Promise<{ slu
         <div className="flex items-end justify-between gap-6 flex-wrap mb-10">
           <SectionHeading eyebrow="Also considered" title="Other protocols" />
           <Link href="/drips" className="t-body font-semibold mb-10">
-            All drips&nbsp;<Arrow />
+            All drips&nbsp;
+            <Arrow />
           </Link>
         </div>
         <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-4">

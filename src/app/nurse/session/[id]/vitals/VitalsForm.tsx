@@ -119,7 +119,8 @@ export function VitalsForm({
   const complete = FIELDS.filter((f) => f.vitalKey).every((f) => values[f.key] !== "");
   // A correction has to change something, and say why.
   const changed =
-    !correcting || FIELDS.some((f) => values[f.key] !== text(correcting[f.key as keyof Correcting] as number | undefined));
+    !correcting ||
+    FIELDS.some((f) => values[f.key] !== text(correcting[f.key as keyof Correcting] as number | undefined));
   const explained = !correcting || (reason !== "" && (reason !== "Other" || note.trim() !== ""));
   // Said under the button while it is off: a greyed-out Save with no reason
   // given read as broken, when it was only waiting for a choice above it.
@@ -172,7 +173,11 @@ export function VitalsForm({
         <div className="rounded-[var(--radius-md)] border border-[var(--color-line)] bg-[var(--color-surface-2)] px-4 py-3">
           <span className="t-micro">
             Recorded ·{" "}
-            {new Date(correcting.takenAt).toLocaleTimeString("en-IN", { hour: "2-digit", minute: "2-digit", hour12: true })}
+            {new Date(correcting.takenAt).toLocaleTimeString("en-IN", {
+              hour: "2-digit",
+              minute: "2-digit",
+              hour12: true,
+            })}
           </span>
           <div className="t-data text-[14.5px] mt-1">
             {correcting.systolic}/{correcting.diastolic} · {correcting.heartRate} bpm · SpO₂ {correcting.spo2}% ·{" "}
@@ -230,10 +235,7 @@ export function VitalsForm({
                   background: out ? "var(--color-critical-soft)" : "var(--color-surface)",
                 }}
               />
-              <span
-                className="t-small"
-                style={{ color: out ? "var(--color-critical)" : "var(--color-ink-3)" }}
-              >
+              <span className="t-small" style={{ color: out ? "var(--color-critical)" : "var(--color-ink-3)" }}>
                 {out ? `Outside ${f.hint}` : f.hint}
               </span>
             </label>

@@ -40,6 +40,5 @@ const BillingSettingsSchema = new Schema(
   { timestamps: true }
 );
 
-export const BillingSettings =
-  models.BillingSettings || model("BillingSettings", BillingSettingsSchema);
+export const BillingSettings = models.BillingSettings || model("BillingSettings", BillingSettingsSchema);
 export default BillingSettings;

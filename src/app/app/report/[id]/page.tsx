@@ -50,7 +50,13 @@ export default async function ReportPage({ params }: { params: Promise<{ id: str
     adverseEvents: Array<{ at: Date; symptoms: string[]; severity?: string }>;
     aftercareNotes?: string;
     feedback?: StoredFeedback;
-    charges?: Array<{ kind: "late_reschedule" | "late_cancel"; amount: number; at: Date; note?: string; settledAs?: "paid" | "waived" }>;
+    charges?: Array<{
+      kind: "late_reschedule" | "late_cancel";
+      amount: number;
+      at: Date;
+      note?: string;
+      settledAs?: "paid" | "waived";
+    }>;
   } | null>();
 
   if (!booking) notFound();
@@ -109,9 +115,7 @@ export default async function ReportPage({ params }: { params: Promise<{ id: str
               <div key={i} className="flex justify-between gap-4 items-baseline">
                 <div className="flex flex-col min-w-0">
                   <span className="t-body text-[var(--color-ink-2)]">{c.name}</span>
-                  {c.batchNo && (
-                    <span className="t-data text-[13px] text-[var(--color-ink-3)]">Batch {c.batchNo}</span>
-                  )}
+                  {c.batchNo && <span className="t-data text-[13px] text-[var(--color-ink-3)]">Batch {c.batchNo}</span>}
                 </div>
                 <span className="t-data text-[14.5px] flex-none">
                   {c.dose?.toLocaleString("en-IN")} {c.unit}
@@ -141,7 +145,11 @@ export default async function ReportPage({ params }: { params: Promise<{ id: str
               <tbody>
                 {(
                   [
-                    ["Blood pressure", `${baseline.systolic}/${baseline.diastolic}`, closing ? `${closing.systolic}/${closing.diastolic}` : null],
+                    [
+                      "Blood pressure",
+                      `${baseline.systolic}/${baseline.diastolic}`,
+                      closing ? `${closing.systolic}/${closing.diastolic}` : null,
+                    ],
                     ["Heart rate", `${baseline.heartRate} bpm`, closing ? `${closing.heartRate} bpm` : null],
                     ["SpO₂", `${baseline.spo2}%`, closing ? `${closing.spo2}%` : null],
                     ["Temperature", `${baseline.temperatureF} °F`, closing ? `${closing.temperatureF} °F` : null],

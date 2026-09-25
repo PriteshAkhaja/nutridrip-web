@@ -32,7 +32,9 @@ type RawCharge = {
  * The latest late-change fees across all sessions -- unpaid first, then newest
  * -- and what is still owed in total. Who owes what, and what came in.
  */
-export async function recentLateCharges(limit = 10): Promise<{ rows: LateChargeRow[]; owed: { count: number; amount: number } }> {
+export async function recentLateCharges(
+  limit = 10
+): Promise<{ rows: LateChargeRow[]; owed: { count: number; amount: number } }> {
   await connectDB();
   const [rows, owedAgg] = await Promise.all([
     Booking.aggregate<{ _id: unknown; bookingNo: string; patientId: unknown; charge: RawCharge }>([

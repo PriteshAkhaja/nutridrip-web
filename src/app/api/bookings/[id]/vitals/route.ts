@@ -51,9 +51,7 @@ export async function POST(req: Request, { params }: { params: Promise<{ id: str
     await booking.save();
 
     if (flagged.length) {
-      const detail = flagged
-        .map((k) => `${VITAL_RANGES[k].label} ${input[k]} ${VITAL_RANGES[k].unit}`)
-        .join(", ");
+      const detail = flagged.map((k) => `${VITAL_RANGES[k].label} ${input[k]} ${VITAL_RANGES[k].unit}`).join(", ");
       const title = `Vitals out of range · ${booking.bookingNo}`;
       const body = `${detail}. The infusion is blocked pending your call.`;
       if (booking.doctorId) await notify(String(booking.doctorId), title, body, "error", "/doctor/adverse");

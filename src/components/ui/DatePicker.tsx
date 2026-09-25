@@ -38,8 +38,18 @@ const WEEKDAYS = [
 ];
 
 const MONTHS = [
-  "January", "February", "March", "April", "May", "June",
-  "July", "August", "September", "October", "November", "December",
+  "January",
+  "February",
+  "March",
+  "April",
+  "May",
+  "June",
+  "July",
+  "August",
+  "September",
+  "October",
+  "November",
+  "December",
 ];
 
 /**
@@ -83,8 +93,7 @@ export const parseTyped = (raw: string): string | "" => {
   return fromISO(candidate) ? candidate : "";
 };
 
-export const addDays = (d: Date, n: number) =>
-  new Date(d.getFullYear(), d.getMonth(), d.getDate() + n);
+export const addDays = (d: Date, n: number) => new Date(d.getFullYear(), d.getMonth(), d.getDate() + n);
 
 export const addMonths = (d: Date, n: number) => {
   const target = new Date(d.getFullYear(), d.getMonth() + n, 1);
@@ -256,12 +265,24 @@ export function DatePicker({
       moveFocus(addDays(base, n));
     };
     switch (e.key) {
-      case "ArrowLeft": jump(-1); break;
-      case "ArrowRight": jump(1); break;
-      case "ArrowUp": jump(-7); break;
-      case "ArrowDown": jump(7); break;
-      case "Home": jump(-mondayIndex(base)); break;
-      case "End": jump(6 - mondayIndex(base)); break;
+      case "ArrowLeft":
+        jump(-1);
+        break;
+      case "ArrowRight":
+        jump(1);
+        break;
+      case "ArrowUp":
+        jump(-7);
+        break;
+      case "ArrowDown":
+        jump(7);
+        break;
+      case "Home":
+        jump(-mondayIndex(base));
+        break;
+      case "End":
+        jump(6 - mondayIndex(base));
+        break;
       case "PageUp":
         e.preventDefault();
         moveFocus(addMonths(base, e.shiftKey ? -12 : -1));
@@ -303,7 +324,9 @@ export function DatePicker({
       <div className="flex flex-col gap-[7px] min-w-0">
         {label && (
           <span className="flex items-baseline justify-between gap-3">
-            <label htmlFor={`${id}-native`} className="t-micro">{label}</label>
+            <label htmlFor={`${id}-native`} className="t-micro">
+              {label}
+            </label>
             {hint && <span className="t-small text-[var(--color-ink-3)]">{hint}</span>}
           </span>
         )}
@@ -324,7 +347,10 @@ export function DatePicker({
           >
             {value ? display(value) : placeholder}
           </span>
-          <span aria-hidden className="flex-none w-[32px] h-[32px] flex items-center justify-center text-[var(--color-ink-3)]">
+          <span
+            aria-hidden
+            className="flex-none w-[32px] h-[32px] flex items-center justify-center text-[var(--color-ink-3)]"
+          >
             <CalendarGlyph />
           </span>
           <input
@@ -374,7 +400,9 @@ export function DatePicker({
     >
       {label && (
         <span className="flex items-baseline justify-between gap-3">
-          <span className="t-micro" id={`${id}-label`}>{label}</span>
+          <span className="t-micro" id={`${id}-label`}>
+            {label}
+          </span>
           {hint && <span className="t-small text-[var(--color-ink-3)]">{hint}</span>}
         </span>
       )}
@@ -439,7 +467,11 @@ export function DatePicker({
           aria-label={open ? "Close calendar" : "Open calendar"}
           // Stops the wrapper's opener seeing this click too, so the glyph can
           // still close a panel the rest of the field only ever opens.
-          onClick={(e) => { e.stopPropagation(); if (open) close(); else openPanel(); }}
+          onClick={(e) => {
+            e.stopPropagation();
+            if (open) close();
+            else openPanel();
+          }}
           className="flex-none w-[32px] h-[32px] rounded-[var(--radius-sm)] flex items-center justify-center cursor-pointer text-[var(--color-ink-3)] hover:bg-[var(--color-surface-2)] hover:text-[var(--color-primary)] disabled:cursor-default disabled:hover:bg-transparent"
         >
           <CalendarGlyph />
@@ -470,7 +502,11 @@ export function DatePicker({
               onChange={(e) => setCursor(new Date(cursor.getFullYear(), Number(e.target.value), 1))}
               className={`${HEADING_SELECT} font-semibold`}
             >
-              {MONTHS.map((m, i) => <option key={m} value={i}>{m}</option>)}
+              {MONTHS.map((m, i) => (
+                <option key={m} value={i}>
+                  {m}
+                </option>
+              ))}
             </select>
             <select
               aria-label="Year"
@@ -478,7 +514,11 @@ export function DatePicker({
               onChange={(e) => setCursor(new Date(Number(e.target.value), cursor.getMonth(), 1))}
               className={`${HEADING_SELECT} t-data font-medium`}
             >
-              {years.map((y) => <option key={y} value={y}>{y}</option>)}
+              {years.map((y) => (
+                <option key={y} value={y}>
+                  {y}
+                </option>
+              ))}
             </select>
             <span className="flex gap-1 ml-auto flex-none pl-2">
               <Step label="Previous month" onClick={() => setCursor(addMonths(cursor, -1))} d="M10 3L5.5 8l4.5 5" />
@@ -539,9 +579,7 @@ export function DatePicker({
                     // Today is a position, not a status, so it gets a ring
                     // rather than one of the clinical hues.
                     style={
-                      isToday && !selected
-                        ? { boxShadow: "inset 0 0 0 1.5px var(--color-primary-line)" }
-                        : undefined
+                      isToday && !selected ? { boxShadow: "inset 0 0 0 1.5px var(--color-primary-line)" } : undefined
                     }
                   >
                     {d.getDate()}
@@ -555,12 +593,18 @@ export function DatePicker({
             {clearable ? (
               <button
                 type="button"
-                onClick={() => { onChange(""); setDraft(null); close(); }}
+                onClick={() => {
+                  onChange("");
+                  setDraft(null);
+                  close();
+                }}
                 className="t-small font-semibold text-[var(--color-ink-2)] cursor-pointer hover:text-[var(--color-ink)]"
               >
                 Clear
               </button>
-            ) : <span />}
+            ) : (
+              <span />
+            )}
             <button
               type="button"
               disabled={!today || outOfRange(today)}

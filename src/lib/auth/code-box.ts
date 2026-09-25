@@ -17,7 +17,9 @@ function key(): Buffer {
   if ((!raw || raw.length < 16) && process.env.NODE_ENV === "production") {
     throw new Error("JWT_SECRET must be set to at least 16 characters in production");
   }
-  return createHash("sha256").update(`nd-session-code:${raw && raw.length >= 16 ? raw : "development-only"}`).digest();
+  return createHash("sha256")
+    .update(`nd-session-code:${raw && raw.length >= 16 ? raw : "development-only"}`)
+    .digest();
 }
 
 /** "iv.tag.ciphertext", base64url. */

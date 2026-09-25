@@ -40,15 +40,7 @@ export function THead({ children }: { children: ReactNode }) {
   return <thead className="bg-[var(--color-surface-2)]">{children}</thead>;
 }
 
-export function TH({
-  children,
-  numeric = false,
-  width,
-}: {
-  children: ReactNode;
-  numeric?: boolean;
-  width?: string;
-}) {
+export function TH({ children, numeric = false, width }: { children: ReactNode; numeric?: boolean; width?: string }) {
   return (
     <th
       scope="col"
@@ -56,9 +48,7 @@ export function TH({
       // 12px either side, as the Block 5 and 6 mockups draw their rows. The
       // build had drifted to 16px, which cost dense tables like Users and
       // Batches the last few columns on a laptop once names stopped wrapping.
-      className={`t-micro px-3 py-[10px] border-b border-[var(--color-line)] ${
-        numeric ? "text-right" : "text-left"
-      }`}
+      className={`t-micro px-3 py-[10px] border-b border-[var(--color-line)] ${numeric ? "text-right" : "text-left"}`}
     >
       {children}
     </th>

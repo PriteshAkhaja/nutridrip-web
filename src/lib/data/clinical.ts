@@ -80,7 +80,11 @@ function screeningOf(
   const byId = new Map(questions.map((q) => [q.id, q]));
   return (quiz.answers ?? []).flatMap((a) => {
     const q = byId.get(a?.questionId ?? "");
-    const given = Array.isArray(a?.answer) ? a.answer.map(String) : typeof a?.answer === "string" ? a.answer : undefined;
+    const given = Array.isArray(a?.answer)
+      ? a.answer.map(String)
+      : typeof a?.answer === "string"
+        ? a.answer
+        : undefined;
     const hit = q ? screeningHit(q, given) : [];
     return hit.length ? [`${q!.question} — ${hit.join(", ")}`] : [];
   });
@@ -110,18 +114,16 @@ function slaOf(submittedAt: Date): { msLeft: number; label: string; pct: number 
 export async function reviewQueue(): Promise<QueueItem[]> {
   await connectDB();
 
-  const quizzes = await HealthQuiz.find({ reviewStatus: "pending" })
-    .sort({ completedAt: 1 })
-    .lean<
-      Array<{
-        _id: unknown;
-        patientId: unknown;
-        vitalityScore: number;
-        completedAt: Date;
-        screeningFlags?: string[];
-        answers?: StoredAnswer[];
-      }>
-    >();
+  const quizzes = await HealthQuiz.find({ reviewStatus: "pending" }).sort({ completedAt: 1 }).lean<
+    Array<{
+      _id: unknown;
+      patientId: unknown;
+      vitalityScore: number;
+      completedAt: Date;
+      screeningFlags?: string[];
+      answers?: StoredAnswer[];
+    }>
+  >();
 
   // Only submissions older than the stored flags need the questions to work theirs out.
   const questions = quizzes.some((q) => !Array.isArray(q.screeningFlags)) ? await loadQuestions(true) : [];
@@ -277,8 +279,16 @@ export async function patientReview(quizId: string): Promise<PatientReview | nul
   // without saying so. The rows are small because the file is not read.
   const labs = await LabReport.find({ patientId: quiz.patientId })
     .sort({ uploadedAt: -1 })
-    .select({ fileName: 1, category: 1, notes: 1, uploadedAt: 1, hasFile: { $gt: [{ $strLenCP: { $ifNull: ["$fileUrl", ""] } }, 0] } })
-    .lean<Array<{ _id: unknown; fileName: string; category?: string; notes?: string; uploadedAt: Date; hasFile?: boolean }>>();
+    .select({
+      fileName: 1,
+      category: 1,
+      notes: 1,
+      uploadedAt: 1,
+      hasFile: { $gt: [{ $strLenCP: { $ifNull: ["$fileUrl", ""] } }, 0] },
+    })
+    .lean<
+      Array<{ _id: unknown; fileName: string; category?: string; notes?: string; uploadedAt: Date; hasFile?: boolean }>
+    >();
 
   const patient = await User.findById(quiz.patientId).lean<{
     _id: unknown;
@@ -318,8 +328,7 @@ export async function patientReview(quizId: string): Promise<PatientReview | nul
     .lean<Array<{ completedAt?: Date }>>();
 
   const p = patient.patient ?? {};
-  const bmi =
-    p.weightKg && p.heightCm ? (p.weightKg / (p.heightCm / 100) ** 2).toFixed(1) : null;
+  const bmi = p.weightKg && p.heightCm ? (p.weightKg / (p.heightCm / 100) ** 2).toFixed(1) : null;
 
   return {
     quizId: String(quiz._id),

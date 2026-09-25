@@ -15,12 +15,42 @@ export type PillTone = "neutral" | "info" | "safe" | "caution" | "critical" | "p
  * status colour — the status still reads as itself, and the word is legible.
  */
 const TONE: Record<PillTone, { fg: string; dot: string; bg: string; line: string }> = {
-  neutral: { fg: "var(--color-ink-2)", dot: "var(--color-ink-3)", bg: "var(--color-surface-2)", line: "var(--color-line-2)" },
-  info: { fg: "var(--color-info-text)", dot: "var(--color-info)", bg: "var(--color-info-soft)", line: "var(--color-info)" },
-  safe: { fg: "var(--color-safe-text)", dot: "var(--color-safe)", bg: "var(--color-safe-soft)", line: "var(--color-safe)" },
-  caution: { fg: "var(--color-caution-text)", dot: "var(--color-caution)", bg: "var(--color-caution-soft)", line: "var(--color-caution)" },
-  critical: { fg: "var(--color-critical-text)", dot: "var(--color-critical)", bg: "var(--color-critical-soft)", line: "var(--color-critical)" },
-  primary: { fg: "var(--color-primary-text)", dot: "var(--color-primary)", bg: "var(--color-primary-soft)", line: "var(--color-primary-line)" },
+  neutral: {
+    fg: "var(--color-ink-2)",
+    dot: "var(--color-ink-3)",
+    bg: "var(--color-surface-2)",
+    line: "var(--color-line-2)",
+  },
+  info: {
+    fg: "var(--color-info-text)",
+    dot: "var(--color-info)",
+    bg: "var(--color-info-soft)",
+    line: "var(--color-info)",
+  },
+  safe: {
+    fg: "var(--color-safe-text)",
+    dot: "var(--color-safe)",
+    bg: "var(--color-safe-soft)",
+    line: "var(--color-safe)",
+  },
+  caution: {
+    fg: "var(--color-caution-text)",
+    dot: "var(--color-caution)",
+    bg: "var(--color-caution-soft)",
+    line: "var(--color-caution)",
+  },
+  critical: {
+    fg: "var(--color-critical-text)",
+    dot: "var(--color-critical)",
+    bg: "var(--color-critical-soft)",
+    line: "var(--color-critical)",
+  },
+  primary: {
+    fg: "var(--color-primary-text)",
+    dot: "var(--color-primary)",
+    bg: "var(--color-primary-soft)",
+    line: "var(--color-primary-line)",
+  },
 };
 
 /** Status label → tone, transcribed from the design system's pill sheet. */

@@ -13,7 +13,10 @@ export const dynamic = "force-dynamic";
 const MARKER_NAMES = MARKERS.map((m) => m.name);
 
 const UpsertQuestion = z.object({
-  qid: z.string().regex(/^[a-z0-9-]+$/i, "Use letters, numbers and hyphens only").max(40),
+  qid: z
+    .string()
+    .regex(/^[a-z0-9-]+$/i, "Use letters, numbers and hyphens only")
+    .max(40),
   section: z.string().min(1).max(60),
   order: z.number().int().min(0).max(500).optional(),
   question: z.string().min(1).max(300),
@@ -70,9 +73,7 @@ const summary = (q: QuestionDef | undefined, byId: Map<string, QuestionDef>) =>
         type: q.type,
         live: q.isActive !== false,
         ...(q.options?.length ? { options: q.options.map((o) => `${o.label} (${o.score})`).join(", ") } : {}),
-        ...(q.type === "number"
-          ? { range: `${q.min ?? ""}–${q.max ?? ""}${q.unit ? ` ${q.unit}` : ""}` }
-          : {}),
+        ...(q.type === "number" ? { range: `${q.min ?? ""}–${q.max ?? ""}${q.unit ? ` ${q.unit}` : ""}` } : {}),
         askedWhen: describeShowIf(q, byId) ?? "always",
       }
     : undefined;
@@ -137,7 +138,7 @@ export async function POST(req: Request) {
       return fail("Two options share the same value — the answer would be ambiguous", 422);
     }
     if (input.type === "multi" && input.options.every((o) => o.exclusive)) {
-      return fail("Every answer is marked \"only this\", so nobody could tick more than one", 422);
+      return fail('Every answer is marked "only this", so nobody could tick more than one', 422);
     }
     if (choice && input.contraindicationIf.some((v) => !values.includes(v))) {
       return fail("A screening answer is not one of this question\u2019s answers", 422);
@@ -248,7 +249,7 @@ export async function POST(req: Request) {
       unit?: string;
     } | null>();
     const lost =
-      (clean.showIf !== undefined && !(saved?.showIf?.conditions?.length)) ||
+      (clean.showIf !== undefined && !saved?.showIf?.conditions?.length) ||
       (clean.min !== undefined && saved?.min !== clean.min) ||
       (clean.unit !== undefined && saved?.unit !== clean.unit);
     if (lost) {

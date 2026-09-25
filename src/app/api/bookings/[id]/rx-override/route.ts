@@ -221,11 +221,29 @@ export async function POST(req: Request, { params }: { params: Promise<{ id: str
 
     // Everyone with a reason to know, including the patient — it is their record.
     if (booking.doctorId) {
-      await notify(String(booking.doctorId), `Prescription opened without a code · ${booking.bookingNo}`, summary, "error", "/doctor/adverse");
+      await notify(
+        String(booking.doctorId),
+        `Prescription opened without a code · ${booking.bookingNo}`,
+        summary,
+        "error",
+        "/doctor/adverse"
+      );
     } else {
-      await notifyRole("doctor", `Prescription opened without a code · ${booking.bookingNo}`, summary, "error", "/doctor/adverse");
+      await notifyRole(
+        "doctor",
+        `Prescription opened without a code · ${booking.bookingNo}`,
+        summary,
+        "error",
+        "/doctor/adverse"
+      );
     }
-    await notifyRole(["admin", "superadmin"], `Prescription opened without a code · ${booking.bookingNo}`, summary, "error", "/admin");
+    await notifyRole(
+      ["admin", "superadmin"],
+      `Prescription opened without a code · ${booking.bookingNo}`,
+      summary,
+      "error",
+      "/admin"
+    );
     await notify(
       String(booking.patientId),
       "Your prescription was opened without your code",

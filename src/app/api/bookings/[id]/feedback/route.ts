@@ -36,7 +36,10 @@ export async function POST(req: Request, { params }: { params: Promise<{ id: str
 
     // A server started before the two parts existed would drop them and save nothing.
     if (!Booking.schema.path("feedback.nurseRating")) {
-      return fail("The server is running an older version and would lose this. Restart it (stop it and run npm run dev again).", 500);
+      return fail(
+        "The server is running an older version and would lose this. Restart it (stop it and run npm run dev again).",
+        500
+      );
     }
 
     booking.feedback = {
@@ -84,7 +87,11 @@ export async function POST(req: Request, { params }: { params: Promise<{ id: str
       action: "feedback.given",
       entity: "Booking",
       entityId: id,
-      after: { bookingNo: booking.bookingNo, nurseRating: view?.nurse?.rating ?? null, sessionRating: view?.session?.rating ?? null },
+      after: {
+        bookingNo: booking.bookingNo,
+        nurseRating: view?.nurse?.rating ?? null,
+        sessionRating: view?.session?.rating ?? null,
+      },
     });
 
     return ok({ feedback: view });

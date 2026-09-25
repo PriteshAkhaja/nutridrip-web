@@ -32,9 +32,7 @@ export async function POST(req: Request, { params }: { params: Promise<{ id: str
       return fail("That session is already closed", 409);
     }
 
-    const flagged = (booking.vitals ?? []).some(
-      (v: { outOfRange?: string[] }) => (v.outOfRange ?? []).length > 0
-    );
+    const flagged = (booking.vitals ?? []).some((v: { outOfRange?: string[] }) => (v.outOfRange ?? []).length > 0);
     if (!flagged) return fail("Nothing is blocking this session", 409);
     if (decision === "clear" && booking.vitalsClearedAt) return fail("Already cleared", 409);
 

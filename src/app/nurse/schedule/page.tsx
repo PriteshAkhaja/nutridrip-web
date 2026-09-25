@@ -106,45 +106,49 @@ export default async function NurseSchedulePage({
         />
       ) : (
         <PagedView>
-        <PagedResults>
-        <div className="flex flex-col gap-6">
-          {[...byDay].map(([day, items]) => (
-            <section key={day}>
-              <span className="t-micro block mb-3">
-                {formatDate(day)} · {items.length} session{items.length === 1 ? "" : "s"}
-              </span>
-              <div className="flex flex-col gap-2">
-                {items.map((b) => (
-                  <Link
-                    key={String(b._id)}
-                    href={b.status === "completed" ? `/nurse/session/${String(b._id)}/report` : `/nurse/session/${String(b._id)}`}
-                    className="rounded-[var(--radius-md)] border border-[var(--color-line)] bg-[var(--color-surface)] p-4 flex items-center justify-between gap-3 no-underline hover:no-underline hover:border-[var(--color-primary-line)] transition-colors duration-150"
-                  >
-                    <div className="flex flex-col min-w-0">
-                      <span className="t-data text-[14.5px]">{formatTime(b.scheduledAt)}</span>
-                      <span className="t-body font-medium truncate">
-                        {nameById.get(String(b.patientId)) ?? "—"}
-                      </span>
-                      <span className="t-small text-[var(--color-ink-3)] truncate">
-                        {b.dripName} · {b.address ?? "—"}
-                      </span>
-                    </div>
-                    <StatusPill status={b.status} dot />
-                  </Link>
-                ))}
-              </div>
-            </section>
-          ))}
-        </div>
-        </PagedResults>
-        {history ? (
-          <Pagination
-            meta={history.meta}
-            basePath="/nurse/schedule"
-            params={{ view, pageSize }}
-            nouns={["session", "sessions"]}
-          />
-        ) : null}
+          <PagedResults>
+            <div className="flex flex-col gap-6">
+              {[...byDay].map(([day, items]) => (
+                <section key={day}>
+                  <span className="t-micro block mb-3">
+                    {formatDate(day)} · {items.length} session{items.length === 1 ? "" : "s"}
+                  </span>
+                  <div className="flex flex-col gap-2">
+                    {items.map((b) => (
+                      <Link
+                        key={String(b._id)}
+                        href={
+                          b.status === "completed"
+                            ? `/nurse/session/${String(b._id)}/report`
+                            : `/nurse/session/${String(b._id)}`
+                        }
+                        className="rounded-[var(--radius-md)] border border-[var(--color-line)] bg-[var(--color-surface)] p-4 flex items-center justify-between gap-3 no-underline hover:no-underline hover:border-[var(--color-primary-line)] transition-colors duration-150"
+                      >
+                        <div className="flex flex-col min-w-0">
+                          <span className="t-data text-[14.5px]">{formatTime(b.scheduledAt)}</span>
+                          <span className="t-body font-medium truncate">
+                            {nameById.get(String(b.patientId)) ?? "—"}
+                          </span>
+                          <span className="t-small text-[var(--color-ink-3)] truncate">
+                            {b.dripName} · {b.address ?? "—"}
+                          </span>
+                        </div>
+                        <StatusPill status={b.status} dot />
+                      </Link>
+                    ))}
+                  </div>
+                </section>
+              ))}
+            </div>
+          </PagedResults>
+          {history ? (
+            <Pagination
+              meta={history.meta}
+              basePath="/nurse/schedule"
+              params={{ view, pageSize }}
+              nouns={["session", "sessions"]}
+            />
+          ) : null}
         </PagedView>
       )}
       {plans.length > 0 ? (

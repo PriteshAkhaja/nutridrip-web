@@ -34,11 +34,7 @@ export function MobileShell({
         <div className="mx-auto w-full max-w-[560px] px-5 py-3 flex items-center gap-3">
           {/* `back` is the page's usual parent; the arrow goes where the page was
               actually entered from when that is known (see NavTrail). */}
-          {back ? (
-            <BackLink fallback={back} />
-          ) : (
-            <LogoMark size={22} />
-          )}
+          {back ? <BackLink fallback={back} /> : <LogoMark size={22} />}
           <div className="min-w-0 flex-1">
             <h1 style={{ font: "600 18px/1.3 var(--font-display)", letterSpacing: "-0.02em" }} className="truncate">
               {title}
@@ -58,7 +54,10 @@ export function MobileShell({
           className="fixed bottom-0 inset-x-0 z-30 bg-[var(--color-surface)] border-t border-[var(--color-line)]"
           aria-label="Sections"
         >
-          <div className="mx-auto w-full max-w-[560px] grid" style={{ gridTemplateColumns: `repeat(${tabs.length}, 1fr)` }}>
+          <div
+            className="mx-auto w-full max-w-[560px] grid"
+            style={{ gridTemplateColumns: `repeat(${tabs.length}, 1fr)` }}
+          >
             {tabs.map((t) => {
               const active = activeHref === t.href;
               return (

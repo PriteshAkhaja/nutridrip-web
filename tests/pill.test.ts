@@ -16,7 +16,23 @@ describe("which status pills pulse", () => {
   it("keeps every settled state still", () => {
     // A pulse says "happening now". On a finished or stopped record it would
     // say something untrue.
-    for (const s of ["completed", "cancelled", "approved", "rejected", "modified", "DRAFT", "CONFIRMED", "DISPATCHED", "CANCELLED", "active", "inactive", "suspended", "quarantined", "out_of_stock", "adverse_event"]) {
+    for (const s of [
+      "completed",
+      "cancelled",
+      "approved",
+      "rejected",
+      "modified",
+      "DRAFT",
+      "CONFIRMED",
+      "DISPATCHED",
+      "CANCELLED",
+      "active",
+      "inactive",
+      "suspended",
+      "quarantined",
+      "out_of_stock",
+      "adverse_event",
+    ]) {
       expect(isLiveStatus(s), s).toBe(false);
     }
   });
@@ -29,7 +45,16 @@ describe("which status pills pulse", () => {
   it("only names statuses the pill vocabulary knows", () => {
     // A live status missing from STATUS_TONE would render neutral grey and
     // pulse anyway — or, misspelt, never pulse at all.
-    for (const s of ["en_route", "in_progress", "nurse_assigned", "awaiting_review", "Awaiting review", "info_needed", "Needs more information", "pending"]) {
+    for (const s of [
+      "en_route",
+      "in_progress",
+      "nurse_assigned",
+      "awaiting_review",
+      "Awaiting review",
+      "info_needed",
+      "Needs more information",
+      "pending",
+    ]) {
       expect(STATUS_TONE[s], s).toBeDefined();
     }
   });

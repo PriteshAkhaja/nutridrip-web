@@ -29,8 +29,7 @@ type LeanQuestion = {
 };
 
 function toDef(q: LeanQuestion): QuizQuestionDef {
-  const affects =
-    q.affects instanceof Map ? Object.fromEntries(q.affects) : (q.affects ?? {});
+  const affects = q.affects instanceof Map ? Object.fromEntries(q.affects) : (q.affects ?? {});
   return {
     id: q.qid,
     section: q.section,
@@ -39,7 +38,12 @@ function toDef(q: LeanQuestion): QuizQuestionDef {
     type: q.type,
     options: [...(q.options ?? [])]
       .sort((a, b) => a.order - b.order)
-      .map(({ value, label, score, exclusive }) => ({ value, label, score, ...(exclusive ? { exclusive: true } : {}) })),
+      .map(({ value, label, score, exclusive }) => ({
+        value,
+        label,
+        score,
+        ...(exclusive ? { exclusive: true } : {}),
+      })),
     affects,
     optional: q.optional,
     contraindicationIf: q.contraindicationIf?.length ? q.contraindicationIf : undefined,

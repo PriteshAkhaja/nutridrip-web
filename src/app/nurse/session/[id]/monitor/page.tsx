@@ -81,16 +81,12 @@ export default async function MonitorPage({ params }: { params: Promise<{ id: st
           </div>
           <div className="flex flex-col">
             <span className="t-micro">Elapsed</span>
-            <span className="t-data text-[14.5px]">
-              {booking.startedAt ? elapsed(booking.startedAt) : "—"}
-            </span>
+            <span className="t-data text-[14.5px]">{booking.startedAt ? elapsed(booking.startedAt) : "—"}</span>
           </div>
           {minutesLeft !== null && (
             <div className="flex flex-col">
               <span className="t-micro">Expected finish</span>
-              <span className="t-data text-[14.5px]">
-                {formatTime(finishTime(remaining, booking.rateMlHr!))}
-              </span>
+              <span className="t-data text-[14.5px]">{formatTime(finishTime(remaining, booking.rateMlHr!))}</span>
             </div>
           )}
         </div>

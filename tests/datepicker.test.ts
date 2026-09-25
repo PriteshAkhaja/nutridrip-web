@@ -76,7 +76,17 @@ describe("what somebody types into the box", () => {
   it("returns empty for anything half-typed or impossible", () => {
     // A half-finished field is not an error, it is unfinished — the caller
     // puts the last good value back rather than showing a validation shout.
-    for (const bad of ["", "16", "16-09", "16-09-20", "1692026", "aa-bb-cccc", "32-01-2026", "16-13-2026", "30-02-2026"]) {
+    for (const bad of [
+      "",
+      "16",
+      "16-09",
+      "16-09-20",
+      "1692026",
+      "aa-bb-cccc",
+      "32-01-2026",
+      "16-13-2026",
+      "30-02-2026",
+    ]) {
       expect(parseTyped(bad), bad).toBe("");
     }
   });

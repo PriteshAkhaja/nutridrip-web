@@ -20,11 +20,7 @@ export type ContactWindow = (typeof CONTACT_WINDOWS)[number];
 /** Lead.message is capped at 2000 by the API; stay under it rather than be refused. */
 export const CONSULT_MESSAGE_MAX = 2000;
 
-export function composeConsultMessage(input: {
-  topics?: string[];
-  window?: string;
-  question?: string;
-}): string {
+export function composeConsultMessage(input: { topics?: string[]; window?: string; question?: string }): string {
   // Only topics this form offered. The list is echoed back from a browser, so
   // it is checked here instead of trusted.
   const topics = (input.topics ?? []).filter((t) => CONSULT_TOPICS.includes(t));

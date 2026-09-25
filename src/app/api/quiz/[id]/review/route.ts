@@ -36,14 +36,18 @@ export async function POST(req: Request, { params }: { params: Promise<{ id: str
     }
 
     const { id } = await params;
-    const { decision, notes, nurseId, patientNote, dripIds, strength, infoRequest, declineReason } =
-      Input.parse(await req.json());
+    const { decision, notes, nurseId, patientNote, dripIds, strength, infoRequest, declineReason } = Input.parse(
+      await req.json()
+    );
     await connectDB();
 
     const quiz = await HealthQuiz.findById(id);
     if (!quiz) return fail("Quiz not found", 404);
     if (quiz.reviewStatus === "superseded") {
-      return fail("The patient answered the quiz again, so these answers were replaced. Review the newer submission.", 409);
+      return fail(
+        "The patient answered the quiz again, so these answers were replaced. Review the newer submission.",
+        409
+      );
     }
     if (quiz.reviewStatus !== "pending") return fail("This submission has already been reviewed", 409);
 
@@ -149,7 +153,11 @@ export async function POST(req: Request, { params }: { params: Promise<{ id: str
         {
           requestedNurseId: nurseId || (booking.nurseId ? String(booking.nurseId) : null),
           // Nobody busy at the session's own time, the requested nurse included.
-          session: { start: booking.scheduledAt, durationMin: booking.durationMin ?? 45, bookingId: String(booking._id) },
+          session: {
+            start: booking.scheduledAt,
+            durationMin: booking.durationMin ?? 45,
+            bookingId: String(booking._id),
+          },
         }
       );
 
@@ -185,7 +193,8 @@ export async function POST(req: Request, { params }: { params: Promise<{ id: str
       });
       for (const booking of confirmed) {
         booking.status = "rejected";
-        booking.rejectionReason = declineReason?.trim() || notes || "The physician declined the patient's latest answers.";
+        booking.rejectionReason =
+          declineReason?.trim() || notes || "The physician declined the patient's latest answers.";
         await booking.save();
         calledOff.push({
           bookingNo: booking.bookingNo,

@@ -54,11 +54,7 @@ export type LotRow = {
   remainingPct: number;
 };
 
-function statusFor(args: {
-  daysToExpiry: number | null;
-  available: number;
-  reorderLevel: number;
-}): StockStatus {
+function statusFor(args: { daysToExpiry: number | null; available: number; reorderLevel: number }): StockStatus {
   if (args.daysToExpiry !== null && args.daysToExpiry < 0) return "expired";
   if (args.available <= 0) return "out";
   if (args.daysToExpiry !== null && args.daysToExpiry <= EXPIRING_SOON_DAYS) return "expiring";
@@ -138,9 +134,7 @@ async function withStock(masters: MasterDoc[]): Promise<MasterRow[]> {
 
     // The floor of the soonest expiry is the soonest of the floors.
     const soonest =
-      own?.soonestExpiry != null
-        ? Math.floor((new Date(own.soonestExpiry).getTime() - now.getTime()) / DAY)
-        : null;
+      own?.soonestExpiry != null ? Math.floor((new Date(own.soonestExpiry).getTime() - now.getTime()) / DAY) : null;
 
     return {
       id: String(m._id),
@@ -319,7 +313,9 @@ async function lotFilter(opts: { masterId?: string; q?: string }): Promise<Recor
 /** Every matching lot. For a screen that truly needs them all (a picker); a table should use listLotsPage. */
 export async function listLots(opts: { masterId?: string; q?: string } = {}): Promise<LotRow[]> {
   await connectDB();
-  const lots = await BatchLot.find(await lotFilter(opts)).sort({ expiry: 1 }).lean<LotDoc[]>();
+  const lots = await BatchLot.find(await lotFilter(opts))
+    .sort({ expiry: 1 })
+    .lean<LotDoc[]>();
   return toLotRows(lots);
 }
 

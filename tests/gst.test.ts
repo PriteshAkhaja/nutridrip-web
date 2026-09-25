@@ -171,8 +171,7 @@ describe("GST is optional", () => {
     const taxed = splitTax(42_000, 12, false);
     const exempt = splitTax(8_400, 0, false);
     const total = taxed.total + exempt.total;
-    const parts =
-      taxed.taxableValue + taxed.cgst + taxed.sgst + exempt.taxableValue + exempt.cgst + exempt.sgst;
+    const parts = taxed.taxableValue + taxed.cgst + taxed.sgst + exempt.taxableValue + exempt.cgst + exempt.sgst;
     expect(round(parts)).toBe(round(total));
     expect(round(total)).toBe(50_400);
   });
@@ -190,10 +189,7 @@ describe("the HSN tax summary", () => {
 
   it("puts two drips sharing a classification on one row", () => {
     // A return is filed by HSN and rate, not by product name.
-    const rows = hsnSummary([
-      line("30049099", 12, 15_000, 900, 900),
-      line("30049099", 12, 8_214.29, 492.86, 492.85),
-    ]);
+    const rows = hsnSummary([line("30049099", 12, 15_000, 900, 900), line("30049099", 12, 8_214.29, 492.86, 492.85)]);
     expect(rows).toHaveLength(1);
     expect(rows[0].taxableValue).toBe(23_214.29);
     expect(rows[0].cgst).toBe(1_392.86);

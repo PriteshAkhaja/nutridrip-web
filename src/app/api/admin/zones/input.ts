@@ -31,7 +31,14 @@ export function checkZone(input: ZoneBodyInput, others: Zone[]) {
 }
 
 /** For the audit trail: the zone as a person would read it. */
-export function auditView(z: { name: string; pincodes: string[]; opensAt: string; closesAt: string; slotMinutes?: number; status: string }) {
+export function auditView(z: {
+  name: string;
+  pincodes: string[];
+  opensAt: string;
+  closesAt: string;
+  slotMinutes?: number;
+  status: string;
+}) {
   return {
     name: z.name,
     pincodes: z.pincodes.join(", "),
@@ -44,7 +51,10 @@ export function auditView(z: { name: string; pincodes: string[]; opensAt: string
 /** A server started before the slot step existed would drop it without a word. */
 export function staleServer() {
   return !ZoneModel.schema.path("slotMinutes")
-    ? fail("The server is running an older version and would not keep the slot step. Restart it (stop it and run npm run dev again).", 500)
+    ? fail(
+        "The server is running an older version and would not keep the slot step. Restart it (stop it and run npm run dev again).",
+        500
+      )
     : null;
 }
 

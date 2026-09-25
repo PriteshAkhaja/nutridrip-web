@@ -31,10 +31,7 @@ const HANDLED_ELSEWHERE = new Set([
   "notes",
 ]);
 
-const route = readFileSync(
-  new URL("../src/app/api/drips/[id]/route.ts", import.meta.url),
-  "utf8"
-);
+const route = readFileSync(new URL("../src/app/api/drips/[id]/route.ts", import.meta.url), "utf8");
 
 /** The quoted keys in the copy loop's fixed list. */
 function copiedKeys(): Set<string> {
@@ -45,9 +42,7 @@ function copiedKeys(): Set<string> {
 describe("editing a drip", () => {
   it("saves every field the schema accepts, or says why not", () => {
     const copied = copiedKeys();
-    const missing = Object.keys(DripInput.shape).filter(
-      (k) => !copied.has(k) && !HANDLED_ELSEWHERE.has(k)
-    );
+    const missing = Object.keys(DripInput.shape).filter((k) => !copied.has(k) && !HANDLED_ELSEWHERE.has(k));
     expect(
       missing,
       `These fields would be accepted by the API and silently discarded on save. ` +

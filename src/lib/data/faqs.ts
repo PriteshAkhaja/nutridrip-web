@@ -189,14 +189,8 @@ export const FAQ_TOTAL = FAQ_CATEGORIES.reduce((n, c) => n + c.items.length, 0);
  * a sentence apart. Case does not matter. A category that ends up with nothing
  * in it is dropped, so the page never shows a heading over an empty box.
  */
-export function filterFaqs(
-  categories: FaqCategory[],
-  opts: { query?: string; category?: string } = {}
-): FaqCategory[] {
-  const words = (opts.query ?? "")
-    .toLowerCase()
-    .split(/\s+/)
-    .filter(Boolean);
+export function filterFaqs(categories: FaqCategory[], opts: { query?: string; category?: string } = {}): FaqCategory[] {
+  const words = (opts.query ?? "").toLowerCase().split(/\s+/).filter(Boolean);
 
   return categories
     .filter((c) => !opts.category || opts.category === "all" || c.id === opts.category)

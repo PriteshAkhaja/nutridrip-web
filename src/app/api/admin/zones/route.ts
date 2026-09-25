@@ -34,7 +34,11 @@ export async function POST(req: Request) {
     if ("error" in checked) return checked.error;
 
     const last = await Zone.findOne({}).sort({ position: -1 }).select("position").lean<{ position?: number } | null>();
-    const created = await Zone.create({ ...checked.zone, position: (last?.position ?? 0) + 1, updatedBy: session!.sub });
+    const created = await Zone.create({
+      ...checked.zone,
+      position: (last?.position ?? 0) + 1,
+      updatedBy: session!.sub,
+    });
 
     await AuditLog.create({
       actorId: session!.sub,

@@ -17,8 +17,7 @@ export type QueuedRequest = {
 };
 
 export type PostResult =
-  | { queued: true }
-  | { queued: false; json: { success: boolean; data?: Record<string, unknown>; error?: string } };
+  { queued: true } | { queued: false; json: { success: boolean; data?: Record<string, unknown>; error?: string } };
 
 export type FlushOutcome = {
   sent: number;
@@ -80,7 +79,8 @@ export function subscribeQueue(cb: () => void): () => void {
 
 function enqueue(url: string, body: unknown, label: string): QueuedRequest {
   const item: QueuedRequest = {
-    id: typeof crypto !== "undefined" && "randomUUID" in crypto ? crypto.randomUUID() : `${Date.now()}-${Math.random()}`,
+    id:
+      typeof crypto !== "undefined" && "randomUUID" in crypto ? crypto.randomUUID() : `${Date.now()}-${Math.random()}`,
     url,
     body,
     label,

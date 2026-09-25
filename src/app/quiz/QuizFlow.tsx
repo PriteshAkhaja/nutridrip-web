@@ -71,7 +71,10 @@ export function QuizFlow({
   const visible = useMemo(() => visibleQuestions(questions, answers), [questions, answers]);
   // The current question is always on the list: only answers BEFORE it decide
   // whether it is asked, and the patient is not changing those while here.
-  const index = Math.max(0, visible.findIndex((q) => q.id === currentId));
+  const index = Math.max(
+    0,
+    visible.findIndex((q) => q.id === currentId)
+  );
   const q = visible[index];
   const last = index === visible.length - 1;
   const answered = useMemo(() => visible.filter((v) => hasAnswer(answers[v.id])).length, [visible, answers]);
@@ -220,7 +223,16 @@ export function QuizFlow({
       return;
     }
     const t = e.touches[0];
-    drag.current = { x: t.clientX, y: t.clientY, t0: e.timeStamp, dx: 0, axis: null, lastX: t.clientX, lastT: e.timeStamp, v: 0 };
+    drag.current = {
+      x: t.clientX,
+      y: t.clientY,
+      t0: e.timeStamp,
+      dx: 0,
+      axis: null,
+      lastX: t.clientX,
+      lastT: e.timeStamp,
+      v: 0,
+    };
   };
 
   const onTouchMove = (e: ReactTouchEvent) => {
@@ -244,7 +256,13 @@ export function QuizFlow({
 
     const dir: Dir = dx < 0 ? "forward" : "back";
     const target =
-      dir === "forward" ? (!last && canAdvance ? visible[index + 1]?.id : undefined) : index > 0 ? visible[index - 1]?.id : undefined;
+      dir === "forward"
+        ? !last && canAdvance
+          ? visible[index + 1]?.id
+          : undefined
+        : index > 0
+          ? visible[index - 1]?.id
+          : undefined;
     const w = track.offsetWidth + SLIDE_GAP;
     // Somewhere to go: follow the finger. Nowhere: give a little, like elastic.
     d.dx = target ? dx : Math.sign(dx) * Math.min(56, Math.abs(dx) * 0.3);
@@ -269,8 +287,7 @@ export function QuizFlow({
     const far = Math.abs(d.dx) > w * 0.25;
     // A flick: fast at the end, or quick and decisive overall.
     const flick =
-      (Math.abs(d.v) > 0.5 && Math.sign(d.v) === Math.sign(d.dx)) ||
-      (e.timeStamp - d.t0 < 250 && Math.abs(d.dx) > 40);
+      (Math.abs(d.v) > 0.5 && Math.sign(d.v) === Math.sign(d.dx)) || (e.timeStamp - d.t0 < 250 && Math.abs(d.dx) > 40);
     if (d.target && (far || flick)) {
       if (d.dir === "forward") next(d.dx);
       else back(d.dx);
@@ -590,7 +607,13 @@ function QuestionCard({
                   >
                     {selected && (
                       <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
-                        <path d="M2.5 6.2 5 8.6l4.5-5.2" stroke="white" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
+                        <path
+                          d="M2.5 6.2 5 8.6l4.5-5.2"
+                          stroke="white"
+                          strokeWidth="1.8"
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                        />
                       </svg>
                     )}
                   </span>
@@ -689,7 +712,11 @@ function NumberAnswer({
         />
         {unit && <span className="t-body text-[var(--color-ink-2)]">{unit}</span>}
       </div>
-      <span id={`number-hint-${id}`} className="t-small" style={{ color: error ? "var(--color-critical-text)" : "var(--color-ink-3)" }}>
+      <span
+        id={`number-hint-${id}`}
+        className="t-small"
+        style={{ color: error ? "var(--color-critical-text)" : "var(--color-ink-3)" }}
+      >
         {error ?? hint ?? ""}
       </span>
     </div>

@@ -24,8 +24,7 @@ export async function PATCH(req: Request, { params }: { params: Promise<{ id: st
     // items, isDefault and isActive all change what a confirmed order will
     // actually draw from the shelf, so all three are locked while reservations
     // stand — not just the item list.
-    const changesWhatIsDrawn =
-      sent.has("items") || sent.has("isDefault") || sent.has("isActive");
+    const changesWhatIsDrawn = sent.has("items") || sent.has("isDefault") || sent.has("isActive");
 
     if (changesWhatIsDrawn) {
       // Confirmed orders reserved consumables against the kit as it was; the
@@ -48,13 +47,17 @@ export async function PATCH(req: Request, { params }: { params: Promise<{ id: st
         : 0;
 
       if (open > 0) {
-        return fail(`${open} confirmed order${open === 1 ? "" : "s"} reserved consumables against this kit. Dispatch or cancel them before changing it.`, 409);
+        return fail(
+          `${open} confirmed order${open === 1 ? "" : "s"} reserved consumables against this kit. Dispatch or cancel them before changing it.`,
+          409
+        );
       }
     }
 
     if (sent.has("items") && input.items) {
       const found = await ProductMaster.countDocuments({ _id: { $in: input.items.map((i) => i.masterId) } });
-      if (found !== new Set(input.items.map((i) => i.masterId)).size) return fail("One of the kit items no longer exists", 422);
+      if (found !== new Set(input.items.map((i) => i.masterId)).size)
+        return fail("One of the kit items no longer exists", 422);
       kit.items = input.items;
     }
     if (sent.has("name") && input.name !== undefined) kit.name = input.name;

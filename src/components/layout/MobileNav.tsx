@@ -10,13 +10,7 @@ type NavLink = { label: string; href: string };
  * The header's nav, for screens too narrow to show it inline. Closes itself
  * on navigation, so a tap on a link never leaves the menu hanging open.
  */
-export function MobileNav({
-  links,
-  account,
-}: {
-  links: NavLink[];
-  account: { label: string; href: string };
-}) {
+export function MobileNav({ links, account }: { links: NavLink[]; account: { label: string; href: string } }) {
   const pathname = usePathname();
   const [open, setOpen] = useState(false);
   const [lastPath, setLastPath] = useState(pathname);

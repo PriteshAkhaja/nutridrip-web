@@ -1,10 +1,5 @@
 import { describe, expect, it } from "vitest";
-import {
-  ADMIN_BOOKING_FIELDS,
-  ADMIN_BOOKING_SELECT,
-  ADMIN_PATIENT_FIELDS,
-  adminSafeUser,
-} from "@/lib/data/admin-view";
+import { ADMIN_BOOKING_FIELDS, ADMIN_BOOKING_SELECT, ADMIN_PATIENT_FIELDS, adminSafeUser } from "@/lib/data/admin-view";
 import { PERMISSIONS, can, patientRecordView } from "@/lib/auth/rbac";
 import { Booking } from "@/lib/models/Booking";
 import { ROLES } from "@/lib/models/types";

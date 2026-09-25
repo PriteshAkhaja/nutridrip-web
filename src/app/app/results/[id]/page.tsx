@@ -85,7 +85,9 @@ export default async function ResultsPage({
   const drips = await Drip.find({
     $or: [{ _id: { $in: suggestedIds } }, ...(preferred ? [{ slug: preferred }] : [])],
     isActive: true,
-  }).lean<Array<{ _id: unknown; name: string; slug: string; description?: string; priceInr: number; durationMin: number }>>();
+  }).lean<
+    Array<{ _id: unknown; name: string; slug: string; description?: string; priceInr: number; durationMin: number }>
+  >();
 
   const lowest = [...quiz.nutrientRisks].sort((a, b) => a.pct - b.pct).slice(0, 3);
   const grouped = NUTRIENT_GROUPS.map((g) => ({
@@ -177,13 +179,7 @@ export default async function ResultsPage({
               <span className="t-small text-[var(--color-ink-3)] block mb-3">{g.group}</span>
               <div className="flex flex-col gap-[14px]">
                 {g.items.map((m) => (
-                  <FillBar
-                    key={m.name}
-                    label={m.name}
-                    value={`${m.pct}%`}
-                    pct={m.pct}
-                    color={riskColor(m.pct)}
-                  />
+                  <FillBar key={m.name} label={m.name} value={`${m.pct}%`} pct={m.pct} color={riskColor(m.pct)} />
                 ))}
               </div>
             </div>
@@ -216,16 +212,14 @@ export default async function ResultsPage({
         <div className="rounded-[var(--radius-lg)] border border-[var(--color-info)] bg-[var(--color-info-soft)] p-5">
           <span className="t-body font-semibold">With a physician now</span>
           <p className="t-body text-[var(--color-ink-2)] mt-1">
-            You can book once they approve — usually within two hours. If anything in your answers rules IV therapy
-            out, they will tell you why.
+            You can book once they approve — usually within two hours. If anything in your answers rules IV therapy out,
+            they will tell you why.
           </p>
         </div>
       ) : quiz.reviewStatus === "info_needed" ? (
         <div className="rounded-[var(--radius-lg)] border border-[var(--color-info)] bg-[var(--color-info-soft)] p-5 flex flex-col gap-3">
           <div>
-            <span className="t-body font-semibold">
-              {physician?.name ?? "Your physician"} needs one more thing
-            </span>
+            <span className="t-body font-semibold">{physician?.name ?? "Your physician"} needs one more thing</span>
             <p className="t-body-lg mt-2">{quiz.infoRequest}</p>
           </div>
           {quiz.infoAnswer ? (
@@ -245,12 +239,8 @@ export default async function ResultsPage({
           <div
             className="rounded-[var(--radius-lg)] border p-5 flex flex-col gap-2"
             style={{
-              borderColor:
-                quiz.reviewStatus === "rejected" ? "var(--color-critical)" : "var(--color-safe)",
-              background:
-                quiz.reviewStatus === "rejected"
-                  ? "var(--color-critical-soft)"
-                  : "var(--color-safe-soft)",
+              borderColor: quiz.reviewStatus === "rejected" ? "var(--color-critical)" : "var(--color-safe)",
+              background: quiz.reviewStatus === "rejected" ? "var(--color-critical-soft)" : "var(--color-safe-soft)",
             }}
           >
             <span className="t-body font-semibold">
@@ -265,7 +255,9 @@ export default async function ResultsPage({
               <span className="t-small text-[var(--color-ink-2)]">
                 {physician.name}
                 {physician.doctor?.licenseNo ? ` · ${physician.doctor.licenseNo}` : ""}
-                {quiz.reviewedAt ? ` · ${new Date(quiz.reviewedAt).toLocaleDateString("en-IN", { day: "2-digit", month: "short", year: "numeric" })}` : ""}
+                {quiz.reviewedAt
+                  ? ` · ${new Date(quiz.reviewedAt).toLocaleDateString("en-IN", { day: "2-digit", month: "short", year: "numeric" })}`
+                  : ""}
               </span>
             )}
 
@@ -280,8 +272,8 @@ export default async function ResultsPage({
               </p>
             ) : quiz.reviewStatus === "rejected" ? (
               <p className="t-body text-[var(--color-ink-2)] mt-1">
-                This is not a refusal of care — it usually means something in your history needs a different route.
-                Your physician will be in touch.
+                This is not a refusal of care — it usually means something in your history needs a different route. Your
+                physician will be in touch.
               </p>
             ) : null}
 

@@ -123,9 +123,7 @@ function toCard(d: LeanDrip): DripCard {
 
 export async function listDrips(): Promise<DripCard[]> {
   await connectDB();
-  const drips = await Drip.find({ isActive: true, isPublic: true })
-    .sort({ priceInr: 1 })
-    .lean<LeanDrip[]>();
+  const drips = await Drip.find({ isActive: true, isPublic: true }).sort({ priceInr: 1 }).lean<LeanDrip[]>();
   return drips.map(toCard);
 }
 

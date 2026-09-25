@@ -78,7 +78,9 @@ export function termsFor(order: Pick<OrderDoc, "payment">, creditTerms: string):
   const p = order.payment;
   if (p?.state !== "received") return creditTerms;
   const how = PAY_METHOD_LABEL[p.method as PayMethod] ?? "payment";
-  const on = p.paidOn ? ` on ${new Date(p.paidOn).toLocaleDateString("en-IN", { day: "2-digit", month: "short", year: "numeric" })}` : "";
+  const on = p.paidOn
+    ? ` on ${new Date(p.paidOn).toLocaleDateString("en-IN", { day: "2-digit", month: "short", year: "numeric" })}`
+    : "";
   return `Paid in advance${on} by ${how}${p.reference ? `, ref ${p.reference}` : ""}. Nothing further is due.`;
 }
 
@@ -90,10 +92,7 @@ export function termsFor(order: Pick<OrderDoc, "payment">, creditTerms: string):
  * to what a partner clinic was charged, and a bill carries the clinic's GSTIN
  * and trading terms.
  */
-export function mayInvoice(
-  order: { clinicId?: unknown },
-  viewer: { sub: string; role: string }
-): boolean {
+export function mayInvoice(order: { clinicId?: unknown }, viewer: { sub: string; role: string }): boolean {
   if (viewer.role === "superadmin" || viewer.role === "admin") return true;
   if (viewer.role === "clinic") return String(order.clinicId) === viewer.sub;
   return false;
@@ -161,9 +160,7 @@ export async function ensureInvoice(
   const buyer: InvoiceParty = {
     name: clinic?.name ?? "Walk-in",
     gstin: clinic?.clinic?.gstin,
-    address: [clinic?.clinic?.address, clinic?.clinic?.city, clinic?.clinic?.pincode]
-      .filter(Boolean)
-      .join(", "),
+    address: [clinic?.clinic?.address, clinic?.clinic?.city, clinic?.clinic?.pincode].filter(Boolean).join(", "),
   };
   buyer.stateCode = stateCodeFromGstin(buyer.gstin) ?? undefined;
   buyer.stateName = stateName(buyer.stateCode) ?? undefined;
@@ -208,13 +205,8 @@ export async function ensureInvoice(
   const cgstTotal = sum((l) => l.cgst);
   const sgstTotal = sum((l) => l.sgst);
   const igstTotal = sum((l) => l.igst);
-  const { grandTotal, roundOff } = roundOffFor(
-    round2(taxableTotal + cgstTotal + sgstTotal + igstTotal)
-  );
-  const documentType = documentTypeFor(
-    seller.gstin,
-    cgstTotal + sgstTotal + igstTotal > 0
-  );
+  const { grandTotal, roundOff } = roundOffFor(round2(taxableTotal + cgstTotal + sgstTotal + igstTotal));
+  const documentType = documentTypeFor(seller.gstin, cgstTotal + sgstTotal + igstTotal > 0);
 
   const year = new Date().getFullYear();
   const created = await createWithReference(

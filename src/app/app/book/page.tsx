@@ -16,25 +16,19 @@ import { servedZones } from "@/lib/zones";
 export const metadata: Metadata = { title: "Book a session" };
 export const dynamic = "force-dynamic";
 
-export default async function BookPage({
-  searchParams,
-}: {
-  searchParams: Promise<{ drip?: string }>;
-}) {
+export default async function BookPage({ searchParams }: { searchParams: Promise<{ drip?: string }> }) {
   const session = await requireRole("patient", "superadmin");
   const { drip: preferred } = await searchParams;
 
   await connectDB();
-  const quiz = await HealthQuiz.findOne({ patientId: session.sub })
-    .sort({ completedAt: -1 })
-    .lean<{
-      _id: unknown;
-      reviewStatus: string;
-      reviewedAt?: Date;
-      completedAt: Date;
-      suggestedDripIds?: unknown[];
-      recommendedDripIds?: unknown[];
-    } | null>();
+  const quiz = await HealthQuiz.findOne({ patientId: session.sub }).sort({ completedAt: -1 }).lean<{
+    _id: unknown;
+    reviewStatus: string;
+    reviewedAt?: Date;
+    completedAt: Date;
+    suggestedDripIds?: unknown[];
+    recommendedDripIds?: unknown[];
+  } | null>();
 
   if (!quiz) {
     return (
@@ -97,9 +91,8 @@ export default async function BookPage({
    * A patient who had just read "your physician recommends Immune Shield" was
    * then shown Hydrate Plus ticked, for no reason they could see.
    */
-  const recommendedIds = ((quiz.recommendedDripIds ?? []).length > 0
-    ? quiz.recommendedDripIds!
-    : (quiz.suggestedDripIds ?? [])
+  const recommendedIds = (
+    (quiz.recommendedDripIds ?? []).length > 0 ? quiz.recommendedDripIds! : (quiz.suggestedDripIds ?? [])
   ).map(String);
 
   const { results } = await checkAvailability(

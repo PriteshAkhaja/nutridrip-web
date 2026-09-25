@@ -80,16 +80,16 @@ export function noticesForNurseChange(input: {
       out.push({
         userId: from,
         title: `${nurse.name} has left your team`,
-        body: to
-          ? `Now works under ${doctorNames[to] ?? "another physician"}.`
-          : "No longer posted under a physician.",
+        body: to ? `Now works under ${doctorNames[to] ?? "another physician"}.` : "No longer posted under a physician.",
         type: "info",
         link: TEAM_LINK,
       });
     }
     out.push({
       userId: nurse.id,
-      title: to ? `You now work under ${doctorNames[to] ?? "a new physician"}` : "You are no longer posted under a physician",
+      title: to
+        ? `You now work under ${doctorNames[to] ?? "a new physician"}`
+        : "You are no longer posted under a physician",
       body: to ? "They oversee the sessions you are sent." : "Dispatch can still offer you sessions in your zones.",
       type: "info",
       link: "/nurse",

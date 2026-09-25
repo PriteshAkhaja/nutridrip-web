@@ -87,9 +87,7 @@ describe("the doses frozen onto a consent", () => {
   });
 
   it("names an unnamed ingredient rather than storing a blank", () => {
-    expect(componentsForConsent([{ dose: 500, unit: "ml" }])).toEqual([
-      { name: "Unnamed", dose: 500, unit: "ml" },
-    ]);
+    expect(componentsForConsent([{ dose: 500, unit: "ml" }])).toEqual([{ name: "Unnamed", dose: 500, unit: "ml" }]);
   });
 });
 
@@ -102,12 +100,8 @@ describe("the fingerprint itself", () => {
 
   it("changes when a risk is added, removed or reordered", () => {
     const doc = CONSENT_DOCUMENTS["v2.1"];
-    expect(consentFingerprint({ ...doc, risks: doc.risks.slice(1) })).not.toBe(
-      consentFingerprint(doc)
-    );
-    expect(consentFingerprint({ ...doc, risks: [...doc.risks].reverse() })).not.toBe(
-      consentFingerprint(doc)
-    );
+    expect(consentFingerprint({ ...doc, risks: doc.risks.slice(1) })).not.toBe(consentFingerprint(doc));
+    expect(consentFingerprint({ ...doc, risks: [...doc.risks].reverse() })).not.toBe(consentFingerprint(doc));
   });
 
   it("is stable for the same text", () => {

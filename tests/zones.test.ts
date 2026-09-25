@@ -71,7 +71,9 @@ describe("editing a zone", () => {
   });
 
   it("refuses something that is not a pincode", () => {
-    expect(zoneProblems(input({ pincodes: "56006, 060064" }), ZONES).pincodes).toMatch(/56006, 060064 are not pincodes/);
+    expect(zoneProblems(input({ pincodes: "56006, 060064" }), ZONES).pincodes).toMatch(
+      /56006, 060064 are not pincodes/
+    );
     expect(zoneProblems(input({ pincodes: " " }), ZONES).pincodes).toBe("Add at least one pincode");
   });
 
@@ -102,7 +104,9 @@ describe("the zone count in site copy", () => {
   const zones: Zone[] = [ZONES[0], ZONES[1], { ...ZONES[2], status: "paused" }];
 
   it("counts only the zones a patient can book", () => {
-    expect(fillZoneCount(`We cover ${ZONE_COUNT_TOKEN} zones across Bengaluru.`, zones)).toBe("We cover 2 zones across Bengaluru.");
+    expect(fillZoneCount(`We cover ${ZONE_COUNT_TOKEN} zones across Bengaluru.`, zones)).toBe(
+      "We cover 2 zones across Bengaluru."
+    );
     expect(fillZoneCount(ZONE_COUNT_TOKEN, zones)).toBe("2");
   });
 

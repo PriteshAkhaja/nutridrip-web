@@ -25,10 +25,7 @@ export async function SiteHeader() {
 
   return (
     <header className="sticky top-0 z-40">
-      <div
-        className="border-b"
-        style={{ background: "var(--color-ink)", borderColor: "var(--color-ink)" }}
-      >
+      <div className="border-b" style={{ background: "var(--color-ink)", borderColor: "var(--color-ink)" }}>
         <div className="mx-auto max-w-[1280px] px-6 md:px-10 py-[7px] flex items-center justify-center gap-3 flex-wrap">
           <span className="t-small" style={{ color: "rgba(255,255,255,.86)" }}>
             Physician-reviewed before every session · {zoneCount} {zoneCount === 1 ? "zone" : "zones"} across Bengaluru
@@ -38,50 +35,51 @@ export async function SiteHeader() {
             className="t-small font-semibold no-underline hover:underline"
             style={{ color: "var(--color-primary-on-dark)" }}
           >
-            How we keep it safe&nbsp;<Arrow />
+            How we keep it safe&nbsp;
+            <Arrow />
           </Link>
         </div>
       </div>
 
       <div className="relative border-b border-[var(--color-line)] bg-[var(--color-paper)]">
-      <div className="mx-auto max-w-[1280px] px-6 md:px-10 py-[14px] flex items-center gap-8">
-        <Logo />
+        <div className="mx-auto max-w-[1280px] px-6 md:px-10 py-[14px] flex items-center gap-8">
+          <Logo />
 
-        <nav className="hidden lg:flex gap-[26px] items-center" aria-label="Main">
-          {NAV.map((n) => (
-            <Link
-              key={n.href}
-              href={n.href}
-              className="t-body font-medium text-[var(--color-ink-2)] hover:text-[var(--color-ink)] no-underline hover:no-underline"
-            >
-              {n.label}
-            </Link>
-          ))}
-        </nav>
+          <nav className="hidden lg:flex gap-[26px] items-center" aria-label="Main">
+            {NAV.map((n) => (
+              <Link
+                key={n.href}
+                href={n.href}
+                className="t-body font-medium text-[var(--color-ink-2)] hover:text-[var(--color-ink)] no-underline hover:no-underline"
+              >
+                {n.label}
+              </Link>
+            ))}
+          </nav>
 
-        <div className="ml-auto flex gap-[10px] items-center">
-          <span className="hidden md:inline t-data text-[13px] text-[var(--color-ink-2)]">Bengaluru</span>
-          <span className="hidden sm:inline-flex">
-            {session ? (
-              <ButtonLink href={HOME_FOR_ROLE[session.role]} variant="secondary">
-                {session.name.split(" ")[0]}&apos;s dashboard
-              </ButtonLink>
-            ) : (
-              <ButtonLink href="/login" variant="secondary">
-                Sign in
-              </ButtonLink>
-            )}
-          </span>
-          <QuizButton compact>Take the quiz</QuizButton>
-          <MobileNav
-            links={NAV}
-            account={
-              session
-                ? { label: `${session.name.split(" ")[0]}'s dashboard`, href: HOME_FOR_ROLE[session.role] }
-                : { label: "Sign in", href: "/login" }
-            }
-          />
-        </div>
+          <div className="ml-auto flex gap-[10px] items-center">
+            <span className="hidden md:inline t-data text-[13px] text-[var(--color-ink-2)]">Bengaluru</span>
+            <span className="hidden sm:inline-flex">
+              {session ? (
+                <ButtonLink href={HOME_FOR_ROLE[session.role]} variant="secondary">
+                  {session.name.split(" ")[0]}&apos;s dashboard
+                </ButtonLink>
+              ) : (
+                <ButtonLink href="/login" variant="secondary">
+                  Sign in
+                </ButtonLink>
+              )}
+            </span>
+            <QuizButton compact>Take the quiz</QuizButton>
+            <MobileNav
+              links={NAV}
+              account={
+                session
+                  ? { label: `${session.name.split(" ")[0]}'s dashboard`, href: HOME_FOR_ROLE[session.role] }
+                  : { label: "Sign in", href: "/login" }
+              }
+            />
+          </div>
         </div>
       </div>
     </header>
@@ -108,7 +106,9 @@ export async function SiteFooter() {
 
         <div className="flex gap-12">
           <div className="flex flex-col gap-[7px]">
-            <span className="t-micro" style={{ color: "var(--color-ink-on-dark)" }}>Service</span>
+            <span className="t-micro" style={{ color: "var(--color-ink-on-dark)" }}>
+              Service
+            </span>
             {[
               ["Drips", "/drips"],
               ["Pricing", "/pricing"],
@@ -120,7 +120,9 @@ export async function SiteFooter() {
             ))}
           </div>
           <div className="flex flex-col gap-[7px]">
-            <span className="t-micro" style={{ color: "var(--color-ink-on-dark)" }}>Company</span>
+            <span className="t-micro" style={{ color: "var(--color-ink-on-dark)" }}>
+              Company
+            </span>
             {[
               ["About", "/about"],
               ["How it works", "/how-it-works"],
@@ -134,7 +136,9 @@ export async function SiteFooter() {
             ))}
           </div>
           <div className="flex flex-col gap-[7px]">
-            <span className="t-micro" style={{ color: "var(--color-ink-on-dark)" }}>Legal</span>
+            <span className="t-micro" style={{ color: "var(--color-ink-on-dark)" }}>
+              Legal
+            </span>
             {[
               ["Terms", "/legal/terms"],
               ["Privacy", "/legal/privacy"],

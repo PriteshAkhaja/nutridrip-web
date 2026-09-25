@@ -22,8 +22,7 @@
 export const PRICES_INCLUDE_GST = true;
 
 /** Two decimal places, the way money is written on an invoice line. */
-export const round2 = (n: number) =>
-  Math.round((n + Number.EPSILON) * 100) / 100;
+export const round2 = (n: number) => Math.round((n + Number.EPSILON) * 100) / 100;
 
 /**
  * The state a GSTIN belongs to.
@@ -79,8 +78,7 @@ export const STATE_NAMES: Record<string, string> = {
   "97": "Other Territory",
 };
 
-export const stateName = (code?: string | null) =>
-  code ? (STATE_NAMES[code] ?? `State ${code}`) : null;
+export const stateName = (code?: string | null) => (code ? (STATE_NAMES[code] ?? `State ${code}`) : null);
 
 /**
  * Whether this is a sale across a state line.
@@ -90,10 +88,7 @@ export const stateName = (code?: string | null) =>
  * registered, so there is no second state to compare against and the place of
  * supply is where we are — an intra-state sale.
  */
-export function isInterState(
-  sellerGstin?: string | null,
-  buyerGstin?: string | null,
-): boolean {
+export function isInterState(sellerGstin?: string | null, buyerGstin?: string | null): boolean {
   const seller = stateCodeFromGstin(sellerGstin);
   const buyer = stateCodeFromGstin(buyerGstin);
   if (!seller || !buyer) return false;
@@ -117,24 +112,16 @@ export type TaxSplit = {
  * pricing the taxable value is worked back out of it, so the numbers always
  * add up to the figure the order already showed.
  */
-export function splitTax(
-  lineTotal: number,
-  gstRate: number,
-  interState: boolean,
-): TaxSplit {
+export function splitTax(lineTotal: number, gstRate: number, interState: boolean): TaxSplit {
   const rate = Math.max(0, gstRate) / 100;
 
-  const taxableValue = PRICES_INCLUDE_GST
-    ? round2(lineTotal / (1 + rate))
-    : round2(lineTotal);
+  const taxableValue = PRICES_INCLUDE_GST ? round2(lineTotal / (1 + rate)) : round2(lineTotal);
 
   // Taken as the difference rather than recalculated, so a rounded taxable
   // value and its tax still sum to the price on the order. Recomputing it
   // leaves invoices a paisa out, which is the sort of thing that has to be
   // explained to an accountant every month.
-  const tax = PRICES_INCLUDE_GST
-    ? round2(lineTotal - taxableValue)
-    : round2(taxableValue * rate);
+  const tax = PRICES_INCLUDE_GST ? round2(lineTotal - taxableValue) : round2(taxableValue * rate);
 
   const half = round2(tax / 2);
   return {
@@ -194,7 +181,7 @@ export function taxBasisLabel(interState: boolean): string {
  */
 export function documentTypeFor(
   sellerGstin: string | null | undefined,
-  anyTax: boolean,
+  anyTax: boolean
 ): "tax_invoice" | "bill_of_supply" {
   return sellerGstin?.trim() && anyTax ? "tax_invoice" : "bill_of_supply";
 }
@@ -258,9 +245,7 @@ export function hsnSummary(
     rows.set(key, row);
   }
 
-  return [...rows.values()].sort(
-    (a, b) => a.hsnCode.localeCompare(b.hsnCode) || a.gstRate - b.gstRate
-  );
+  return [...rows.values()].sort((a, b) => a.hsnCode.localeCompare(b.hsnCode) || a.gstRate - b.gstRate);
 }
 
 /* ------------------------------------------------------------------ */

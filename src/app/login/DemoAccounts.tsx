@@ -20,7 +20,9 @@ export function DemoAccounts({ accounts }: { accounts: readonly DemoAccount[] })
             if (window.matchMedia("(max-width: 1023px)").matches) {
               const still = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
               requestAnimationFrame(() =>
-                document.getElementById("sign-in")?.scrollIntoView({ behavior: still ? "auto" : "smooth", block: "start" }),
+                document
+                  .getElementById("sign-in")
+                  ?.scrollIntoView({ behavior: still ? "auto" : "smooth", block: "start" })
               );
             }
           }}

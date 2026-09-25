@@ -24,9 +24,8 @@ export default async function FaqsPage() {
         <span className="t-micro">FAQs</span>
         <h1 className="t-h1 mt-2 mb-4">Questions people actually ask.</h1>
         <p className="t-body-lg text-[var(--color-ink-2)]" style={{ textWrap: "pretty" }}>
-          Every answer here describes something the service does today, with the real numbers. If you would rather
-          see the safeguards than read about them, the{" "}
-          <Link href="/safety">Safety page</Link> lists the whole checklist.
+          Every answer here describes something the service does today, with the real numbers. If you would rather see
+          the safeguards than read about them, the <Link href="/safety">Safety page</Link> lists the whole checklist.
         </p>
       </div>
 
@@ -38,9 +37,9 @@ export default async function FaqsPage() {
             <div>
               <h2 className="t-h2 mb-3">Not here?</h2>
               <p className="t-body-lg text-[var(--color-ink-2)] max-w-[58ch]" style={{ textWrap: "pretty" }}>
-                Ask our clinical team. Tell us what you want to know and how to reach you, and someone will get back
-                to you. If it is an emergency, call{" "}
-                <span className="t-data text-[16px] text-[var(--color-ink)]">108</span> — do not wait for us.
+                Ask our clinical team. Tell us what you want to know and how to reach you, and someone will get back to
+                you. If it is an emergency, call <span className="t-data text-[16px] text-[var(--color-ink)]">108</span>{" "}
+                — do not wait for us.
               </p>
             </div>
             <div className="flex flex-col gap-3">

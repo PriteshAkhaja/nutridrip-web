@@ -150,8 +150,8 @@ export default async function ClinicOrderPage({ params }: { params: Promise<{ id
                   <span className="t-micro block">Payment needed</span>
                   <h2 className="t-h3 mt-1">Pay {formatInr(order.amount ?? 0)} to confirm this order</h2>
                   <p className="t-body text-[var(--color-ink-2)] mt-1 max-w-[62ch]">
-                    The pharmacy prepares it once your payment has arrived. Pay by UPI or bank transfer, then record
-                    it here.
+                    The pharmacy prepares it once your payment has arrived. Pay by UPI or bank transfer, then record it
+                    here.
                   </p>
                   {order.payment?.note && (
                     <div className="rounded-[var(--radius-md)] border border-[var(--color-caution)] bg-[var(--color-caution-soft)] px-4 py-3 mt-4">
@@ -278,8 +278,12 @@ export default async function ClinicOrderPage({ params }: { params: Promise<{ id
                     return (
                       <TR key={String(a._id)}>
                         <TD nowrap>{masterById.get(String(a.masterId))?.name ?? "—"}</TD>
-                        <TD mono nowrap>{lot?.batchNo ?? "—"}</TD>
-                        <TD mono nowrap>{lot ? formatDate(lot.expiry) : "—"}</TD>
+                        <TD mono nowrap>
+                          {lot?.batchNo ?? "—"}
+                        </TD>
+                        <TD mono nowrap>
+                          {lot ? formatDate(lot.expiry) : "—"}
+                        </TD>
                         <TD numeric>{a.unitsReserved}</TD>
                       </TR>
                     );
@@ -293,8 +297,7 @@ export default async function ClinicOrderPage({ params }: { params: Promise<{ id
             <section>
               <h2 className="t-h3 mb-1">Batch numbers</h2>
               <p className="t-body text-[var(--color-ink-2)] mb-3">
-                What was dispatched, by batch — keep these with your records. A recall notice is answered against
-                them.
+                What was dispatched, by batch — keep these with your records. A recall notice is answered against them.
               </p>
               <DataTable>
                 <THead>
@@ -313,8 +316,12 @@ export default async function ClinicOrderPage({ params }: { params: Promise<{ id
                       <TR key={String(c._id)}>
                         <TD nowrap>{c.drugName ?? "—"}</TD>
                         <TD nowrap>{lot?.brandName ?? "—"}</TD>
-                        <TD mono nowrap>{c.batchNo ?? lot?.batchNo ?? "—"}</TD>
-                        <TD mono nowrap>{lot ? formatDate(lot.expiry) : "—"}</TD>
+                        <TD mono nowrap>
+                          {c.batchNo ?? lot?.batchNo ?? "—"}
+                        </TD>
+                        <TD mono nowrap>
+                          {lot ? formatDate(lot.expiry) : "—"}
+                        </TD>
                         <TD numeric>{c.unitsConsumed}</TD>
                       </TR>
                     );

@@ -66,7 +66,8 @@ export function approvalState(
       status: "info_needed",
       daysLeft: null,
       reviewedAt: null,
-      message: "Your physician asked you a question. Answer it on your results and they will decide. You can hold a slot meanwhile.",
+      message:
+        "Your physician asked you a question. Answer it on your results and they will decide. You can hold a slot meanwhile.",
     };
   }
 

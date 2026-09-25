@@ -38,7 +38,8 @@ export default async function InvoicePage({ params }: { params: Promise<{ id: st
           <h1 className="t-h3">No invoice for this order</h1>
           <p className="t-body text-[var(--color-ink-2)] mt-2">{result.error}</p>
           <Link href={home} className="t-body font-semibold inline-block mt-5">
-            <Arrow dir="left" />&nbsp;Back to the order
+            <Arrow dir="left" />
+            &nbsp;Back to the order
           </Link>
         </div>
       </div>
@@ -60,7 +61,8 @@ export default async function InvoicePage({ params }: { params: Promise<{ id: st
     <div className="min-h-screen bg-[var(--color-surface-2)] print:bg-white py-8 print:py-0 px-4">
       <div className="no-print mx-auto max-w-[820px] flex items-center justify-between gap-4 mb-5 flex-wrap">
         <Link href={home} className="t-body">
-          <Arrow dir="left" />&nbsp;Back to the order
+          <Arrow dir="left" />
+          &nbsp;Back to the order
         </Link>
         <PrintButton />
       </div>
@@ -74,9 +76,7 @@ export default async function InvoicePage({ params }: { params: Promise<{ id: st
                 {inv.seller.name}
               </span>
               {inv.seller.address ? (
-                <span className="t-small text-[var(--color-ink-3)] mt-1 max-w-[38ch]">
-                  {inv.seller.address}
-                </span>
+                <span className="t-small text-[var(--color-ink-3)] mt-1 max-w-[38ch]">{inv.seller.address}</span>
               ) : null}
               {inv.seller.gstin ? (
                 <span className="t-small text-[var(--color-ink-3)] mt-1">
@@ -114,9 +114,7 @@ export default async function InvoicePage({ params }: { params: Promise<{ id: st
             <div className="flex flex-col gap-1 mt-2 t-small text-[var(--color-ink-2)]">
               <span>
                 Supplied:{" "}
-                <span className="t-data text-[13px]">
-                  {inv.suppliedAt ? formatDate(inv.suppliedAt) : "—"}
-                </span>
+                <span className="t-data text-[13px]">{inv.suppliedAt ? formatDate(inv.suppliedAt) : "—"}</span>
               </span>
               {taxed ? (
                 <span>
@@ -125,8 +123,7 @@ export default async function InvoicePage({ params }: { params: Promise<{ id: st
               ) : null}
               {taxed ? (
                 <span>
-                  Tax:{" "}
-                  <span className="t-data text-[13px]">{taxBasisLabel(anyIgst)}</span>
+                  Tax: <span className="t-data text-[13px]">{taxBasisLabel(anyIgst)}</span>
                 </span>
               ) : null}
             </div>
@@ -149,12 +146,14 @@ export default async function InvoicePage({ params }: { params: Promise<{ id: st
               </thead>
               <tbody>
                 {inv.lines.map((l, i) => (
-                  <tr key={i} className="border-b border-[var(--color-line)] align-top" style={{ breakInside: "avoid" }}>
+                  <tr
+                    key={i}
+                    className="border-b border-[var(--color-line)] align-top"
+                    style={{ breakInside: "avoid" }}
+                  >
                     <td className="py-3 pr-3">
                       <div className="t-body font-semibold">{l.description}</div>
-                      <div className="t-small text-[var(--color-ink-3)]">
-                        {formatInr(l.unitPrice)} each
-                      </div>
+                      <div className="t-small text-[var(--color-ink-3)]">{formatInr(l.unitPrice)} each</div>
                     </td>
                     <td className="t-data text-[13px] py-3 pr-3">{l.hsnCode ?? "—"}</td>
                     <td className="t-data text-[13px] py-3 pr-3 text-right">{l.quantity}</td>
@@ -164,9 +163,7 @@ export default async function InvoicePage({ params }: { params: Promise<{ id: st
                       </td>
                     ) : null}
                     {taxed ? (
-                      <td className="t-data text-[13px] py-3 pr-3 text-right">
-                        {formatInr(l.taxableValue)}
-                      </td>
+                      <td className="t-data text-[13px] py-3 pr-3 text-right">{formatInr(l.taxableValue)}</td>
                     ) : null}
                     {taxed ? (
                       <td className="t-data text-[13px] py-3 pr-3 text-right">
@@ -194,9 +191,7 @@ export default async function InvoicePage({ params }: { params: Promise<{ id: st
                           ] as Array<[string, string]>)),
                     ] as Array<[string, string]>)
                   : ([["Subtotal", formatInr(inv.taxableTotal)]] as Array<[string, string]>)),
-                ...(inv.roundOff !== 0
-                  ? ([["Round off", formatInr(inv.roundOff)]] as Array<[string, string]>)
-                  : []),
+                ...(inv.roundOff !== 0 ? ([["Round off", formatInr(inv.roundOff)]] as Array<[string, string]>) : []),
               ].map(([k, v]) => (
                 <div key={k} className="flex justify-between gap-4 items-baseline">
                   <span className="t-body text-[var(--color-ink-2)]">{k}</span>
@@ -274,9 +269,9 @@ export default async function InvoicePage({ params }: { params: Promise<{ id: st
               </table>
             </div>
           </section>
-      ) : null}
+        ) : null}
 
-      {inv.batches.length > 0 ? (
+        {inv.batches.length > 0 ? (
           <section className="py-5 border-t border-[var(--color-line)]">
             <span className="t-micro block mb-2">Batches supplied</span>
             <p className="t-data text-[13px] text-[var(--color-ink-2)]">{inv.batches.join(" · ")}</p>

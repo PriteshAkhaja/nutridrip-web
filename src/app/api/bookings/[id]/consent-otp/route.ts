@@ -51,7 +51,10 @@ export async function POST(_req: Request, { params }: { params: Promise<{ id: st
 
     const patient = await User.findById(booking.patientId).lean<{ name: string; phone?: string } | null>();
     if (!patient?.phone) {
-      return fail("This patient has no phone number on file, so a code cannot be sent. Use the signature instead.", 409);
+      return fail(
+        "This patient has no phone number on file, so a code cannot be sent. Use the signature instead.",
+        409
+      );
     }
 
     const issued = await issueSessionCode({ bookingId: booking._id, phone: patient.phone, purpose: "consent" });
@@ -66,7 +69,8 @@ export async function POST(_req: Request, { params }: { params: Promise<{ id: st
       "info",
       "/app"
     );
-    if (process.env.NODE_ENV !== "production") console.log(`[consent-otp] ${booking.bookingNo} → ${patient.phone} → ${issued.code}`);
+    if (process.env.NODE_ENV !== "production")
+      console.log(`[consent-otp] ${booking.bookingNo} → ${patient.phone} → ${issued.code}`);
 
     await AuditLog.create({
       actorId: session!.sub,

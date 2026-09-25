@@ -22,8 +22,11 @@ describe("recording which batch went into a session", () => {
 
   it("draws the earliest-expiring batch first", () => {
     // The shelf arrives already sorted by expiry, as the query returns it.
-    const rows = planDraw([{ name: "Ascorbic acid", dose: 7500, unit: "mg" }],
-      shelf(lot("VC-B7", 7500, 5), lot("VC-B9", 7500, 99)), single);
+    const rows = planDraw(
+      [{ name: "Ascorbic acid", dose: 7500, unit: "mg" }],
+      shelf(lot("VC-B7", 7500, 5), lot("VC-B9", 7500, 99)),
+      single
+    );
     expect(rows[0].batchNo).toBe("VC-B7");
   });
 
@@ -31,28 +34,36 @@ describe("recording which batch went into a session", () => {
     // This is the case that used to be under-recorded: the last vial of a
     // short-dated lot plus the first of the next. A recall answered from a
     // report naming only one of them would miss this patient.
-    const rows = planDraw([{ name: "Ascorbic acid", dose: 15000, unit: "mg" }],
-      shelf(lot("VC-B7", 7500, 1), lot("VC-B9", 7500, 40)), single);
+    const rows = planDraw(
+      [{ name: "Ascorbic acid", dose: 15000, unit: "mg" }],
+      shelf(lot("VC-B7", 7500, 1), lot("VC-B9", 7500, 40)),
+      single
+    );
     expect(rows.map((r) => r.batchNo)).toEqual(["VC-B7", "VC-B9"]);
     expect(rows.reduce((s, r) => s + r.dose, 0)).toBeCloseTo(15000, 6);
   });
 
   it("splits across three lots when it has to", () => {
-    const rows = planDraw([{ name: "Ascorbic acid", dose: 15000, unit: "mg" }],
-      shelf(lot("A", 5000, 1), lot("B", 5000, 1), lot("C", 5000, 9)), single);
+    const rows = planDraw(
+      [{ name: "Ascorbic acid", dose: 15000, unit: "mg" }],
+      shelf(lot("A", 5000, 1), lot("B", 5000, 1), lot("C", 5000, 9)),
+      single
+    );
     expect(rows.map((r) => r.batchNo)).toEqual(["A", "B", "C"]);
   });
 
   it("converts within a unit family so a mg dose can draw from a g vial", () => {
-    const rows = planDraw([{ name: "Ascorbic acid", dose: 7500, unit: "mg" }],
-      shelf(lot("G-1", 10, 5, "g")), single);
+    const rows = planDraw([{ name: "Ascorbic acid", dose: 7500, unit: "mg" }], shelf(lot("G-1", 10, 5, "g")), single);
     expect(rows[0].batchNo).toBe("G-1");
     expect(rows[0].dose).toBe(7500);
   });
 
   it("skips a lot it cannot convert rather than guessing across families", () => {
-    const rows = planDraw([{ name: "Ascorbic acid", dose: 500, unit: "mg" }],
-      shelf(lot("ML-1", 10, 5, "ml"), lot("MG-1", 500, 5)), single);
+    const rows = planDraw(
+      [{ name: "Ascorbic acid", dose: 500, unit: "mg" }],
+      shelf(lot("ML-1", 10, 5, "ml"), lot("MG-1", 500, 5)),
+      single
+    );
     expect(rows.length).toBe(1);
     expect(rows[0].batchNo).toBe("MG-1");
   });

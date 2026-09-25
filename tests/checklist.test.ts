@@ -115,26 +115,59 @@ describe("vital reference ranges", () => {
 });
 
 describe("correcting a vitals reading", () => {
-  const typo = { systolic: 1200, diastolic: 80, heartRate: 72, spo2: 98, temperatureF: 98.4, weightKg: 60, outOfRange: ["systolic"] };
+  const typo = {
+    systolic: 1200,
+    diastolic: 80,
+    heartRate: 72,
+    spo2: 98,
+    temperatureF: 98.4,
+    weightKg: 60,
+    outOfRange: ["systolic"],
+  };
 
   it("fixes the reading in place and keeps what it said before", () => {
-    const fixed = correctReading(typo, { systolic: 120, diastolic: 80, heartRate: 72, spo2: 98, temperatureF: 98.4 }, "Typing mistake", "nurse-1", new Date("2026-09-24T07:00:00Z"));
+    const fixed = correctReading(
+      typo,
+      { systolic: 120, diastolic: 80, heartRate: 72, spo2: 98, temperatureF: 98.4 },
+      "Typing mistake",
+      "nurse-1",
+      new Date("2026-09-24T07:00:00Z")
+    );
     expect(fixed.systolic).toBe(120);
     expect(fixed.weightKg).toBe(60);
     expect(fixed.corrections).toHaveLength(1);
-    expect(fixed.corrections?.[0]).toMatchObject({ reason: "Typing mistake", byId: "nurse-1", before: { systolic: 1200, outOfRange: ["systolic"] } });
+    expect(fixed.corrections?.[0]).toMatchObject({
+      reason: "Typing mistake",
+      byId: "nurse-1",
+      before: { systolic: 1200, outOfRange: ["systolic"] },
+    });
   });
 
   it("stops blocking when corrected into range, and starts when corrected out of it", () => {
-    const fixed = correctReading(typo, { systolic: 120, diastolic: 80, heartRate: 72, spo2: 98, temperatureF: 98.4 }, "Typing mistake", "n");
+    const fixed = correctReading(
+      typo,
+      { systolic: 120, diastolic: 80, heartRate: 72, spo2: 98, temperatureF: 98.4 },
+      "Typing mistake",
+      "n"
+    );
     expect(fixed.outOfRange).toEqual([]);
-    const worse = correctReading(fixed, { systolic: 120, diastolic: 80, heartRate: 140, spo2: 98, temperatureF: 98.4 }, "Measured again", "n");
+    const worse = correctReading(
+      fixed,
+      { systolic: 120, diastolic: 80, heartRate: 140, spo2: 98, temperatureF: 98.4 },
+      "Measured again",
+      "n"
+    );
     expect(worse.outOfRange).toEqual(["heartRate"]);
     expect(worse.corrections).toHaveLength(2);
   });
 
   it("does not change the reading it was given", () => {
-    correctReading(typo, { systolic: 120, diastolic: 80, heartRate: 72, spo2: 98, temperatureF: 98.4 }, "Typing mistake", "n");
+    correctReading(
+      typo,
+      { systolic: 120, diastolic: 80, heartRate: 72, spo2: 98, temperatureF: 98.4 },
+      "Typing mistake",
+      "n"
+    );
     expect(typo.systolic).toBe(1200);
   });
 

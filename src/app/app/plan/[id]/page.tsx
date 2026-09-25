@@ -46,11 +46,7 @@ export default async function PatientPlanPage({ params }: { params: Promise<{ id
         <p className="t-body mt-1">{plan.diagnosis ?? "Your physician has not written a note here."}</p>
 
         <div className="mt-4 pt-4 border-t border-[var(--color-line)]">
-          <FillSegments
-            name="Sessions so far"
-            done={plan.sessionsPast}
-            total={plan.sessions.length}
-          />
+          <FillSegments name="Sessions so far" done={plan.sessionsPast} total={plan.sessions.length} />
         </div>
 
         <div className="flex flex-col gap-2 mt-4 pt-4 border-t border-[var(--color-line)]">
@@ -70,8 +66,8 @@ export default async function PatientPlanPage({ params }: { params: Promise<{ id
       <PlanSchedule sessions={plan.sessions} />
 
       <p className="t-small text-[var(--color-ink-3)] mt-6" style={{ textWrap: "pretty" }}>
-        Your physician can change this plan at any time, and you will be told when they do. If
-        anything here looks wrong, or you no longer want a session, say so before the nurse arrives.
+        Your physician can change this plan at any time, and you will be told when they do. If anything here looks
+        wrong, or you no longer want a session, say so before the nurse arrives.
       </p>
     </MobileShell>
   );

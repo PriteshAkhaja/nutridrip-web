@@ -230,9 +230,7 @@ export function PersonFields({
             onChange={(e) => set("gstin")({ target: { value: e.target.value.toUpperCase() } })}
             placeholder="e.g. 29AABCH1234K1ZN"
           />
-          {gstinCheck.warning ? (
-            <p className="t-small text-[var(--color-caution-text)]">{gstinCheck.warning}</p>
-          ) : null}
+          {gstinCheck.warning ? <p className="t-small text-[var(--color-caution-text)]">{gstinCheck.warning}</p> : null}
           <Input
             label="Monthly session target"
             type="number"

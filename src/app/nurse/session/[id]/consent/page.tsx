@@ -122,9 +122,9 @@ export default async function ConsentPage({ params }: { params: Promise<{ id: st
       {unrecoverable ? (
         <div className="rounded-[var(--radius-md)] border border-[var(--color-caution)] bg-[var(--color-caution-soft)] px-4 py-3 mb-4">
           <span className="t-small text-[var(--color-ink-2)]">
-            This consent was captured before the wording was kept on the record. It was given against
-            version <span className="t-data text-[13px]">{booking.consent?.version ?? "unknown"}</span>,
-            and the text below is that version as it stands today — not necessarily what was read out.
+            This consent was captured before the wording was kept on the record. It was given against version{" "}
+            <span className="t-data text-[13px]">{booking.consent?.version ?? "unknown"}</span>, and the text below is
+            that version as it stands today — not necessarily what was read out.
           </span>
         </div>
       ) : null}
@@ -145,9 +145,7 @@ export default async function ConsentPage({ params }: { params: Promise<{ id: st
             ))}
           </div>
         ) : (
-          <p className="t-small text-[var(--color-ink-3)] mt-3">
-            No doses were recorded against this consent.
-          </p>
+          <p className="t-small text-[var(--color-ink-3)] mt-3">No doses were recorded against this consent.</p>
         )}
       </div>
 

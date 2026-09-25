@@ -23,11 +23,11 @@ const ROLE_BLURB: Record<Role, string> = {
   superadmin: "Full control, including creating accounts and receiving stock.",
   admin: "Runs operations — orders, dispatch, alerts and enquiries. Cannot create accounts.",
   doctor: "Reviews assessments and approves protocols. Their registration number goes on every report they sign.",
-  nurse: "Attends sessions and works the 29-step checklist. Give them a home base so dispatch can rank them by distance.",
+  nurse:
+    "Attends sessions and works the 29-step checklist. Give them a home base so dispatch can rank them by distance.",
   clinic: "A partner running sessions from their own rooms. They order stock and see only their own bookings.",
   patient: "An ordinary patient account. Patients normally create their own by signing in with a phone number.",
 };
-
 
 export function AddPerson({
   doctors = [],
@@ -48,8 +48,7 @@ export function AddPerson({
    * zone names EXACTLY, so "HSR layout" silently covered nowhere at all.
    */
   const [areas, setAreas] = useState<string[]>([]);
-  const toggleArea = (zone: string) =>
-    setAreas((a) => (a.includes(zone) ? a.filter((z) => z !== zone) : [...a, zone]));
+  const toggleArea = (zone: string) => setAreas((a) => (a.includes(zone) ? a.filter((z) => z !== zone) : [...a, zone]));
 
   const set = (k: keyof PersonForm) => (e: { target: { value: string } }) =>
     setForm((f) => ({ ...f, [k]: e.target.value }));

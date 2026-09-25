@@ -28,7 +28,9 @@ describe("clinic orders are paid first", () => {
 
   it("cannot be confirmed until the payment is received, and says why", () => {
     expect(confirmBlockedBy(clinicDraft)).toMatch(/Not paid yet/);
-    expect(confirmBlockedBy({ ...clinicDraft, payment: { state: "submitted" } })).toMatch(/Check the money has arrived/);
+    expect(confirmBlockedBy({ ...clinicDraft, payment: { state: "submitted" } })).toMatch(
+      /Check the money has arrived/
+    );
     expect(confirmBlockedBy({ ...clinicDraft, payment: { state: "received" } })).toBeNull();
     expect(confirmBlockedBy({ ...clinicDraft, onCredit: true })).toBeNull();
   });
@@ -47,8 +49,18 @@ describe("the invoice of a paid-first order", () => {
     const credit = "Payable within 30 days of the invoice date.";
     expect(termsFor({}, credit)).toBe(credit);
     expect(termsFor({ payment: { state: "submitted" } }, credit)).toBe(credit);
-    expect(termsFor({ payment: { state: "received", method: "upi", reference: "UTR 4521", paidOn: new Date("2026-09-24T00:00:00+05:30") } }, credit)).toBe(
-      "Paid in advance on 24 Sept 2026 by UPI, ref UTR 4521. Nothing further is due."
-    );
+    expect(
+      termsFor(
+        {
+          payment: {
+            state: "received",
+            method: "upi",
+            reference: "UTR 4521",
+            paidOn: new Date("2026-09-24T00:00:00+05:30"),
+          },
+        },
+        credit
+      )
+    ).toBe("Paid in advance on 24 Sept 2026 by UPI, ref UTR 4521. Nothing further is due.");
   });
 });

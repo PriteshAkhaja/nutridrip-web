@@ -149,8 +149,14 @@ export function PrescriptionGate({
         <div className="flex flex-col gap-4">
           <div className="rounded-[var(--radius-md)] border border-[var(--color-info)] bg-[var(--color-info-soft)] px-4 py-3">
             <span className="t-body text-[var(--color-ink-2)]">
-              Code sent{sentTo ? <> to <span className="t-data text-[13px]">{sentTo}</span></> : null}. It appears in
-              their app and lasts ten minutes.
+              Code sent
+              {sentTo ? (
+                <>
+                  {" "}
+                  to <span className="t-data text-[13px]">{sentTo}</span>
+                </>
+              ) : null}
+              . It appears in their app and lasts ten minutes.
             </span>
             {devCode && (
               <div className="mt-2">

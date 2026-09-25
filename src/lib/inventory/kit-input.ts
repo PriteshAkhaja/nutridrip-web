@@ -8,4 +8,3 @@ export const KitInput = z.object({
   isDefault: z.boolean().default(false),
   isActive: z.boolean().default(true),
 });
-

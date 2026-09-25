@@ -102,9 +102,7 @@ export default async function HomePage() {
               </ul>
 
               <div className="flex gap-3 flex-wrap">
-                <QuizButton size="lg">
-                  {copy["home.cta"]}
-                </QuizButton>
+                <QuizButton size="lg">{copy["home.cta"]}</QuizButton>
                 <ButtonLink href="/drips" size="lg" variant="secondary">
                   Browse all {drips.length} drips
                 </ButtonLink>
@@ -155,15 +153,10 @@ export default async function HomePage() {
               className="rounded-[var(--radius-lg)] bg-[var(--color-surface)] border border-[var(--color-line)] p-7 flex flex-col gap-3"
               style={i === 1 ? { borderColor: "var(--color-primary)" } : undefined}
             >
-              <span
-                className="t-micro"
-                style={{ color: i === 1 ? "var(--color-primary)" : "var(--color-ink-3)" }}
-              >
+              <span className="t-micro" style={{ color: i === 1 ? "var(--color-primary)" : "var(--color-ink-3)" }}>
                 {t.step}
               </span>
-              <h3 style={{ font: "600 21px/1.25 var(--font-display)", letterSpacing: "-0.02em" }}>
-                {t.title}
-              </h3>
+              <h3 style={{ font: "600 21px/1.25 var(--font-display)", letterSpacing: "-0.02em" }}>{t.title}</h3>
               <p className="t-body text-[var(--color-ink-2)]">{t.body}</p>
             </div>
           ))}
@@ -179,7 +172,8 @@ export default async function HomePage() {
             sub="Availability below is live — it counts only in-date stock that is not already promised to another session."
           />
           <Link href="/drips" className="t-body font-semibold mb-10">
-            All {drips.length} drips&nbsp;<Arrow />
+            All {drips.length} drips&nbsp;
+            <Arrow />
           </Link>
         </div>
 
@@ -200,9 +194,7 @@ export default async function HomePage() {
                 </span>
               </div>
               <div className="p-5 flex flex-col gap-2 flex-1">
-                <h3 style={{ font: "600 19px/1.25 var(--font-display)", letterSpacing: "-0.02em" }}>
-                  {d.name}
-                </h3>
+                <h3 style={{ font: "600 19px/1.25 var(--font-display)", letterSpacing: "-0.02em" }}>{d.name}</h3>
                 <Stars rating={5} size={12} />
                 <p className="t-small text-[var(--color-ink-2)] flex-1">{d.tagline ?? d.description}</p>
                 <div className="flex items-baseline justify-between gap-3 pt-3 mt-1 border-t border-[var(--color-line)]">
@@ -232,9 +224,7 @@ export default async function HomePage() {
               className="rounded-[var(--radius-md)] border border-[var(--color-line)] bg-[var(--color-surface)] px-6 py-5 no-underline hover:no-underline flex items-center justify-between gap-4 transition-colors duration-150 hover:border-[var(--color-ink)]"
             >
               <span className="flex flex-col">
-                <span style={{ font: "600 17px/1.3 var(--font-display)", color: "var(--color-ink)" }}>
-                  {c.name}
-                </span>
+                <span style={{ font: "600 17px/1.3 var(--font-display)", color: "var(--color-ink)" }}>{c.name}</span>
                 <span className="t-small text-[var(--color-ink-2)]">{c.blurb}</span>
               </span>
               <span className="t-data text-[16px] flex-none" style={{ color: "var(--color-primary)" }}>
@@ -266,12 +256,7 @@ export default async function HomePage() {
       {/* ================= BRAND BENEFITS ================= */}
       <Section tone="ink">
         <div className="grid grid-cols-1 gap-12 lg:grid-cols-[0.9fr_1.1fr] items-start">
-          <SectionHeading
-            onInk
-            eyebrow="Why us"
-            title={copy["home.safety.heading"]}
-            sub={copy["home.safety.body"]}
-          />
+          <SectionHeading onInk eyebrow="Why us" title={copy["home.safety.heading"]} sub={copy["home.safety.body"]} />
           <div className="grid gap-px" style={{ background: "rgba(255,255,255,.14)" }}>
             {BRAND_BENEFITS.map((b) => (
               <div key={b.title} className="bg-[var(--color-ink)] py-6 first:pt-0 last:pb-0">
@@ -281,9 +266,7 @@ export default async function HomePage() {
                 >
                   {b.title}
                 </h3>
-                <p style={{ font: "400 15px/1.6 var(--font-sans)", color: "rgba(255,255,255,.7)" }}>
-                  {b.body}
-                </p>
+                <p style={{ font: "400 15px/1.6 var(--font-sans)", color: "rgba(255,255,255,.7)" }}>{b.body}</p>
               </div>
             ))}
           </div>
@@ -352,13 +335,11 @@ export default async function HomePage() {
             Three minutes now, or another month of guessing.
           </h2>
           <p className="t-body-lg max-w-[52ch]" style={{ color: "rgba(255,255,255,.72)" }}>
-            A physician reads every submission. If IV therapy is not right for you, they will say so — and tell you
-            what is.
+            A physician reads every submission. If IV therapy is not right for you, they will say so — and tell you what
+            is.
           </p>
           <div className="flex gap-3 flex-wrap justify-center mt-2">
-            <QuizButton size="lg">
-              Take the health quiz
-            </QuizButton>
+            <QuizButton size="lg">Take the health quiz</QuizButton>
             <Link
               href="/drips"
               className="inline-flex items-center justify-center min-h-[52px] px-6 rounded-[var(--radius-sm)] border font-semibold text-[14.5px] no-underline hover:no-underline"

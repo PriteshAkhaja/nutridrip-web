@@ -3,7 +3,13 @@ import { isLow, readFeedback } from "@/lib/clinical/feedback";
 
 describe("session feedback", () => {
   it("reads the two parts separately", () => {
-    const v = readFeedback({ nurseRating: 5, nurseComment: " Very gentle ", sessionRating: 3, sessionComment: "", givenAt: "2026-09-24T08:00:00Z" });
+    const v = readFeedback({
+      nurseRating: 5,
+      nurseComment: " Very gentle ",
+      sessionRating: 3,
+      sessionComment: "",
+      givenAt: "2026-09-24T08:00:00Z",
+    });
     expect(v?.nurse).toEqual({ rating: 5, comment: "Very gentle" });
     expect(v?.session).toEqual({ rating: 3, comment: null });
     expect(v?.givenAt).toBe("2026-09-24T08:00:00.000Z");

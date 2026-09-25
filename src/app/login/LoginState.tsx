@@ -65,7 +65,7 @@ export function LoginStateProvider({ children }: { children: ReactNode }) {
         setPicked(demoEmail);
       },
     }),
-    [mode, email, password, error, picked],
+    [mode, email, password, error, picked]
   );
 
   return <LoginStateContext.Provider value={value}>{children}</LoginStateContext.Provider>;

@@ -20,9 +20,23 @@ const GOALS = DRIP_CATEGORIES;
  * in-date, unreserved stock through the same FEFO engine the pharmacist uses.
  */
 function availabilityPill(available: number) {
-  if (available === 0) return <Pill tone="critical" dot>Out of stock</Pill>;
-  if (available <= 3) return <Pill tone="caution" dot>{available} left today</Pill>;
-  return <Pill tone="safe" dot>Available</Pill>;
+  if (available === 0)
+    return (
+      <Pill tone="critical" dot>
+        Out of stock
+      </Pill>
+    );
+  if (available <= 3)
+    return (
+      <Pill tone="caution" dot>
+        {available} left today
+      </Pill>
+    );
+  return (
+    <Pill tone="safe" dot>
+      Available
+    </Pill>
+  );
 }
 
 export default async function CataloguePage({
@@ -45,9 +59,7 @@ export default async function CataloguePage({
     drips.map((d) => ({ dripId: d.id, quantity: 1 })),
     true
   );
-  const availableByDrip = new Map(
-    availability.results.map((r) => [r.dripId, r.wholeVialAvailability])
-  );
+  const availableByDrip = new Map(availability.results.map((r) => [r.dripId, r.wholeVialAvailability]));
 
   const counts = new Map<string, number>();
   for (const d of all) counts.set(d.category, (counts.get(d.category) ?? 0) + 1);
@@ -69,9 +81,7 @@ export default async function CataloguePage({
         className="max-w-[420px] mb-8"
       />
 
-      {drips.length === 0 && (
-        <p className="t-body text-[var(--color-ink-2)] mb-8">{noMatchMessage(q ?? "")}</p>
-      )}
+      {drips.length === 0 && <p className="t-body text-[var(--color-ink-2)] mb-8">{noMatchMessage(q ?? "")}</p>}
 
       {/* Goal filter */}
       <div className="flex flex-wrap gap-[10px] mb-8">
@@ -135,7 +145,9 @@ export default async function CataloguePage({
                     {d.category}
                   </span>
                   <h2 className="t-h3 mt-1">{d.name}</h2>
-                  <div className="mt-2"><Stars rating={5} size={12} /></div>
+                  <div className="mt-2">
+                    <Stars rating={5} size={12} />
+                  </div>
                 </div>
                 <div className="flex flex-col items-end gap-2 flex-none">
                   {availabilityPill(available)}

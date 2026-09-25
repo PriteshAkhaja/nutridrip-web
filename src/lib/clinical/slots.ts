@@ -51,7 +51,8 @@ const minutesOf = (hhmm: string) => {
   const [h, m] = hhmm.split(":").map(Number);
   return h * 60 + m;
 };
-const hhmmOf = (mins: number) => `${String(Math.floor(mins / 60)).padStart(2, "0")}:${String(mins % 60).padStart(2, "0")}`;
+const hhmmOf = (mins: number) =>
+  `${String(Math.floor(mins / 60)).padStart(2, "0")}:${String(mins % 60).padStart(2, "0")}`;
 
 /** "2026-09-25" + "10:00" → that moment in India. */
 export function istInstant(date: string, time: string): Date {
@@ -153,7 +154,14 @@ export function freeNurses(opts: {
 
 export type SlotState = "free" | "taken" | "too_soon";
 export type SlotCell = { time: string; at: string; state: SlotState };
-export type SlotDay = { date: string; weekday: string; day: number; month: string; slots: SlotCell[]; freeCount: number };
+export type SlotDay = {
+  date: string;
+  weekday: string;
+  day: number;
+  month: string;
+  slots: SlotCell[];
+  freeCount: number;
+};
 
 export type SlotContext = {
   hours: Hours;

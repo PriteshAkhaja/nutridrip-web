@@ -64,7 +64,10 @@ export async function loadStatement(clinicId: string, month: MonthKey): Promise<
     month,
     rows,
     totals: summarise(rows),
-    missing: uninvoiced(dispatched, invoiced.map((i) => i.orderId)).map((o) => ({
+    missing: uninvoiced(
+      dispatched,
+      invoiced.map((i) => i.orderId)
+    ).map((o) => ({
       id: String(o._id),
       orderNo: o.orderNo,
       dispatchedAt: o.dispatchedAt ?? null,

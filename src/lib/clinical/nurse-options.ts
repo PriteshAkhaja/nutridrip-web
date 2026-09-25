@@ -26,9 +26,7 @@ export function distanceKm(aLat: number, aLng: number, bLat: number, bLng: numbe
   const toRad = (d: number) => (d * Math.PI) / 180;
   const dLat = toRad(bLat - aLat);
   const dLng = toRad(bLng - aLng);
-  const h =
-    Math.sin(dLat / 2) ** 2 +
-    Math.cos(toRad(aLat)) * Math.cos(toRad(bLat)) * Math.sin(dLng / 2) ** 2;
+  const h = Math.sin(dLat / 2) ** 2 + Math.cos(toRad(aLat)) * Math.cos(toRad(bLat)) * Math.sin(dLng / 2) ** 2;
   return 2 * R * Math.asin(Math.sqrt(h));
 }
 
@@ -119,11 +117,7 @@ export function nurseOptions(
   const zone = zoneForPincode(patient.pincode ?? undefined, zones);
 
   const rank = (n: NurseRow): NurseOption => {
-    const hasGeo =
-      patient.latitude != null &&
-      patient.longitude != null &&
-      n.latitude != null &&
-      n.longitude != null;
+    const hasGeo = patient.latitude != null && patient.longitude != null && n.latitude != null && n.longitude != null;
 
     const areas = n.serviceAreas ?? [];
     // An empty list is not a claim about anywhere, so it restricts nothing —
@@ -205,12 +199,7 @@ export function etaBetween(
   from: { latitude?: number; longitude?: number } | null | undefined,
   to: { latitude?: number; longitude?: number } | null | undefined
 ): number | null {
-  if (
-    from?.latitude == null ||
-    from?.longitude == null ||
-    to?.latitude == null ||
-    to?.longitude == null
-  ) {
+  if (from?.latitude == null || from?.longitude == null || to?.latitude == null || to?.longitude == null) {
     return null;
   }
   return etaMinutesFor(distanceKm(from.latitude, from.longitude, to.latitude, to.longitude));

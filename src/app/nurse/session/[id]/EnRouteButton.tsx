@@ -33,9 +33,7 @@ export function EnRouteButton({
     return (
       <div className="rounded-[var(--radius-lg)] border border-[var(--color-safe)] bg-[var(--color-safe-soft)] p-4 mb-5">
         <span className="t-micro block">On the way</span>
-        <span className="t-body block mt-[2px]">
-          The patient has been told you are {etaLabel(etaMinutes)}.
-        </span>
+        <span className="t-body block mt-[2px]">The patient has been told you are {etaLabel(etaMinutes)}.</span>
       </div>
     );
   }
@@ -63,9 +61,7 @@ export function EnRouteButton({
       <p className="t-small text-[var(--color-ink-3)] mt-2">
         Tells the patient you have set off, with roughly how long you will be.
       </p>
-      {error ? (
-        <p className="t-small text-[var(--color-critical-text)] mt-2">{error}</p>
-      ) : null}
+      {error ? <p className="t-small text-[var(--color-critical-text)] mt-2">{error}</p> : null}
     </div>
   );
 }

@@ -24,7 +24,8 @@ export type AiModelView = {
 export function aiView(row: Record<string, unknown>): AiModelView {
   const str = (v: unknown) => (typeof v === "string" ? v : "");
   const num = (v: unknown, fallback: number) => (typeof v === "number" && Number.isFinite(v) ? v : fallback);
-  const updated = row.updatedAt instanceof Date ? row.updatedAt : row.updatedAt ? new Date(String(row.updatedAt)) : null;
+  const updated =
+    row.updatedAt instanceof Date ? row.updatedAt : row.updatedAt ? new Date(String(row.updatedAt)) : null;
 
   return {
     id: String(row._id ?? ""),

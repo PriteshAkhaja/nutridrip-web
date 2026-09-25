@@ -70,7 +70,12 @@ const shape = {
   model: z
     .string()
     .transform((s) => s.trim())
-    .pipe(z.string().min(1, "Choose a model, or type its id").max(AI_LIMITS.model, `Keep the model id under ${AI_LIMITS.model} characters`)),
+    .pipe(
+      z
+        .string()
+        .min(1, "Choose a model, or type its id")
+        .max(AI_LIMITS.model, `Keep the model id under ${AI_LIMITS.model} characters`)
+    ),
   temperature: z
     .number({ error: "Temperature is a number from 0 to 1" })
     .min(0, "Temperature is between 0 and 1")
@@ -82,7 +87,10 @@ const shape = {
     .max(AI_LIMITS.maxTokens, `Maximum length cannot be more than ${AI_LIMITS.maxTokens.toLocaleString("en-IN")}`),
   systemPrompt: z
     .string()
-    .max(AI_LIMITS.systemPrompt, `Keep the system prompt under ${AI_LIMITS.systemPrompt.toLocaleString("en-IN")} characters`)
+    .max(
+      AI_LIMITS.systemPrompt,
+      `Keep the system prompt under ${AI_LIMITS.systemPrompt.toLocaleString("en-IN")} characters`
+    )
     .transform(LF),
   userPromptTemplate: z
     .string()

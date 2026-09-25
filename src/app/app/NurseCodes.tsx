@@ -69,7 +69,8 @@ export function NurseCodes({
       {shown.length > 0 && (
         <div className="flex flex-col gap-3 mb-4">
           {shown.map((c) => {
-            const minutes = now === null ? null : Math.max(1, Math.ceil((new Date(c.expiresAt).getTime() - now) / 60_000));
+            const minutes =
+              now === null ? null : Math.max(1, Math.ceil((new Date(c.expiresAt).getTime() - now) / 60_000));
             return (
               <section
                 key={c.id}
@@ -87,7 +88,12 @@ export function NurseCodes({
                 </p>
                 <span className="t-small block mt-3 text-[var(--color-ink-2)]">
                   {minutes === null ? "Lasts ten minutes" : `Expires in ${minutes} min`}
-                  {c.bookingNo ? <> · <span className="t-data text-[12.5px]">{c.bookingNo}</span></> : null}
+                  {c.bookingNo ? (
+                    <>
+                      {" "}
+                      · <span className="t-data text-[12.5px]">{c.bookingNo}</span>
+                    </>
+                  ) : null}
                 </span>
                 <span className="t-small block mt-1 text-[var(--color-ink-2)]">
                   Only read it to the nurse who is with you. NutriDrip will never phone or message you to ask for it.

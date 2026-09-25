@@ -42,12 +42,18 @@ describe("what an account edit leaves in the trail", () => {
       phone: "+919800000099",
       nurse: { ...nurse.nurse, licenseNo: "KNC/2024/2222", latitude: 12.9, longitude: 77.6 },
     };
-    const fields = diff(nurse, changed, names).map((c) => c.field).sort();
+    const fields = diff(nurse, changed, names)
+      .map((c) => c.field)
+      .sort();
     expect(fields).toEqual(["councilNumber", "homeLatitude", "homeLongitude", "phone"]);
   });
 
   it("shows a clinic's GSTIN, which decides how its invoices are taxed", () => {
-    const clinic = { name: "HealthFirst", status: "active", clinic: { gstin: "29AABCH1234K1ZN", pincode: "560038", city: "Bengaluru" } };
+    const clinic = {
+      name: "HealthFirst",
+      status: "active",
+      clinic: { gstin: "29AABCH1234K1ZN", pincode: "560038", city: "Bengaluru" },
+    };
     const moved = { ...clinic, clinic: { ...clinic.clinic, gstin: "27AABCH1234K1ZR" } };
     expect(diff(clinic, moved)).toEqual([{ field: "gstin", from: "29AABCH1234K1ZN", to: "27AABCH1234K1ZR" }]);
   });
@@ -63,11 +69,19 @@ describe("what an account edit leaves in the trail", () => {
   it("shows a clinic's monthly target and address", () => {
     const clinic = { name: "C", status: "active", clinic: { monthlyVolumeTarget: 100, address: "1 Main" } };
     const moved = { ...clinic, clinic: { monthlyVolumeTarget: 120, address: "2 Main" } };
-    expect(diff(clinic, moved).map((c) => c.field).sort()).toEqual(["address", "monthlyTarget"]);
+    expect(
+      diff(clinic, moved)
+        .map((c) => c.field)
+        .sort()
+    ).toEqual(["address", "monthlyTarget"]);
   });
 
   it("shows a physician's registration changing", () => {
-    const doctor = { name: "Dr. X", status: "active", doctor: { specialization: "Internal medicine", licenseNo: "KMC/1", registrationCouncil: "Karnataka" } };
+    const doctor = {
+      name: "Dr. X",
+      status: "active",
+      doctor: { specialization: "Internal medicine", licenseNo: "KMC/1", registrationCouncil: "Karnataka" },
+    };
     const moved = { ...doctor, doctor: { ...doctor.doctor, licenseNo: "KMC/2" } };
     expect(diff(doctor, moved)).toEqual([{ field: "councilNumber", from: "KMC/1", to: "KMC/2" }]);
   });
@@ -93,7 +107,9 @@ describe("what an account edit leaves in the trail", () => {
 
   it("uses no field name the trail would hide as a secret, apart from ones it clears by name", () => {
     const all = trackedFields({
-      name: "n", status: "s", phone: "p",
+      name: "n",
+      status: "s",
+      phone: "p",
       doctor: { specialization: "a", licenseNo: "b", registrationCouncil: "c" },
       nurse: { licenseNo: "d", doctorId: "e", serviceAreas: ["f"], latitude: 1, longitude: 2 },
       clinic: { address: "g", city: "h", pincode: "i", gstin: "j", monthlyVolumeTarget: 3 },

@@ -96,39 +96,46 @@ export default async function ClinicBookingsPage({
         />
       ) : (
         <PagedView>
-        <PagedResults>
-        <DataTable>
-          <THead>
-            <TR>
-              <TH width="130px">Booking</TH>
-              <TH>Patient</TH>
-              <TH>Drip</TH>
-              <TH>When</TH>
-              <TH>Nurse</TH>
-              <TH>Status</TH>
-              <TH numeric>Amount</TH>
-            </TR>
-          </THead>
-          <tbody>
-            {bookings.map((b) => (
-              <TR key={String(b._id)}>
-                <TD mono nowrap>{b.bookingNo}</TD>
-                <TD nowrap>{nameById.get(String(b.patientId)) ?? "—"}</TD>
-                <TD nowrap>{b.dripName ?? "—"}</TD>
-                <TD mono nowrap>
-                  {formatDate(b.scheduledAt)} · {formatTime(b.scheduledAt)}
-                </TD>
-                <TD nowrap>{b.nurseId ? (nameById.get(String(b.nurseId)) ?? "—") : "Unassigned"}</TD>
-                <TD>
-                  <StatusPill status={b.status} dot />
-                </TD>
-                <TD numeric>{formatInr(b.amount ?? 0)}</TD>
-              </TR>
-            ))}
-          </tbody>
-        </DataTable>
-        </PagedResults>
-        <Pagination meta={meta} basePath="/clinic/bookings" params={{ view, pageSize }} nouns={["booking", "bookings"]} />
+          <PagedResults>
+            <DataTable>
+              <THead>
+                <TR>
+                  <TH width="130px">Booking</TH>
+                  <TH>Patient</TH>
+                  <TH>Drip</TH>
+                  <TH>When</TH>
+                  <TH>Nurse</TH>
+                  <TH>Status</TH>
+                  <TH numeric>Amount</TH>
+                </TR>
+              </THead>
+              <tbody>
+                {bookings.map((b) => (
+                  <TR key={String(b._id)}>
+                    <TD mono nowrap>
+                      {b.bookingNo}
+                    </TD>
+                    <TD nowrap>{nameById.get(String(b.patientId)) ?? "—"}</TD>
+                    <TD nowrap>{b.dripName ?? "—"}</TD>
+                    <TD mono nowrap>
+                      {formatDate(b.scheduledAt)} · {formatTime(b.scheduledAt)}
+                    </TD>
+                    <TD nowrap>{b.nurseId ? (nameById.get(String(b.nurseId)) ?? "—") : "Unassigned"}</TD>
+                    <TD>
+                      <StatusPill status={b.status} dot />
+                    </TD>
+                    <TD numeric>{formatInr(b.amount ?? 0)}</TD>
+                  </TR>
+                ))}
+              </tbody>
+            </DataTable>
+          </PagedResults>
+          <Pagination
+            meta={meta}
+            basePath="/clinic/bookings"
+            params={{ view, pageSize }}
+            nouns={["booking", "bookings"]}
+          />
         </PagedView>
       )}
     </ConsoleShell>

@@ -110,9 +110,7 @@ if (doomed.length === 0) {
 // Said out loud before it goes, so an accidental run on the wrong database is
 // visible in the terminal rather than silent.
 for (const inv of doomed) {
-  console.log(
-    `  removing ${inv.invoiceNo} · ${inv.orderNo} · ${inv.documentType ?? "?"} · ₹${inv.grandTotal}`
-  );
+  console.log(`  removing ${inv.invoiceNo} · ${inv.orderNo} · ${inv.documentType ?? "?"} · ₹${inv.grandTotal}`);
 }
 
 const { deletedCount } = await db.collection("invoices").deleteMany(filter);

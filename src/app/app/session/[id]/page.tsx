@@ -35,7 +35,15 @@ export default async function LiveSessionPage({ params }: { params: Promise<{ id
     remainingMl?: number;
     rateMlHr?: number;
     checklist: Array<{ phase: string; doneAt?: Date }>;
-    vitals: Array<{ takenAt: Date; systolic?: number; diastolic?: number; heartRate?: number; spo2?: number; temperatureF?: number; corrections?: VitalsCorrection[] }>;
+    vitals: Array<{
+      takenAt: Date;
+      systolic?: number;
+      diastolic?: number;
+      heartRate?: number;
+      spo2?: number;
+      temperatureF?: number;
+      corrections?: VitalsCorrection[];
+    }>;
     observations: Array<{ at: Date; text: string }>;
   } | null>();
 

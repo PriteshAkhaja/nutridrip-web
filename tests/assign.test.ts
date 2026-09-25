@@ -52,6 +52,8 @@ describe("nurse ownership", () => {
   });
 
   it("compares ids as strings, since Mongo hands back ObjectIds", () => {
-    expect(nurseOwns(nurse("507f1f77bcf86cd799439011"), { nurseId: { toString: () => "507f1f77bcf86cd799439011" } })).toBe(true);
+    expect(
+      nurseOwns(nurse("507f1f77bcf86cd799439011"), { nurseId: { toString: () => "507f1f77bcf86cd799439011" } })
+    ).toBe(true);
   });
 });

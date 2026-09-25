@@ -23,7 +23,18 @@ describe("parseMonth", () => {
   });
 
   it("falls back to the current month for anything else, rather than failing", () => {
-    for (const bad of [undefined, null, "", "september", "2026-13", "2026-00", "2026-9", "26-09", "2026/09", "2026-09-01"]) {
+    for (const bad of [
+      undefined,
+      null,
+      "",
+      "september",
+      "2026-13",
+      "2026-00",
+      "2026-9",
+      "26-09",
+      "2026/09",
+      "2026-09-01",
+    ]) {
       expect(parseMonth(bad, NOW), String(bad)).toBe("2026-09");
     }
   });
@@ -127,7 +138,13 @@ describe("summarise", () => {
 
   it("adds up, and counts each kind of document", () => {
     const s = summarise([
-      row({ documentType: "tax_invoice", taxableTotal: 8474.58, cgstTotal: 762.71, sgstTotal: 762.71, grandTotal: 10000 }),
+      row({
+        documentType: "tax_invoice",
+        taxableTotal: 8474.58,
+        cgstTotal: 762.71,
+        sgstTotal: 762.71,
+        grandTotal: 10000,
+      }),
       row({ documentType: "bill_of_supply", taxableTotal: 26000, grandTotal: 26000 }),
     ]);
     expect(s.count).toBe(2);
@@ -156,7 +173,9 @@ describe("summarise", () => {
   });
 
   it("carries round-off, so the columns can be reconciled with the invoices", () => {
-    expect(summarise([row({ roundOff: -0.42, grandTotal: 1000 }), row({ roundOff: 0.3, grandTotal: 2000 })]).roundOff).toBe(-0.12);
+    expect(
+      summarise([row({ roundOff: -0.42, grandTotal: 1000 }), row({ roundOff: 0.3, grandTotal: 2000 })]).roundOff
+    ).toBe(-0.12);
   });
 });
 
@@ -169,7 +188,10 @@ describe("sortRows", () => {
   });
 
   it("does not reorder the list it was given", () => {
-    const rows = [toRow({ invoiceNo: "B", suppliedAt: new Date(2026, 8, 2) }), toRow({ invoiceNo: "A", suppliedAt: new Date(2026, 8, 1) })];
+    const rows = [
+      toRow({ invoiceNo: "B", suppliedAt: new Date(2026, 8, 2) }),
+      toRow({ invoiceNo: "A", suppliedAt: new Date(2026, 8, 1) }),
+    ];
     sortRows(rows);
     expect(rows[0].invoiceNo).toBe("B");
   });
@@ -196,9 +218,7 @@ describe("roundToRupees — the statement shows what the invoice shows", () => {
   const row = (o: Parameters<typeof toRow>[0]) => toRow(o);
 
   it("rounds each figure to the rupee, as the invoice does", () => {
-    const r = roundToRupees(
-      row({ taxableTotal: 23214.29, cgstTotal: 1392.86, sgstTotal: 1392.85, grandTotal: 26000 })
-    );
+    const r = roundToRupees(row({ taxableTotal: 23214.29, cgstTotal: 1392.86, sgstTotal: 1392.85, grandTotal: 26000 }));
     expect(r.taxable).toBe(23214);
     expect(r.gst).toBe(2786);
     expect(r.total).toBe(26000);
@@ -222,7 +242,9 @@ describe("roundToRupees — the statement shows what the invoice shows", () => {
 
   it("leaves everything that is not an amount alone", () => {
     const d = new Date(2026, 8, 12);
-    const r = roundToRupees(row({ invoiceNo: "INV-2026-0002", orderNo: "PO-2026-0110", orderId: "abc", suppliedAt: d }));
+    const r = roundToRupees(
+      row({ invoiceNo: "INV-2026-0002", orderNo: "PO-2026-0110", orderId: "abc", suppliedAt: d })
+    );
     expect(r.invoiceNo).toBe("INV-2026-0002");
     expect(r.orderNo).toBe("PO-2026-0110");
     expect(r.orderId).toBe("abc");

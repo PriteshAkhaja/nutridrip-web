@@ -86,12 +86,7 @@ export function SignOutButton({ form = "block" }: { form?: SignOutForm }) {
           <Button variant="secondary" block autoFocus onClick={() => setConfirming(false)}>
             Stay signed in
           </Button>
-          <Button
-            variant="danger"
-            block
-            loading={busy}
-            onClick={() => void signOut()}
-          >
+          <Button variant="danger" block loading={busy} onClick={() => void signOut()}>
             {busy ? "Signing out…" : "Sign out anyway"}
           </Button>
         </div>
@@ -134,12 +129,7 @@ export function SignOutButton({ form = "block" }: { form?: SignOutForm }) {
   const compact = form === "compact";
   return (
     <div className={compact ? "flex flex-col items-end gap-1" : "flex flex-col gap-2"}>
-      <Button
-        variant={compact ? "ghost" : "secondary"}
-        block={!compact}
-        loading={busy}
-        onClick={start}
-      >
+      <Button variant={compact ? "ghost" : "secondary"} block={!compact} loading={busy} onClick={start}>
         {!busy && <SignOutGlyph />}
         {busy ? "Signing out…" : failed ? "Try again" : "Sign out"}
       </Button>
@@ -160,8 +150,19 @@ function FailedNote() {
 function SignOutGlyph() {
   return (
     <svg width="16" height="16" viewBox="0 0 20 20" fill="none" aria-hidden className="flex-none">
-      <path d="M8 3.5H5A1.5 1.5 0 0 0 3.5 5v10A1.5 1.5 0 0 0 5 16.5h3" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" />
-      <path d="M12.5 6.5 16 10l-3.5 3.5M16 10H7.5" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" />
+      <path
+        d="M8 3.5H5A1.5 1.5 0 0 0 3.5 5v10A1.5 1.5 0 0 0 5 16.5h3"
+        stroke="currentColor"
+        strokeWidth="1.6"
+        strokeLinecap="round"
+      />
+      <path
+        d="M12.5 6.5 16 10l-3.5 3.5M16 10H7.5"
+        stroke="currentColor"
+        strokeWidth="1.6"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
     </svg>
   );
 }

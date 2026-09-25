@@ -144,7 +144,9 @@ export async function patientSessionsPaged(
 ): Promise<{ upcoming: SessionCard[]; past: SessionCard[]; meta: PageMeta }> {
   await connectDB();
   const [upcomingBookings, history] = await Promise.all([
-    Booking.find({ patientId, status: { $nin: FINISHED } }).sort({ scheduledAt: -1 }).lean<LeanBooking[]>(),
+    Booking.find({ patientId, status: { $nin: FINISHED } })
+      .sort({ scheduledAt: -1 })
+      .lean<LeanBooking[]>(),
     paginate<LeanBooking>(Booking, { patientId, status: { $in: FINISHED } }, { sort: { scheduledAt: -1 }, paging }),
   ]);
   const cards = await withPatientNames([...upcomingBookings, ...history.rows]);

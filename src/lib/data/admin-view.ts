@@ -54,7 +54,6 @@ export const ADMIN_BOOKING_FIELDS = [
 /** For `.select()`: only these leave the database for an Admin. */
 export const ADMIN_BOOKING_SELECT = ADMIN_BOOKING_FIELDS.join(" ");
 
-
 /**
  * A user as an Admin may see them. Staff records pass through untouched -- a
  * nurse's council number is not a patient's diagnosis -- and a patient's profile

@@ -13,15 +13,10 @@ import type { LetterheadView } from "@/lib/clinical/letterhead";
 export function LetterheadBlock({ view }: { view: LetterheadView }) {
   return (
     <div className="min-w-0">
-      <div
-        className="break-words"
-        style={{ font: "600 20px/1.15 var(--font-display)", letterSpacing: "-0.01em" }}
-      >
+      <div className="break-words" style={{ font: "600 20px/1.15 var(--font-display)", letterSpacing: "-0.01em" }}>
         {view.title}
       </div>
-      {view.qualifications ? (
-        <div className="t-small text-[var(--color-ink-2)] mt-1">{view.qualifications}</div>
-      ) : null}
+      {view.qualifications ? <div className="t-small text-[var(--color-ink-2)] mt-1">{view.qualifications}</div> : null}
       {view.addressLines.length > 0 ? (
         <div className="t-small text-[var(--color-ink-3)] mt-2">
           {view.addressLines.map((line, i) => (

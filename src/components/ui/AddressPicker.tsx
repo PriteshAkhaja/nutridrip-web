@@ -299,8 +299,8 @@ export function AddressPicker({
                     Address search is not available right now.
                   </span>
                   <span className="t-small text-[var(--color-ink-3)]">
-                    Type your address in the fields below and drag the pin to your door — that is what the nurse is
-                    sent to.
+                    Type your address in the fields below and drag the pin to your door — that is what the nurse is sent
+                    to.
                   </span>
                 </div>
               ) : noMatch ? (
@@ -340,9 +340,7 @@ export function AddressPicker({
             </span>
           </span>
         ) : (
-          <span className="t-small text-[var(--color-ink-3)]">
-            No pin yet — the nurse would get your address only.
-          </span>
+          <span className="t-small text-[var(--color-ink-3)]">No pin yet — the nurse would get your address only.</span>
         )}
       </div>
 

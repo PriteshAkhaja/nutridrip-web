@@ -83,7 +83,7 @@ export function ZoneEditor({ zones }: { zones: ZoneRow[] }) {
             slotMinutes: zone.slotMinutes,
             status: zone.status,
           }
-        : EMPTY,
+        : EMPTY
     );
     setTouched(false);
     setConfirmDelete(false);
@@ -91,9 +91,7 @@ export function ZoneEditor({ zones }: { zones: ZoneRow[] }) {
     setDone(null);
     // The form opens above the table; editing a zone far down the list would
     // otherwise open it out of sight.
-    requestAnimationFrame(() =>
-      formRef.current?.scrollIntoView({ behavior: "smooth", block: "start" }),
-    );
+    requestAnimationFrame(() => formRef.current?.scrollIntoView({ behavior: "smooth", block: "start" }));
   };
   const close = () => {
     setEditing(null);
@@ -101,12 +99,10 @@ export function ZoneEditor({ zones }: { zones: ZoneRow[] }) {
     setConfirmDelete(false);
   };
 
-  const set = (k: keyof Form) => (e: { target: { value: string } }) =>
-    setForm((f) => ({ ...f, [k]: e.target.value }));
+  const set = (k: keyof Form) => (e: { target: { value: string } }) => setForm((f) => ({ ...f, [k]: e.target.value }));
 
   const send = async (method: "POST" | "PATCH" | "DELETE") => {
-    const url =
-      method === "POST" ? "/api/admin/zones" : `/api/admin/zones/${editing}`;
+    const url = method === "POST" ? "/api/admin/zones" : `/api/admin/zones/${editing}`;
     const res = await fetch(url, {
       method,
       headers: { "content-type": "application/json" },
@@ -126,7 +122,7 @@ export function ZoneEditor({ zones }: { zones: ZoneRow[] }) {
       else {
         const renamed = json.data?.nursesRenamed ?? 0;
         setDone(
-          `${form.name.trim()} saved.${renamed ? ` ${renamed} ${renamed === 1 ? "nurse" : "nurses"} moved to the new name.` : ""}`,
+          `${form.name.trim()} saved.${renamed ? ` ${renamed} ${renamed === 1 ? "nurse" : "nurses"} moved to the new name.` : ""}`
         );
         setEditing(null);
         router.refresh();
@@ -159,8 +155,7 @@ export function ZoneEditor({ zones }: { zones: ZoneRow[] }) {
 
   // "Do we come to 560064?" — the question this page most often answers.
   const pin = cleanPincode(lookup);
-  const found =
-    pin.length === 6 ? zones.find((z) => z.pincodes.includes(pin)) : null;
+  const found = pin.length === 6 ? zones.find((z) => z.pincodes.includes(pin)) : null;
 
   const show = (k: keyof Form) => (touched ? problems[k] : undefined);
 
@@ -196,9 +191,7 @@ export function ZoneEditor({ zones }: { zones: ZoneRow[] }) {
             </span>
           )}
         </div>
-        {editing === null && (
-          <Button onClick={() => open(null)}>Add a zone</Button>
-        )}
+        {editing === null && <Button onClick={() => open(null)}>Add a zone</Button>}
       </div>
 
       {done && editing === null && (
@@ -210,9 +203,7 @@ export function ZoneEditor({ zones }: { zones: ZoneRow[] }) {
       {editing !== null && (
         <div ref={formRef} className="scroll-mt-20">
           <Card padding="p-6">
-            <h2 className="t-h3">
-              {current ? `Edit ${current.name}` : "Add a zone"}
-            </h2>
+            <h2 className="t-h3">{current ? `Edit ${current.name}` : "Add a zone"}</h2>
             <p className="t-body text-[var(--color-ink-2)] mt-1 max-w-[64ch]">
               {current
                 ? current.nurses > 0
@@ -229,18 +220,10 @@ export function ZoneEditor({ zones }: { zones: ZoneRow[] }) {
                 error={show("name")}
                 onChange={set("name")}
               />
-              <Select
-                label="Status"
-                value={form.status}
-                onChange={set("status")}
-              >
+              <Select label="Status" value={form.status} onChange={set("status")}>
                 <option value="open">Full cover</option>
-                <option value="limited">
-                  Limited — we serve it, with shorter hours
-                </option>
-                <option value="paused">
-                  Paused — kept, but not offered to patients
-                </option>
+                <option value="limited">Limited — we serve it, with shorter hours</option>
+                <option value="paused">Paused — kept, but not offered to patients</option>
               </Select>
               <div className="lg:col-span-2">
                 <Textarea
@@ -286,8 +269,11 @@ export function ZoneEditor({ zones }: { zones: ZoneRow[] }) {
                 {/* What a patient will see, so the step is judged by its result. */}
                 {times.length > 0 && (
                   <span className="t-small text-[var(--color-ink-3)]">
-                    Patients see {times.length === 1 ? times[0] : `${times[0]}, ${times[1]}${times.length > 2 ? ` … ${times[times.length - 1]}` : ""}`} ·{" "}
-                    {times.length} a day
+                    Patients see{" "}
+                    {times.length === 1
+                      ? times[0]
+                      : `${times[0]}, ${times[1]}${times.length > 2 ? ` … ${times[times.length - 1]}` : ""}`}{" "}
+                    · {times.length} a day
                   </span>
                 )}
               </div>
@@ -295,9 +281,7 @@ export function ZoneEditor({ zones }: { zones: ZoneRow[] }) {
 
             {error && (
               <div className="rounded-[var(--radius-md)] border border-[var(--color-critical)] bg-[var(--color-critical-soft)] px-4 py-3 mt-5">
-                <span className="t-body text-[var(--color-ink-2)]">
-                  {error}
-                </span>
+                <span className="t-body text-[var(--color-ink-2)]">{error}</span>
               </div>
             )}
 
@@ -309,41 +293,26 @@ export function ZoneEditor({ zones }: { zones: ZoneRow[] }) {
                 Cancel
               </Button>
               {touched && !valid && (
-                <span className="t-small text-[var(--color-critical-text)]">
-                  Fix the fields marked above.
-                </span>
+                <span className="t-small text-[var(--color-critical-text)]">Fix the fields marked above.</span>
               )}
               {current && (
                 <span className="ml-auto flex items-center gap-3 flex-wrap">
                   {current.nurses > 0 ? (
                     <span className="t-small text-[var(--color-ink-3)] max-w-[36ch] text-right">
-                      Cannot be deleted while a nurse covers it — pause it
-                      instead.
+                      Cannot be deleted while a nurse covers it — pause it instead.
                     </span>
                   ) : confirmDelete ? (
                     <>
-                      <span className="t-small text-[var(--color-ink-2)]">
-                        Delete {current.name} for good?
-                      </span>
-                      <Button
-                        variant="ghost"
-                        onClick={() => setConfirmDelete(false)}
-                      >
+                      <span className="t-small text-[var(--color-ink-2)]">Delete {current.name} for good?</span>
+                      <Button variant="ghost" onClick={() => setConfirmDelete(false)}>
                         Keep it
                       </Button>
-                      <Button
-                        variant="danger"
-                        loading={busy === "delete"}
-                        onClick={remove}
-                      >
+                      <Button variant="danger" loading={busy === "delete"} onClick={remove}>
                         Delete
                       </Button>
                     </>
                   ) : (
-                    <Button
-                      variant="destructive"
-                      onClick={() => setConfirmDelete(true)}
-                    >
+                    <Button variant="destructive" onClick={() => setConfirmDelete(true)}>
                       Delete zone
                     </Button>
                   )}
@@ -374,9 +343,7 @@ export function ZoneEditor({ zones }: { zones: ZoneRow[] }) {
                 <span className="font-medium">{z.name}</span>
               </TD>
               <TD>
-                <span className="t-data text-[13px]">
-                  {z.pincodes.join(", ")}
-                </span>
+                <span className="t-data text-[13px]">{z.pincodes.join(", ")}</span>
               </TD>
               <TD>
                 <span className="t-data text-[13px] block">{z.window}</span>
@@ -386,17 +353,10 @@ export function ZoneEditor({ zones }: { zones: ZoneRow[] }) {
                 <StatusPill status={z.status} />
               </TD>
               <TD numeric>
-                <span className="t-data text-[13px]">
-                  {z.nurses > 0 ? z.nurses : "None"}
-                </span>
+                <span className="t-data text-[13px]">{z.nurses > 0 ? z.nurses : "None"}</span>
               </TD>
               <TD>
-                <Button
-                  size="sm"
-                  variant="ghost"
-                  onClick={() => open(z)}
-                  disabled={editing === z.id}
-                >
+                <Button size="sm" variant="ghost" onClick={() => open(z)} disabled={editing === z.id}>
                   Edit
                 </Button>
               </TD>

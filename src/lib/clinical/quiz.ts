@@ -440,9 +440,7 @@ export function scoreQuiz(answers: Answers, questions: QuizQuestion[] = QUESTION
     [...byGroup].map(([g, vals]) => [g, Math.round(vals.reduce((a, b) => a + b, 0) / vals.length)])
   );
 
-  const vitalityScore = Math.round(
-    nutrientRisks.reduce((s, r) => s + r.pct, 0) / nutrientRisks.length
-  );
+  const vitalityScore = Math.round(nutrientRisks.reduce((s, r) => s + r.pct, 0) / nutrientRisks.length);
 
   return { vitalityScore, nutrientRisks, categoryScores, contraindications };
 }

@@ -110,7 +110,8 @@ export default async function ClinicPage() {
           <div className="flex items-baseline justify-between mb-3 gap-4">
             <h2 className="t-h3">Today&apos;s room</h2>
             <Link href="/clinic/bookings" className="t-body font-medium">
-              All bookings&nbsp;<Arrow />
+              All bookings&nbsp;
+              <Arrow />
             </Link>
           </div>
 
@@ -134,7 +135,9 @@ export default async function ClinicPage() {
               <tbody>
                 {todayBookings.map((b) => (
                   <TR key={String(b._id)}>
-                    <TD mono nowrap>{formatTime(b.scheduledAt)}</TD>
+                    <TD mono nowrap>
+                      {formatTime(b.scheduledAt)}
+                    </TD>
                     <TD nowrap>{patientNames.get(String(b.patientId)) ?? "—"}</TD>
                     <TD nowrap>{b.dripName ?? "—"}</TD>
                     <TD>
@@ -152,7 +155,8 @@ export default async function ClinicPage() {
           <div className="flex items-baseline justify-between mb-3 gap-4">
             <h2 className="t-h3">Your orders</h2>
             <Link href="/clinic/orders" className="t-body font-medium">
-              All&nbsp;<Arrow />
+              All&nbsp;
+              <Arrow />
             </Link>
           </div>
 

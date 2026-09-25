@@ -95,7 +95,13 @@ export async function getPayee(): Promise<Payee> {
     await connectDB();
     const row = await BillingSettings.findOne({ singleton: "billing" })
       .select("payeeUpiId payeeAccountName payeeBankName payeeAccountNo payeeIfsc")
-      .lean<{ payeeUpiId?: string; payeeAccountName?: string; payeeBankName?: string; payeeAccountNo?: string; payeeIfsc?: string } | null>();
+      .lean<{
+        payeeUpiId?: string;
+        payeeAccountName?: string;
+        payeeBankName?: string;
+        payeeAccountNo?: string;
+        payeeIfsc?: string;
+      } | null>();
     return {
       upiId: row?.payeeUpiId?.trim() ?? "",
       accountName: row?.payeeAccountName?.trim() ?? "",

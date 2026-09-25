@@ -116,11 +116,7 @@ const DOCS = {
 
 type DocKey = keyof typeof DOCS;
 
-export async function generateMetadata({
-  params,
-}: {
-  params: Promise<{ doc: string }>;
-}): Promise<Metadata> {
+export async function generateMetadata({ params }: { params: Promise<{ doc: string }> }): Promise<Metadata> {
   const { doc } = await params;
   const entry = DOCS[doc as DocKey];
   return entry ? { title: entry.title, description: entry.lede } : {};

@@ -275,7 +275,12 @@ export async function checkAvailability(
   const kits =
     includeKits && kitConditions.length
       ? await SessionKit.find({ $or: kitConditions }).lean<
-          Array<{ _id: unknown; isDefault: boolean; isActive: boolean; items: Array<{ masterId: unknown; qty: number }> }>
+          Array<{
+            _id: unknown;
+            isDefault: boolean;
+            isActive: boolean;
+            items: Array<{ masterId: unknown; qty: number }>;
+          }>
         >()
       : [];
   const kitById = new Map(kits.map((k) => [String(k._id), k]));

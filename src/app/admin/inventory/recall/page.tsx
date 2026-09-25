@@ -14,11 +14,7 @@ import { RecallPicker } from "./Picker";
 export const metadata: Metadata = { title: "Recall trace" };
 export const dynamic = "force-dynamic";
 
-export default async function RecallPage({
-  searchParams,
-}: {
-  searchParams: Promise<{ batch?: string }>;
-}) {
+export default async function RecallPage({ searchParams }: { searchParams: Promise<{ batch?: string }> }) {
   const session = await requireRole("superadmin", "admin");
   const nav = await adminNav();
   const { batch } = await searchParams;
@@ -53,8 +49,8 @@ export default async function RecallPage({
       meta={selected ? `Batch ${selected.batchNo}` : "Select a batch"}
     >
       <p className="t-body text-[var(--color-ink-2)] max-w-[76ch] mb-6" style={{ textWrap: "pretty" }}>
-        Every dispatch writes an immutable row recording which batch fed which order. Pick a batch and the trail
-        below shows everywhere it went — this is what a recall notice is answered with.
+        Every dispatch writes an immutable row recording which batch fed which order. Pick a batch and the trail below
+        shows everywhere it went — this is what a recall notice is answered with.
       </p>
 
       <RecallPicker
@@ -101,14 +97,14 @@ export default async function RecallPage({
                   <tbody>
                     {rows.map((r) => (
                       <TR key={r.id}>
-                        <TD mono nowrap>{r.orderNo}</TD>
+                        <TD mono nowrap>
+                          {r.orderNo}
+                        </TD>
                         <TD nowrap>
                           <span className="t-data text-[13px]">{r.patientRef}</span>
                         </TD>
                         <TD mono nowrap>
-                          {r.dispatchedAt
-                            ? `${formatDate(r.dispatchedAt)} · ${formatTime(r.dispatchedAt)}`
-                            : "—"}
+                          {r.dispatchedAt ? `${formatDate(r.dispatchedAt)} · ${formatTime(r.dispatchedAt)}` : "—"}
                         </TD>
                         <TD numeric>{r.unitsConsumed}</TD>
                         <TD numeric nowrap>
@@ -135,9 +131,13 @@ export default async function RecallPage({
                   <tbody>
                     {sessions.map((s) => (
                       <TR key={String(s._id)}>
-                        <TD mono nowrap>{s.bookingNo}</TD>
+                        <TD mono nowrap>
+                          {s.bookingNo}
+                        </TD>
                         <TD nowrap>{s.dripName ?? "—"}</TD>
-                        <TD mono nowrap>{s.completedAt ? formatDate(s.completedAt) : "—"}</TD>
+                        <TD mono nowrap>
+                          {s.completedAt ? formatDate(s.completedAt) : "—"}
+                        </TD>
                       </TR>
                     ))}
                   </tbody>

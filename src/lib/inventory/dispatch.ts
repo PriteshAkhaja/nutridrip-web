@@ -1,15 +1,6 @@
 import mongoose from "mongoose";
 import { connectDB } from "@/lib/db/mongoose";
-import {
-  Allocation,
-  BatchLot,
-  Consumption,
-  Drip,
-  Order,
-  ProductMaster,
-  SessionKit,
-  StockTxn,
-} from "@/lib/models";
+import { Allocation, BatchLot, Consumption, Drip, Order, ProductMaster, SessionKit, StockTxn } from "@/lib/models";
 import type { Unit } from "@/lib/models/types";
 import { convert } from "./units";
 
@@ -75,9 +66,9 @@ async function requirementsForOrder(orderId: string): Promise<Requirement[]> {
     // through.
     const kit =
       order.includeKits && line.withKit && drip.withKit
-        ? await SessionKit.findOne(
-            drip.kitId ? { _id: drip.kitId } : { isDefault: true, isActive: true }
-          ).lean<{ items: Array<{ masterId: unknown; qty: number }> } | null>()
+        ? await SessionKit.findOne(drip.kitId ? { _id: drip.kitId } : { isDefault: true, isActive: true }).lean<{
+            items: Array<{ masterId: unknown; qty: number }>;
+          } | null>()
         : null;
 
     for (let n = 0; n < line.quantity; n++) {
@@ -413,11 +404,7 @@ export async function dispatchOrder(orderId: string, actorId?: string) {
           { session }
         );
 
-        await Allocation.updateOne(
-          { _id: alloc._id },
-          { $set: { releasedAt: new Date() } },
-          { session }
-        );
+        await Allocation.updateOne({ _id: alloc._id }, { $set: { releasedAt: new Date() } }, { session });
       }
 
       const claimed = await Order.updateOne(
@@ -488,11 +475,7 @@ export async function cancelOrder(orderId: string, reason?: string, actorId?: st
         );
         if (released.modifiedCount !== 1) continue;
 
-        await BatchLot.updateOne(
-          { _id: alloc.lotId },
-          { $inc: { qtyReserved: -alloc.unitsReserved } },
-          { session }
-        );
+        await BatchLot.updateOne({ _id: alloc.lotId }, { $inc: { qtyReserved: -alloc.unitsReserved } }, { session });
         await StockTxn.create(
           [
             {

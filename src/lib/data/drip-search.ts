@@ -27,9 +27,7 @@ function normalise(value: string): string {
 }
 
 function haystack(drip: SearchableDrip): string {
-  return normalise(
-    [drip.name, drip.category, ...(drip.keywords ?? [])].filter(Boolean).join(" ")
-  );
+  return normalise([drip.name, drip.category, ...(drip.keywords ?? [])].filter(Boolean).join(" "));
 }
 
 /**

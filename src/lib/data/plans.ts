@@ -116,11 +116,7 @@ function shape(plan: PlanDoc, names: Map<string, string>): PlanView {
 
 async function namesFor(plans: PlanDoc[]): Promise<Map<string, string>> {
   const ids = [
-    ...new Set(
-      plans.flatMap((p) =>
-        [p.patientId, p.doctorId, p.nurseId].filter(Boolean).map((v) => String(v))
-      )
-    ),
+    ...new Set(plans.flatMap((p) => [p.patientId, p.doctorId, p.nurseId].filter(Boolean).map((v) => String(v)))),
   ];
   const users = await User.find({ _id: { $in: ids } })
     .select("name")
@@ -129,10 +125,7 @@ async function namesFor(plans: PlanDoc[]): Promise<Map<string, string>> {
 }
 
 /** One plan, or null when this person may not read it. */
-export async function planFor(
-  id: string,
-  viewer: { sub: string; role: string }
-): Promise<PlanView | null> {
+export async function planFor(id: string, viewer: { sub: string; role: string }): Promise<PlanView | null> {
   await connectDB();
   const plan = await TreatmentPlan.findById(id).lean<PlanDoc | null>();
   if (!plan || !mayRead(plan, viewer)) return null;

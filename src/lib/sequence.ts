@@ -55,8 +55,7 @@ export async function createWithReference<R>(
     try {
       return await make(await reference(attempt));
     } catch (err) {
-      const duplicate =
-        typeof err === "object" && err !== null && (err as { code?: number }).code === 11000;
+      const duplicate = typeof err === "object" && err !== null && (err as { code?: number }).code === 11000;
       if (!duplicate || attempt === maxAttempts - 1) throw err;
     }
   }

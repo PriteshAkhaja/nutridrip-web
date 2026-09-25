@@ -88,9 +88,7 @@ export default async function PricingPage() {
             <Card key={p.name} tone={featured ? "primary" : "surface"} padding="p-6" className="flex flex-col">
               <div className="flex items-center justify-between gap-3 mb-4">
                 <h2 className="t-h3">{p.name}</h2>
-                {p.tag && (
-                  <span className="t-micro text-[var(--color-primary-dark)]">{p.tag}</span>
-                )}
+                {p.tag && <span className="t-micro text-[var(--color-primary-dark)]">{p.tag}</span>}
               </div>
 
               <div className="flex items-baseline gap-2">
@@ -126,11 +124,7 @@ export default async function PricingPage() {
         <h2 className="t-h2 mb-6">Questions people actually ask</h2>
         <div className="rounded-[var(--radius-lg)] border border-[var(--color-line)] bg-[var(--color-surface)] overflow-hidden">
           {FAQ.map((f, i) => (
-            <details
-              key={f.q}
-              open={i === 0}
-              className="border-b border-[var(--color-line)] last:border-b-0 group"
-            >
+            <details key={f.q} open={i === 0} className="border-b border-[var(--color-line)] last:border-b-0 group">
               <summary className="flex items-start justify-between gap-4 px-5 py-[18px] cursor-pointer list-none min-h-[44px]">
                 <span
                   className="text-[var(--color-ink)] group-open:font-semibold"
@@ -143,7 +137,9 @@ export default async function PricingPage() {
                   <span className="hidden group-open:inline">−</span>
                 </span>
               </summary>
-              <p className="t-body text-[var(--color-ink-2)] px-5 pb-5 -mt-1 max-w-[66ch]">{fillZoneCount(fillLatePolicy(f.a, latePolicy), zones)}</p>
+              <p className="t-body text-[var(--color-ink-2)] px-5 pb-5 -mt-1 max-w-[66ch]">
+                {fillZoneCount(fillLatePolicy(f.a, latePolicy), zones)}
+              </p>
             </details>
           ))}
         </div>

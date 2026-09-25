@@ -66,7 +66,14 @@ describe("parsePaging", () => {
 describe("pageMeta", () => {
   it("describes a middle page", () => {
     expect(pageMeta(137, 2, 25)).toEqual({
-      page: 2, pageSize: 25, total: 137, totalPages: 6, from: 26, to: 50, hasPrev: true, hasNext: true,
+      page: 2,
+      pageSize: 25,
+      total: 137,
+      totalPages: 6,
+      from: 26,
+      to: 50,
+      hasPrev: true,
+      hasNext: true,
     });
   });
 
@@ -87,7 +94,14 @@ describe("pageMeta", () => {
 
   it("is one empty page for nothing at all", () => {
     expect(pageMeta(0, 1, 25)).toEqual({
-      page: 1, pageSize: 25, total: 0, totalPages: 1, from: 0, to: 0, hasPrev: false, hasNext: false,
+      page: 1,
+      pageSize: 25,
+      total: 0,
+      totalPages: 1,
+      from: 0,
+      to: 0,
+      hasPrev: false,
+      hasNext: false,
     });
   });
 
@@ -240,7 +254,14 @@ describe("stableSort", () => {
 describe("pageInfo", () => {
   it("is what an API sends beside its rows", () => {
     expect(pageInfo(pageMeta(137, 2, 25))).toEqual({
-      page: 2, pageSize: 25, total: 137, totalPages: 6, from: 26, to: 50, hasPrev: true, hasNext: true,
+      page: 2,
+      pageSize: 25,
+      total: 137,
+      totalPages: 6,
+      from: 26,
+      to: 50,
+      hasPrev: true,
+      hasNext: true,
     });
   });
 });

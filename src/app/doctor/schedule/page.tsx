@@ -113,7 +113,9 @@ export default async function DoctorSchedulePage() {
                 <tbody>
                   {items.map((b) => (
                     <TR key={String(b._id)}>
-                      <TD mono nowrap>{formatTime(b.scheduledAt)}</TD>
+                      <TD mono nowrap>
+                        {formatTime(b.scheduledAt)}
+                      </TD>
                       <TD nowrap>
                         <Link href={`/doctor/patients/${String(b.patientId)}`}>
                           {nameById.get(String(b.patientId)) ?? "—"}

@@ -40,8 +40,7 @@ export function CoverageNote({ pincode, zones }: { pincode: string; zones: Zone[
   if (!zone) {
     return (
       <span className="t-small text-[var(--color-critical-text)]">
-        We do not serve {pincode} yet — a straight no rather than a waitlist. The zones we cover are on the Zones
-        page.
+        We do not serve {pincode} yet — a straight no rather than a waitlist. The zones we cover are on the Zones page.
       </span>
     );
   }
@@ -145,8 +144,7 @@ export function BookingFlow({
         setError(json.error ?? "Could not book that slot");
         // Taken since the grid loaded: show the times as they are now.
         if (res.status === 409 || res.status === 422) setSlotReload((n) => n + 1);
-      }
-      else {
+      } else {
         router.push("/app");
         router.refresh();
       }
@@ -161,9 +159,7 @@ export function BookingFlow({
   const slotQuery =
     !dripId || (atClinic ? !clinicId : pincode.length !== 6 || !served)
       ? null
-      : new URLSearchParams(
-          atClinic ? { dripId, location, clinicId } : { dripId, location, pincode }
-        ).toString();
+      : new URLSearchParams(atClinic ? { dripId, location, clinicId } : { dripId, location, pincode }).toString();
 
   const canSubmit =
     Boolean(dripId) &&
@@ -184,9 +180,7 @@ export function BookingFlow({
       {/* ---------------- Drip ---------------- */}
       <div>
         <div className="flex items-baseline justify-between gap-3 mb-3">
-          <span className="t-micro">
-            Which drip{recommendedIds.length > 1 ? " · one per session" : ""}
-          </span>
+          <span className="t-micro">Which drip{recommendedIds.length > 1 ? " · one per session" : ""}</span>
           <span className="t-small text-[var(--color-ink-3)]">
             {visible.length} of {drips.length}
           </span>
@@ -202,9 +196,7 @@ export function BookingFlow({
         />
 
         <div className="flex flex-col gap-2">
-          {visible.length === 0 && (
-            <p className="t-small text-[var(--color-ink-3)] py-3">{noMatchMessage(query)}</p>
-          )}
+          {visible.length === 0 && <p className="t-small text-[var(--color-ink-3)] py-3">{noMatchMessage(query)}</p>}
           {visible.map((d) => {
             const selected = d.id === dripId;
             const out = d.available === 0;
@@ -231,9 +223,7 @@ export function BookingFlow({
                   <span className="min-w-0 flex flex-col gap-[3px]">
                     <span style={{ font: `${selected ? 600 : 500} 16px/1.4 var(--font-sans)` }}>{d.name}</span>
                     {recommended.has(d.id) && (
-                      <span className="t-small text-[var(--color-primary-text)]">
-                        Recommended for you
-                      </span>
+                      <span className="t-small text-[var(--color-primary-text)]">Recommended for you</span>
                     )}
                   </span>
                   {out ? (
@@ -254,11 +244,7 @@ export function BookingFlow({
 
       {/* ---------------- Where ---------------- */}
       <div className="flex flex-col gap-4">
-        <Select
-          label="Where"
-          value={location}
-          onChange={(e) => setLocation(e.target.value as typeof location)}
-        >
+        <Select label="Where" value={location} onChange={(e) => setLocation(e.target.value as typeof location)}>
           {LOCATIONS.map((l) => (
             <option key={l.value} value={l.value} disabled={l.value === "clinic" && clinics.length === 0}>
               {l.label}
@@ -318,11 +304,13 @@ export function BookingFlow({
           <div className="flex flex-col gap-2 mt-3">
             {[
               ["Drip", drip.name],
+              ["When", slotAt ? slotLabel(slotAt) : "Pick a time"],
               [
-                "When",
-                slotAt ? slotLabel(slotAt) : "Pick a time",
+                "Where",
+                atClinic
+                  ? (clinics.find((c) => c.id === clinicId)?.name ?? "Clinic")
+                  : (LOCATIONS.find((l) => l.value === location)?.label ?? ""),
               ],
-              ["Where", atClinic ? (clinics.find((c) => c.id === clinicId)?.name ?? "Clinic") : LOCATIONS.find((l) => l.value === location)?.label ?? ""],
               ["Duration", `${drip.durationMin} min`],
               ["Session total", formatInr(drip.priceInr)],
             ].map(([k, v]) => (

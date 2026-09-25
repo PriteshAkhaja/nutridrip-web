@@ -27,8 +27,8 @@ export default async function AdversePage({ params }: { params: Promise<{ id: st
       <div className="rounded-[var(--radius-md)] border border-[var(--color-critical)] bg-[var(--color-critical-soft)] px-4 py-3 mb-5">
         <span className="t-body font-semibold">Patient safety comes before this form</span>
         <p className="t-body text-[var(--color-ink-2)] mt-1">
-          Stop the infusion, stay with the patient, and use the anaphylaxis kit if indicated. Fill this in once they
-          are stable — nothing here is time-critical.
+          Stop the infusion, stay with the patient, and use the anaphylaxis kit if indicated. Fill this in once they are
+          stable — nothing here is time-critical.
         </p>
       </div>
 

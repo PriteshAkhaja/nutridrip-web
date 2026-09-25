@@ -57,12 +57,7 @@ export type BookingStatus = (typeof BOOKING_STATUS)[number];
 export const LOCATIONS = ["home", "clinic", "office", "hotel"] as const;
 export type SessionLocation = (typeof LOCATIONS)[number];
 
-export const CHECKLIST_PHASES = [
-  "Pre-session",
-  "Preparation",
-  "During infusion",
-  "Post-session",
-] as const;
+export const CHECKLIST_PHASES = ["Pre-session", "Preparation", "During infusion", "Post-session"] as const;
 export type ChecklistPhase = (typeof CHECKLIST_PHASES)[number];
 
 export const SEVERITY = ["mild", "moderate", "severe"] as const;
@@ -104,13 +99,6 @@ export function riskColor(pct: number): string {
  * ticked rather than typed: "immunity" and "Immunity" would become two
  * categories, and the chips match exactly.
  */
-export const DRIP_CATEGORIES = [
-  "Energy",
-  "Immunity",
-  "Skin",
-  "Hydration",
-  "Athletic recovery",
-  "Post-viral",
-] as const;
+export const DRIP_CATEGORIES = ["Energy", "Immunity", "Skin", "Hydration", "Athletic recovery", "Post-viral"] as const;
 
 export type DripCategory = (typeof DRIP_CATEGORIES)[number];

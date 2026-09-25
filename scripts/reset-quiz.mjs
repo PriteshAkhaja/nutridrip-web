@@ -99,7 +99,12 @@ if (!patient) {
   process.exit(1);
 }
 
-const quiz = await db.collection("healthquizzes").find({ patientId: patient._id }).sort({ completedAt: -1 }).limit(1).next();
+const quiz = await db
+  .collection("healthquizzes")
+  .find({ patientId: patient._id })
+  .sort({ completedAt: -1 })
+  .limit(1)
+  .next();
 if (!quiz) {
   console.error(`${patient.name} has no assessment yet — take the quiz first.`);
   process.exit(1);
@@ -108,7 +113,9 @@ if (!quiz) {
 // Said out loud before it goes, so an accidental run on the wrong database is
 // visible in the terminal rather than silent.
 if (quiz.reviewStatus !== "pending") {
-  console.log(`erasing the decision on ${String(quiz._id)}: ${quiz.reviewStatus}${quiz.reviewedAt ? ` on ${new Date(quiz.reviewedAt).toISOString().slice(0, 10)}` : ""}`);
+  console.log(
+    `erasing the decision on ${String(quiz._id)}: ${quiz.reviewStatus}${quiz.reviewedAt ? ` on ${new Date(quiz.reviewedAt).toISOString().slice(0, 10)}` : ""}`
+  );
 }
 
 await db.collection("healthquizzes").updateOne(
@@ -116,20 +123,31 @@ await db.collection("healthquizzes").updateOne(
   {
     $set: { reviewStatus: "pending" },
     $unset: {
-      reviewedBy: "", reviewedAt: "", doctorNotes: "", patientNote: "",
-      declineReason: "", recommendedDripIds: "", recommendationStrength: "",
-      infoRequest: "", infoAnswer: "", infoAnsweredAt: "",
+      reviewedBy: "",
+      reviewedAt: "",
+      doctorNotes: "",
+      patientNote: "",
+      declineReason: "",
+      recommendedDripIds: "",
+      recommendationStrength: "",
+      infoRequest: "",
+      infoAnswer: "",
+      infoAnsweredAt: "",
     },
   }
 );
 
 // A booking behind it, held, so "ask for more information" has something to hold.
-const booking = await db.collection("bookings").findOne({ patientId: patient._id, status: { $in: ["awaiting_review", "approved", "nurse_assigned"] } });
+const booking = await db
+  .collection("bookings")
+  .findOne({ patientId: patient._id, status: { $in: ["awaiting_review", "approved", "nurse_assigned"] } });
 if (booking) {
-  await db.collection("bookings").updateOne(
-    { _id: booking._id },
-    { $set: { status: "awaiting_review" }, $unset: { nurseId: "", doctorId: "", approvedAt: "", approvalNotes: "" } }
-  );
+  await db
+    .collection("bookings")
+    .updateOne(
+      { _id: booking._id },
+      { $set: { status: "awaiting_review" }, $unset: { nurseId: "", doctorId: "", approvedAt: "", approvalNotes: "" } }
+    );
 }
 
 console.log(`${patient.name}: assessment ${String(quiz._id)} is pending again`);

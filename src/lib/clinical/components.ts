@@ -35,7 +35,11 @@ export type IngredientSpec = { name: string; dose: number; unit: Unit };
  * units only — and returns one row per lot actually touched, carrying the
  * content that came from it.
  */
-export function planDraw(ingredients: IngredientSpec[], lotsByMaster: Map<string, LotView[]>, masterIdOf: (i: number) => string): GivenComponent[] {
+export function planDraw(
+  ingredients: IngredientSpec[],
+  lotsByMaster: Map<string, LotView[]>,
+  masterIdOf: (i: number) => string
+): GivenComponent[] {
   const rows: GivenComponent[] = [];
 
   ingredients.forEach((ing, index) => {

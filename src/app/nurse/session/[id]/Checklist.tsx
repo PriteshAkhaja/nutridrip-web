@@ -55,7 +55,8 @@ export function Checklist({
     const result = await queuedPost(`/api/bookings/${bookingId}/checklist`, { key, done: false }, `Reopen: ${label}`);
     setBusy(null);
     if (result.queued) setRowError({ key, message: "Offline — this is queued and will sync when you reconnect." });
-    else if (!result.json.success) setRowError({ key, message: result.json.error ?? "That step could not be reopened" });
+    else if (!result.json.success)
+      setRowError({ key, message: result.json.error ?? "That step could not be reopened" });
     else router.refresh();
   };
 
@@ -176,9 +177,9 @@ export function Checklist({
                   {gated && (
                     <div className="rounded-[var(--radius-sm)] border border-[var(--color-critical)] bg-[var(--color-critical-soft)] px-3 py-2 mt-3">
                       <span className="t-small text-[var(--color-ink-2)]">
-                        A baseline reading is outside its reference range. Do not cannulate or start the
-                        infusion until the reviewing physician clears it — they have been notified, and this step
-                        unlocks the moment they do.
+                        A baseline reading is outside its reference range. Do not cannulate or start the infusion until
+                        the reviewing physician clears it — they have been notified, and this step unlocks the moment
+                        they do.
                       </span>
                     </div>
                   )}
@@ -188,7 +189,11 @@ export function Checklist({
                       <span className="t-small text-[var(--color-ink-2)]">
                         Physician cleared the baseline vitals at{" "}
                         <span className="t-data text-[13px]">
-                          {new Date(clearance.at).toLocaleTimeString("en-IN", { hour: "2-digit", minute: "2-digit", hour12: true })}
+                          {new Date(clearance.at).toLocaleTimeString("en-IN", {
+                            hour: "2-digit",
+                            minute: "2-digit",
+                            hour12: true,
+                          })}
                         </span>
                         {clearance.note ? ` — ${clearance.note}` : "."}
                       </span>
@@ -199,8 +204,8 @@ export function Checklist({
                     <>
                       <div className="rounded-[var(--radius-sm)] border border-[var(--color-primary)] bg-[var(--color-primary-soft)] px-3 py-2 mt-3">
                         <span className="t-small text-[var(--color-ink-2)]">
-                          Open the prescription before this step. Ask the patient to read out the code sent
-                          to their phone.
+                          Open the prescription before this step. Ask the patient to read out the code sent to their
+                          phone.
                         </span>
                       </div>
                       <Link
@@ -211,24 +216,24 @@ export function Checklist({
                       </Link>
                     </>
                   ) : (
-                  <div className="flex gap-2 mt-4 flex-wrap">
-                    {sub && (
-                      <Link
-                        href={`/nurse/session/${bookingId}/${sub.path}`}
-                        className="no-underline hover:no-underline"
+                    <div className="flex gap-2 mt-4 flex-wrap">
+                      {sub && (
+                        <Link
+                          href={`/nurse/session/${bookingId}/${sub.path}`}
+                          className="no-underline hover:no-underline"
+                        >
+                          <Button variant="secondary">{sub.label}</Button>
+                        </Link>
+                      )}
+                      <Button
+                        onClick={() => complete(step.key, step.label)}
+                        loading={busy === step.key}
+                        disabled={gated}
+                        block={!sub}
                       >
-                        <Button variant="secondary">{sub.label}</Button>
-                      </Link>
-                    )}
-                    <Button
-                      onClick={() => complete(step.key, step.label)}
-                      loading={busy === step.key}
-                      disabled={gated}
-                      block={!sub}
-                    >
-                      Mark complete
-                    </Button>
-                  </div>
+                        Mark complete
+                      </Button>
+                    </div>
                   )}
 
                   {/* Under the button that was pressed. At the top of the list it

@@ -46,11 +46,7 @@ export async function POST(req: Request) {
       return ok({ key, value: CONTENT_DEFAULTS[key as ContentKey], reverted: true });
     }
 
-    await ContentBlock.findOneAndUpdate(
-      { key },
-      { $set: { value, updatedBy: session!.sub } },
-      { upsert: true }
-    );
+    await ContentBlock.findOneAndUpdate({ key }, { $set: { value, updatedBy: session!.sub } }, { upsert: true });
 
     await AuditLog.create({
       actorId: session!.sub,

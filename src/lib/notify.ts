@@ -39,9 +39,7 @@ export async function notifyRole(
       .select("_id")
       .lean<Array<{ _id: unknown }>>();
     if (!users.length) return;
-    await Notification.insertMany(
-      users.map((u) => ({ userId: u._id, title, body, type, link }))
-    );
+    await Notification.insertMany(users.map((u) => ({ userId: u._id, title, body, type, link })));
   } catch (err) {
     console.error("notifyRole() failed:", err);
   }

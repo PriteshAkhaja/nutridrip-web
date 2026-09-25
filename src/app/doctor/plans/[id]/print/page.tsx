@@ -43,7 +43,10 @@ export default async function PrintRxPage({ params }: { params: Promise<{ id: st
     totalWeeks: number;
     status: string;
     createdAt: Date;
-    weeks: Array<{ weekNum: number; sessions: Array<{ date: Date; dripName: string; components: Component[]; sessionNotes?: string }> }>;
+    weeks: Array<{
+      weekNum: number;
+      sessions: Array<{ date: Date; dripName: string; components: Component[]; sessionNotes?: string }>;
+    }>;
   } | null>();
   if (!plan) notFound();
   // A physician prints their own prescriptions; the super admin may print any.
@@ -63,7 +66,16 @@ export default async function PrintRxPage({ params }: { params: Promise<{ id: st
     User.findById(plan.patientId).lean<{
       name: string;
       phone?: string;
-      patient?: { dob?: Date; gender?: string; bloodGroup?: string; weightKg?: number; heightCm?: number; allergies?: string; address?: string; city?: string };
+      patient?: {
+        dob?: Date;
+        gender?: string;
+        bloodGroup?: string;
+        weightKg?: number;
+        heightCm?: number;
+        allergies?: string;
+        address?: string;
+        city?: string;
+      };
     } | null>(),
     User.findById(plan.doctorId).lean<{
       name: string;
@@ -89,7 +101,8 @@ export default async function PrintRxPage({ params }: { params: Promise<{ id: st
       {/* ---------------- Controls, hidden in print ---------------- */}
       <div className="no-print mx-auto max-w-[820px] flex items-center justify-between gap-4 mb-5 flex-wrap">
         <Link href="/doctor/plans" className="t-body">
-          <Arrow dir="left" />&nbsp;Back to plans
+          <Arrow dir="left" />
+          &nbsp;Back to plans
         </Link>
         <PrintButton />
       </div>
@@ -150,9 +163,17 @@ export default async function PrintRxPage({ params }: { params: Promise<{ id: st
             </div>
             {patient?.phone && <div className="t-data text-[13px] mt-1">{patient.phone}</div>}
             {(p.address || p.city) && (
-              <div className="t-small text-[var(--color-ink-2)] mt-1">{[p.address, p.city].filter(Boolean).join(", ")}</div>
+              <div className="t-small text-[var(--color-ink-2)] mt-1">
+                {[p.address, p.city].filter(Boolean).join(", ")}
+              </div>
             )}
-            <div className="t-small mt-2" style={{ color: p.allergies && p.allergies.toLowerCase() !== "none" ? "var(--color-critical)" : "var(--color-ink-2)" }}>
+            <div
+              className="t-small mt-2"
+              style={{
+                color:
+                  p.allergies && p.allergies.toLowerCase() !== "none" ? "var(--color-critical)" : "var(--color-ink-2)",
+              }}
+            >
               Allergies: {p.allergies || "None declared"}
             </div>
           </div>

@@ -35,9 +35,7 @@ export function Switch({
   return (
     <label
       htmlFor={id}
-      className={`flex items-start gap-3 min-h-[44px] ${
-        disabled ? "cursor-not-allowed opacity-60" : "cursor-pointer"
-      }`}
+      className={`flex items-start gap-3 min-h-[44px] ${disabled ? "cursor-not-allowed opacity-60" : "cursor-pointer"}`}
     >
       {/* The off track is a solid mid grey, not the near-white surface tint:
           a white knob on a near-white track is invisible, which is the state

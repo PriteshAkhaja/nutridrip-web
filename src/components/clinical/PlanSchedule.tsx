@@ -13,11 +13,7 @@ import type { PlanSessionView } from "@/lib/data/plans";
  */
 export function PlanSchedule({ sessions }: { sessions: PlanSessionView[] }) {
   if (sessions.length === 0) {
-    return (
-      <p className="t-small text-[var(--color-ink-3)]">
-        This plan has no sessions written into it yet.
-      </p>
-    );
+    return <p className="t-small text-[var(--color-ink-3)]">This plan has no sessions written into it yet.</p>;
   }
 
   const weeks = [...new Set(sessions.map((s) => s.weekNum))];
@@ -41,9 +37,7 @@ export function PlanSchedule({ sessions }: { sessions: PlanSessionView[] }) {
                 >
                   <div className="flex items-baseline justify-between gap-3 flex-wrap">
                     <span className="t-data text-[14.5px]">{s.date}</span>
-                    {s.past ? (
-                      <span className="t-small text-[var(--color-ink-3)]">Date passed</span>
-                    ) : null}
+                    {s.past ? <span className="t-small text-[var(--color-ink-3)]">Date passed</span> : null}
                   </div>
                   <h3 className="t-body font-semibold mt-1">{s.dripName}</h3>
 
@@ -60,9 +54,7 @@ export function PlanSchedule({ sessions }: { sessions: PlanSessionView[] }) {
                       ))}
                     </ul>
                   ) : (
-                    <p className="t-small text-[var(--color-ink-3)] mt-2">
-                      As per the standard recipe for this drip.
-                    </p>
+                    <p className="t-small text-[var(--color-ink-3)] mt-2">As per the standard recipe for this drip.</p>
                   )}
 
                   {s.note ? (

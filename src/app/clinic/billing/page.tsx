@@ -11,13 +11,7 @@ import { EmptyState } from "@/components/ui/States";
 import { formatDate } from "@/lib/data/inventory";
 import { loadStatement } from "@/lib/billing/statement-data";
 import { formatInr } from "@/lib/inventory/units";
-import {
-  isFutureMonth,
-  monthKeyOf,
-  monthLabel,
-  parseMonth,
-  shiftMonth,
-} from "@/lib/billing/statement";
+import { isFutureMonth, monthKeyOf, monthLabel, parseMonth, shiftMonth } from "@/lib/billing/statement";
 
 export const metadata: Metadata = { title: "Billing" };
 export const dynamic = "force-dynamic";
@@ -30,11 +24,7 @@ export const dynamic = "force-dynamic";
  * called "due", "paid" or "outstanding", and the page says so plainly rather
  * than leave a clinic to assume a balance the software cannot know.
  */
-export default async function ClinicBillingPage({
-  searchParams,
-}: {
-  searchParams: Promise<{ month?: string }>;
-}) {
+export default async function ClinicBillingPage({ searchParams }: { searchParams: Promise<{ month?: string }> }) {
   const session = await requireRole("clinic", "superadmin");
   const { month: rawMonth } = await searchParams;
   const now = new Date();
@@ -49,8 +39,7 @@ export default async function ClinicBillingPage({
   const href = (m: string) => `/clinic/billing?month=${m}`;
   const nothing = rows.length === 0 && missing.length === 0;
 
-  const nav_link =
-    "t-body font-semibold inline-flex items-center min-h-[44px] no-underline hover:underline";
+  const nav_link = "t-body font-semibold inline-flex items-center min-h-[44px] no-underline hover:underline";
 
   return (
     <ConsoleShell
@@ -171,32 +160,50 @@ export default async function ClinicBillingPage({
                     <span className="t-data text-[14.5px]">{r.invoiceNo}</span>
                   )}
                 </TD>
-                <TD mono nowrap>{r.date ? formatDate(r.date) : "—"}</TD>
-                <TD mono nowrap>{r.orderNo}</TD>
+                <TD mono nowrap>
+                  {r.date ? formatDate(r.date) : "—"}
+                </TD>
+                <TD mono nowrap>
+                  {r.orderNo}
+                </TD>
                 <TD nowrap>
                   <Pill tone="neutral">{r.documentType === "bill_of_supply" ? "Bill of supply" : "Tax invoice"}</Pill>
                 </TD>
-                <TD numeric nowrap>{formatInr(r.taxable)}</TD>
-                <TD numeric nowrap>{r.gst ? formatInr(r.gst) : "—"}</TD>
-                <TD numeric nowrap>{formatInr(r.total)}</TD>
+                <TD numeric nowrap>
+                  {formatInr(r.taxable)}
+                </TD>
+                <TD numeric nowrap>
+                  {r.gst ? formatInr(r.gst) : "—"}
+                </TD>
+                <TD numeric nowrap>
+                  {formatInr(r.total)}
+                </TD>
               </TR>
             ))}
             <TR>
-              <TD nowrap><span className="font-semibold">Total</span></TD>
-              <TD>{" "}</TD>
-              <TD>{" "}</TD>
-              <TD>{" "}</TD>
-              <TD numeric nowrap><span className="font-semibold">{formatInr(totals.taxable)}</span></TD>
-              <TD numeric nowrap><span className="font-semibold">{totals.gst ? formatInr(totals.gst) : "—"}</span></TD>
-              <TD numeric nowrap><span className="font-semibold">{formatInr(totals.total)}</span></TD>
+              <TD nowrap>
+                <span className="font-semibold">Total</span>
+              </TD>
+              <TD> </TD>
+              <TD> </TD>
+              <TD> </TD>
+              <TD numeric nowrap>
+                <span className="font-semibold">{formatInr(totals.taxable)}</span>
+              </TD>
+              <TD numeric nowrap>
+                <span className="font-semibold">{totals.gst ? formatInr(totals.gst) : "—"}</span>
+              </TD>
+              <TD numeric nowrap>
+                <span className="font-semibold">{formatInr(totals.total)}</span>
+              </TD>
             </TR>
           </tbody>
         </DataTable>
       ) : null}
 
       <p className="t-small text-[var(--color-ink-3)] mt-4 max-w-[76ch]" style={{ textWrap: "pretty" }}>
-        A month holds the invoices whose goods left in it. Totals include any round-off shown on the invoice itself.
-        For a copy of a single invoice, open it from the list.
+        A month holds the invoices whose goods left in it. Totals include any round-off shown on the invoice itself. For
+        a copy of a single invoice, open it from the list.
       </p>
     </ConsoleShell>
   );

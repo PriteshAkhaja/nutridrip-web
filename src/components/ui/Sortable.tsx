@@ -101,9 +101,7 @@ export function Sortable<T>({
 
   useEffect(() => {
     if (!focusRequest) return;
-    listRef.current
-      ?.querySelector<HTMLElement>(`[data-sortable-handle="${CSS.escape(focusRequest.id)}"]`)
-      ?.focus();
+    listRef.current?.querySelector<HTMLElement>(`[data-sortable-handle="${CSS.escape(focusRequest.id)}"]`)?.focus();
   }, [focusRequest]);
 
   // The whole life of a drag, from the moment it starts: follow the pointer,

@@ -125,11 +125,7 @@ export async function GET(req: Request) {
       ip: req.headers.get("x-forwarded-for")?.split(",")[0]?.trim() || undefined,
     });
 
-    const cursor = AuditLog.find(filter)
-      .sort({ at: -1, _id: -1 })
-      .batchSize(BATCH)
-      .lean<Row[]>()
-      .cursor();
+    const cursor = AuditLog.find(filter).sort({ at: -1, _id: -1 }).batchSize(BATCH).lean<Row[]>().cursor();
 
     const encoder = new TextEncoder();
 
@@ -151,20 +147,18 @@ export async function GET(req: Request) {
           let chunk = "";
           for (const r of batch) {
             const who = r.actorId
-              ? (names.get(nameKey("User", String(r.actorId))) ??
-                `Deleted account ${String(r.actorId)}`)
+              ? (names.get(nameKey("User", String(r.actorId))) ?? `Deleted account ${String(r.actorId)}`)
               : "System";
-            const which =
-              r.entity && r.entityId ? (names.get(nameKey(r.entity, r.entityId)) ?? "") : "";
+            const which = r.entity && r.entityId ? (names.get(nameKey(r.entity, r.entityId)) ?? "") : "";
             const changed = withholdsDetail(session.role, r.action)
               ? CLINICAL_WITHHELD
               : describeChange(r.before, r.after)
-              .map((c) =>
-                c.from !== undefined && c.to !== undefined
-                  ? `${c.field}: ${c.from} -> ${c.to}`
-                  : `${c.field}: ${c.to ?? c.from}`
-              )
-              .join("; ");
+                  .map((c) =>
+                    c.from !== undefined && c.to !== undefined
+                      ? `${c.field}: ${c.from} -> ${c.to}`
+                      : `${c.field}: ${c.to ?? c.from}`
+                  )
+                  .join("; ");
 
             chunk += csvRow([
               r.at,
@@ -199,9 +193,7 @@ export async function GET(req: Request) {
           // a short export that looks complete is worse than one that admits
           // it is not.
           console.error("audit export failed mid-stream:", err);
-          controller.enqueue(
-            encoder.encode(csvRow(["EXPORT INCOMPLETE — this file stops early, do not rely on it"]))
-          );
+          controller.enqueue(encoder.encode(csvRow(["EXPORT INCOMPLETE — this file stops early, do not rely on it"])));
           controller.close();
         } finally {
           await cursor.close().catch(() => {});

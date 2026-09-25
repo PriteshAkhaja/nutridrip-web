@@ -150,12 +150,7 @@ const BookingSchema = new Schema(
       affirmation: String,
       risks: [String],
       components: {
-        type: [
-          new Schema(
-            { name: String, dose: Number, unit: String },
-            { _id: false }
-          ),
-        ],
+        type: [new Schema({ name: String, dose: Number, unit: String }, { _id: false })],
         default: undefined,
       },
     },

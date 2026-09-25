@@ -36,8 +36,8 @@ export default async function LetterheadPage() {
       >
         <Card tone="muted" padding="p-6">
           <p className="t-body text-[var(--color-ink-2)] max-w-[62ch]" style={{ textWrap: "pretty" }}>
-            A letterhead belongs to a physician: it is their identity on a document they answer for, so nobody edits
-            it on their behalf. Sign in as the physician to set theirs.
+            A letterhead belongs to a physician: it is their identity on a document they answer for, so nobody edits it
+            on their behalf. Sign in as the physician to set theirs.
           </p>
         </Card>
       </ConsoleShell>
@@ -56,7 +56,10 @@ export default async function LetterheadPage() {
         letterhead?: unknown;
       };
     } | null>(),
-    TreatmentPlan.findOne({ doctorId: session.sub }).sort({ createdAt: -1 }).select("_id").lean<{ _id: unknown } | null>(),
+    TreatmentPlan.findOne({ doctorId: session.sub })
+      .sort({ createdAt: -1 })
+      .select("_id")
+      .lean<{ _id: unknown } | null>(),
   ]);
 
   return (

@@ -34,9 +34,7 @@ const Patch = z.object({
   /* The prescribing half. Present only when the plan itself is being rewritten. */
   startDate: z.string().optional(),
   totalWeeks: z.number().int().min(1).max(52).optional(),
-  weeks: z
-    .array(z.object({ weekNum: z.number().int().min(1), sessions: z.array(PlanSession) }))
-    .optional(),
+  weeks: z.array(z.object({ weekNum: z.number().int().min(1), sessions: z.array(PlanSession) })).optional(),
   patientAge: z.string().max(20).optional(),
   patientWeightKg: z.number().positive().max(500).optional(),
   patientHeightCm: z.number().positive().max(300).optional(),
@@ -228,10 +226,7 @@ export async function PATCH(req: Request, { params }: { params: Promise<{ id: st
           ? {
               startDate: plan.startDate,
               totalWeeks: plan.totalWeeks,
-              sessions: plan.weeks.reduce(
-                (n: number, w: { sessions: unknown[] }) => n + w.sessions.length,
-                0
-              ),
+              sessions: plan.weeks.reduce((n: number, w: { sessions: unknown[] }) => n + w.sessions.length, 0),
             }
           : {}),
       },

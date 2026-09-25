@@ -88,8 +88,8 @@ export default async function ForClinicsPage() {
             Run IV therapy without running a pharmacy.
           </h1>
           <p className="t-body-lg text-[var(--color-ink-2)] max-w-[54ch] mb-7" style={{ textWrap: "pretty" }}>
-            You have the room and the patients. What stops most clinics is the rest of it — stock that expires,
-            batches nobody can trace, and a prescribing decision somebody has to own. We do that part.
+            You have the room and the patients. What stops most clinics is the rest of it — stock that expires, batches
+            nobody can trace, and a prescribing decision somebody has to own. We do that part.
           </p>
           <div className="flex gap-3 flex-wrap">
             <ButtonLink href="#enquire" size="lg">
@@ -207,12 +207,11 @@ export default async function ForClinicsPage() {
           <div>
             <h2 className="t-h2 mb-3">Tell us about your rooms</h2>
             <p className="t-body-lg text-[var(--color-ink-2)] max-w-[52ch]" style={{ textWrap: "pretty" }}>
-              We will come and look before either of us commits to anything. No deck, no pricing call — a nurse and
-              an operations lead, in your clinic, for about an hour.
+              We will come and look before either of us commits to anything. No deck, no pricing call — a nurse and an
+              operations lead, in your clinic, for about an hour.
             </p>
             <p className="t-body text-[var(--color-ink-2)] mt-5">
-              Or write directly to{" "}
-              <a href="mailto:partners@nutridrip.com">partners@nutridrip.com</a>.
+              Or write directly to <a href="mailto:partners@nutridrip.com">partners@nutridrip.com</a>.
             </p>
           </div>
           <ClinicEnquiryForm />

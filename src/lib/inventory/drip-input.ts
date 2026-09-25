@@ -13,7 +13,10 @@ export const Ingredient = z.object({
 
 export const DripInput = z.object({
   name: z.string().min(1).max(120),
-  slug: z.string().regex(/^[a-z0-9-]+$/, "Lowercase letters, numbers and hyphens").max(60),
+  slug: z
+    .string()
+    .regex(/^[a-z0-9-]+$/, "Lowercase letters, numbers and hyphens")
+    .max(60),
   tagline: z.string().max(160).optional(),
   description: z.string().max(1000).optional(),
   infusionNotes: z.string().max(2000).optional(),

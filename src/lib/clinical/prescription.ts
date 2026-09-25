@@ -30,10 +30,13 @@ export type RxLockState = {
   overridden: boolean;
 };
 
-type LockInput = {
-  rxUnlockedAt?: Date | null;
-  rxUnlockMethod?: string | null;
-} | null | undefined;
+type LockInput =
+  | {
+      rxUnlockedAt?: Date | null;
+      rxUnlockMethod?: string | null;
+    }
+  | null
+  | undefined;
 
 export function rxLockState(booking: LockInput): RxLockState {
   const at = booking?.rxUnlockedAt ?? null;

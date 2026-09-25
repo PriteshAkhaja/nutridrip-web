@@ -65,8 +65,12 @@ describe("AiConfigCreate", () => {
 
   it("caps the prompts, so one record cannot be made enormous", () => {
     expect(AiConfigCreate.safeParse({ ...valid, systemPrompt: "x".repeat(AI_LIMITS.systemPrompt) }).success).toBe(true);
-    expect(AiConfigCreate.safeParse({ ...valid, systemPrompt: "x".repeat(AI_LIMITS.systemPrompt + 1) }).success).toBe(false);
-    expect(AiConfigCreate.safeParse({ ...valid, userPromptTemplate: "x".repeat(AI_LIMITS.userPromptTemplate + 1) }).success).toBe(false);
+    expect(AiConfigCreate.safeParse({ ...valid, systemPrompt: "x".repeat(AI_LIMITS.systemPrompt + 1) }).success).toBe(
+      false
+    );
+    expect(
+      AiConfigCreate.safeParse({ ...valid, userPromptTemplate: "x".repeat(AI_LIMITS.userPromptTemplate + 1) }).success
+    ).toBe(false);
   });
 
   it("stores line breaks the same way whatever the browser sent", () => {

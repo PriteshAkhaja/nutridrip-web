@@ -92,7 +92,9 @@ describe("the FAQ numbers follow the rules that enforce them", () => {
 describe("what the FAQ must not promise", () => {
   // There is no payment gateway and no data-export button. An FAQ that
   // promised either would be describing an app that does not exist.
-  const everything = FAQ_CATEGORIES.flatMap((c) => c.items.map((i) => `${i.q} ${i.a}`)).join(" ").toLowerCase();
+  const everything = FAQ_CATEGORIES.flatMap((c) => c.items.map((i) => `${i.q} ${i.a}`))
+    .join(" ")
+    .toLowerCase();
 
   it("does not promise refunds, card or UPI payment", () => {
     expect(everything).not.toMatch(/\brefund/);

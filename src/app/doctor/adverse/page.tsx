@@ -60,24 +60,24 @@ const WHERE: Record<string, string> = {
 };
 
 type EventBooking = {
-          _id: unknown;
-          bookingNo: string;
-          patientId: unknown;
-          nurseId?: unknown;
-          dripName?: string;
-          scheduledAt: Date;
-          adverseEvents: Array<{
-            _id: unknown;
-            at: Date;
-            symptoms: string[];
-            severity?: string;
-            actionsTaken?: string[];
-            infusionStopped?: boolean;
-            notes?: string;
-            determination?: string;
-            acknowledgedAt?: Date;
-          }>;
-        };
+  _id: unknown;
+  bookingNo: string;
+  patientId: unknown;
+  nurseId?: unknown;
+  dripName?: string;
+  scheduledAt: Date;
+  adverseEvents: Array<{
+    _id: unknown;
+    at: Date;
+    symptoms: string[];
+    severity?: string;
+    actionsTaken?: string[];
+    infusionStopped?: boolean;
+    notes?: string;
+    determination?: string;
+    acknowledgedAt?: Date;
+  }>;
+};
 
 export default async function EscalationsPage({
   searchParams,
@@ -167,10 +167,7 @@ export default async function EscalationsPage({
   >();
   const byId = new Map(people.map((p) => [String(p._id), p]));
   const nameOf = (id: unknown, fallback: string) => (id ? (byId.get(String(id))?.name ?? fallback) : fallback);
-  const openEvents = withEvents.reduce(
-    (n, b) => n + b.adverseEvents.filter((e) => !e.acknowledgedAt).length,
-    0
-  );
+  const openEvents = withEvents.reduce((n, b) => n + b.adverseEvents.filter((e) => !e.acknowledgedAt).length, 0);
 
   return (
     <ConsoleShell
@@ -195,10 +192,10 @@ export default async function EscalationsPage({
       }
     >
       <p className="t-body text-[var(--color-ink-2)] max-w-[76ch] mb-6" style={{ textWrap: "pretty" }}>
-        Three things reach you here and nowhere else. A baseline reading outside its band stops the infusion until
-        you say otherwise — the nurse cannot override it. A patient who cannot give their code leaves a nurse unable
-        to open the prescription until you authorise it. And every adverse event a nurse files lands here the moment
-        it is filed, from the patient&apos;s side.
+        Three things reach you here and nowhere else. A baseline reading outside its band stops the infusion until you
+        say otherwise — the nurse cannot override it. A patient who cannot give their code leaves a nurse unable to open
+        the prescription until you authorise it. And every adverse event a nurse files lands here the moment it is
+        filed, from the patient&apos;s side.
       </p>
 
       {/* ---------------- Prescription override requests ---------------- */}
@@ -245,9 +242,7 @@ export default async function EscalationsPage({
                           medical record without the patient's own code. Who is
                           asking, and what they said, is the decision. */}
                       <div className="rounded-[var(--radius-md)] border border-[var(--color-line)] bg-[var(--color-surface)] px-4 py-3 mt-1">
-                        <span className="t-micro">
-                          {nameOf(b.nurseId, "The nurse")} says
-                        </span>
+                        <span className="t-micro">{nameOf(b.nurseId, "The nurse")} says</span>
                         <p className="t-body text-[var(--color-ink-2)] mt-1">
                           {b.rxOverride?.reason ?? "No reason given."}
                         </p>
@@ -316,7 +311,10 @@ export default async function EscalationsPage({
                   <div className="grid grid-cols-1 gap-6 xl:grid-cols-[minmax(0,1.3fr)_minmax(0,1fr)] items-start">
                     <div>
                       <div className="flex items-baseline gap-3 flex-wrap">
-                        <Link href={`/doctor/patients/${String(b.patientId)}`} className="t-h3 no-underline hover:no-underline">
+                        <Link
+                          href={`/doctor/patients/${String(b.patientId)}`}
+                          className="t-h3 no-underline hover:no-underline"
+                        >
                           {nameOf(b.patientId, "Unknown patient")}
                         </Link>
                         <span className="t-data text-[13px] text-[var(--color-ink-3)]">
@@ -345,7 +343,9 @@ export default async function EscalationsPage({
 
                       <div className="flex gap-2 flex-wrap mt-3">
                         {patient?.patient?.allergies && patient.patient.allergies.toLowerCase() !== "none" && (
-                          <Pill tone="critical" dot>{patient.patient.allergies} allergy</Pill>
+                          <Pill tone="critical" dot>
+                            {patient.patient.allergies} allergy
+                          </Pill>
                         )}
                         {patient?.patient?.currentMedications &&
                           patient.patient.currentMedications.toLowerCase() !== "none" && (
@@ -377,103 +377,100 @@ export default async function EscalationsPage({
           />
         ) : (
           <PagedView>
-          <PagedResults>
-          <div className="flex flex-col gap-4">
-            {withEvents.flatMap((b) =>
-              b.adverseEvents.map((e, i) => (
-                <Card
-                  key={`${String(b._id)}-${i}`}
-                  tone={e.severity === "severe" ? "critical" : "surface"}
-                  padding="p-6"
-                >
-                  <div className="flex items-start justify-between gap-4 flex-wrap mb-4">
-                    <div className="min-w-0">
-                      <div className="flex items-baseline gap-3 flex-wrap">
-                        <h3 className="t-h3">{nameOf(b.patientId, "Unknown patient")}</h3>
-                        <span className="t-data text-[13px] text-[var(--color-ink-3)]">
-                          {b.bookingNo} · {b.dripName}
-                        </span>
+            <PagedResults>
+              <div className="flex flex-col gap-4">
+                {withEvents.flatMap((b) =>
+                  b.adverseEvents.map((e, i) => (
+                    <Card
+                      key={`${String(b._id)}-${i}`}
+                      tone={e.severity === "severe" ? "critical" : "surface"}
+                      padding="p-6"
+                    >
+                      <div className="flex items-start justify-between gap-4 flex-wrap mb-4">
+                        <div className="min-w-0">
+                          <div className="flex items-baseline gap-3 flex-wrap">
+                            <h3 className="t-h3">{nameOf(b.patientId, "Unknown patient")}</h3>
+                            <span className="t-data text-[13px] text-[var(--color-ink-3)]">
+                              {b.bookingNo} · {b.dripName}
+                            </span>
+                          </div>
+                          <span className="t-small text-[var(--color-ink-2)] block mt-1">
+                            {formatDate(e.at)} · {formatTime(e.at)} · reported by{" "}
+                            {nameOf(b.nurseId, "the attending nurse")}
+                          </span>
+                        </div>
+                        <div className="flex gap-2 flex-wrap">
+                          {e.severity && (
+                            <Pill tone={SEVERITY_TONE[e.severity as keyof typeof SEVERITY_TONE] ?? "caution"} dot>
+                              {e.severity.charAt(0).toUpperCase() + e.severity.slice(1)}
+                            </Pill>
+                          )}
+                          {e.infusionStopped && <Pill tone="critical">Infusion stopped</Pill>}
+                        </div>
                       </div>
-                      <span className="t-small text-[var(--color-ink-2)] block mt-1">
-                        {formatDate(e.at)} · {formatTime(e.at)} · reported by {nameOf(b.nurseId, "the attending nurse")}
-                      </span>
-                    </div>
-                    <div className="flex gap-2 flex-wrap">
-                      {e.severity && (
-                        <Pill tone={SEVERITY_TONE[e.severity as keyof typeof SEVERITY_TONE] ?? "caution"} dot>
-                          {e.severity.charAt(0).toUpperCase() + e.severity.slice(1)}
-                        </Pill>
+
+                      <div className="grid grid-cols-1 gap-5 md:grid-cols-2">
+                        <div>
+                          <span className="t-micro block mb-2">Symptoms</span>
+                          <div className="flex gap-2 flex-wrap">
+                            {e.symptoms.map((s) => (
+                              <Pill key={s} tone="critical">
+                                {s}
+                              </Pill>
+                            ))}
+                          </div>
+                        </div>
+
+                        {(e.actionsTaken ?? []).length > 0 && (
+                          <div>
+                            <span className="t-micro block mb-2">Actions taken</span>
+                            <ul className="flex flex-col gap-1 list-none p-0 m-0">
+                              {e.actionsTaken!.map((a) => (
+                                <li key={a} className="t-body text-[var(--color-ink-2)]">
+                                  {a}
+                                </li>
+                              ))}
+                            </ul>
+                          </div>
+                        )}
+                      </div>
+
+                      {e.notes && (
+                        <p className="t-body text-[var(--color-ink-2)] mt-4 pt-4 border-t border-[var(--color-line)]">
+                          {e.notes}
+                        </p>
                       )}
-                      {e.infusionStopped && <Pill tone="critical">Infusion stopped</Pill>}
-                    </div>
-                  </div>
 
-                  <div className="grid grid-cols-1 gap-5 md:grid-cols-2">
-                    <div>
-                      <span className="t-micro block mb-2">Symptoms</span>
-                      <div className="flex gap-2 flex-wrap">
-                        {e.symptoms.map((s) => (
-                          <Pill key={s} tone="critical">
-                            {s}
-                          </Pill>
-                        ))}
+                      <div className="mt-4 pt-4 border-t border-[var(--color-line)]">
+                        {e.acknowledgedAt ? (
+                          <div className="flex flex-col gap-1">
+                            <span className="t-micro" style={{ color: "var(--color-safe)" }}>
+                              Closed {formatDate(e.acknowledgedAt)} · {formatTime(e.acknowledgedAt)}
+                            </span>
+                            <span className="t-body text-[var(--color-ink-2)]">{e.determination}</span>
+                          </div>
+                        ) : (
+                          <AdverseDecision bookingId={String(b._id)} eventId={String(e._id)} bookingNo={b.bookingNo} />
+                        )}
                       </div>
-                    </div>
-
-                    {(e.actionsTaken ?? []).length > 0 && (
-                      <div>
-                        <span className="t-micro block mb-2">Actions taken</span>
-                        <ul className="flex flex-col gap-1 list-none p-0 m-0">
-                          {e.actionsTaken!.map((a) => (
-                            <li key={a} className="t-body text-[var(--color-ink-2)]">
-                              {a}
-                            </li>
-                          ))}
-                        </ul>
-                      </div>
-                    )}
-                  </div>
-
-                  {e.notes && (
-                    <p className="t-body text-[var(--color-ink-2)] mt-4 pt-4 border-t border-[var(--color-line)]">
-                      {e.notes}
-                    </p>
-                  )}
-
-                  <div className="mt-4 pt-4 border-t border-[var(--color-line)]">
-                    {e.acknowledgedAt ? (
-                      <div className="flex flex-col gap-1">
-                        <span className="t-micro" style={{ color: "var(--color-safe)" }}>
-                          Closed {formatDate(e.acknowledgedAt)} · {formatTime(e.acknowledgedAt)}
-                        </span>
-                        <span className="t-body text-[var(--color-ink-2)]">{e.determination}</span>
-                      </div>
-                    ) : (
-                      <AdverseDecision
-                        bookingId={String(b._id)}
-                        eventId={String(e._id)}
-                        bookingNo={b.bookingNo}
-                      />
-                    )}
-                  </div>
-                </Card>
-              ))
-            )}
-          </div>
-          </PagedResults>
-          {history.meta.total > 0 ? (
-            <>
-              <p className="t-small text-[var(--color-ink-3)] mt-5">
-                Every report still awaiting a determination is shown above in full. Closed reports are paged.
-              </p>
-              <Pagination
-                meta={history.meta}
-                basePath="/doctor/adverse"
-                params={{ pageSize }}
-                nouns={["closed report", "closed reports"]}
-              />
-            </>
-          ) : null}
+                    </Card>
+                  ))
+                )}
+              </div>
+            </PagedResults>
+            {history.meta.total > 0 ? (
+              <>
+                <p className="t-small text-[var(--color-ink-3)] mt-5">
+                  Every report still awaiting a determination is shown above in full. Closed reports are paged.
+                </p>
+                <Pagination
+                  meta={history.meta}
+                  basePath="/doctor/adverse"
+                  params={{ pageSize }}
+                  nouns={["closed report", "closed reports"]}
+                />
+              </>
+            ) : null}
           </PagedView>
         )}
       </section>

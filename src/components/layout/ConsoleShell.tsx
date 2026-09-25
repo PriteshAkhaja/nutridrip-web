@@ -8,7 +8,10 @@ import { can, type Permission } from "@/lib/auth/rbac";
 
 /** "Dr. Sarah Menon" gives "SM": an honorific is a title, not part of the name. */
 function initialsOf(name: string) {
-  const words = name.trim().split(" ").filter((w) => w && !w.endsWith("."));
+  const words = name
+    .trim()
+    .split(" ")
+    .filter((w) => w && !w.endsWith("."));
   const picked = words.length > 1 ? [words[0], words[words.length - 1]] : words;
   return picked.map((w) => w.charAt(0).toUpperCase()).join("") || "?";
 }
@@ -143,7 +146,9 @@ export function ConsoleShell({
                     >
                       <span
                         className={`w-[6px] h-[6px] rounded-[2px] flex-none transition-colors duration-150 ${
-                          active ? "bg-[var(--color-primary)]" : "bg-[var(--color-line-2)] group-hover:bg-[var(--color-ink-3)]"
+                          active
+                            ? "bg-[var(--color-primary)]"
+                            : "bg-[var(--color-line-2)] group-hover:bg-[var(--color-ink-3)]"
                         }`}
                       />
                       <span className="truncate">{n.label}</span>

@@ -133,7 +133,9 @@ export function ProfileForm({
       <div className="flex flex-col gap-3">
         {saved && (
           <div className="rounded-[var(--radius-md)] border border-[var(--color-safe)] bg-[var(--color-safe-soft)] px-4 py-3">
-            <span className="t-body text-[var(--color-ink-2)]">Saved. Your nurse and physician see the new details.</span>
+            <span className="t-body text-[var(--color-ink-2)]">
+              Saved. Your nurse and physician see the new details.
+            </span>
           </div>
         )}
         <Button variant="secondary" block onClick={() => setOpen(true)}>
@@ -164,11 +166,7 @@ export function ProfileForm({
           <Input label="Email" type="email" value={form.email} onChange={set("email")} placeholder="optional" />
         </div>
         <div className="grid grid-cols-2 gap-3">
-          <DatePicker
-            label="Date of birth"
-            value={form.dob}
-            onChange={(v) => set("dob")({ target: { value: v } })}
-          />
+          <DatePicker label="Date of birth" value={form.dob} onChange={(v) => set("dob")({ target: { value: v } })} />
           <Select label="Sex" value={form.gender} onChange={set("gender")}>
             <option value="">—</option>
             <option value="female">Female</option>
@@ -192,24 +190,59 @@ export function ProfileForm({
 
       <section className="flex flex-col gap-3">
         <span className="t-micro">Where a nurse comes</span>
-        <AddressPicker value={place} onChange={setPlace} mapsKey={mapsKey} searchEnabled={searchEnabled} zones={zones} />
+        <AddressPicker
+          value={place}
+          onChange={setPlace}
+          mapsKey={mapsKey}
+          searchEnabled={searchEnabled}
+          zones={zones}
+        />
       </section>
 
       <section className="flex flex-col gap-3">
         <span className="t-micro">In an emergency</span>
         <div className="grid grid-cols-2 gap-3">
           <Input label="Contact" value={form.emergencyContactName} onChange={set("emergencyContactName")} />
-          <Input label="Their number" mono type="tel" value={form.emergencyContactPhone} onChange={set("emergencyContactPhone")} />
+          <Input
+            label="Their number"
+            mono
+            type="tel"
+            value={form.emergencyContactPhone}
+            onChange={set("emergencyContactPhone")}
+          />
         </div>
       </section>
 
       <section className="flex flex-col gap-3">
         <span className="t-micro">What a nurse reads aloud</span>
-        <Textarea label="Allergies" rows={2} value={form.allergies} onChange={set("allergies")} placeholder="Write them exactly as you were told, or None" />
-        <Textarea label="Ongoing conditions" rows={2} value={form.chronicConditions} onChange={set("chronicConditions")} />
-        <Textarea label="Current medication" hint="including over the counter" rows={2} value={form.currentMedications} onChange={set("currentMedications")} />
+        <Textarea
+          label="Allergies"
+          rows={2}
+          value={form.allergies}
+          onChange={set("allergies")}
+          placeholder="Write them exactly as you were told, or None"
+        />
+        <Textarea
+          label="Ongoing conditions"
+          rows={2}
+          value={form.chronicConditions}
+          onChange={set("chronicConditions")}
+        />
+        <Textarea
+          label="Current medication"
+          hint="including over the counter"
+          rows={2}
+          value={form.currentMedications}
+          onChange={set("currentMedications")}
+        />
         <Textarea label="Past surgeries" rows={2} value={form.surgeries} onChange={set("surgeries")} />
-        <Textarea label="Family history" hint="optional" rows={2} value={form.familyHistory} onChange={set("familyHistory")} />
+        <Textarea
+          label="Family history"
+          hint="optional"
+          rows={2}
+          value={form.familyHistory}
+          onChange={set("familyHistory")}
+        />
       </section>
 
       {error && (

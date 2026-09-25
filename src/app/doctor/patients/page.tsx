@@ -55,7 +55,13 @@ export default async function DoctorPatientsPage({
     HealthQuiz.aggregate<QuizSummary>([
       { $match: { patientId: { $in: ids } } },
       { $sort: { completedAt: -1 } },
-      { $group: { _id: "$patientId", reviewStatus: { $first: "$reviewStatus" }, completedAt: { $first: "$completedAt" } } },
+      {
+        $group: {
+          _id: "$patientId",
+          reviewStatus: { $first: "$reviewStatus" },
+          completedAt: { $first: "$completedAt" },
+        },
+      },
     ]),
     Booking.aggregate<{ _id: unknown; n: number }>([
       { $match: { patientId: { $in: ids }, status: "completed" } },
@@ -84,65 +90,67 @@ export default async function DoctorPatientsPage({
         />
       ) : (
         <PagedView>
-        <PagedResults>
-        <DataTable>
-          <THead>
-            <TR>
-              <TH>Name</TH>
-              <TH numeric>Vitality</TH>
-              <TH>Flags</TH>
-              <TH numeric>Sessions</TH>
-              <TH>Last quiz</TH>
-              <TH>Review</TH>
-              <TH>Status</TH>
-            </TR>
-          </THead>
-          <tbody>
-            {patients.map((p) => {
-              const id = String(p._id);
-              const quiz = latestQuiz.get(id);
-              const score = p.patient?.vitalityScore;
-              const allergies = p.patient?.allergies;
-
-              return (
-                <TR key={id}>
-                  <TD nowrap>
-                    <div className="flex flex-col">
-                      <NameLink href={`/doctor/patients/${id}`}>{p.name}</NameLink>
-                      <span className="t-data text-[13px] text-[var(--color-ink-3)]">
-                        {p.phone ?? p.patient?.city ?? "—"}
-                      </span>
-                    </div>
-                  </TD>
-                  <TD numeric>
-                    {score !== undefined ? (
-                      <span style={{ color: riskColor(score) }}>{score}</span>
-                    ) : (
-                      <span className="text-[var(--color-ink-3)]">—</span>
-                    )}
-                  </TD>
-                  <TD>
-                    {allergies && allergies.toLowerCase() !== "none" ? (
-                      <Pill tone="critical" dot>
-                        {allergies}
-                      </Pill>
-                    ) : (
-                      <span className="t-small text-[var(--color-ink-3)]">None declared</span>
-                    )}
-                  </TD>
-                  <TD numeric>{sessionCount.get(id) ?? 0}</TD>
-                  <TD mono nowrap>{quiz ? formatDate(quiz.completedAt) : "—"}</TD>
-                  <TD>{quiz ? <StatusPill status={quiz.reviewStatus} dot /> : "—"}</TD>
-                  <TD>
-                    <StatusPill status={p.status} dot />
-                  </TD>
+          <PagedResults>
+            <DataTable>
+              <THead>
+                <TR>
+                  <TH>Name</TH>
+                  <TH numeric>Vitality</TH>
+                  <TH>Flags</TH>
+                  <TH numeric>Sessions</TH>
+                  <TH>Last quiz</TH>
+                  <TH>Review</TH>
+                  <TH>Status</TH>
                 </TR>
-              );
-            })}
-          </tbody>
-        </DataTable>
-        </PagedResults>
-        <Pagination meta={meta} basePath="/doctor/patients" params={{ pageSize }} nouns={["patient", "patients"]} />
+              </THead>
+              <tbody>
+                {patients.map((p) => {
+                  const id = String(p._id);
+                  const quiz = latestQuiz.get(id);
+                  const score = p.patient?.vitalityScore;
+                  const allergies = p.patient?.allergies;
+
+                  return (
+                    <TR key={id}>
+                      <TD nowrap>
+                        <div className="flex flex-col">
+                          <NameLink href={`/doctor/patients/${id}`}>{p.name}</NameLink>
+                          <span className="t-data text-[13px] text-[var(--color-ink-3)]">
+                            {p.phone ?? p.patient?.city ?? "—"}
+                          </span>
+                        </div>
+                      </TD>
+                      <TD numeric>
+                        {score !== undefined ? (
+                          <span style={{ color: riskColor(score) }}>{score}</span>
+                        ) : (
+                          <span className="text-[var(--color-ink-3)]">—</span>
+                        )}
+                      </TD>
+                      <TD>
+                        {allergies && allergies.toLowerCase() !== "none" ? (
+                          <Pill tone="critical" dot>
+                            {allergies}
+                          </Pill>
+                        ) : (
+                          <span className="t-small text-[var(--color-ink-3)]">None declared</span>
+                        )}
+                      </TD>
+                      <TD numeric>{sessionCount.get(id) ?? 0}</TD>
+                      <TD mono nowrap>
+                        {quiz ? formatDate(quiz.completedAt) : "—"}
+                      </TD>
+                      <TD>{quiz ? <StatusPill status={quiz.reviewStatus} dot /> : "—"}</TD>
+                      <TD>
+                        <StatusPill status={p.status} dot />
+                      </TD>
+                    </TR>
+                  );
+                })}
+              </tbody>
+            </DataTable>
+          </PagedResults>
+          <Pagination meta={meta} basePath="/doctor/patients" params={{ pageSize }} nouns={["patient", "patients"]} />
         </PagedView>
       )}
 

@@ -32,19 +32,19 @@ export default async function LeadsPage({
   const filter = status === "all" ? {} : { status };
   // One page from the database; the old `.limit(200)` hid the 201st enquiry.
   type LeadRow = {
-      _id: unknown;
-      kind: string;
-      name: string;
-      email?: string;
-      phone?: string;
-      organisation?: string;
-      city?: string;
-      rooms?: number;
-      monthlyVolume?: number;
-      message?: string;
-      pincode?: string;
-      status: string;
-      createdAt: Date;
+    _id: unknown;
+    kind: string;
+    name: string;
+    email?: string;
+    phone?: string;
+    organisation?: string;
+    city?: string;
+    rooms?: number;
+    monthlyVolume?: number;
+    message?: string;
+    pincode?: string;
+    status: string;
+    createdAt: Date;
   };
   const { rows: leads, meta } = await paginate<LeadRow>(Lead, filter, { sort: { createdAt: -1 }, paging });
 
@@ -64,20 +64,21 @@ export default async function LeadsPage({
       meta={`${total} total`}
     >
       <div className="flex gap-1 p-1 rounded-[var(--radius-sm)] bg-[var(--color-surface-2)] border border-[var(--color-line)] mb-5 w-fit flex-wrap">
-        {[["all", "All", total] as const, ...STATUSES.map((s) => [s, s.charAt(0).toUpperCase() + s.slice(1), counts[s] ?? 0] as const)].map(
-          ([key, label, count]) => (
-            <Link
-              key={key}
-              href={hrefWith("/admin/leads", { pageSize }, { status: key })}
-              className={`px-4 min-h-[36px] inline-flex items-center gap-2 rounded-[6px] text-[13px] font-semibold no-underline hover:no-underline ${
-                status === key ? "bg-[var(--color-surface)] text-[var(--color-ink)]" : "text-[var(--color-ink-2)]"
-              }`}
-            >
-              {label}
-              <span className="t-data text-[13px] text-[var(--color-ink-3)]">{count}</span>
-            </Link>
-          )
-        )}
+        {[
+          ["all", "All", total] as const,
+          ...STATUSES.map((s) => [s, s.charAt(0).toUpperCase() + s.slice(1), counts[s] ?? 0] as const),
+        ].map(([key, label, count]) => (
+          <Link
+            key={key}
+            href={hrefWith("/admin/leads", { pageSize }, { status: key })}
+            className={`px-4 min-h-[36px] inline-flex items-center gap-2 rounded-[6px] text-[13px] font-semibold no-underline hover:no-underline ${
+              status === key ? "bg-[var(--color-surface)] text-[var(--color-ink)]" : "text-[var(--color-ink-2)]"
+            }`}
+          >
+            {label}
+            <span className="t-data text-[13px] text-[var(--color-ink-3)]">{count}</span>
+          </Link>
+        ))}
       </div>
 
       {leads.length === 0 ? (
@@ -94,49 +95,56 @@ export default async function LeadsPage({
         />
       ) : (
         <PagedView>
-        <PagedResults>
-        <DataTable>
-          <THead>
-            <TR>
-              <TH>Who</TH>
-              <TH>Contact</TH>
-              <TH>Where</TH>
-              <TH numeric>Rooms</TH>
-              <TH numeric>Sessions/mo</TH>
-              <TH>Raised</TH>
-              <TH>Status</TH>
-            </TR>
-          </THead>
-          <tbody>
-            {leads.map((l) => (
-              <TR key={String(l._id)}>
-                <TD nowrap>
-                  <div className="flex flex-col">
-                    <span className="font-medium">{l.name}</span>
-                    <span className="t-small text-[var(--color-ink-3)]">
-                      {l.organisation ?? (l.kind === "consult" ? "Consultation request" : l.kind)}
-                    </span>
-                  </div>
-                </TD>
-                <TD>
-                  <div className="flex flex-col">
-                    {l.email && <span className="t-data text-[13px]">{l.email}</span>}
-                    {l.phone && <span className="t-data text-[13px] text-[var(--color-ink-3)]">{l.phone}</span>}
-                  </div>
-                </TD>
-                <TD>{l.city ?? l.pincode ?? "—"}</TD>
-                <TD numeric>{l.rooms ?? "—"}</TD>
-                <TD numeric>{l.monthlyVolume ?? "—"}</TD>
-                <TD mono nowrap>{formatDate(l.createdAt)}</TD>
-                <TD>
-                  <LeadStatus id={String(l._id)} status={l.status} />
-                </TD>
-              </TR>
-            ))}
-          </tbody>
-        </DataTable>
-        </PagedResults>
-        <Pagination meta={meta} basePath="/admin/leads" params={{ status, pageSize }} nouns={["enquiry", "enquiries"]} />
+          <PagedResults>
+            <DataTable>
+              <THead>
+                <TR>
+                  <TH>Who</TH>
+                  <TH>Contact</TH>
+                  <TH>Where</TH>
+                  <TH numeric>Rooms</TH>
+                  <TH numeric>Sessions/mo</TH>
+                  <TH>Raised</TH>
+                  <TH>Status</TH>
+                </TR>
+              </THead>
+              <tbody>
+                {leads.map((l) => (
+                  <TR key={String(l._id)}>
+                    <TD nowrap>
+                      <div className="flex flex-col">
+                        <span className="font-medium">{l.name}</span>
+                        <span className="t-small text-[var(--color-ink-3)]">
+                          {l.organisation ?? (l.kind === "consult" ? "Consultation request" : l.kind)}
+                        </span>
+                      </div>
+                    </TD>
+                    <TD>
+                      <div className="flex flex-col">
+                        {l.email && <span className="t-data text-[13px]">{l.email}</span>}
+                        {l.phone && <span className="t-data text-[13px] text-[var(--color-ink-3)]">{l.phone}</span>}
+                      </div>
+                    </TD>
+                    <TD>{l.city ?? l.pincode ?? "—"}</TD>
+                    <TD numeric>{l.rooms ?? "—"}</TD>
+                    <TD numeric>{l.monthlyVolume ?? "—"}</TD>
+                    <TD mono nowrap>
+                      {formatDate(l.createdAt)}
+                    </TD>
+                    <TD>
+                      <LeadStatus id={String(l._id)} status={l.status} />
+                    </TD>
+                  </TR>
+                ))}
+              </tbody>
+            </DataTable>
+          </PagedResults>
+          <Pagination
+            meta={meta}
+            basePath="/admin/leads"
+            params={{ status, pageSize }}
+            nouns={["enquiry", "enquiries"]}
+          />
         </PagedView>
       )}
 

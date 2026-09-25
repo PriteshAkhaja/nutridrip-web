@@ -56,9 +56,9 @@ export default async function DripBuilderPage() {
     }>
   >();
 
-  const masters = await ProductMaster.find({ isActive: true }).sort({ name: 1 }).lean<
-    Array<{ _id: unknown; name: string; canonicalUnit: Unit; category: string }>
-  >();
+  const masters = await ProductMaster.find({ isActive: true })
+    .sort({ name: 1 })
+    .lean<Array<{ _id: unknown; name: string; canonicalUnit: Unit; category: string }>>();
   const masterById = new Map(masters.map((m) => [String(m._id), m]));
 
   const allKits = await SessionKit.find({ isActive: true })
@@ -141,8 +141,8 @@ export default async function DripBuilderPage() {
 
       <p className="t-body text-[var(--color-ink-2)] max-w-[76ch] mb-6" style={{ textWrap: "pretty" }}>
         A recipe is ingredients plus doses plus roles. Where a dose is expressed in a different unit family from the
-        product master&apos;s canonical unit, the slip is flagged inline — the engine cannot convert across families
-        and will not guess.
+        product master&apos;s canonical unit, the slip is flagged inline — the engine cannot convert across families and
+        will not guess.
       </p>
 
       <div className="grid grid-cols-1 gap-4 xl:grid-cols-2">
@@ -179,9 +179,7 @@ export default async function DripBuilderPage() {
                         label={
                           <span className="flex items-center gap-2 flex-wrap">
                             {ing.name ?? master?.name}
-                            <Pill tone={ROLE_TONE[ing.role as keyof typeof ROLE_TONE] ?? "neutral"}>
-                              {ing.role}
-                            </Pill>
+                            <Pill tone={ROLE_TONE[ing.role as keyof typeof ROLE_TONE] ?? "neutral"}>{ing.role}</Pill>
                           </span>
                         }
                         value={`${ing.dose.toLocaleString("en-IN")} ${ing.unit}`}
@@ -190,8 +188,7 @@ export default async function DripBuilderPage() {
                       />
                       {slip && (
                         <span className="t-small text-[var(--color-critical-text)] block mt-[6px]">
-                          Unit slip — dosed in {ing.unit}, but {master?.name} is held in{" "}
-                          {master?.canonicalUnit}
+                          Unit slip — dosed in {ing.unit}, but {master?.name} is held in {master?.canonicalUnit}
                         </span>
                       )}
                     </div>
@@ -226,11 +223,7 @@ export default async function DripBuilderPage() {
                   <ButtonLink href={`/drips/${d.slug}`} variant="secondary" size="sm">
                     Public page
                   </ButtonLink>
-                  <ButtonLink
-                    href={`/admin/inventory/availability?drip=${d.slug}&qty=10`}
-                    variant="ghost"
-                    size="sm"
-                  >
+                  <ButtonLink href={`/admin/inventory/availability?drip=${d.slug}&qty=10`} variant="ghost" size="sm">
                     Check stock
                   </ButtonLink>
                 </div>
@@ -282,9 +275,9 @@ export default async function DripBuilderPage() {
       )}
 
       <p className="t-small text-[var(--color-ink-3)] mt-8">
-        A recipe that has already been given to somebody is retired rather than deleted, and one with confirmed
-        orders against it cannot be changed until those are dispatched or cancelled — the reserved vials have to keep
-        matching what will actually be prepared.
+        A recipe that has already been given to somebody is retired rather than deleted, and one with confirmed orders
+        against it cannot be changed until those are dispatched or cancelled — the reserved vials have to keep matching
+        what will actually be prepared.
       </p>
     </ConsoleShell>
   );

@@ -35,22 +35,21 @@ export default async function LabReportsPage({
     notes?: string;
     sizeBytes?: number;
     uploadedAt: Date;
-  }>(LabReport, { patientId: session.sub }, {
-    sort: { uploadedAt: -1 },
-    paging: parsePaging({ page, pageSize }),
-    select: "fileName category notes sizeBytes uploadedAt",
-  });
+  }>(
+    LabReport,
+    { patientId: session.sub },
+    {
+      sort: { uploadedAt: -1 },
+      paging: parsePaging({ page, pageSize }),
+      select: "fileName category notes sizeBytes uploadedAt",
+    }
+  );
 
   return (
-    <MobileShell
-      title="Lab reports"
-      subtitle={`${meta.total} on file`}
-      tabs={PATIENT_TABS}
-      activeHref="/app/reports"
-    >
+    <MobileShell title="Lab reports" subtitle={`${meta.total} on file`} tabs={PATIENT_TABS} activeHref="/app/reports">
       <p className="t-body text-[var(--color-ink-2)] mb-5">
-        Some protocols need recent bloods before a physician will approve them — Iron Restore always does. Anything
-        you upload here is visible to the reviewing physician.
+        Some protocols need recent bloods before a physician will approve them — Iron Restore always does. Anything you
+        upload here is visible to the reviewing physician.
       </p>
 
       <div className="mb-5">
@@ -65,22 +64,22 @@ export default async function LabReportsPage({
         />
       ) : (
         <PagedView>
-        <PagedResults>
-        <div className="flex flex-col gap-3">
-          {reports.map((r) => (
-            <ReportRow
-              key={String(r._id)}
-              id={String(r._id)}
-              fileName={r.fileName}
-              category={r.category ?? "Uncategorised"}
-              sizeLabel={kb(r.sizeBytes)}
-              dateLabel={formatDate(r.uploadedAt)}
-              notes={r.notes}
-            />
-          ))}
-        </div>
-        </PagedResults>
-        <Pagination meta={meta} basePath="/app/reports" params={{ pageSize }} nouns={["report", "reports"]} />
+          <PagedResults>
+            <div className="flex flex-col gap-3">
+              {reports.map((r) => (
+                <ReportRow
+                  key={String(r._id)}
+                  id={String(r._id)}
+                  fileName={r.fileName}
+                  category={r.category ?? "Uncategorised"}
+                  sizeLabel={kb(r.sizeBytes)}
+                  dateLabel={formatDate(r.uploadedAt)}
+                  notes={r.notes}
+                />
+              ))}
+            </div>
+          </PagedResults>
+          <Pagination meta={meta} basePath="/app/reports" params={{ pageSize }} nouns={["report", "reports"]} />
         </PagedView>
       )}
 

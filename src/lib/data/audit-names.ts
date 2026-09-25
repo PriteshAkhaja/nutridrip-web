@@ -1,14 +1,5 @@
 import { connectDB } from "@/lib/db/mongoose";
-import {
-  BatchLot,
-  Booking,
-  Drip,
-  HealthQuiz,
-  Order,
-  ProductMaster,
-  TreatmentPlan,
-  User,
-} from "@/lib/models";
+import { BatchLot, Booking, Drip, HealthQuiz, Order, ProductMaster, TreatmentPlan, User } from "@/lib/models";
 
 /**
  * The ids in an audit row, turned into what a person calls the thing.

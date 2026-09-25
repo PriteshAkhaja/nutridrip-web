@@ -30,9 +30,13 @@ export async function GET(req: Request) {
 
     const bookingId = params.get("booking");
     if (bookingId) {
-      const booking = await Booking.findById(bookingId)
-        .select("patientId clinicId pincode durationMin")
-        .lean<{ _id: unknown; patientId?: unknown; clinicId?: unknown; pincode?: string; durationMin?: number } | null>();
+      const booking = await Booking.findById(bookingId).select("patientId clinicId pincode durationMin").lean<{
+        _id: unknown;
+        patientId?: unknown;
+        clinicId?: unknown;
+        pincode?: string;
+        durationMin?: number;
+      } | null>();
       if (!booking) return fail("Session not found", 404);
       if (!canManageBooking(session, booking)) return fail("Not permitted", 403);
       pincode = booking.pincode;
@@ -73,9 +77,7 @@ export async function GET(req: Request) {
 
     return ok({
       served: true,
-      zone: ctx.zone
-        ? { name: ctx.zone.name, window: ctx.zone.window, every: stepLabel(ctx.hours.slotMinutes) }
-        : null,
+      zone: ctx.zone ? { name: ctx.zone.name, window: ctx.zone.window, every: stepLabel(ctx.hours.slotMinutes) } : null,
       days: slotGrid(ctx, durationMin, dates),
     });
   } catch (err) {

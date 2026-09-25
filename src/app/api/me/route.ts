@@ -14,14 +14,22 @@ const Patch = z.object({
   phone: z.string().min(6).max(20).optional().or(z.literal("")),
 
   /* Patient record — the nurse reads the last four aloud before every session. */
-  dob: z.string().regex(/^\d{4}-\d{2}-\d{2}$/).optional().or(z.literal("")),
+  dob: z
+    .string()
+    .regex(/^\d{4}-\d{2}-\d{2}$/)
+    .optional()
+    .or(z.literal("")),
   gender: z.enum(["male", "female", "other", "undisclosed"]).optional(),
   bloodGroup: z.enum(BLOOD_GROUPS).optional(),
   heightCm: z.number().min(50).max(250).nullable().optional(),
   weightKg: z.number().min(10).max(400).nullable().optional(),
   address: z.string().max(300).optional(),
   city: z.string().max(80).optional(),
-  pincode: z.string().regex(/^\d{6}$/).optional().or(z.literal("")),
+  pincode: z
+    .string()
+    .regex(/^\d{6}$/)
+    .optional()
+    .or(z.literal("")),
   /** Sent together, from the map picker. Null clears them. */
   latitude: z.number().min(-90).max(90).nullable().optional(),
   longitude: z.number().min(-180).max(180).nullable().optional(),
@@ -35,8 +43,14 @@ const Patch = z.object({
 });
 
 const PATIENT_TEXT = [
-  "address", "city", "emergencyContactName", "allergies", "chronicConditions",
-  "currentMedications", "surgeries", "familyHistory",
+  "address",
+  "city",
+  "emergencyContactName",
+  "allergies",
+  "chronicConditions",
+  "currentMedications",
+  "surgeries",
+  "familyHistory",
 ] as const;
 
 export async function GET() {
@@ -81,7 +95,8 @@ export async function PATCH(req: Request) {
     if (input.email !== undefined) {
       const email = input.email.toLowerCase();
       if (email) {
-        if (await User.exists({ email, _id: { $ne: user._id } })) return fail("That email address belongs to another account", 409);
+        if (await User.exists({ email, _id: { $ne: user._id } }))
+          return fail("That email address belongs to another account", 409);
         user.email = email;
       } else if (user.role === "patient") {
         user.email = undefined;
@@ -91,7 +106,8 @@ export async function PATCH(req: Request) {
     if (input.phone) {
       const phone = normalisePhone(input.phone);
       if (!phone) return fail("That phone number does not look right", 422);
-      if (await User.exists({ phone, _id: { $ne: user._id } })) return fail("That phone number belongs to another account", 409);
+      if (await User.exists({ phone, _id: { $ne: user._id } }))
+        return fail("That phone number belongs to another account", 409);
       user.phone = phone;
     }
 

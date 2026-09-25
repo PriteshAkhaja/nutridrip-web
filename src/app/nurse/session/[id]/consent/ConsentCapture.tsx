@@ -7,8 +7,6 @@ import { CURRENT_CONSENT_VERSION } from "@/lib/clinical/consent";
 import { queuedPost } from "@/lib/offline/queue";
 import { OtpBoxes } from "@/components/ui/OtpBoxes";
 
-
-
 /**
  * A signature pad drawn on canvas. Pointer events cover mouse, touch and
  * stylus, which matters because this is signed on the nurse's phone.
@@ -97,13 +95,7 @@ function SignaturePad({ onChange }: { onChange: (dataUrl: string | null) => void
   );
 }
 
-export function ConsentCapture({
-  bookingId,
-  alreadyGivenAt,
-}: {
-  bookingId: string;
-  alreadyGivenAt: string | null;
-}) {
+export function ConsentCapture({ bookingId, alreadyGivenAt }: { bookingId: string; alreadyGivenAt: string | null }) {
   const router = useRouter();
   const [mode, setMode] = useState<"signature" | "otp">("signature");
   const [signature, setSignature] = useState<string | null>(null);
@@ -220,8 +212,8 @@ export function ConsentCapture({
           {!sentTo ? (
             <>
               <p className="t-body text-[var(--color-ink-2)]">
-                A code goes to the patient&rsquo;s NutriDrip app. When they read it out to you, that is their
-                consent, and not yours.
+                A code goes to the patient&rsquo;s NutriDrip app. When they read it out to you, that is their consent,
+                and not yours.
               </p>
               <Button variant="secondary" block loading={busy} onClick={sendCode}>
                 Send the code to the patient

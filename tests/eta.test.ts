@@ -37,12 +37,7 @@ describe("how long the nurse will be", () => {
 
 describe("the ETA between two people", () => {
   it("works it out when both ends are known", () => {
-    const km = distanceKm(
-      KORAMANGALA.latitude,
-      KORAMANGALA.longitude,
-      HSR.latitude,
-      HSR.longitude
-    );
+    const km = distanceKm(KORAMANGALA.latitude, KORAMANGALA.longitude, HSR.latitude, HSR.longitude);
     expect(km).toBeGreaterThan(2);
     expect(km).toBeLessThan(6);
     expect(etaBetween(KORAMANGALA, HSR)).toBe(etaMinutesFor(km));

@@ -167,7 +167,11 @@ describe("who is asked what", () => {
   });
 
   it("hides a question whose rule wrongly looks at a later one, rather than guessing", () => {
-    const early: QuizQuestion = { ...heavy, id: "early", showIf: { match: "all", conditions: [{ qid: "later", op: "answered" }] } };
+    const early: QuizQuestion = {
+      ...heavy,
+      id: "early",
+      showIf: { match: "all", conditions: [{ qid: "later", op: "answered" }] },
+    };
     const later: QuizQuestion = { ...smoke, id: "later" };
     expect(ids(visibleQuestions([early, later], { later: "No" }))).toEqual(["later"]);
   });
@@ -274,7 +278,9 @@ describe("scoring", () => {
 
   it("scores the bundled questionnaire exactly as before -- none of its questions has a rule", () => {
     expect(QUESTIONS.every((q) => !q.showIf)).toBe(true);
-    const answers = Object.fromEntries(QUESTIONS.filter((q) => q.options?.length).map((q) => [q.id, q.options![0].value]));
+    const answers = Object.fromEntries(
+      QUESTIONS.filter((q) => q.options?.length).map((q) => [q.id, q.options![0].value])
+    );
     expect(visibleQuestions(QUESTIONS, answers).length).toBe(QUESTIONS.length);
   });
 });
@@ -286,7 +292,10 @@ describe("checking rules", () => {
 
   it("refuses a rule that looks at a later question, or at itself", () => {
     expect(ruleProblems([perDay, smoke])[0]).toMatch(/comes after it/);
-    const self = { ...smoke, showIf: { match: "all" as const, conditions: [{ qid: "smoke", op: "answered" as const }] } };
+    const self = {
+      ...smoke,
+      showIf: { match: "all" as const, conditions: [{ qid: "smoke", op: "answered" as const }] },
+    };
     expect(ruleProblems([self])[0]).toMatch(/its own answer/);
   });
 
@@ -300,15 +309,24 @@ describe("checking rules", () => {
   });
 
   it("refuses a comparison that does not fit the question it looks at", () => {
-    const bad = { ...perDay, showIf: { match: "all" as const, conditions: [{ qid: "smoke", op: "gt" as const, value: 3 }] } };
+    const bad = {
+      ...perDay,
+      showIf: { match: "all" as const, conditions: [{ qid: "smoke", op: "gt" as const, value: 3 }] },
+    };
     expect(ruleProblems([smoke, bad])[0]).toMatch(/does not apply/);
     for (const [type, ops] of Object.entries(OPS_FOR_TYPE)) expect(ops.length, type).toBeGreaterThan(0);
   });
 
   it("refuses a rule that needs answers or a number and has none", () => {
-    const noValues = { ...perDay, showIf: { match: "all" as const, conditions: [{ qid: "smoke", op: "is" as const, values: [] }] } };
+    const noValues = {
+      ...perDay,
+      showIf: { match: "all" as const, conditions: [{ qid: "smoke", op: "is" as const, values: [] }] },
+    };
     expect(ruleProblems([smoke, noValues])[0]).toMatch(/choose which answers/);
-    const noNumber = { ...heavy, showIf: { match: "all" as const, conditions: [{ qid: "per-day", op: "gte" as const }] } };
+    const noNumber = {
+      ...heavy,
+      showIf: { match: "all" as const, conditions: [{ qid: "per-day", op: "gte" as const }] },
+    };
     expect(ruleProblems([smoke, perDay, noNumber])[0]).toMatch(/enter the number/);
   });
 
@@ -321,7 +339,9 @@ describe("checking rules", () => {
     const broken = [perDay, smoke]; // already wrong: depends on a later question
     const unrelatedEdit = [{ ...perDay }, { ...smoke, question: smoke.question }];
     expect(newProblems(broken, unrelatedEdit)).toEqual([]);
-    expect(newProblems(all, [{ ...smoke, isActive: false }, perDay, heavy, symptoms, dizzyFollowUp]).length).toBeGreaterThan(0);
+    expect(
+      newProblems(all, [{ ...smoke, isActive: false }, perDay, heavy, symptoms, dizzyFollowUp]).length
+    ).toBeGreaterThan(0);
   });
 
   it("finds the questions that depend on one", () => {
@@ -346,8 +366,12 @@ describe("describing rules", () => {
       { qid: "smoke", op: "is" as const, values: ["Daily"] },
       { qid: "symptoms", op: "is" as const, values: ["Dizzy"] },
     ];
-    expect(describeShowIf({ ...heavy, showIf: { match: "all", conditions: two } }, byId)).toMatch(/^Asked only when .* and /);
-    expect(describeShowIf({ ...heavy, showIf: { match: "any", conditions: two } }, byId)).toMatch(/^Asked when any of these is true: /);
+    expect(describeShowIf({ ...heavy, showIf: { match: "all", conditions: two } }, byId)).toMatch(
+      /^Asked only when .* and /
+    );
+    expect(describeShowIf({ ...heavy, showIf: { match: "any", conditions: two } }, byId)).toMatch(
+      /^Asked when any of these is true: /
+    );
   });
 });
 
@@ -403,7 +427,10 @@ describe("screening flags", () => {
   });
 
   it("does not flag a question the patient was not asked", () => {
-    const hidden: QuizQuestion = { ...pregnancy, showIf: { match: "all", conditions: [{ qid: "smoke", op: "is", values: ["Daily"] }] } };
+    const hidden: QuizQuestion = {
+      ...pregnancy,
+      showIf: { match: "all", conditions: [{ qid: "smoke", op: "is", values: ["Daily"] }] },
+    };
     expect(screeningFlags([smoke, hidden], { smoke: "No", pregnancy: "Yes" })).toEqual([]);
     expect(screeningFlags([smoke, hidden], { smoke: "Daily", pregnancy: "Yes" })).toEqual(["Are you pregnant? — Yes"]);
   });

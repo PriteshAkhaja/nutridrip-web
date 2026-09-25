@@ -31,8 +31,7 @@ export async function PATCH(req: Request, { params }: { params: Promise<{ id: st
 
     // Both the formula and whether a session kit rides with it decide what was
     // reserved, so both are locked while a confirmed order holds those units.
-    const changesWhatIsDrawn =
-      sent.has("ingredients") || (sent.has("withKit") && input.withKit !== drip.withKit);
+    const changesWhatIsDrawn = sent.has("ingredients") || (sent.has("withKit") && input.withKit !== drip.withKit);
 
     if (changesWhatIsDrawn) {
       let resolved: Awaited<ReturnType<typeof resolveIngredients>>["resolved"] | null = null;
@@ -68,11 +67,27 @@ export async function PATCH(req: Request, { params }: { params: Promise<{ id: st
     // A fixed list, so anything the schema gains has to be named here too —
     // a field left off is accepted by the API and silently discarded on save.
     for (const key of [
-      "name", "tagline", "description", "infusionNotes", "durationMin",
-      "priceInr", "category", "withKit", "isPublic", "requiresApproval", "isActive",
-      "bestFor", "goodToKnow",
-      "volumeMl", "durationToMin", "tags", "icon", "isPopular", "benefits",
-      "hsnCode", "gstRate",
+      "name",
+      "tagline",
+      "description",
+      "infusionNotes",
+      "durationMin",
+      "priceInr",
+      "category",
+      "withKit",
+      "isPublic",
+      "requiresApproval",
+      "isActive",
+      "bestFor",
+      "goodToKnow",
+      "volumeMl",
+      "durationToMin",
+      "tags",
+      "icon",
+      "isPopular",
+      "benefits",
+      "hsnCode",
+      "gstRate",
     ] as const) {
       if (sent.has(key) && input[key] !== undefined) (drip as Record<string, unknown>)[key] = input[key];
     }

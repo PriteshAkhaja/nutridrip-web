@@ -32,8 +32,7 @@ export function ImageSlot({
 }) {
   // Checked on the server at render time — no broken-image flash if the file
   // has not been added yet.
-  const exists =
-    Boolean(src) && fs.existsSync(path.join(process.cwd(), "public", src!.replace(/^\//, "")));
+  const exists = Boolean(src) && fs.existsSync(path.join(process.cwd(), "public", src!.replace(/^\//, "")));
 
   return (
     <figure className={`flex flex-col gap-[14px] m-0 ${className}`}>

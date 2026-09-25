@@ -136,7 +136,11 @@ export function RuleBuilder({
 
           {conditions.length < MAX_CONDITIONS && (
             <div>
-              <Button variant="secondary" size="sm" onClick={() => setConditions([...conditions, freshCondition(nearest)])}>
+              <Button
+                variant="secondary"
+                size="sm"
+                onClick={() => setConditions([...conditions, freshCondition(nearest)])}
+              >
                 Add a condition
               </Button>
             </div>
@@ -183,7 +187,14 @@ function ConditionRow({
   const choices = [
     ...earlier.map((q) => ({ value: q.id, label: q.question, detail: [q.section, TYPE_LABEL[q.type]] })),
     ...(ref && !isEarlier
-      ? [{ value: ref.id, label: ref.question, detail: ["asked after this question — pick an earlier one"], warn: true }]
+      ? [
+          {
+            value: ref.id,
+            label: ref.question,
+            detail: ["asked after this question — pick an earlier one"],
+            warn: true,
+          },
+        ]
       : []),
   ];
 
@@ -214,9 +225,7 @@ function ConditionRow({
 
       {ref && (c.op === "is" || c.op === "isNot") && (
         <div>
-          <span className="t-micro block mb-2">
-            {c.op === "is" ? "Any of these answers" : "None of these answers"}
-          </span>
+          <span className="t-micro block mb-2">{c.op === "is" ? "Any of these answers" : "None of these answers"}</span>
           <div className="flex gap-2 flex-wrap">
             {(ref.options ?? []).map((o) => {
               const on = c.values.includes(o.value);

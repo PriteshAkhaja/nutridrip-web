@@ -61,7 +61,10 @@ export async function POST(req: Request, { params }: { params: Promise<{ id: str
     }
     // A server started before charges existed would move the session and lose the fee.
     if (fee > 0 && !Booking.schema.path("charges")) {
-      return fail("The server is running an older version and would not record the fee. Restart it (stop it and run npm run dev again).", 500);
+      return fail(
+        "The server is running an older version and would not record the fee. Restart it (stop it and run npm run dev again).",
+        500
+      );
     }
 
     const next = new Date(scheduledAt);
@@ -103,7 +106,13 @@ export async function POST(req: Request, { params }: { params: Promise<{ id: str
     if (fee > 0) {
       booking.charges = [
         ...(booking.charges ?? []),
-        { kind: "late_reschedule", amount: fee, at: new Date(), byId: session.sub, note: `Moved from ${at(previous)} to ${at(next)}` },
+        {
+          kind: "late_reschedule",
+          amount: fee,
+          at: new Date(),
+          byId: session.sub,
+          note: `Moved from ${at(previous)} to ${at(next)}`,
+        },
       ];
     }
     // The nurse already on it may be busy at the new time. Then it goes to one
@@ -124,7 +133,8 @@ export async function POST(req: Request, { params }: { params: Promise<{ id: str
       } else {
         booking.nurseId = undefined;
       }
-      if (["nurse_assigned", "en_route"].includes(booking.status)) booking.status = pick ? "nurse_assigned" : "approved";
+      if (["nurse_assigned", "en_route"].includes(booking.status))
+        booking.status = pick ? "nurse_assigned" : "approved";
     }
     await booking.save();
 
@@ -138,9 +148,21 @@ export async function POST(req: Request, { params }: { params: Promise<{ id: str
         "/nurse/schedule"
       );
       if (handedTo) {
-        await notify(handedTo.nurseId, `New session assigned · ${booking.bookingNo}`, `${booking.dripName ?? "Session"} · ${when}`, "info", "/nurse");
+        await notify(
+          handedTo.nurseId,
+          `New session assigned · ${booking.bookingNo}`,
+          `${booking.dripName ?? "Session"} · ${when}`,
+          "info",
+          "/nurse"
+        );
       } else {
-        await notifyRole(["admin", "superadmin"], `Session needs a nurse · ${booking.bookingNo}`, `Moved to ${when}; nobody free was found.`, "warning", "/admin");
+        await notifyRole(
+          ["admin", "superadmin"],
+          `Session needs a nurse · ${booking.bookingNo}`,
+          `Moved to ${when}; nobody free was found.`,
+          "warning",
+          "/admin"
+        );
       }
     }
     await notify(
@@ -153,7 +175,13 @@ export async function POST(req: Request, { params }: { params: Promise<{ id: str
       "/nurse/schedule"
     );
     if (!isOwner) {
-      await notify(String(booking.patientId), `Your session was moved · ${booking.bookingNo}`, `Now ${when}.`, "info", "/app/sessions");
+      await notify(
+        String(booking.patientId),
+        `Your session was moved · ${booking.bookingNo}`,
+        `Now ${when}.`,
+        "info",
+        "/app/sessions"
+      );
     }
 
     await AuditLog.create({
@@ -166,7 +194,9 @@ export async function POST(req: Request, { params }: { params: Promise<{ id: str
       after: {
         scheduledAt: next,
         ...(fee > 0 ? { lateFee: fee } : {}),
-        ...(previousNurseId && String(booking.nurseId ?? "") !== previousNurseId ? { nurseHandedOn: handedTo?.name ?? "nobody free" } : {}),
+        ...(previousNurseId && String(booking.nurseId ?? "") !== previousNurseId
+          ? { nurseHandedOn: handedTo?.name ?? "nobody free" }
+          : {}),
       },
     });
 

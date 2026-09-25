@@ -30,7 +30,10 @@ export async function POST(req: Request, { params }: { params: Promise<{ id: str
     // A patient may only ever answer their own.
     if (String(quiz.patientId) !== session.sub) return fail("Not permitted", 403);
     if (quiz.reviewStatus === "superseded") {
-      return fail("You answered the quiz again, so this question no longer applies. Your physician will read your new answers.", 409);
+      return fail(
+        "You answered the quiz again, so this question no longer applies. Your physician will read your new answers.",
+        409
+      );
     }
     if (quiz.reviewStatus !== "info_needed") {
       return fail("Nothing has been asked on this assessment", 409);

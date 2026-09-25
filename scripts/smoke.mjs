@@ -62,7 +62,11 @@ async function call(j, method, path, body) {
   j?.absorb(res);
   const text = await res.text();
   let json = null;
-  try { json = JSON.parse(text); } catch { /* an HTML page, not an envelope */ }
+  try {
+    json = JSON.parse(text);
+  } catch {
+    /* an HTML page, not an envelope */
+  }
   return { status: res.status, json, text };
 }
 
@@ -76,7 +80,10 @@ const post = (j, p, b) => call(j, "POST", p, b ?? {});
 const today = () => new Date().toLocaleDateString("en-CA", { timeZone: "Asia/Kolkata" });
 async function payFor(clinicJar, staffJar, orderId, reference = "SMOKE-UTR-0001") {
   const submitted = await post(clinicJar, `/api/orders/${orderId}/payment`, {
-    action: "submit", method: "upi", reference, paidOn: today(),
+    action: "submit",
+    method: "upi",
+    reference,
+    paidOn: today(),
   });
   const received = await post(staffJar, `/api/orders/${orderId}/payment`, { action: "received" });
   return { submitted, received };
@@ -108,10 +115,17 @@ async function main() {
   section("Authentication");
   const bad = await post(null, "/api/auth/login", { email: "admin@nutridrip.com", password: "wrong" });
   ok("a wrong password is refused", bad.status === 401 && !bad.json.success);
-  ok("the refusal does not say which half was wrong", /email or password/i.test(bad.json?.error ?? ""), bad.json?.error);
+  ok(
+    "the refusal does not say which half was wrong",
+    /email or password/i.test(bad.json?.error ?? ""),
+    bad.json?.error
+  );
 
   const unknown = await post(null, "/api/auth/login", { email: "nobody@nowhere.com", password: "whatever" });
-  ok("an unknown address gets the same answer, so accounts cannot be enumerated", unknown.json?.error === bad.json?.error);
+  ok(
+    "an unknown address gets the same answer, so accounts cannot be enumerated",
+    unknown.json?.error === bad.json?.error
+  );
 
   const superadmin = await signIn("admin@nutridrip.com", "admin123");
   ok("the super admin signs in", superadmin.user.role === "superadmin");
@@ -120,7 +134,10 @@ async function main() {
   const nurse = await signIn("nurse.emma@nutridrip.com", "nurse123");
   const clinic = await signIn("clinic@healthfirst.com", "clinic123");
   const patient = await signIn("patient@example.com", "patient123");
-  ok("every seeded role signs in", [admin, doctor, nurse, clinic, patient].every((s) => s.user.id));
+  ok(
+    "every seeded role signs in",
+    [admin, doctor, nurse, clinic, patient].every((s) => s.user.id)
+  );
 
   const session = await get(patient.jar, "/api/auth/session");
   ok("the session cookie identifies the patient", session.json?.data?.session?.role === "patient");
@@ -140,9 +157,7 @@ async function main() {
   const devEcho = typeof otp.json?.data?.devCode === "string";
   const isProduction = !devEcho;
   ok(
-    isProduction
-      ? "production does not echo the OTP code"
-      : "development returns the code so the flow can be walked",
+    isProduction ? "production does not echo the OTP code" : "development returns the code so the flow can be walked",
     true
   );
   const badOtp = await post(null, "/api/auth/otp/verify", { phone: "98444 71234", code: "000000" });
@@ -154,17 +169,27 @@ async function main() {
   section("Role boundaries");
   const patientUsers = await get(patient.jar, "/api/users");
   ok("a patient cannot list accounts", patientUsers.status === 403);
-  const adminCreate = await post(admin.jar, "/api/users", { name: "X", role: "nurse", email: "x@y.com", password: "12345678" });
+  const adminCreate = await post(admin.jar, "/api/users", {
+    name: "X",
+    role: "nurse",
+    email: "x@y.com",
+    password: "12345678",
+  });
   ok("an ordinary admin cannot mint accounts", adminCreate.status === 403, adminCreate.json?.error);
   const nurseInventory = await get(nurse.jar, "/api/inventory/masters");
   ok("a nurse cannot read the inventory", nurseInventory.status === 403);
   const adminReceive = await post(admin.jar, "/api/inventory/masters", {
-    name: "Test", hsnCode: "99999999", category: "DRUG", canonicalUnit: "mg",
+    name: "Test",
+    hsnCode: "99999999",
+    category: "DRUG",
+    canonicalUnit: "mg",
   });
   ok("an ordinary admin cannot define a product", adminReceive.status === 403);
   const doctorDrip = await post(doctor.jar, "/api/drips", { name: "X", slug: "x", ingredients: [] });
   ok("a doctor cannot build a recipe", doctorDrip.status === 403);
-  const patientQuizReview = await post(patient.jar, "/api/quiz/000000000000000000000000/review", { decision: "approved" });
+  const patientQuizReview = await post(patient.jar, "/api/quiz/000000000000000000000000/review", {
+    decision: "approved",
+  });
   ok("a patient cannot review their own quiz", patientQuizReview.status === 403);
 
   /* ---------------- Availability engine ---------------- */
@@ -175,18 +200,30 @@ async function main() {
   const immune = drips.json.data.drips.find((d) => d.slug === "immune-shield");
   ok("the seeded catalogue is present", Boolean(myers && immune));
 
-  const avail = await post(superadmin.jar, "/api/availability", { items: [{ dripId: myers._id, quantity: 5 }], includeKits: true });
+  const avail = await post(superadmin.jar, "/api/availability", {
+    items: [{ dripId: myers._id, quantity: 5 }],
+    includeKits: true,
+  });
   const result = avail.json?.data?.results?.[0];
   ok("availability answers for a drip", Boolean(result), avail.json?.error);
-  ok("the realistic count never exceeds the pooled count", result.wholeVialAvailability <= result.pooledAvailability,
-    `${result.wholeVialAvailability} vs ${result.pooledAvailability}`);
+  ok(
+    "the realistic count never exceeds the pooled count",
+    result.wholeVialAvailability <= result.pooledAvailability,
+    `${result.wholeVialAvailability} vs ${result.pooledAvailability}`
+  );
   ok("a bottleneck ingredient is named", Boolean(result.bottleneck?.ingredient));
-  ok("every ingredient reports its own ceiling", result.ingredients.length > 0 &&
-    result.ingredients.every((i) => typeof i.wholeVialDrips === "number"));
-  ok("the drip's ceiling is the weakest ingredient's",
-    result.wholeVialAvailability === Math.min(...result.ingredients.map((i) => i.wholeVialDrips)));
-  ok("expired stock is excluded from every batch listed",
-    result.ingredients.every((i) => i.batches.every((b) => b.daysToExpiry >= 0)));
+  ok(
+    "every ingredient reports its own ceiling",
+    result.ingredients.length > 0 && result.ingredients.every((i) => typeof i.wholeVialDrips === "number")
+  );
+  ok(
+    "the drip's ceiling is the weakest ingredient's",
+    result.wholeVialAvailability === Math.min(...result.ingredients.map((i) => i.wholeVialDrips))
+  );
+  ok(
+    "expired stock is excluded from every batch listed",
+    result.ingredients.every((i) => i.batches.every((b) => b.daysToExpiry >= 0))
+  );
   ok("short-dated batches raise a warning", (avail.json.data.warnings ?? []).length > 0);
 
   const nurseAvail = await post(nurse.jar, "/api/availability", { items: [{ dripId: myers._id, quantity: 1 }] });
@@ -203,10 +240,19 @@ async function main() {
     lines: [{ dripId: myers._id, quantity: 2, withKit: true }],
   });
   const orderId = created.json?.data?.order?._id;
-  ok("a clinic raises a draft order", created.status === 201 && created.json.data.order.status === "DRAFT", created.json?.error);
-  ok("the order number follows the PO-year-sequence form", /^PO-\d{4}-\d{4}$/.test(created.json?.data?.order?.orderNo ?? ""));
-  ok("the line price comes from the catalogue, not the client",
-    created.json.data.order.lines[0].unitPrice === myers.priceInr);
+  ok(
+    "a clinic raises a draft order",
+    created.status === 201 && created.json.data.order.status === "DRAFT",
+    created.json?.error
+  );
+  ok(
+    "the order number follows the PO-year-sequence form",
+    /^PO-\d{4}-\d{4}$/.test(created.json?.data?.order?.orderNo ?? "")
+  );
+  ok(
+    "the line price comes from the catalogue, not the client",
+    created.json.data.order.lines[0].unitPrice === myers.priceInr
+  );
 
   const clinicCantConfirm = await post(clinic.jar, `/api/orders/${orderId}/confirm`);
   ok("a clinic cannot confirm its own order", clinicCantConfirm.status === 403);
@@ -214,15 +260,26 @@ async function main() {
   // Paid first: the pharmacy cannot confirm an order nobody has paid for.
   ok("a clinic's order starts awaiting payment", created.json?.data?.order?.payment?.state === "awaiting");
   const unpaid = await post(superadmin.jar, `/api/orders/${orderId}/confirm`);
-  ok("an unpaid order cannot be confirmed", unpaid.status === 409 && /Not paid yet/.test(unpaid.json?.error ?? ""), unpaid.json?.error);
+  ok(
+    "an unpaid order cannot be confirmed",
+    unpaid.status === 409 && /Not paid yet/.test(unpaid.json?.error ?? ""),
+    unpaid.json?.error
+  );
   const selfReceived = await post(clinic.jar, `/api/orders/${orderId}/payment`, { action: "received" });
   ok("a clinic cannot mark its own payment received", selfReceived.status === 403);
   const recorded = await post(clinic.jar, `/api/orders/${orderId}/payment`, {
-    action: "submit", method: "upi", reference: "SMOKE-UTR-0001", paidOn: today(),
+    action: "submit",
+    method: "upi",
+    reference: "SMOKE-UTR-0001",
+    paidOn: today(),
   });
   ok("the clinic records its payment", recorded.json?.success === true, recorded.json?.error);
   const stillUnchecked = await post(superadmin.jar, `/api/orders/${orderId}/confirm`);
-  ok("a recorded but unchecked payment still holds the order", stillUnchecked.status === 409, stillUnchecked.json?.error);
+  ok(
+    "a recorded but unchecked payment still holds the order",
+    stillUnchecked.status === 409,
+    stillUnchecked.json?.error
+  );
   const received = await post(superadmin.jar, `/api/orders/${orderId}/payment`, { action: "received" });
   ok("the team marks the payment received", received.json?.success === true, received.json?.error);
 
@@ -232,9 +289,11 @@ async function main() {
 
   const afterConfirm = await get(superadmin.jar, "/api/inventory/masters?q=Ascorbic%20acid");
   const vitcReserved = afterConfirm.json.data.masters.find((m) => m.name === "Ascorbic acid");
-  ok("confirming reserves units without taking them off the shelf",
+  ok(
+    "confirming reserves units without taking them off the shelf",
     vitcReserved.onHand === vitcBefore.onHand && vitcReserved.available < vitcBefore.available,
-    `onHand ${vitcBefore.onHand}→${vitcReserved.onHand}, available ${vitcBefore.available}→${vitcReserved.available}`);
+    `onHand ${vitcBefore.onHand}→${vitcReserved.onHand}, available ${vitcBefore.available}→${vitcReserved.available}`
+  );
 
   const doubleConfirm = await post(superadmin.jar, `/api/orders/${orderId}/confirm`);
   ok("an order cannot be confirmed twice", doubleConfirm.json?.success === false);
@@ -244,8 +303,11 @@ async function main() {
 
   const afterDispatch = await get(superadmin.jar, "/api/inventory/masters?q=Ascorbic%20acid");
   const vitcAfter = afterDispatch.json.data.masters.find((m) => m.name === "Ascorbic acid");
-  ok("dispatch decrements what is on hand", vitcAfter.onHand < vitcReserved.onHand,
-    `${vitcReserved.onHand} → ${vitcAfter.onHand}`);
+  ok(
+    "dispatch decrements what is on hand",
+    vitcAfter.onHand < vitcReserved.onHand,
+    `${vitcReserved.onHand} → ${vitcAfter.onHand}`
+  );
   ok("dispatch releases the reservation", vitcAfter.reserved <= vitcReserved.reserved);
 
   // The ledger is the recall trail: every row must name its drug and the active
@@ -263,7 +325,9 @@ async function main() {
 
   /* Cancel releases what confirm reserved. */
   const second = await post(clinic.jar, "/api/orders", {
-    patientRef: "SMOKE-02", includeKits: true, lines: [{ dripId: immune._id, quantity: 1, withKit: true }],
+    patientRef: "SMOKE-02",
+    includeKits: true,
+    lines: [{ dripId: immune._id, quantity: 1, withKit: true }],
   });
   const secondId = second.json.data.order._id;
   await payFor(clinic.jar, superadmin.jar, secondId, "SMOKE-UTR-0002");
@@ -275,31 +339,43 @@ async function main() {
   const refunded = (await get(clinic.jar, "/api/orders")).json?.data?.orders?.find((o) => o._id === secondId);
   ok("cancelling a paid order marks a refund due", refunded?.payment?.refundDue === true);
   const released = await get(superadmin.jar, "/api/inventory/masters?q=Ascorbic%20acid");
-  ok("the released units are available again",
-    released.json.data.masters.find((m) => m.name === "Ascorbic acid").available > vitcHeld);
+  ok(
+    "the released units are available again",
+    released.json.data.masters.find((m) => m.name === "Ascorbic acid").available > vitcHeld
+  );
 
   // The pharmacy can raise an order on a clinic's behalf, and the clinic must
   // then actually see it — otherwise the confirmation goes nowhere.
   const forClinic = await post(superadmin.jar, "/api/orders", {
-    patientRef: "SMOKE-ATTRIB", includeKits: false, clinicId: clinic.user.id,
+    patientRef: "SMOKE-ATTRIB",
+    includeKits: false,
+    clinicId: clinic.user.id,
     lines: [{ dripId: immune._id, quantity: 1, withKit: false }],
   });
   ok("the pharmacy can raise an order for a clinic", forClinic.status === 201, forClinic.json?.error);
   if (forClinic.json?.success) {
-    const visible = (await get(clinic.jar, "/api/orders")).json.data.orders
-      .some((o) => o._id === forClinic.json.data.order._id);
+    const visible = (await get(clinic.jar, "/api/orders")).json.data.orders.some(
+      (o) => o._id === forClinic.json.data.order._id
+    );
     ok("the clinic sees an order raised on its behalf", visible);
     await post(superadmin.jar, `/api/orders/${forClinic.json.data.order._id}/cancel`, { reason: "smoke cleanup" });
   }
   const badClinic = await post(superadmin.jar, "/api/orders", {
-    includeKits: false, clinicId: doctor.user.id,
+    includeKits: false,
+    clinicId: doctor.user.id,
     lines: [{ dripId: immune._id, quantity: 1, withKit: false }],
   });
-  ok("an order cannot be attributed to something that is not a clinic", badClinic.status === 422, badClinic.json?.error);
+  ok(
+    "an order cannot be attributed to something that is not a clinic",
+    badClinic.status === 422,
+    badClinic.json?.error
+  );
 
   const clinicOrders = await get(clinic.jar, "/api/orders");
-  ok("a clinic sees only its own orders",
-    clinicOrders.json.data.orders.length > 0 && clinicOrders.json.data.orders.every((o) => o.clinicId));
+  ok(
+    "a clinic sees only its own orders",
+    clinicOrders.json.data.orders.length > 0 && clinicOrders.json.data.orders.every((o) => o.clinicId)
+  );
 
   /* ---------------- Inventory guards ---------------- */
   section("Inventory guards");
@@ -307,19 +383,30 @@ async function main() {
   const vitc = masters.find((m) => m.name === "Ascorbic acid");
 
   const expiredLot = await post(superadmin.jar, `/api/inventory/masters/${vitc.id}/lots`, {
-    brandName: "Smoke", batchNo: `SMOKE-EXP-${Date.now()}`, expiry: "2020-01-01",
-    contentValue: 500, contentUnit: "mg", qtyReceived: 10,
+    brandName: "Smoke",
+    batchNo: `SMOKE-EXP-${Date.now()}`,
+    expiry: "2020-01-01",
+    contentValue: 500,
+    contentUnit: "mg",
+    qtyReceived: 10,
   });
   ok("an already-expired batch is refused at the door", expiredLot.status === 422, expiredLot.json?.error);
 
   const wrongUnit = await post(superadmin.jar, `/api/inventory/masters/${vitc.id}/lots`, {
-    brandName: "Smoke", batchNo: `SMOKE-UNIT-${Date.now()}`, expiry: "2027-12-31",
-    contentValue: 500, contentUnit: "ml", qtyReceived: 10,
+    brandName: "Smoke",
+    batchNo: `SMOKE-UNIT-${Date.now()}`,
+    expiry: "2027-12-31",
+    contentValue: 500,
+    contentUnit: "ml",
+    qtyReceived: 10,
   });
   ok("a batch in the wrong unit family is refused", wrongUnit.status === 422, wrongUnit.json?.error);
 
   const dupHsn = await post(superadmin.jar, "/api/inventory/masters", {
-    name: "Duplicate", hsnCode: "30045020", category: "DRUG", canonicalUnit: "mg",
+    name: "Duplicate",
+    hsnCode: "30045020",
+    category: "DRUG",
+    canonicalUnit: "mg",
   });
   ok("a duplicate HSN code is refused", dupHsn.status === 409);
 
@@ -327,7 +414,8 @@ async function main() {
   const reservedLot = lots.find((l) => l.qtyReserved > 0) ?? lots.find((l) => l.qtyOnHand > 0);
   if (reservedLot) {
     const negative = await post(superadmin.jar, `/api/inventory/lots/${reservedLot.id}/adjust`, {
-      delta: -(reservedLot.qtyOnHand + 500), reason: "smoke test: below zero",
+      delta: -(reservedLot.qtyOnHand + 500),
+      reason: "smoke test: below zero",
     });
     ok("stock cannot be written below zero", negative.status === 422 || negative.status === 409, negative.json?.error);
   } else skip("stock cannot be written below zero", "no lot with stock");
@@ -342,7 +430,8 @@ async function main() {
   await patch(superadmin.jar, `/api/inventory/masters/${vitc.id}`, { reorderLevel: 60 });
 
   const slipDrip = await post(superadmin.jar, "/api/drips", {
-    name: `Smoke slip ${Date.now()}`, slug: `smoke-slip-${Date.now()}`,
+    name: `Smoke slip ${Date.now()}`,
+    slug: `smoke-slip-${Date.now()}`,
     ingredients: [{ masterId: vitc.id, dose: 500, unit: "ml", role: "ACTIVE" }],
   });
   ok("a recipe dosing in the wrong unit family is refused", slipDrip.status === 422, slipDrip.json?.error);
@@ -352,7 +441,9 @@ async function main() {
   // success" would let a real regression through — and a successful PATCH here
   // would silently rewrite the seeded recipe for every later check.
   const lockOrder = await post(clinic.jar, "/api/orders", {
-    patientRef: "SMOKE-LOCK", includeKits: true, lines: [{ dripId: myers._id, quantity: 1, withKit: true }],
+    patientRef: "SMOKE-LOCK",
+    includeKits: true,
+    lines: [{ dripId: myers._id, quantity: 1, withKit: true }],
   });
   const lockOrderId = lockOrder.json?.data?.order?._id;
   await payFor(clinic.jar, superadmin.jar, lockOrderId, "SMOKE-UTR-0003");
@@ -361,12 +452,18 @@ async function main() {
     const lockedDrip = await patch(superadmin.jar, `/api/drips/${myers._id}`, {
       ingredients: [{ masterId: vitc.id, dose: 100, unit: "mg", role: "ACTIVE" }],
     });
-    ok("a recipe with confirmed orders against it cannot be silently changed",
-      lockedDrip.status === 409, `expected 409, got ${lockedDrip.status}: ${lockedDrip.json?.error}`);
+    ok(
+      "a recipe with confirmed orders against it cannot be silently changed",
+      lockedDrip.status === 409,
+      `expected 409, got ${lockedDrip.status}: ${lockedDrip.json?.error}`
+    );
 
     const stillWhole = (await get(superadmin.jar, "/api/drips")).json.data.drips.find((d) => d._id === myers._id);
-    ok("the refused edit left the recipe untouched", stillWhole.ingredients.length === myers.ingredients.length,
-      `${myers.ingredients.length} ingredients before, ${stillWhole.ingredients.length} after`);
+    ok(
+      "the refused edit left the recipe untouched",
+      stillWhole.ingredients.length === myers.ingredients.length,
+      `${myers.ingredients.length} ingredients before, ${stillWhole.ingredients.length} after`
+    );
 
     await post(superadmin.jar, `/api/orders/${lockOrderId}/cancel`, { reason: "smoke test cleanup" });
   } else skip("a recipe with confirmed orders cannot be changed", `could not confirm: ${lockConfirm.json?.error}`);
@@ -374,13 +471,17 @@ async function main() {
   // A recipe nobody has received, but which an open order names, must not be
   // hard-deleted — the order line would resolve to nothing.
   const throwaway = await post(superadmin.jar, "/api/drips", {
-    name: `Smoke throwaway ${Date.now()}`, slug: `smoke-throwaway-${Date.now()}`,
-    priceInr: 100, ingredients: [{ masterId: vitc.id, dose: 100, unit: "mg", role: "ACTIVE" }],
+    name: `Smoke throwaway ${Date.now()}`,
+    slug: `smoke-throwaway-${Date.now()}`,
+    priceInr: 100,
+    ingredients: [{ masterId: vitc.id, dose: 100, unit: "mg", role: "ACTIVE" }],
   });
   if (throwaway.json?.success) {
     const tId = throwaway.json.data.id;
     const holding = await post(clinic.jar, "/api/orders", {
-      patientRef: "SMOKE-DANGLE", includeKits: false, lines: [{ dripId: tId, quantity: 1, withKit: false }],
+      patientRef: "SMOKE-DANGLE",
+      includeKits: false,
+      lines: [{ dripId: tId, quantity: 1, withKit: false }],
     });
     const refused = await call(superadmin.jar, "DELETE", `/api/drips/${tId}`);
     ok("a recipe an open order names cannot be hard-deleted", refused.status === 409, refused.json?.error);
@@ -391,10 +492,16 @@ async function main() {
   } else skip("dangling-reference guard", throwaway.json?.error);
 
   const deleteUsed = await call(superadmin.jar, "DELETE", `/api/drips/${myers._id}`);
-  ok("a recipe somebody has received is retired, not deleted", deleteUsed.json?.data?.retired === true, deleteUsed.json?.error);
+  ok(
+    "a recipe somebody has received is retired, not deleted",
+    deleteUsed.json?.data?.retired === true,
+    deleteUsed.json?.error
+  );
   const stillThere = await get(superadmin.jar, "/api/drips");
-  ok("the retired recipe still exists for old reports to name",
-    stillThere.json.data.drips.some((d) => d._id === myers._id));
+  ok(
+    "the retired recipe still exists for old reports to name",
+    stillThere.json.data.drips.some((d) => d._id === myers._id)
+  );
   await patch(superadmin.jar, `/api/drips/${myers._id}`, { isActive: true, isPublic: true });
 
   /* ---------------- Booking guards ---------------- */
@@ -404,17 +511,37 @@ async function main() {
   // smoke books a real free slot rather than "36 hours from now".
   const grid = await get(patient.jar, `/api/bookings/slots?dripId=${jetlag._id}&location=home&pincode=560095`);
   const freeSlots = (grid.json?.data?.days ?? []).flatMap((d) => d.slots).filter((x) => x.state === "free");
-  ok("the slot grid follows the zone's hours", grid.json?.data?.zone?.name === "Koramangala" && freeSlots.length > 0, grid.json?.error);
+  ok(
+    "the slot grid follows the zone's hours",
+    grid.json?.data?.zone?.name === "Koramangala" && freeSlots.length > 0,
+    grid.json?.error
+  );
   // Mid-day, so it sits inside the smoke zone's 08:00–18:00 too.
-  const tomorrow = (freeSlots.find((x) => { const h = Number(new Date(x.at).toLocaleTimeString("en-GB", { hour: "2-digit", timeZone: "Asia/Kolkata" })); return h >= 10 && h <= 15; }) ?? freeSlots[0])?.at;
+  const tomorrow = (
+    freeSlots.find((x) => {
+      const h = Number(new Date(x.at).toLocaleTimeString("en-GB", { hour: "2-digit", timeZone: "Asia/Kolkata" }));
+      return h >= 10 && h <= 15;
+    }) ?? freeSlots[0]
+  )?.at;
   const offGrid = await post(patient.jar, "/api/bookings", {
-    dripId: jetlag._id, scheduledAt: new Date(new Date(tomorrow).getTime() + 30 * 60_000).toISOString(),
-    location: "home", address: "Koramangala 8th Block", pincode: "560095",
+    dripId: jetlag._id,
+    scheduledAt: new Date(new Date(tomorrow).getTime() + 30 * 60_000).toISOString(),
+    location: "home",
+    address: "Koramangala 8th Block",
+    pincode: "560095",
   });
-  ok("a time off the zone's grid is refused", offGrid.status === 422 && /not a bookable time/.test(offGrid.json?.error ?? ""), offGrid.json?.error);
+  ok(
+    "a time off the zone's grid is refused",
+    offGrid.status === 422 && /not a bookable time/.test(offGrid.json?.error ?? ""),
+    offGrid.json?.error
+  );
 
   const badZone = await post(patient.jar, "/api/bookings", {
-    dripId: jetlag._id, scheduledAt: tomorrow, location: "home", address: "Somewhere", pincode: "110001",
+    dripId: jetlag._id,
+    scheduledAt: tomorrow,
+    location: "home",
+    address: "Somewhere",
+    pincode: "110001",
   });
   ok("an unserved pincode gets a straight no", badZone.status === 409, badZone.json?.error);
 
@@ -424,27 +551,51 @@ async function main() {
   const zoneList = (await get(superadmin.jar, "/api/admin/zones")).json?.data?.zones ?? [];
   ok("the super admin reads the zones", zoneList.length > 0 && zoneList.every((z) => z.id && z.pincodes?.length));
   const clash = await post(superadmin.jar, "/api/admin/zones", {
-    name: "Smoke Zone", pincodes: "560064, 560095", opensAt: "08:00", closesAt: "18:00", status: "open",
+    name: "Smoke Zone",
+    pincodes: "560064, 560095",
+    opensAt: "08:00",
+    closesAt: "18:00",
+    status: "open",
   });
-  ok("a pincode already in another zone is refused, naming it", clash.status === 422 && /560095 is already in Koramangala/.test(clash.json?.error ?? ""), clash.json?.error);
+  ok(
+    "a pincode already in another zone is refused, naming it",
+    clash.status === 422 && /560095 is already in Koramangala/.test(clash.json?.error ?? ""),
+    clash.json?.error
+  );
   const added = await post(superadmin.jar, "/api/admin/zones", {
-    name: "Smoke Zone", pincodes: "560064", opensAt: "08:00", closesAt: "18:00", status: "open",
+    name: "Smoke Zone",
+    pincodes: "560064",
+    opensAt: "08:00",
+    closesAt: "18:00",
+    status: "open",
   });
   const smokeZoneId = added.json?.data?.id;
   ok("the super admin adds a zone", added.status === 201 && smokeZoneId, added.json?.error);
   if (smokeZoneId) {
     const newlyServed = await post(patient.jar, "/api/bookings", {
-      dripId: jetlag._id, scheduledAt: tomorrow, location: "home", address: "Yelahanka New Town", pincode: "560064",
+      dripId: jetlag._id,
+      scheduledAt: tomorrow,
+      location: "home",
+      address: "Yelahanka New Town",
+      pincode: "560064",
     });
     ok("a pincode books the moment its zone is added", newlyServed.status === 201, newlyServed.json?.error);
     const newId = newlyServed.json?.data?.booking?._id;
     if (newId) await post(patient.jar, `/api/bookings/${newId}/cancel`, { reason: "smoke test" });
 
     await patch(superadmin.jar, `/api/admin/zones/${smokeZoneId}`, {
-      name: "Smoke Zone", pincodes: "560064", opensAt: "08:00", closesAt: "18:00", status: "paused",
+      name: "Smoke Zone",
+      pincodes: "560064",
+      opensAt: "08:00",
+      closesAt: "18:00",
+      status: "paused",
     });
     const pausedTry = await post(patient.jar, "/api/bookings", {
-      dripId: jetlag._id, scheduledAt: tomorrow, location: "home", address: "Yelahanka New Town", pincode: "560064",
+      dripId: jetlag._id,
+      scheduledAt: tomorrow,
+      location: "home",
+      address: "Yelahanka New Town",
+      pincode: "560064",
     });
     ok("a paused zone is not offered", pausedTry.status === 409, pausedTry.json?.error);
 
@@ -454,30 +605,50 @@ async function main() {
 
   const koramangala = zoneList.find((z) => z.name === "Koramangala");
   const covered = koramangala ? await del(superadmin.jar, `/api/admin/zones/${koramangala.id}`) : null;
-  if (covered) ok("a zone a nurse covers cannot be deleted", covered.status === 409 && /Pause it instead/.test(covered.json?.error ?? ""), covered.json?.error);
+  if (covered)
+    ok(
+      "a zone a nurse covers cannot be deleted",
+      covered.status === 409 && /Pause it instead/.test(covered.json?.error ?? ""),
+      covered.json?.error
+    );
   else skip("deleting a covered zone", "Koramangala is not in the list");
 
   const ejipura = zoneList.find((z) => z.name === "Ejipura");
   if (ejipura) {
-    const asBody = (name) => ({ name, pincodes: ejipura.pincodes, opensAt: ejipura.opensAt, closesAt: ejipura.closesAt, status: ejipura.status });
+    const asBody = (name) => ({
+      name,
+      pincodes: ejipura.pincodes,
+      opensAt: ejipura.opensAt,
+      closesAt: ejipura.closesAt,
+      status: ejipura.status,
+    });
     const renamed = await patch(superadmin.jar, `/api/admin/zones/${ejipura.id}`, asBody("Ejipura East"));
     const nurses = (await get(superadmin.jar, "/api/users?role=nurse&pageSize=50")).json?.data?.users ?? [];
     ok(
       "renaming a zone carries the new name to the nurses who cover it",
-      renamed.json?.data?.nursesRenamed > 0 && nurses.some((n) => n.nurse?.serviceAreas?.includes("Ejipura East")) && !nurses.some((n) => n.nurse?.serviceAreas?.includes("Ejipura")),
+      renamed.json?.data?.nursesRenamed > 0 &&
+        nurses.some((n) => n.nurse?.serviceAreas?.includes("Ejipura East")) &&
+        !nurses.some((n) => n.nurse?.serviceAreas?.includes("Ejipura")),
       renamed.json?.error
     );
     await patch(superadmin.jar, `/api/admin/zones/${ejipura.id}`, asBody("Ejipura"));
   } else skip("renaming a zone", "Ejipura is not in the list");
 
   const tooSoon = await post(patient.jar, "/api/bookings", {
-    dripId: jetlag._id, scheduledAt: new Date(Date.now() + 60_000).toISOString(),
-    location: "home", address: "Koramangala", pincode: "560095",
+    dripId: jetlag._id,
+    scheduledAt: new Date(Date.now() + 60_000).toISOString(),
+    location: "home",
+    address: "Koramangala",
+    pincode: "560095",
   });
   ok("a slot inside the lead time is refused", tooSoon.status === 422, tooSoon.json?.error);
 
   const booked = await post(patient.jar, "/api/bookings", {
-    dripId: jetlag._id, scheduledAt: tomorrow, location: "home", address: "Koramangala 8th Block", pincode: "560095",
+    dripId: jetlag._id,
+    scheduledAt: tomorrow,
+    location: "home",
+    address: "Koramangala 8th Block",
+    pincode: "560095",
   });
   ok("a served pincode books", booked.status === 201, booked.json?.error);
   const bookingId = booked.json?.data?.booking?._id;
@@ -485,13 +656,19 @@ async function main() {
   ok("the booking opens with the full 29-step checklist", booked.json?.data?.booking?.checklist?.length === 29);
 
   const clinicCantBook = await post(clinic.jar, "/api/bookings", {
-    dripId: jetlag._id, scheduledAt: tomorrow, location: "home", pincode: "560095",
+    dripId: jetlag._id,
+    scheduledAt: tomorrow,
+    location: "home",
+    pincode: "560095",
   });
   ok("only a patient books a session", clinicCantBook.status === 403);
 
   if (bookingId) {
     const moveGrid = (await get(patient.jar, `/api/bookings/slots?booking=${bookingId}`)).json?.data?.days ?? [];
-    const later = moveGrid.at(-1)?.slots?.filter((x) => x.state === "free").at(-1)?.at;
+    const later = moveGrid
+      .at(-1)
+      ?.slots?.filter((x) => x.state === "free")
+      .at(-1)?.at;
     const moved = await post(patient.jar, `/api/bookings/${bookingId}/reschedule`, { scheduledAt: later });
     ok("a patient can move a slot outside the window", moved.json?.success === true, moved.json?.error);
 
@@ -513,8 +690,7 @@ async function main() {
   );
   // Prefer a session whose baseline vitals are out of range: that is the path
   // the physician-clearance gate exists for, so it is the one worth walking.
-  const live =
-    workable.find((b) => (b.vitals ?? []).some((v) => (v.outOfRange ?? []).length > 0)) ?? workable[0];
+  const live = workable.find((b) => (b.vitals ?? []).some((v) => (v.outOfRange ?? []).length > 0)) ?? workable[0];
   if (!live) {
     skip("checklist sequence", "no session assigned to this nurse — reseed with `npm run seed`");
   } else {
@@ -535,36 +711,62 @@ async function main() {
     const laterStep = [...live.checklist].reverse().find((s) => !s.doneAt);
 
     if (openStep && laterStep && openStep.key !== laterStep.key) {
-      const skipAhead = await post(nurse.jar, `/api/bookings/${live._id}/checklist`, { key: laterStep.key, done: true });
-      ok("a step cannot be ticked while an earlier mandatory one is open",
-        skipAhead.status === 409, `${skipAhead.status}: ${skipAhead.json?.error}`);
+      const skipAhead = await post(nurse.jar, `/api/bookings/${live._id}/checklist`, {
+        key: laterStep.key,
+        done: true,
+      });
+      ok(
+        "a step cannot be ticked while an earlier mandatory one is open",
+        skipAhead.status === 409,
+        `${skipAhead.status}: ${skipAhead.json?.error}`
+      );
     } else skip("out-of-order step is refused", "no suitable pair of open steps");
 
     const otherNurse = await signIn("nurse.sunita@nutridrip.com", "nurse123").catch(() => null);
     if (otherNurse) {
-      const trespass = await post(otherNurse.jar, `/api/bookings/${live._id}/checklist`, { key: openStep?.key ?? "ps-01", done: true });
+      const trespass = await post(otherNurse.jar, `/api/bookings/${live._id}/checklist`, {
+        key: openStep?.key ?? "ps-01",
+        done: true,
+      });
       ok("a nurse cannot work a session dispatched to somebody else", trespass.status === 403, trespass.json?.error);
       const trespassVitals = await post(otherNurse.jar, `/api/bookings/${live._id}/vitals`, {
-        systolic: 120, diastolic: 78, heartRate: 72, spo2: 98, temperatureF: 98.4,
+        systolic: 120,
+        diastolic: 78,
+        heartRate: 72,
+        spo2: 98,
+        temperatureF: 98.4,
       });
       ok("nor record vitals on it", trespassVitals.status === 403);
     } else skip("cross-nurse access is refused", "second nurse account not seeded");
 
-    const patientChecklist = await post(patient.jar, `/api/bookings/${live._id}/checklist`, { key: "ps-01", done: true });
+    const patientChecklist = await post(patient.jar, `/api/bookings/${live._id}/checklist`, {
+      key: "ps-01",
+      done: true,
+    });
     ok("a patient cannot tick their own checklist", patientChecklist.status === 403);
 
     // Record a fresh out-of-range reading rather than relying on seeded state,
     // so this runs the same way twice and also proves that a NEW breach
     // withdraws an earlier clearance — one look must not license the next.
     const breach = await post(nurse.jar, `/api/bookings/${live._id}/vitals`, {
-      systolic: 122, diastolic: 78, heartRate: 74, spo2: 88, temperatureF: 98.4,
+      systolic: 122,
+      diastolic: 78,
+      heartRate: 74,
+      spo2: 88,
+      temperatureF: 98.4,
     });
-    ok("an out-of-range reading is recorded and reported as blocking",
-      breach.json?.data?.blocksInfusion === true, JSON.stringify(breach.json?.data));
+    ok(
+      "an out-of-range reading is recorded and reported as blocking",
+      breach.json?.data?.blocksInfusion === true,
+      JSON.stringify(breach.json?.data)
+    );
 
     const infusionStep = live.checklist.find((s) => s.phase === "During infusion" && !s.doneAt);
     if (infusionStep) {
-      const blocked = await post(nurse.jar, `/api/bookings/${live._id}/checklist`, { key: infusionStep.key, done: true });
+      const blocked = await post(nurse.jar, `/api/bookings/${live._id}/checklist`, {
+        key: infusionStep.key,
+        done: true,
+      });
       ok("out-of-range vitals block the infusion", blocked.status === 409, blocked.json?.error);
     } else skip("out-of-range vitals block the infusion", "no open infusion step");
 
@@ -573,18 +775,28 @@ async function main() {
     const patientClear = await post(patient.jar, `/api/bookings/${live._id}/clear-vitals`, { decision: "clear" });
     ok("nor can the patient", patientClear.status === 403);
 
-    const cleared = await post(doctor.jar, `/api/bookings/${live._id}/clear-vitals`, { decision: "clear", note: "smoke test" });
+    const cleared = await post(doctor.jar, `/api/bookings/${live._id}/clear-vitals`, {
+      decision: "clear",
+      note: "smoke test",
+    });
     ok("the physician can clear it", cleared.json?.success === true, cleared.json?.error);
     const twice = await post(doctor.jar, `/api/bookings/${live._id}/clear-vitals`, { decision: "clear" });
     ok("clearing twice is refused", twice.json?.success === false);
 
     // A new breach must re-block a session the physician already cleared.
     const reBreach = await post(nurse.jar, `/api/bookings/${live._id}/vitals`, {
-      systolic: 122, diastolic: 78, heartRate: 74, spo2: 86, temperatureF: 98.4,
+      systolic: 122,
+      diastolic: 78,
+      heartRate: 74,
+      spo2: 86,
+      temperatureF: 98.4,
     });
     ok("a fresh breach is recorded", reBreach.json?.data?.blocksInfusion === true);
     if (infusionStep) {
-      const reBlocked = await post(nurse.jar, `/api/bookings/${live._id}/checklist`, { key: infusionStep.key, done: true });
+      const reBlocked = await post(nurse.jar, `/api/bookings/${live._id}/checklist`, {
+        key: infusionStep.key,
+        done: true,
+      });
       ok("an earlier clearance does not license a new breach", reBlocked.status === 409, reBlocked.json?.error);
     } else skip("re-block after a fresh breach", "no open infusion step");
     // Leave it cleared so the session is workable for the next run.
@@ -603,48 +815,82 @@ async function main() {
         // a 409 from the lock and pass for the wrong reason.
         const pastDoorstep = freshBooking.checklist.find((s) => s.key === "ps-07" && !s.doneAt);
         if (pastDoorstep && !freshBooking.rxUnlockedAt) {
-          const lockedTick = await post(nurse.jar, `/api/bookings/${freshBooking._id}/checklist`, { key: pastDoorstep.key, done: true });
-          ok("a step past the doorstep checks is refused while the prescription is locked",
+          const lockedTick = await post(nurse.jar, `/api/bookings/${freshBooking._id}/checklist`, {
+            key: pastDoorstep.key,
+            done: true,
+          });
+          ok(
+            "a step past the doorstep checks is refused while the prescription is locked",
             lockedTick.status === 409 && /prescription/i.test(lockedTick.json?.error ?? ""),
-            `${lockedTick.status}: ${lockedTick.json?.error}`);
+            `${lockedTick.status}: ${lockedTick.json?.error}`
+          );
           const lockedConsent = await post(nurse.jar, `/api/bookings/${freshBooking._id}/consent`, { viaOtp: "4471" });
-          ok("consent cannot be captured while the prescription is locked",
+          ok(
+            "consent cannot be captured while the prescription is locked",
             lockedConsent.status === 409 && /prescription/i.test(lockedConsent.json?.error ?? ""),
-            `${lockedConsent.status}: ${lockedConsent.json?.error}`);
-        } else skip("prescription gate on the checklist", "the fresh session is already unlocked — reseed for this check");
+            `${lockedConsent.status}: ${lockedConsent.json?.error}`
+          );
+        } else
+          skip("prescription gate on the checklist", "the fresh session is already unlocked — reseed for this check");
         const unlocked = await unlockRx(freshBooking);
         if (unlocked === null) {
-          skip("the patient's code opens the prescription, and the vitals and consent steps behind it",
-            "the code is only echoed by a development server — run the smoke against npm run dev");
+          skip(
+            "the patient's code opens the prescription, and the vitals and consent steps behind it",
+            "the code is only echoed by a development server — run the smoke against npm run dev"
+          );
         } else {
-        ok("the patient's code opens the prescription", unlocked);
+          ok("the patient's code opens the prescription", unlocked);
 
-        // Close everything before it so the sequence rule is not what refuses us.
-        for (const s of freshBooking.checklist) {
-          if (s.key === vitalsStep.key) break;
-          if (!s.doneAt) await post(nurse.jar, `/api/bookings/${freshBooking._id}/checklist`, { key: s.key, done: true });
-        }
-        const ticked = await post(nurse.jar, `/api/bookings/${freshBooking._id}/checklist`, { key: vitalsStep.key, done: true });
-        ok("the vitals step cannot be ticked with no reading on file",
-          ticked.status === 409, `expected 409, got ${ticked.status}: ${ticked.json?.error}`);
+          // Close everything before it so the sequence rule is not what refuses us.
+          for (const s of freshBooking.checklist) {
+            if (s.key === vitalsStep.key) break;
+            if (!s.doneAt)
+              await post(nurse.jar, `/api/bookings/${freshBooking._id}/checklist`, { key: s.key, done: true });
+          }
+          const ticked = await post(nurse.jar, `/api/bookings/${freshBooking._id}/checklist`, {
+            key: vitalsStep.key,
+            done: true,
+          });
+          ok(
+            "the vitals step cannot be ticked with no reading on file",
+            ticked.status === 409,
+            `expected 409, got ${ticked.status}: ${ticked.json?.error}`
+          );
 
-        await post(nurse.jar, `/api/bookings/${freshBooking._id}/vitals`, {
-          systolic: 120, diastolic: 78, heartRate: 72, spo2: 98, temperatureF: 98.4,
-        });
-        const now = await post(nurse.jar, `/api/bookings/${freshBooking._id}/checklist`, { key: vitalsStep.key, done: true });
-        ok("once the reading exists the step closes", now.json?.success === true, now.json?.error);
+          await post(nurse.jar, `/api/bookings/${freshBooking._id}/vitals`, {
+            systolic: 120,
+            diastolic: 78,
+            heartRate: 72,
+            spo2: 98,
+            temperatureF: 98.4,
+          });
+          const now = await post(nurse.jar, `/api/bookings/${freshBooking._id}/checklist`, {
+            key: vitalsStep.key,
+            done: true,
+          });
+          ok("once the reading exists the step closes", now.json?.success === true, now.json?.error);
 
-        if (consentStep) {
-          const early = await post(nurse.jar, `/api/bookings/${freshBooking._id}/checklist`, { key: consentStep.key, done: true });
-          ok("the consent step cannot be ticked before consent is captured",
-            early.status === 409, `expected 409, got ${early.status}: ${early.json?.error}`);
-        } else skip("consent step gating", "no open consent step");
+          if (consentStep) {
+            const early = await post(nurse.jar, `/api/bookings/${freshBooking._id}/checklist`, {
+              key: consentStep.key,
+              done: true,
+            });
+            ok(
+              "the consent step cannot be ticked before consent is captured",
+              early.status === 409,
+              `expected 409, got ${early.status}: ${early.json?.error}`
+            );
+          } else skip("consent step gating", "no open consent step");
         }
       } else skip("sub-screen step gating", "no open vitals step on a fresh session");
     } else skip("sub-screen step gating", "every session already has readings — run `npm run seed` for this check");
 
     const badVitals = await post(nurse.jar, `/api/bookings/${live._id}/vitals`, {
-      systolic: 120, diastolic: 78, heartRate: 72, spo2: 991, temperatureF: 98.4,
+      systolic: 120,
+      diastolic: 78,
+      heartRate: 72,
+      spo2: 991,
+      temperatureF: 98.4,
     });
     ok("an impossible reading is refused by validation", badVitals.status === 422, `status ${badVitals.status}`);
 
@@ -679,7 +925,11 @@ async function main() {
   const notOurs = allBookings.find((b) => !b.clinicId && !["completed", "cancelled"].includes(b.status));
   if (notOurs) {
     const cancelOther = await post(clinic.jar, `/api/bookings/${notOurs._id}/cancel`, { reason: "should be refused" });
-    ok("a clinic cannot cancel a session outside its rooms", cancelOther.status === 403, `status ${cancelOther.status}`);
+    ok(
+      "a clinic cannot cancel a session outside its rooms",
+      cancelOther.status === 403,
+      `status ${cancelOther.status}`
+    );
     const moveOther = await post(clinic.jar, `/api/bookings/${notOurs._id}/reschedule`, {
       scheduledAt: new Date(Date.now() + 72 * 3600_000).toISOString(),
     });
@@ -692,7 +942,8 @@ async function main() {
   const staffOtp = await post(null, "/api/auth/otp/request", { phone: "+919800000001" });
   if (staffOtp.json?.data?.devCode) {
     const staffVerify = await post(null, "/api/auth/otp/verify", {
-      phone: "+919800000001", code: staffOtp.json.data.devCode,
+      phone: "+919800000001",
+      code: staffOtp.json.data.devCode,
     });
     ok("a staff number cannot open a session by phone code", staffVerify.status === 403, staffVerify.json?.error);
   } else skip("staff phone sign-in is refused", "the OTP code is not echoed, as expected in production");
@@ -712,7 +963,10 @@ async function main() {
   // File one now rather than leaning on seeded state, so this section runs the
   // same way twice. `live` is in progress, which is where events happen.
   const filed = await post(nurse.jar, `/api/bookings/${live?._id}/adverse`, {
-    symptoms: ["Flushing"], severity: "mild", actionsTaken: [], infusionStopped: false,
+    symptoms: ["Flushing"],
+    severity: "mild",
+    actionsTaken: [],
+    infusionStopped: false,
     notes: "Filed by the smoke test.",
   });
   ok("a nurse can file an adverse event on a live session", filed.json?.success === true, filed.json?.error);
@@ -724,22 +978,26 @@ async function main() {
     ok("the filed event is open until a physician closes it", Boolean(openEvent));
     if (openEvent) {
       const nurseClose = await patch(nurse.jar, `/api/bookings/${withEvents._id}/adverse`, {
-        eventId: String(openEvent._id), determination: "should be refused",
+        eventId: String(openEvent._id),
+        determination: "should be refused",
       });
       ok("a nurse cannot close their own report", nurseClose.status === 403, nurseClose.json?.error);
 
       const closed = await patch(doctor.jar, `/api/bookings/${withEvents._id}/adverse`, {
-        eventId: String(openEvent._id), determination: "Expected magnesium flush, settled without intervention.",
+        eventId: String(openEvent._id),
+        determination: "Expected magnesium flush, settled without intervention.",
       });
       ok("the physician's determination closes it", closed.json?.data?.closed === true, closed.json?.error);
 
       const twice = await patch(doctor.jar, `/api/bookings/${withEvents._id}/adverse`, {
-        eventId: String(openEvent._id), determination: "again",
+        eventId: String(openEvent._id),
+        determination: "again",
       });
       ok("a closed report cannot be closed twice", twice.status === 409, twice.json?.error);
 
       const bogus = await patch(doctor.jar, `/api/bookings/${withEvents._id}/adverse`, {
-        eventId: "000000000000000000000000", determination: "nope",
+        eventId: "000000000000000000000000",
+        determination: "nope",
       });
       ok("an event id from elsewhere is refused", bogus.status === 404, `status ${bogus.status}`);
     }
@@ -749,10 +1007,14 @@ async function main() {
   const deadBooking = allBookings.find((b) => b.status === "cancelled" || b.status === "rejected");
   if (deadBooking) {
     const onDead = await post(nurse.jar, `/api/bookings/${deadBooking._id}/adverse`, {
-      symptoms: ["Nausea"], severity: "mild",
+      symptoms: ["Nausea"],
+      severity: "mild",
     });
-    ok("an event cannot be filed on a session that did not run", onDead.status === 403 || onDead.status === 409,
-      `status ${onDead.status}`);
+    ok(
+      "an event cannot be filed on a session that did not run",
+      onDead.status === 403 || onDead.status === 409,
+      `status ${onDead.status}`
+    );
   } else skip("adverse on a dead session", "no cancelled booking");
 
   /* ---------------- Quiz ---------------- */
@@ -761,12 +1023,20 @@ async function main() {
   ok("only a patient submits the quiz", staffQuiz.status === 403);
 
   const submitted = await post(patient.jar, "/api/quiz", {
-    answers: { "wake-tired": "Most weekdays", water: "1–2 L", sunlight: "Almost none", pregnancy: "No", allergies: "Sulfa drugs" },
+    answers: {
+      "wake-tired": "Most weekdays",
+      water: "1–2 L",
+      sunlight: "Almost none",
+      pregnancy: "No",
+      allergies: "Sulfa drugs",
+    },
   });
   ok("a patient submits the quiz", submitted.status === 201, submitted.json?.error);
   const quizId = submitted.json?.data?.quizId;
-  ok("a vitality score comes back inside 0–100",
-    submitted.json?.data?.vitalityScore >= 0 && submitted.json?.data?.vitalityScore <= 100);
+  ok(
+    "a vitality score comes back inside 0–100",
+    submitted.json?.data?.vitalityScore >= 0 && submitted.json?.data?.vitalityScore <= 100
+  );
   ok("suggestions are drawn from the catalogue", Array.isArray(submitted.json?.data?.suggested));
 
   if (quizId) {
@@ -774,22 +1044,30 @@ async function main() {
     ok("a nurse cannot review a quiz", nurseReview.status === 403);
     const adminReview = await post(admin.jar, `/api/quiz/${quizId}/review`, { decision: "approved" });
     ok("an ordinary admin cannot issue the physician approval", adminReview.status === 403, adminReview.json?.error);
-    const reviewed = await post(doctor.jar, `/api/quiz/${quizId}/review`, { decision: "approved", notes: "smoke test" });
+    const reviewed = await post(doctor.jar, `/api/quiz/${quizId}/review`, {
+      decision: "approved",
+      notes: "smoke test",
+    });
     ok("the physician reviews it", reviewed.json?.success === true, reviewed.json?.error);
     const again = await post(doctor.jar, `/api/quiz/${quizId}/review`, { decision: "rejected" });
     ok("a submission cannot be reviewed twice", again.status === 409, again.json?.error);
   } else skip("quiz review", "no quiz was created");
 
   const contra = await post(patient.jar, "/api/quiz", { answers: { pregnancy: "Yes", water: "2–3 L" } });
-  ok("a screening answer raises a contraindication",
-    (contra.json?.data?.contraindications ?? []).length > 0, JSON.stringify(contra.json?.data?.contraindications));
+  ok(
+    "a screening answer raises a contraindication",
+    (contra.json?.data?.contraindications ?? []).length > 0,
+    JSON.stringify(contra.json?.data?.contraindications)
+  );
 
   /* ---------------- Notifications ---------------- */
   section("Notifications");
   const bell = await get(doctor.jar, "/api/notifications");
   ok("the bell returns the caller's own notifications", Array.isArray(bell.json?.data?.items));
   ok("it reports an unread count", typeof bell.json?.data?.unread === "number");
-  const foreign = await patch(patient.jar, "/api/notifications", { id: bell.json?.data?.items?.[0]?.id ?? "000000000000000000000000" });
+  const foreign = await patch(patient.jar, "/api/notifications", {
+    id: bell.json?.data?.items?.[0]?.id ?? "000000000000000000000000",
+  });
   ok("one person cannot mark another's notification read", foreign.status === 404, `status ${foreign.status}`);
 
   /* ---------------- Own record ---------------- */
@@ -804,16 +1082,26 @@ async function main() {
 
   const labs = await get(patient.jar, "/api/lab-reports");
   ok("a patient lists their own lab reports", Array.isArray(labs.json?.data?.reports));
-  ok("the list never carries the file bodies", (labs.json?.data?.reports ?? []).every((r) => r.fileUrl === undefined));
+  ok(
+    "the list never carries the file bodies",
+    (labs.json?.data?.reports ?? []).every((r) => r.fileUrl === undefined)
+  );
 
   /* ---------------- Error shape ---------------- */
   section("Error handling");
   const badId = await get(superadmin.jar, "/api/orders?status=all");
   ok("a normal list still answers", badId.json?.success === true);
   const castError = await post(superadmin.jar, "/api/orders/not-an-object-id/confirm");
-  ok("an unparseable id is a 404, not a 400", castError.status === 404, `status ${castError.status}: ${castError.json?.error}`);
-  ok("the error does not leak Mongoose internals",
-    !/ObjectId|CastError|Mongoose|BSON/i.test(castError.json?.error ?? ""), castError.json?.error);
+  ok(
+    "an unparseable id is a 404, not a 400",
+    castError.status === 404,
+    `status ${castError.status}: ${castError.json?.error}`
+  );
+  ok(
+    "the error does not leak Mongoose internals",
+    !/ObjectId|CastError|Mongoose|BSON/i.test(castError.json?.error ?? ""),
+    castError.json?.error
+  );
 
   const recall = await get(superadmin.jar, "/admin/inventory/recall");
   ok("the recall trace page renders", recall.status === 200);
@@ -834,23 +1122,33 @@ async function main() {
   ok("a consultation request is accepted without signing in", consult.status === 201, consult.json?.error);
   const leadList = await get(superadmin.jar, "/api/leads");
   const lead = (leadList.json?.data?.leads ?? []).find((l) => l.name === "Smoke Consult" && l.kind === "consult");
-  ok("it reaches the enquiries as a consultation, with its message and pincode intact",
-    Boolean(lead) && (lead.message ?? "").includes("Best time to call") && lead.pincode === "560034");
+  ok(
+    "it reaches the enquiries as a consultation, with its message and pincode intact",
+    Boolean(lead) && (lead.message ?? "").includes("Best time to call") && lead.pincode === "560034"
+  );
 
   // The physician's own letterhead.
   const lh0 = await get(doctor.jar, "/api/me/letterhead");
-  ok("a physician can read their own letterhead and the credentials beside it",
-    lh0.json?.success === true && Boolean(lh0.json?.data?.credentials?.licenseNo), lh0.json?.error);
+  ok(
+    "a physician can read their own letterhead and the credentials beside it",
+    lh0.json?.success === true && Boolean(lh0.json?.data?.credentials?.licenseNo),
+    lh0.json?.error
+  );
   const licence = lh0.json?.data?.credentials?.licenseNo;
   const originalLetterhead = lh0.json?.data?.letterhead ?? {};
   ok("a nurse has no letterhead", (await get(nurse.jar, "/api/me/letterhead")).status === 403);
   ok("nor does a patient", (await get(patient.jar, "/api/me/letterhead")).status === 403);
-  ok("nobody, a super admin included, can edit one on a physician's behalf",
-    (await put(superadmin.jar, "/api/me/letterhead", { practiceName: "x" })).status === 403);
+  ok(
+    "nobody, a super admin included, can edit one on a physician's behalf",
+    (await put(superadmin.jar, "/api/me/letterhead", { practiceName: "x" })).status === 403
+  );
 
   const badPhone = await put(doctor.jar, "/api/me/letterhead", { phone: "call me" });
-  ok("a phone number that is not one is refused, against its own field",
-    badPhone.status === 422 && badPhone.json?.issues?.[0]?.path === "phone", badPhone.json?.error);
+  ok(
+    "a phone number that is not one is refused, against its own field",
+    badPhone.status === 422 && badPhone.json?.issues?.[0]?.path === "phone",
+    badPhone.json?.error
+  );
 
   const smokeLetterhead = {
     practiceName: "Smoke Practice",
@@ -861,8 +1159,11 @@ async function main() {
     footerNote: "Smoke note",
   };
   const savedLh = await put(doctor.jar, "/api/me/letterhead", smokeLetterhead);
-  ok("a physician can save a letterhead", savedLh.json?.success === true,
-    `${savedLh.json?.error} - after a schema change the dev server has to be restarted`);
+  ok(
+    "a physician can save a letterhead",
+    savedLh.json?.success === true,
+    `${savedLh.json?.error} - after a schema change the dev server has to be restarted`
+  );
   const savedAgain = await put(doctor.jar, "/api/me/letterhead", smokeLetterhead);
   ok("saving the same letterhead again changes nothing, and says so", savedAgain.json?.data?.changed === false);
 
@@ -883,10 +1184,11 @@ async function main() {
   // A clinic's billing, and the tenant boundary around it.
   const bill = await get(clinic.jar, "/clinic/billing");
   ok("the clinic's billing page renders", bill.status === 200, "status " + bill.status);
-  ok("a hand-edited month falls back to this one rather than failing",
-    (await get(clinic.jar, "/clinic/billing?month=not-a-month")).status === 200);
-  ok("a nurse is turned away from billing",
-    [302, 307].includes((await get(nurse.jar, "/clinic/billing")).status));
+  ok(
+    "a hand-edited month falls back to this one rather than failing",
+    (await get(clinic.jar, "/clinic/billing?month=not-a-month")).status === 200
+  );
+  ok("a nurse is turned away from billing", [302, 307].includes((await get(nurse.jar, "/clinic/billing")).status));
 
   const ym = (d) => d.getFullYear() + "-" + String(d.getMonth() + 1).padStart(2, "0");
   const months = [0, 1, 2].map((n) => ym(new Date(new Date().getFullYear(), new Date().getMonth() - n, 1)));
@@ -910,62 +1212,92 @@ async function main() {
   const aiOn = (await get(superadmin.jar, "/api/admin/ai")).status !== 404;
   if (!aiOn) {
     skip("AI Studio behaviour", "switched off (AI_STUDIO_ENABLED is false)");
-    ok("AI Studio is switched off: the API answers 404 to everyone",
-      (await get(superadmin.jar, "/api/admin/ai")).status === 404 && (await get(null, "/api/admin/ai")).status === 404);
+    ok(
+      "AI Studio is switched off: the API answers 404 to everyone",
+      (await get(superadmin.jar, "/api/admin/ai")).status === 404 && (await get(null, "/api/admin/ai")).status === 404
+    );
     ok("and its page is a plain 404, not a refusal", (await get(superadmin.jar, "/admin/studio")).status === 404);
   }
   if (aiOn) {
-  ok("AI Studio is closed to no session", (await get(null, "/api/admin/ai")).status === 403);
-  ok("and to an ordinary admin", (await get(admin.jar, "/api/admin/ai")).status === 403);
-  ok("and to a physician", (await get(doctor.jar, "/api/admin/ai")).status === 403);
+    ok("AI Studio is closed to no session", (await get(null, "/api/admin/ai")).status === 403);
+    ok("and to an ordinary admin", (await get(admin.jar, "/api/admin/ai")).status === 403);
+    ok("and to a physician", (await get(doctor.jar, "/api/admin/ai")).status === 403);
 
-  const madeA = await post(superadmin.jar, "/api/admin/ai", {
-    name: "Smoke A", model: "claude-sonnet-5", temperature: 0.4, maxTokens: 512, systemPrompt: "p", status: "active",
-  });
-  ok("a new model is saved, and starts in Test whatever it asked for",
-    madeA.status === 201 && madeA.json?.data?.model?.status === "test", madeA.json?.error);
-  const aId = madeA.json?.data?.model?.id;
-  ok("a duplicate name is refused in any case",
-    (await post(superadmin.jar, "/api/admin/ai", { name: "SMOKE A", model: "m" })).status === 409);
-  const hot = await post(superadmin.jar, "/api/admin/ai", { name: "Smoke Hot", model: "m", temperature: 5 });
-  ok("a temperature above 1 is refused against its own field",
-    hot.status === 422 && hot.json?.issues?.[0]?.path === "temperature", hot.json?.error);
-  const renamed = await patch(superadmin.jar, "/api/admin/ai/" + aId, { name: "Smoke A2" });
-  ok("renaming leaves the temperature and the length alone",
-    renamed.json?.data?.model?.temperature === 0.4 && renamed.json?.data?.model?.maxTokens === 512);
+    const madeA = await post(superadmin.jar, "/api/admin/ai", {
+      name: "Smoke A",
+      model: "claude-sonnet-5",
+      temperature: 0.4,
+      maxTokens: 512,
+      systemPrompt: "p",
+      status: "active",
+    });
+    ok(
+      "a new model is saved, and starts in Test whatever it asked for",
+      madeA.status === 201 && madeA.json?.data?.model?.status === "test",
+      madeA.json?.error
+    );
+    const aId = madeA.json?.data?.model?.id;
+    ok(
+      "a duplicate name is refused in any case",
+      (await post(superadmin.jar, "/api/admin/ai", { name: "SMOKE A", model: "m" })).status === 409
+    );
+    const hot = await post(superadmin.jar, "/api/admin/ai", { name: "Smoke Hot", model: "m", temperature: 5 });
+    ok(
+      "a temperature above 1 is refused against its own field",
+      hot.status === 422 && hot.json?.issues?.[0]?.path === "temperature",
+      hot.json?.error
+    );
+    const renamed = await patch(superadmin.jar, "/api/admin/ai/" + aId, { name: "Smoke A2" });
+    ok(
+      "renaming leaves the temperature and the length alone",
+      renamed.json?.data?.model?.temperature === 0.4 && renamed.json?.data?.model?.maxTokens === 512
+    );
 
-  const madeB = await post(superadmin.jar, "/api/admin/ai", { name: "Smoke B", model: "m" });
-  const bId = madeB.json?.data?.model?.id;
-  ok("a model with no system prompt cannot be made active",
-    (await patch(superadmin.jar, "/api/admin/ai/" + bId, { status: "active" })).status === 409);
-  const actA = await patch(superadmin.jar, "/api/admin/ai/" + aId, { status: "active" });
-  ok("a model with a prompt can", actA.json?.data?.model?.status === "active", actA.json?.error);
-  ok("the active model cannot be deleted", (await del(superadmin.jar, "/api/admin/ai/" + aId)).status === 409);
-  await patch(superadmin.jar, "/api/admin/ai/" + bId, { systemPrompt: "b", status: "active" });
-  const afterSwitch = await get(superadmin.jar, "/api/admin/ai");
-  const liveNow = (afterSwitch.json?.data?.models ?? []).filter((m) => m.status === "active");
-  ok("making another model active moves the first back to Test, never leaving two",
-    liveNow.length === 1 && liveNow[0].id === bId);
+    const madeB = await post(superadmin.jar, "/api/admin/ai", { name: "Smoke B", model: "m" });
+    const bId = madeB.json?.data?.model?.id;
+    ok(
+      "a model with no system prompt cannot be made active",
+      (await patch(superadmin.jar, "/api/admin/ai/" + bId, { status: "active" })).status === 409
+    );
+    const actA = await patch(superadmin.jar, "/api/admin/ai/" + aId, { status: "active" });
+    ok("a model with a prompt can", actA.json?.data?.model?.status === "active", actA.json?.error);
+    ok("the active model cannot be deleted", (await del(superadmin.jar, "/api/admin/ai/" + aId)).status === 409);
+    await patch(superadmin.jar, "/api/admin/ai/" + bId, { systemPrompt: "b", status: "active" });
+    const afterSwitch = await get(superadmin.jar, "/api/admin/ai");
+    const liveNow = (afterSwitch.json?.data?.models ?? []).filter((m) => m.status === "active");
+    ok(
+      "making another model active moves the first back to Test, never leaving two",
+      liveNow.length === 1 && liveNow[0].id === bId
+    );
 
-  const extra = [];
-  for (let n = 0; n < 3; n++) {
-    const r = await post(superadmin.jar, "/api/admin/ai", { name: "Smoke R" + n, model: "m", systemPrompt: "r" });
-    extra.push(r.json?.data?.model?.id);
-  }
-  const race = await Promise.all([aId, bId, ...extra].map((id) => patch(superadmin.jar, "/api/admin/ai/" + id, { status: "active" })));
-  const afterRace = await get(superadmin.jar, "/api/admin/ai");
-  ok("five simultaneous activations leave at most one active",
-    (afterRace.json?.data?.models ?? []).filter((m) => m.status === "active").length <= 1);
-  ok("and every answer is a success or a plain conflict, never an error",
-    race.every((r) => r.status === 200 || r.status === 409), race.map((r) => r.status).join(","));
+    const extra = [];
+    for (let n = 0; n < 3; n++) {
+      const r = await post(superadmin.jar, "/api/admin/ai", { name: "Smoke R" + n, model: "m", systemPrompt: "r" });
+      extra.push(r.json?.data?.model?.id);
+    }
+    const race = await Promise.all(
+      [aId, bId, ...extra].map((id) => patch(superadmin.jar, "/api/admin/ai/" + id, { status: "active" }))
+    );
+    const afterRace = await get(superadmin.jar, "/api/admin/ai");
+    ok(
+      "five simultaneous activations leave at most one active",
+      (afterRace.json?.data?.models ?? []).filter((m) => m.status === "active").length <= 1
+    );
+    ok(
+      "and every answer is a success or a plain conflict, never an error",
+      race.every((r) => r.status === 200 || r.status === 409),
+      race.map((r) => r.status).join(",")
+    );
 
-  for (const id of [aId, bId, ...extra]) {
-    await patch(superadmin.jar, "/api/admin/ai/" + id, { status: "test" });
-    await del(superadmin.jar, "/api/admin/ai/" + id);
-  }
-  const tidy = await get(superadmin.jar, "/api/admin/ai");
-  ok("the smoke test leaves none of its own models behind",
-    !(tidy.json?.data?.models ?? []).some((m) => m.name.startsWith("Smoke ")));
+    for (const id of [aId, bId, ...extra]) {
+      await patch(superadmin.jar, "/api/admin/ai/" + id, { status: "test" });
+      await del(superadmin.jar, "/api/admin/ai/" + id);
+    }
+    const tidy = await get(superadmin.jar, "/api/admin/ai");
+    ok(
+      "the smoke test leaves none of its own models behind",
+      !(tidy.json?.data?.models ?? []).some((m) => m.name.startsWith("Smoke "))
+    );
   }
 
   /* ---------------- People details, and what an Admin may read ---------------- */
@@ -977,16 +1309,37 @@ async function main() {
 
     // The API: an Admin gets contact and place, never a medical profile.
     const adminUsers = (await get(admin.jar, "/api/users?pageSize=100")).json?.data?.users ?? [];
-    const profileKeys = [...new Set(adminUsers.filter((u) => u.role === "patient").flatMap((u) => Object.keys(u.patient ?? {})))];
-    ok("an Admin sees only address, city and pincode of a patient's profile",
-      profileKeys.every((k) => ["address", "city", "pincode"].includes(k)), profileKeys.join(", "));
-    ok("an Admin still sees a nurse's record whole", adminUsers.filter((u) => u.role === "nurse").every((u) => u.nurse?.licenseNo));
-    ok("the super admin still sees the medical profile", everyone.some((u) => u.patient?.allergies !== undefined));
+    const profileKeys = [
+      ...new Set(adminUsers.filter((u) => u.role === "patient").flatMap((u) => Object.keys(u.patient ?? {}))),
+    ];
+    ok(
+      "an Admin sees only address, city and pincode of a patient's profile",
+      profileKeys.every((k) => ["address", "city", "pincode"].includes(k)),
+      profileKeys.join(", ")
+    );
+    ok(
+      "an Admin still sees a nurse's record whole",
+      adminUsers.filter((u) => u.role === "nurse").every((u) => u.nurse?.licenseNo)
+    );
+    ok(
+      "the super admin still sees the medical profile",
+      everyone.some((u) => u.patient?.allergies !== undefined)
+    );
 
     const adminBookings = (await get(admin.jar, "/api/bookings?pageSize=100")).json?.data?.bookings ?? [];
-    const CLINICAL = ["vitals", "checklist", "consent", "adverseEvents", "observations", "componentsGiven", "aftercareNotes"];
-    ok("an Admin's bookings carry the schedule and none of the clinical record",
-      adminBookings.length > 0 && adminBookings.every((b) => b.bookingNo && !CLINICAL.some((f) => b[f] !== undefined)));
+    const CLINICAL = [
+      "vitals",
+      "checklist",
+      "consent",
+      "adverseEvents",
+      "observations",
+      "componentsGiven",
+      "aftercareNotes",
+    ];
+    ok(
+      "an Admin's bookings carry the schedule and none of the clinical record",
+      adminBookings.length > 0 && adminBookings.every((b) => b.bookingNo && !CLINICAL.some((f) => b[f] !== undefined))
+    );
 
     const adminLabs = await get(admin.jar, "/api/lab-reports");
     ok("an Admin cannot list lab reports", adminLabs.status === 403, `status ${adminLabs.status}`);
@@ -1002,18 +1355,32 @@ async function main() {
     if (patientUser) {
       const page = await get(admin.jar, `/admin/users/${patientUser._id}`);
       const visible = page.text.replace(/<script[\s\S]*?<\/script>/g, "").replace(/<[^>]+>/g, " ");
-      ok("an Admin opens a patient's page", page.status === 200 && /Where they are/.test(visible), `status ${page.status}`);
-      ok("...and it carries nothing clinical, on the page or in what the server sends",
+      ok(
+        "an Admin opens a patient's page",
+        page.status === 200 && /Where they are/.test(visible),
+        `status ${page.status}`
+      );
+      ok(
+        "...and it carries nothing clinical, on the page or in what the server sends",
         !/allerg|vitality|chronic|medication|surger|blood group/i.test(visible) &&
-        !/allergies|vitalityScore|chronicConditions|currentMedications|emergencyContact/.test(page.text));
+          !/allergies|vitalityScore|chronicConditions|currentMedications|emergencyContact/.test(page.text)
+      );
       const asSuper = await get(superadmin.jar, `/admin/users/${patientUser._id}`);
       ok("the super admin is offered the full clinical record from it", /Open clinical record/.test(asSuper.text));
       ok("an Admin is not", !/Open clinical record/.test(page.text) && !/\/doctor\/patients\//.test(page.text));
       const adminFull = await get(admin.jar, `/doctor/patients/${patientUser._id}`);
-      ok("an Admin is turned away from the physician's patient record", [302, 307].includes(adminFull.status), `status ${adminFull.status}`);
+      ok(
+        "an Admin is turned away from the physician's patient record",
+        [302, 307].includes(adminFull.status),
+        `status ${adminFull.status}`
+      );
       const docFull = await get(doctor.jar, `/doctor/patients/${patientUser._id}`);
       ok("a physician reads the full patient record", docFull.status === 200);
-      for (const [who, label] of [[nurse, "nurse"], [clinic, "clinic"], [patient, "patient"]]) {
+      for (const [who, label] of [
+        [nurse, "nurse"],
+        [clinic, "clinic"],
+        [patient, "patient"],
+      ]) {
         const r = await get(who.jar, `/admin/users/${patientUser._id}`);
         ok(`a ${label} cannot open the People details page`, [302, 307].includes(r.status), `status ${r.status}`);
       }
@@ -1021,7 +1388,10 @@ async function main() {
 
     if (nurseUser) {
       const page = await get(admin.jar, `/admin/users/${nurseUser._id}`);
-      ok("a nurse's page shows posting, zones and rating", page.status === 200 && /Posting/.test(page.text) && /Patient rating/.test(page.text));
+      ok(
+        "a nurse's page shows posting, zones and rating",
+        page.status === 200 && /Posting/.test(page.text) && /Patient rating/.test(page.text)
+      );
     }
     for (const bad of ["not-an-id", "6aabdbb05ed1cbee4378ffff"]) {
       const r = await get(admin.jar, `/admin/users/${bad}`);
@@ -1029,40 +1399,84 @@ async function main() {
     }
 
     // What somebody adding a nurse reads when the form is refused: plain words.
-    const shortPw = await post(superadmin.jar, "/api/users", { name: "Probe", role: "nurse", email: "probe@example.com", password: "abc" });
-    ok("a short password is refused in plain words", shortPw.status === 422 && /at least 8 characters/.test(shortPw.json?.error ?? "") && !/Too small|expected string/i.test(shortPw.json?.error ?? ""), shortPw.json?.error);
-    const badMail = await post(superadmin.jar, "/api/users", { name: "Probe", role: "nurse", email: "nope", password: "nurse1234" });
-    ok("a malformed email is refused in plain words", badMail.status === 422 && /does not look right/.test(badMail.json?.error ?? ""), badMail.json?.error);
+    const shortPw = await post(superadmin.jar, "/api/users", {
+      name: "Probe",
+      role: "nurse",
+      email: "probe@example.com",
+      password: "abc",
+    });
+    ok(
+      "a short password is refused in plain words",
+      shortPw.status === 422 &&
+        /at least 8 characters/.test(shortPw.json?.error ?? "") &&
+        !/Too small|expected string/i.test(shortPw.json?.error ?? ""),
+      shortPw.json?.error
+    );
+    const badMail = await post(superadmin.jar, "/api/users", {
+      name: "Probe",
+      role: "nurse",
+      email: "nope",
+      password: "nurse1234",
+    });
+    ok(
+      "a malformed email is refused in plain words",
+      badMail.status === 422 && /does not look right/.test(badMail.json?.error ?? ""),
+      badMail.json?.error
+    );
 
     // People can be searched: there is a box to type into, and it filters in the database.
     const peopleSearch = await get(admin.jar, "/admin/users?q=emma");
     ok("People has a search box", /aria-label="Search people"/.test((await get(admin.jar, "/admin/users")).text));
-    ok("searching People narrows the list", peopleSearch.status === 200 && /Emma Fernandes/.test(peopleSearch.text) && !/Sunita Prakash/.test(peopleSearch.text));
+    ok(
+      "searching People narrows the list",
+      peopleSearch.status === 200 &&
+        /Emma Fernandes/.test(peopleSearch.text) &&
+        !/Sunita Prakash/.test(peopleSearch.text)
+    );
     ok("a role chip keeps the search", /href="\/admin\/users\?[^"]*q=emma[^"]*role=nurse"/.test(peopleSearch.text));
 
     // A physician's home shows their team, which is where "has joined your team" lands.
     const docHome = await get(doctor.jar, "/doctor");
-    ok("a physician's home lists their nurses", docHome.status === 200 && /Your nurses/.test(docHome.text) && /id="team"/.test(docHome.text));
+    ok(
+      "a physician's home lists their nurses",
+      docHome.status === 200 && /Your nurses/.test(docHome.text) && /id="team"/.test(docHome.text)
+    );
     const superDocHome = await get(superadmin.jar, "/doctor");
-    ok("the super admin, who has no team, is not shown that section", superDocHome.status === 200 && !/Your nurses/.test(superDocHome.text));
+    ok(
+      "the super admin, who has no team, is not shown that section",
+      superDocHome.status === 200 && !/Your nurses/.test(superDocHome.text)
+    );
 
     // Names are links.
     const docList = await get(doctor.jar, "/doctor/patients");
-    ok("the physician's Patients list links each patient to their record", /href="\/doctor\/patients\/[0-9a-f]{24}"/.test(docList.text));
+    ok(
+      "the physician's Patients list links each patient to their record",
+      /href="\/doctor\/patients\/[0-9a-f]{24}"/.test(docList.text)
+    );
     const people = await get(admin.jar, "/admin/users");
     ok("People links each name to their page", /href="\/admin\/users\/[0-9a-f]{24}"/.test(people.text));
     const approvals = await get(admin.jar, "/admin/approvals");
-    ok("an Admin's Approvals shows the queue but not vitality or allergy flags",
-      approvals.status === 200 && !/Vitality|allergy/i.test(approvals.text.replace(/<script[\s\S]*?<\/script>/g, "")));
+    ok(
+      "an Admin's Approvals shows the queue but not vitality or allergy flags",
+      approvals.status === 200 && !/Vitality|allergy/i.test(approvals.text.replace(/<script[\s\S]*?<\/script>/g, ""))
+    );
 
     // The trail: an Admin sees that a clinical event happened, not what the patient said.
-    const csv = await fetch(`${BASE}/api/audit/export`, { headers: { cookie: admin.jar.header() } }).then((r) => r.text());
-    const clinicalRows = csv.split("\n").filter((l) => /,(adverse\.[a-z]+|vitals\.recorded|quiz\.info\.answered|lab\.upload|lab\.delete),/.test(l));
+    const csv = await fetch(`${BASE}/api/audit/export`, { headers: { cookie: admin.jar.header() } }).then((r) =>
+      r.text()
+    );
+    const clinicalRows = csv
+      .split("\n")
+      .filter((l) => /,(adverse\.[a-z]+|vitals\.recorded|quiz\.info\.answered|lab\.upload|lab\.delete),/.test(l));
     if (clinicalRows.length) {
-      ok(`an Admin's audit export withholds the clinical detail (${clinicalRows.length} rows)`,
-        clinicalRows.every((l) => /Clinical detail: for the treating physician/.test(l)));
+      ok(
+        `an Admin's audit export withholds the clinical detail (${clinicalRows.length} rows)`,
+        clinicalRows.every((l) => /Clinical detail: for the treating physician/.test(l))
+      );
     } else skip("audit export withholds clinical detail", "no clinical event in the trail yet");
-    const opened = (await fetch(`${BASE}/api/audit/export?action=record.opened`, { headers: { cookie: superadmin.jar.header() } }).then((r) => r.text()));
+    const opened = await fetch(`${BASE}/api/audit/export?action=record.opened`, {
+      headers: { cookie: superadmin.jar.header() },
+    }).then((r) => r.text());
     ok("opening a patient's page is written to the trail", /patient profile/.test(opened));
   }
 
@@ -1071,8 +1485,15 @@ async function main() {
   // Every list API pages in the database and says where it is. The lists checked
   // are the ones a superadmin can read in full.
   for (const [path, key] of [
-    ["/api/users", "users"], ["/api/leads", "leads"], ["/api/orders", "orders"],
-    ["/api/bookings", "bookings"], ["/api/plans", "plans"], ["/api/lab-reports", "reports"], ["/api/inventory/masters", "masters"], ["/api/drips", "drips"], ["/api/kits", "kits"],
+    ["/api/users", "users"],
+    ["/api/leads", "leads"],
+    ["/api/orders", "orders"],
+    ["/api/bookings", "bookings"],
+    ["/api/plans", "plans"],
+    ["/api/lab-reports", "reports"],
+    ["/api/inventory/masters", "masters"],
+    ["/api/drips", "drips"],
+    ["/api/kits", "kits"],
   ]) {
     const first = await get(superadmin.jar, `${path}?pageSize=2`);
     const pg = first.json?.data?.pagination;
@@ -1085,18 +1506,27 @@ async function main() {
       ok(`${path} page 2 is different rows from page 1`, b.length > 0 && !b.some((id) => a.includes(id)));
     } else skip(`${path} page 2`, "two rows or fewer in the list");
     const past = await get(superadmin.jar, `${path}?pageSize=2&page=99999`);
-    ok(`${path} a page past the end is pulled back to the last`,
-      past.json?.data?.pagination?.page === (pg?.totalPages ?? 1), JSON.stringify(past.json?.data?.pagination));
+    ok(
+      `${path} a page past the end is pulled back to the last`,
+      past.json?.data?.pagination?.page === (pg?.totalPages ?? 1),
+      JSON.stringify(past.json?.data?.pagination)
+    );
     const hostile = await get(superadmin.jar, `${path}?page=abc&pageSize=999999`);
-    ok(`${path} nonsense input is safe and capped at 100`,
-      hostile.status === 200 && hostile.json?.data?.pagination?.pageSize === 100 && hostile.json?.data?.pagination?.page === 1,
-      `status ${hostile.status}`);
+    ok(
+      `${path} nonsense input is safe and capped at 100`,
+      hostile.status === 200 &&
+        hostile.json?.data?.pagination?.pageSize === 100 &&
+        hostile.json?.data?.pagination?.page === 1,
+      `status ${hostile.status}`
+    );
   }
 
   const aProduct = (await get(superadmin.jar, "/api/inventory/masters?pageSize=1")).json?.data?.masters?.[0];
   const productLots = aProduct ? await get(superadmin.jar, `/api/inventory/masters/${aProduct.id}?pageSize=1`) : null;
-  ok("a product's batches come a page at a time",
-    productLots?.json?.data?.pagination?.pageSize === 1 && (productLots?.json?.data?.lots ?? []).length <= 1);
+  ok(
+    "a product's batches come a page at a time",
+    productLots?.json?.data?.pagination?.pageSize === 1 && (productLots?.json?.data?.lots ?? []).length <= 1
+  );
 
   // The same lists as screens: the footer says which rows and how many.
   const audit = await get(superadmin.jar, "/admin/audit?pageSize=10");
@@ -1104,18 +1534,27 @@ async function main() {
   const auditPast = await get(superadmin.jar, "/admin/audit?pageSize=10&page=99999");
   ok("an audit page past the end still renders", auditPast.status === 200);
   const batches = await get(superadmin.jar, "/admin/inventory?tab=batches&pageSize=10");
-  ok("the batches tab is paged", batches.status === 200 && /Showing/.test(batches.text) && /batches/.test(batches.text));
+  ok(
+    "the batches tab is paged",
+    batches.status === 200 && /Showing/.test(batches.text) && /batches/.test(batches.text)
+  );
 
   const products = await get(superadmin.jar, "/admin/inventory?pageSize=10&page=99");
-  ok("the products tab is paged, and a page past the end is pulled back",
-    products.status === 200 && /Showing/.test(products.text) && /products/.test(products.text));
+  ok(
+    "the products tab is paged, and a page past the end is pulled back",
+    products.status === 200 && /Showing/.test(products.text) && /products/.test(products.text)
+  );
 
   // History lists are paged; the worklists beside them are not.
   const nurseHistory = await get(nurse.jar, "/nurse/schedule?view=past&pageSize=1");
-  if (/No past sessions/.test(nurseHistory.text)) skip("the nurse's history is paged", "this nurse has run no session before today");
+  if (/No past sessions/.test(nurseHistory.text))
+    skip("the nurse's history is paged", "this nurse has run no session before today");
   else ok("the nurse's history is paged", nurseHistory.status === 200 && /Showing/.test(nurseHistory.text));
   const nurseUpcoming = await get(nurse.jar, "/nurse/schedule");
-  ok("the nurse's upcoming worklist is not paged", nurseUpcoming.status === 200 && !/aria-label="Pagination"/.test(nurseUpcoming.text));
+  ok(
+    "the nurse's upcoming worklist is not paged",
+    nurseUpcoming.status === 200 && !/aria-label="Pagination"/.test(nurseUpcoming.text)
+  );
   for (const [path, who, label] of [
     ["/app/sessions?pageSize=1", patient, "the patient's session history"],
     ["/app/reports?pageSize=1", patient, "the patient's lab reports"],
@@ -1126,28 +1565,62 @@ async function main() {
   const anyBooking = (await get(superadmin.jar, "/api/bookings?pageSize=1")).json?.data?.bookings?.[0];
   if (anyBooking?.patientId) {
     const detail = await get(superadmin.jar, `/doctor/patients/${anyBooking.patientId}?page=abc&pageSize=99999`);
-    ok("a patient's session history is paged, and safe with nonsense input", detail.status === 200 && /Showing/.test(detail.text),
-      `status ${detail.status}`);
+    ok(
+      "a patient's session history is paged, and safe with nonsense input",
+      detail.status === 200 && /Showing/.test(detail.text),
+      `status ${detail.status}`
+    );
   } else skip("patient session history pager", "no booking to find a patient by");
 
   /* ---------------- Pages render ---------------- */
   section("Pages");
   const pages = [
-    ["/", null], ["/drips", null], ["/pricing", null], ["/safety", null], ["/zones", null],
-    ["/for-clinics", null], ["/legal/terms", null], ["/legal/privacy", null], ["/login", null],
-    ["/about", null], ["/faqs", null], ["/how-it-works", null], ["/consult", null],
+    ["/", null],
+    ["/drips", null],
+    ["/pricing", null],
+    ["/safety", null],
+    ["/zones", null],
+    ["/for-clinics", null],
+    ["/legal/terms", null],
+    ["/legal/privacy", null],
+    ["/login", null],
+    ["/about", null],
+    ["/faqs", null],
+    ["/how-it-works", null],
+    ["/consult", null],
     ["/drips/myers-revive", null],
-    ["/admin", superadmin], ["/admin/approvals", superadmin], ["/admin/inventory", superadmin],
-    ["/admin/inventory/drips", superadmin], ["/admin/inventory/availability", superadmin],
-    ["/admin/inventory/orders", superadmin], ["/admin/inventory/alerts", superadmin],
-    ["/admin/inventory/recall", superadmin], ["/admin/users", superadmin], ["/admin/quiz", superadmin],
-    ["/admin/content", superadmin], ["/admin/leads", superadmin],
-    ["/doctor", doctor], ["/doctor/patients", doctor], ["/doctor/plans", doctor],
-    ["/doctor/schedule", doctor], ["/doctor/adverse", doctor], ["/doctor/letterhead", doctor],
-    ["/nurse", nurse], ["/nurse/schedule", nurse], ["/nurse/kit", nurse], ["/nurse/me", nurse],
-    ["/clinic", clinic], ["/clinic/orders", clinic], ["/clinic/bookings", clinic], ["/clinic/profile", clinic],
-    ["/clinic/billing", clinic], ["/clinic/billing/statement", clinic],
-    ["/app", patient], ["/app/sessions", patient], ["/app/reports", patient], ["/app/profile", patient],
+    ["/admin", superadmin],
+    ["/admin/approvals", superadmin],
+    ["/admin/inventory", superadmin],
+    ["/admin/inventory/drips", superadmin],
+    ["/admin/inventory/availability", superadmin],
+    ["/admin/inventory/orders", superadmin],
+    ["/admin/inventory/alerts", superadmin],
+    ["/admin/inventory/recall", superadmin],
+    ["/admin/users", superadmin],
+    ["/admin/quiz", superadmin],
+    ["/admin/content", superadmin],
+    ["/admin/leads", superadmin],
+    ["/doctor", doctor],
+    ["/doctor/patients", doctor],
+    ["/doctor/plans", doctor],
+    ["/doctor/schedule", doctor],
+    ["/doctor/adverse", doctor],
+    ["/doctor/letterhead", doctor],
+    ["/nurse", nurse],
+    ["/nurse/schedule", nurse],
+    ["/nurse/kit", nurse],
+    ["/nurse/me", nurse],
+    ["/clinic", clinic],
+    ["/clinic/orders", clinic],
+    ["/clinic/bookings", clinic],
+    ["/clinic/profile", clinic],
+    ["/clinic/billing", clinic],
+    ["/clinic/billing/statement", clinic],
+    ["/app", patient],
+    ["/app/sessions", patient],
+    ["/app/reports", patient],
+    ["/app/profile", patient],
     ["/app/book", patient],
   ];
   if (aiOn) pages.push(["/admin/studio", superadmin]);
@@ -1159,11 +1632,17 @@ async function main() {
   ok(`all ${pages.length} pages render`, broken.length === 0, broken.join(", "));
 
   const trespass = await get(nurse.jar, "/admin");
-  ok("a nurse is redirected away from the admin console", trespass.status === 307 || trespass.status === 302,
-    `status ${trespass.status}`);
+  ok(
+    "a nurse is redirected away from the admin console",
+    trespass.status === 307 || trespass.status === 302,
+    `status ${trespass.status}`
+  );
   const patientDoctor = await get(patient.jar, "/doctor");
-  ok("a patient is redirected away from the physician console",
-    patientDoctor.status === 307 || patientDoctor.status === 302, `status ${patientDoctor.status}`);
+  ok(
+    "a patient is redirected away from the physician console",
+    patientDoctor.status === 307 || patientDoctor.status === 302,
+    `status ${patientDoctor.status}`
+  );
 
   /* ---------------- Summary ---------------- */
   console.log(`\n${"=".repeat(52)}`);

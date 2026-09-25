@@ -21,18 +21,56 @@ export const CHECKLIST_STEPS: ChecklistStepDef[] = [
   { key: "ps-01", phase: "Pre-session", label: "Confirm the booking and arrival window", mandatory: true },
   { key: "ps-02", phase: "Pre-session", label: "Verify patient identity and booking ID", mandatory: true },
   { key: "ps-03", phase: "Pre-session", label: "Confirm the physician-approved protocol on file", mandatory: true },
-  { key: "ps-04", phase: "Pre-session", label: "Re-check allergies and current medication", detail: "Ask aloud; do not rely on the record alone.", mandatory: true },
-  { key: "ps-05", phase: "Pre-session", label: "Screen for contraindications since approval", detail: "Pregnancy, renal or cardiac change, new medication.", mandatory: true },
+  {
+    key: "ps-04",
+    phase: "Pre-session",
+    label: "Re-check allergies and current medication",
+    detail: "Ask aloud; do not rely on the record alone.",
+    mandatory: true,
+  },
+  {
+    key: "ps-05",
+    phase: "Pre-session",
+    label: "Screen for contraindications since approval",
+    detail: "Pregnancy, renal or cardiac change, new medication.",
+    mandatory: true,
+  },
   { key: "ps-06", phase: "Pre-session", label: "Confirm last meal and fluid intake", mandatory: false },
-  { key: "ps-07", phase: "Pre-session", label: "Inspect the sealed kit and confirm the seal is intact", mandatory: true, opens: "kit" },
+  {
+    key: "ps-07",
+    phase: "Pre-session",
+    label: "Inspect the sealed kit and confirm the seal is intact",
+    mandatory: true,
+    opens: "kit",
+  },
   { key: "ps-08", phase: "Pre-session", label: "Confirm the anaphylaxis kit is present and in date", mandatory: true },
   { key: "ps-09", phase: "Pre-session", label: "Set up a clean working surface", mandatory: false },
   { key: "ps-10", phase: "Pre-session", label: "Hand hygiene and gloves", mandatory: true },
-  { key: "ps-11", phase: "Pre-session", label: "Inspect vial seals and expiry dates", detail: "Every vial, against the batch numbers on the order.", mandatory: true },
+  {
+    key: "ps-11",
+    phase: "Pre-session",
+    label: "Inspect vial seals and expiry dates",
+    detail: "Every vial, against the batch numbers on the order.",
+    mandatory: true,
+  },
 
   /* ---------------- Preparation · 7 ---------------- */
-  { key: "pr-01", phase: "Preparation", label: "Record baseline vitals", detail: "BP, HR, SpO₂, temperature and weight before any cannulation. Out-of-range values block the next step.", mandatory: true, opens: "vitals" },
-  { key: "pr-02", phase: "Preparation", label: "Capture consent", detail: "Read the risks aloud, then capture the signature or OTP.", mandatory: true, opens: "consent" },
+  {
+    key: "pr-01",
+    phase: "Preparation",
+    label: "Record baseline vitals",
+    detail: "BP, HR, SpO₂, temperature and weight before any cannulation. Out-of-range values block the next step.",
+    mandatory: true,
+    opens: "vitals",
+  },
+  {
+    key: "pr-02",
+    phase: "Preparation",
+    label: "Capture consent",
+    detail: "Read the risks aloud, then capture the signature or OTP.",
+    mandatory: true,
+    opens: "consent",
+  },
   { key: "pr-03", phase: "Preparation", label: "Confirm each component against the prescription", mandatory: true },
   { key: "pr-04", phase: "Preparation", label: "Draw up and label every additive", mandatory: true },
   { key: "pr-05", phase: "Preparation", label: "Prime the line and check for air", mandatory: true },
@@ -43,7 +81,14 @@ export const CHECKLIST_STEPS: ChecklistStepDef[] = [
   { key: "di-01", phase: "During infusion", label: "Start the carrier and confirm it runs clear", mandatory: true },
   { key: "di-02", phase: "During infusion", label: "Set the rate and record the start time", mandatory: true },
   { key: "di-03", phase: "During infusion", label: "Introduce the additives in the prescribed order", mandatory: true },
-  { key: "di-04", phase: "During infusion", label: "Observe at 10-minute intervals", detail: "Log anything the patient reports, however minor.", mandatory: true, opens: "observation" },
+  {
+    key: "di-04",
+    phase: "During infusion",
+    label: "Observe at 10-minute intervals",
+    detail: "Log anything the patient reports, however minor.",
+    mandatory: true,
+    opens: "observation",
+  },
 
   /* ---------------- Post-session · 7 ---------------- */
   { key: "po-01", phase: "Post-session", label: "Stop the infusion and flush the line", mandatory: true },
@@ -52,7 +97,13 @@ export const CHECKLIST_STEPS: ChecklistStepDef[] = [
   { key: "po-04", phase: "Post-session", label: "Observe for 10 minutes before leaving", mandatory: true },
   { key: "po-05", phase: "Post-session", label: "Give aftercare instructions", mandatory: true },
   { key: "po-06", phase: "Post-session", label: "Dispose of sharps and clinical waste", mandatory: true },
-  { key: "po-07", phase: "Post-session", label: "Submit the session report", detail: "Vitals, doses, batch numbers and aftercare notes.", mandatory: true },
+  {
+    key: "po-07",
+    phase: "Post-session",
+    label: "Submit the session report",
+    detail: "Vitals, doses, batch numbers and aftercare notes.",
+    mandatory: true,
+  },
 ];
 
 /**
@@ -106,18 +157,11 @@ export function needsPrescription(key: string): boolean {
   return at === -1 || at >= from;
 }
 
-export const PHASE_ORDER: ChecklistPhase[] = [
-  "Pre-session",
-  "Preparation",
-  "During infusion",
-  "Post-session",
-];
+export const PHASE_ORDER: ChecklistPhase[] = ["Pre-session", "Preparation", "During infusion", "Post-session"];
 
 export type PhaseProgress = { phase: ChecklistPhase; done: number; total: number };
 
-export function phaseProgress(
-  checklist: Array<{ phase: string; doneAt?: Date | string | null }>
-): PhaseProgress[] {
+export function phaseProgress(checklist: Array<{ phase: string; doneAt?: Date | string | null }>): PhaseProgress[] {
   return PHASE_ORDER.map((phase) => {
     const steps = checklist.filter((s) => s.phase === phase);
     return {

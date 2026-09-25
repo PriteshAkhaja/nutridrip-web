@@ -137,9 +137,7 @@ export function BatchActions({
             size="sm"
             variant="danger"
             loading={busy === "dispose"}
-            onClick={() =>
-              act({ delta: -available, reason: `Disposed — ${reason}`, dispose: true }, "dispose")
-            }
+            onClick={() => act({ delta: -available, reason: `Disposed — ${reason}`, dispose: true }, "dispose")}
           >
             Dispose all {available}
           </Button>
@@ -150,7 +148,14 @@ export function BatchActions({
           variant="secondary"
           loading={busy === "quarantine"}
           onClick={() =>
-            act({ delta: 0, reason: `${isQuarantined ? "Released from" : "Quarantined —"} ${reason}`, quarantine: !isQuarantined }, "quarantine")
+            act(
+              {
+                delta: 0,
+                reason: `${isQuarantined ? "Released from" : "Quarantined —"} ${reason}`,
+                quarantine: !isQuarantined,
+              },
+              "quarantine"
+            )
           }
         >
           {isQuarantined ? "Release" : "Quarantine"}

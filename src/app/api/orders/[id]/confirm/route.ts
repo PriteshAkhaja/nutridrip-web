@@ -17,14 +17,12 @@ export async function POST(_req: Request, { params }: { params: Promise<{ id: st
     // order nobody has paid for. Received is final, so checking here, before
     // the stock is reserved, cannot be overtaken.
     await connectDB();
-    const pending = await Order.findById(id)
-      .select("status clinicId onCredit payment")
-      .lean<{
-        status: string;
-        clinicId?: unknown;
-        onCredit?: boolean;
-        payment?: { state: "awaiting" | "submitted" | "received" };
-      } | null>();
+    const pending = await Order.findById(id).select("status clinicId onCredit payment").lean<{
+      status: string;
+      clinicId?: unknown;
+      onCredit?: boolean;
+      payment?: { state: "awaiting" | "submitted" | "received" };
+    } | null>();
     if (pending?.clinicId) {
       const clinic = await User.findById(pending.clinicId)
         .select("clinic.onCredit")

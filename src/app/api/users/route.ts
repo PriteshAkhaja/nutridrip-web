@@ -22,7 +22,12 @@ const CreateUser = z.object({
   name: z.string().min(1, "enter a name").max(120, "that name is too long"),
   role: z.enum(ROLES),
   email: z.string().email("that address does not look right").optional().or(z.literal("")),
-  phone: z.string().min(6, "that number does not look right").max(20, "that number does not look right").optional().or(z.literal("")),
+  phone: z
+    .string()
+    .min(6, "that number does not look right")
+    .max(20, "that number does not look right")
+    .optional()
+    .or(z.literal("")),
   /** Staff sign in with a password; patients use a phone code and need none. */
   password: z.string().min(8, "use at least 8 characters").max(72, "use 72 characters or fewer").optional(),
 
@@ -97,7 +102,8 @@ export async function POST(req: Request) {
     if (!input.email && !input.phone) return fail("An email address or a phone number is required", 422);
     if (PASSWORD_ROLES.includes(input.role)) {
       if (!input.email) return fail(`A ${input.role} signs in by email, so an address is required`, 422);
-      if (!input.password) return fail(`A ${input.role} signs in with a password — set one of at least 8 characters`, 422);
+      if (!input.password)
+        return fail(`A ${input.role} signs in with a password — set one of at least 8 characters`, 422);
     }
 
     await connectDB();
@@ -189,10 +195,7 @@ export async function POST(req: Request) {
       after: { name: input.name, role: input.role, email: input.email },
     });
 
-    return ok(
-      { user: { id: String(user._id), name: user.name, role: user.role, email: user.email } },
-      { status: 201 }
-    );
+    return ok({ user: { id: String(user._id), name: user.name, role: user.role, email: user.email } }, { status: 201 });
   } catch (err) {
     return handleError(err);
   }

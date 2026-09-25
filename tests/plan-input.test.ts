@@ -18,12 +18,7 @@ describe("laying out a course", () => {
 
   it("spaces a week's sessions out rather than stacking them on one morning", () => {
     const days = scheduleDays({ startDate: "2026-09-15", totalWeeks: 2, perWeek: 2, spacingDays: 3 });
-    expect(days.map((d) => d.day)).toEqual([
-      "2026-09-15",
-      "2026-09-18",
-      "2026-09-22",
-      "2026-09-25",
-    ]);
+    expect(days.map((d) => d.day)).toEqual(["2026-09-15", "2026-09-18", "2026-09-22", "2026-09-25"]);
   });
 
   it("crosses a month end without losing a day", () => {

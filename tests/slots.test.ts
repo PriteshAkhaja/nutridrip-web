@@ -44,7 +44,11 @@ describe("the times a zone offers", () => {
     expect(hourly[hourly.length - 1]).toBe("19:00");
     expect(hourly).toHaveLength(13);
     expect(slotTimes({ opensAt: "09:00", closesAt: "17:00", slotMinutes: 90 })).toEqual([
-      "09:00", "10:30", "12:00", "13:30", "15:00",
+      "09:00",
+      "10:30",
+      "12:00",
+      "13:30",
+      "15:00",
     ]);
   });
 
@@ -64,7 +68,13 @@ describe("India time, whatever the server's clock", () => {
   });
 
   it("releases days from tomorrow, never today — even late at night", () => {
-    expect(releasedDates(5, new Date(NOW))).toEqual(["2026-09-25", "2026-09-26", "2026-09-27", "2026-09-28", "2026-09-29"]);
+    expect(releasedDates(5, new Date(NOW))).toEqual([
+      "2026-09-25",
+      "2026-09-26",
+      "2026-09-27",
+      "2026-09-28",
+      "2026-09-29",
+    ]);
     // 23:30 in India is 18:00 UTC: still "today" in India, so tomorrow is the 25th.
     expect(releasedDates(1, istInstant("2026-09-24", "23:30"))).toEqual(["2026-09-25"]);
   });

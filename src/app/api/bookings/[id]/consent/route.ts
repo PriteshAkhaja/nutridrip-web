@@ -5,17 +5,16 @@ import { checkSessionCode } from "@/lib/clinical/session-code";
 import { getSession } from "@/lib/auth/session";
 import { can } from "@/lib/auth/rbac";
 import { nurseOwns } from "@/lib/auth/ownership";
-import {
-  componentsForConsent,
-  consentDocument,
-  CURRENT_CONSENT_VERSION,
-} from "@/lib/clinical/consent";
+import { componentsForConsent, consentDocument, CURRENT_CONSENT_VERSION } from "@/lib/clinical/consent";
 import { ok, fail, handleError } from "@/lib/api";
 
 const Input = z.object({
   signatureDataUrl: z.string().max(500_000).optional(),
   /** The six digits the patient read out from their own screen. */
-  viaOtp: z.string().regex(/^\d{6}$/, "Enter the six digits the patient reads out").optional(),
+  viaOtp: z
+    .string()
+    .regex(/^\d{6}$/, "Enter the six digits the patient reads out")
+    .optional(),
   /**
    * Which wording the screen showed. Only the *name* of the document is taken
    * from the caller — the text itself is looked up here, so a crafted request
@@ -46,10 +45,7 @@ export async function POST(req: Request, { params }: { params: Promise<{ id: str
     // Consent is read aloud from the drugs and doses, and freezes them onto the
     // record — so it waits for the same proof of presence as the prescription.
     if (!booking.rxUnlockedAt) {
-      return fail(
-        "Open the prescription first — ask the patient to read out the code sent to their phone",
-        409
-      );
+      return fail("Open the prescription first — ask the patient to read out the code sent to their phone", 409);
     }
 
     const input = Input.parse(await req.json());

@@ -63,7 +63,14 @@ export function SlotPicker({
         onChange((cur) => (isFree(days, cur) ? cur : null));
       })
       .catch(() => {
-        if (live) setLoaded({ query, served: false, zone: null, days: [], error: "Could not reach the server to load the times." });
+        if (live)
+          setLoaded({
+            query,
+            served: false,
+            zone: null,
+            days: [],
+            error: "Could not reach the server to load the times.",
+          });
       });
     return () => {
       live = false;
@@ -80,7 +87,11 @@ export function SlotPicker({
     return (
       <div className="flex items-center gap-3 flex-wrap">
         <span className="t-small text-[var(--color-critical-text)]">{current.error}</span>
-        <button type="button" className="t-small font-semibold underline cursor-pointer" onClick={() => setAttempt((n) => n + 1)}>
+        <button
+          type="button"
+          className="t-small font-semibold underline cursor-pointer"
+          onClick={() => setAttempt((n) => n + 1)}
+        >
           Try again
         </button>
       </div>
@@ -119,7 +130,10 @@ export function SlotPicker({
                     background: selected ? "var(--color-primary-soft)" : "var(--color-surface)",
                   }}
                 >
-                  <span className="t-micro" style={{ color: selected ? "var(--color-primary-dark)" : "var(--color-ink-3)" }}>
+                  <span
+                    className="t-micro"
+                    style={{ color: selected ? "var(--color-primary-dark)" : "var(--color-ink-3)" }}
+                  >
                     {d.weekday}
                   </span>
                   <span

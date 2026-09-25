@@ -13,10 +13,14 @@ export async function GET(req: Request) {
     if (!can(session?.role, "inventory.view")) return fail("Not permitted", 403);
     await connectDB();
     const q = new URL(req.url).searchParams;
-    const { rows: drips, meta } = await paginate(Drip, {}, {
-      sort: { name: 1 },
-      paging: parsePaging({ page: q.get("page"), pageSize: q.get("pageSize") }),
-    });
+    const { rows: drips, meta } = await paginate(
+      Drip,
+      {},
+      {
+        sort: { name: 1 },
+        paging: parsePaging({ page: q.get("page"), pageSize: q.get("pageSize") }),
+      }
+    );
     return ok({ drips, pagination: pageInfo(meta) });
   } catch (err) {
     return handleError(err);

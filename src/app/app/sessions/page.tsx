@@ -38,7 +38,6 @@ export default async function SessionsPage({
     .sort({ completedAt: 1 })
     .lean<Array<{ _id: unknown; vitalityScore: number; completedAt: Date }>>();
 
-
   return (
     <MobileShell
       title="Your sessions"
@@ -91,7 +90,12 @@ export default async function SessionsPage({
                         scheduledAt={s.scheduledAt}
                         policy={policy}
                       />
-                      <CancelSession bookingId={s.id} bookingNo={s.bookingNo} scheduledAt={s.scheduledAt} policy={policy} />
+                      <CancelSession
+                        bookingId={s.id}
+                        bookingNo={s.bookingNo}
+                        scheduledAt={s.scheduledAt}
+                        policy={policy}
+                      />
                     </div>
                   </div>
                 )}
@@ -114,34 +118,34 @@ export default async function SessionsPage({
           />
         ) : (
           <PagedView>
-          <PagedResults>
-          <div className="flex flex-col gap-3">
-            {past.map((s) => (
-              <Link
-                key={s.id}
-                href={`/app/report/${s.id}`}
-                className="rounded-[var(--radius-lg)] border border-[var(--color-line)] bg-[var(--color-surface)] p-5 no-underline hover:no-underline hover:border-[var(--color-primary-line)] transition-colors duration-150"
-              >
-                <div className="flex items-start justify-between gap-3">
-                  <div className="min-w-0">
-                    <span className="t-body font-semibold block">{s.dripName}</span>
-                    <span className="t-data text-[13px] text-[var(--color-ink-2)] block mt-1">
-                      {formatDate(s.scheduledAt)} · {s.bookingNo}
-                    </span>
-                    {s.batches.length > 0 && (
-                      <span className="t-data text-[13px] text-[var(--color-ink-3)] block">
-                        {s.batches.join(" · ")}
-                      </span>
-                    )}
-                  </div>
-                  <StatusPill status={s.status} dot />
-                </div>
-                <LateCharges charges={s.charges} />
-              </Link>
-            ))}
-          </div>
-          </PagedResults>
-          <Pagination meta={meta} basePath="/app/sessions" params={{ pageSize }} nouns={["session", "sessions"]} />
+            <PagedResults>
+              <div className="flex flex-col gap-3">
+                {past.map((s) => (
+                  <Link
+                    key={s.id}
+                    href={`/app/report/${s.id}`}
+                    className="rounded-[var(--radius-lg)] border border-[var(--color-line)] bg-[var(--color-surface)] p-5 no-underline hover:no-underline hover:border-[var(--color-primary-line)] transition-colors duration-150"
+                  >
+                    <div className="flex items-start justify-between gap-3">
+                      <div className="min-w-0">
+                        <span className="t-body font-semibold block">{s.dripName}</span>
+                        <span className="t-data text-[13px] text-[var(--color-ink-2)] block mt-1">
+                          {formatDate(s.scheduledAt)} · {s.bookingNo}
+                        </span>
+                        {s.batches.length > 0 && (
+                          <span className="t-data text-[13px] text-[var(--color-ink-3)] block">
+                            {s.batches.join(" · ")}
+                          </span>
+                        )}
+                      </div>
+                      <StatusPill status={s.status} dot />
+                    </div>
+                    <LateCharges charges={s.charges} />
+                  </Link>
+                ))}
+              </div>
+            </PagedResults>
+            <Pagination meta={meta} basePath="/app/sessions" params={{ pageSize }} nouns={["session", "sessions"]} />
           </PagedView>
         )}
       </section>

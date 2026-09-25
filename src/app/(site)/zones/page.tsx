@@ -29,9 +29,9 @@ export default async function ZonesPage() {
         <span className="t-micro">Coverage</span>
         <h1 className="t-h1 mt-2 mb-4">Where a nurse can actually come.</h1>
         <p className="t-body-lg text-[var(--color-ink-2)]" style={{ textWrap: "pretty" }}>
-          {zones.length} {zones.length === 1 ? "zone" : "zones"} across Bengaluru. Enter your pincode when you book and you get a straight yes or no, not a
-          waitlist — a zone we cannot staff reliably is marked limited here rather than quietly dropped from your
-          options.
+          {zones.length} {zones.length === 1 ? "zone" : "zones"} across Bengaluru. Enter your pincode when you book and
+          you get a straight yes or no, not a waitlist — a zone we cannot staff reliably is marked limited here rather
+          than quietly dropped from your options.
         </p>
       </div>
 
@@ -84,9 +84,9 @@ export default async function ZonesPage() {
           <div>
             <h2 className="t-h2 mb-3">Not on the list?</h2>
             <p className="t-body-lg text-[var(--color-ink-2)] max-w-[54ch]" style={{ textWrap: "pretty" }}>
-              We add a zone when there are enough nurses living near it to staff it properly, not when there is
-              enough demand. Take the quiz anyway — if a physician approves you, we will tell you honestly when we
-              expect to reach you.
+              We add a zone when there are enough nurses living near it to staff it properly, not when there is enough
+              demand. Take the quiz anyway — if a physician approves you, we will tell you honestly when we expect to
+              reach you.
             </p>
           </div>
           <QuizButton size="lg" block>

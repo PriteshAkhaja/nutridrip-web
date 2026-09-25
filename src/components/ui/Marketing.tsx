@@ -83,10 +83,7 @@ export function SectionHeading({
   return (
     <div className={`flex flex-col gap-3 mb-10 ${center ? "items-center text-center" : ""}`}>
       {eyebrow && (
-        <span
-          className="t-micro"
-          style={{ color: onInk ? "var(--color-primary-on-dark)" : "var(--color-primary)" }}
-        >
+        <span className="t-micro" style={{ color: onInk ? "var(--color-primary-on-dark)" : "var(--color-primary)" }}>
           {eyebrow}
         </span>
       )}
@@ -116,15 +113,7 @@ export function SectionHeading({
 /* -------------------------------------------------------------------------
    Social proof
    ------------------------------------------------------------------------- */
-export function RatingStrip({
-  rating,
-  count,
-  className = "",
-}: {
-  rating: number;
-  count: number;
-  className?: string;
-}) {
+export function RatingStrip({ rating, count, className = "" }: { rating: number; count: number; className?: string }) {
   return (
     <div className={`inline-flex items-center gap-3 flex-wrap ${className}`}>
       <Stars rating={rating} size={16} />
@@ -270,7 +259,8 @@ export function FaqList({
         <details
           key={f.q}
           open={open === "all" || (open === "first" && i === 0)}
-          className="border-b border-[var(--color-line)] last:border-b-0 group">
+          className="border-b border-[var(--color-line)] last:border-b-0 group"
+        >
           <summary className="flex items-start justify-between gap-4 px-5 md:px-6 py-5 cursor-pointer list-none min-h-[44px]">
             <span
               style={{

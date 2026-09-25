@@ -76,9 +76,9 @@ export default function SafetyPage() {
         <span className="t-micro">Safety</span>
         <h1 className="t-h1 mt-2 mb-4">Where the safety actually sits.</h1>
         <p className="t-body-lg text-[var(--color-ink-2)]" style={{ textWrap: "pretty" }}>
-          IV therapy is a medical procedure, not a wellness treat. What makes it safe is not the ingredients — it is
-          the physician who reviews you, the checklist that bounds the session, and the fact that a nurse cannot skip
-          a step even when they are running late. Here is exactly how that works.
+          IV therapy is a medical procedure, not a wellness treat. What makes it safe is not the ingredients — it is the
+          physician who reviews you, the checklist that bounds the session, and the fact that a nurse cannot skip a step
+          even when they are running late. Here is exactly how that works.
         </p>
       </div>
 
@@ -100,8 +100,8 @@ export default function SafetyPage() {
           <h2 className="t-h2 mb-3">The 29 steps</h2>
           <p className="t-body-lg text-[var(--color-ink-2)] mb-6 max-w-[54ch]" style={{ textWrap: "pretty" }}>
             This is the whole checklist, not a marketing summary of it. Your nurse works through it in order, and{" "}
-            <span className="t-data text-[15px]">{CHECKLIST_STEPS.filter((s) => s.mandatory).length}</span> of the
-            steps are mandatory — the software refuses to advance past them.
+            <span className="t-data text-[15px]">{CHECKLIST_STEPS.filter((s) => s.mandatory).length}</span> of the steps
+            are mandatory — the software refuses to advance past them.
           </p>
 
           <Card padding="p-6" className="flex flex-col gap-[14px]">
@@ -174,8 +174,7 @@ export default function SafetyPage() {
                     <span
                       className="w-[6px] h-[6px] rounded-full flex-none mt-[8px]"
                       style={{
-                        background:
-                          group.tone === "critical" ? "var(--color-critical)" : "var(--color-caution)",
+                        background: group.tone === "critical" ? "var(--color-critical)" : "var(--color-caution)",
                       }}
                     />
                     <span className="t-body">{item}</span>
@@ -194,8 +193,8 @@ export default function SafetyPage() {
             <div>
               <h2 className="t-h2 mb-3">This is not emergency care</h2>
               <p className="t-body-lg text-[var(--color-ink-2)] max-w-[58ch]" style={{ textWrap: "pretty" }}>
-                NutriDrip is an elective service. If you are having chest pain, difficulty breathing, a severe
-                allergic reaction or any other emergency, call{" "}
+                NutriDrip is an elective service. If you are having chest pain, difficulty breathing, a severe allergic
+                reaction or any other emergency, call{" "}
                 <span className="t-data text-[16px] text-[var(--color-ink)]">108</span> — do not wait for a nurse.
               </p>
             </div>

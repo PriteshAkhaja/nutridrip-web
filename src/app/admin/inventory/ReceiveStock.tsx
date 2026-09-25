@@ -20,11 +20,7 @@ const CATEGORY_LABEL: Record<string, string> = {
  * batch of it. The tabs keep them apart, because a master is created once and
  * batches arrive against it forever after.
  */
-export function ReceiveStock({
-  masters,
-}: {
-  masters: Array<{ id: string; name: string; canonicalUnit: string }>;
-}) {
+export function ReceiveStock({ masters }: { masters: Array<{ id: string; name: string; canonicalUnit: string }> }) {
   const router = useRouter();
   const [open, setOpen] = useState<"none" | "master" | "lot">("none");
   const [busy, setBusy] = useState(false);
@@ -254,11 +250,7 @@ export function ReceiveStock({
         </>
       ) : (
         <>
-          <Select
-            label="Product"
-            value={lot.masterId}
-            onChange={(e) => setLot({ ...lot, masterId: e.target.value })}
-          >
+          <Select label="Product" value={lot.masterId} onChange={(e) => setLot({ ...lot, masterId: e.target.value })}>
             {masters.map((m) => (
               <option key={m.id} value={m.id}>
                 {m.name} — dosed in {m.canonicalUnit}
@@ -289,11 +281,7 @@ export function ReceiveStock({
               onChange={(e) => setLot({ ...lot, batchNo: e.target.value })}
               placeholder="VC-B9"
             />
-            <DatePicker
-              label="Expiry"
-              value={lot.expiry}
-              onChange={(v) => setLot({ ...lot, expiry: v })}
-            />
+            <DatePicker label="Expiry" value={lot.expiry} onChange={(v) => setLot({ ...lot, expiry: v })} />
           </div>
 
           <div className="grid grid-cols-1 gap-4 lg:grid-cols-4 mt-4">
@@ -328,11 +316,7 @@ export function ReceiveStock({
                 </option>
               ))}
             </Select>
-            <Select
-              label="Form"
-              value={lot.unitForm}
-              onChange={(e) => setLot({ ...lot, unitForm: e.target.value })}
-            >
+            <Select label="Form" value={lot.unitForm} onChange={(e) => setLot({ ...lot, unitForm: e.target.value })}>
               {UNIT_FORMS.map((f) => (
                 <option key={f} value={f}>
                   {f}

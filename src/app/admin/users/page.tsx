@@ -35,12 +35,12 @@ const ROLE_LABEL: Record<Role, string> = {
 /** The one detail that matters per role, so the table says something useful. */
 function detailFor(
   u: {
-  role: Role;
-  doctor?: { specialization?: string; licenseNo?: string };
-  nurse?: { licenseNo?: string; serviceAreas?: string[] };
-  clinic?: { city?: string; pincode?: string };
-  patient?: { vitalityScore?: number; city?: string };
-},
+    role: Role;
+    doctor?: { specialization?: string; licenseNo?: string };
+    nurse?: { licenseNo?: string; serviceAreas?: string[] };
+    clinic?: { city?: string; pincode?: string };
+    patient?: { vitalityScore?: number; city?: string };
+  },
   /** An Admin is not shown a patient's vitality score: it comes out of their health quiz. */
   showClinical = true
 ): string {
@@ -52,7 +52,9 @@ function detailFor(
     case "clinic":
       return [u.clinic?.city, u.clinic?.pincode].filter(Boolean).join(" · ") || "—";
     case "patient":
-      return showClinical && u.patient?.vitalityScore ? `Vitality ${u.patient.vitalityScore}` : u.patient?.city ?? "—";
+      return showClinical && u.patient?.vitalityScore
+        ? `Vitality ${u.patient.vitalityScore}`
+        : (u.patient?.city ?? "—");
     default:
       return "Platform access";
   }
@@ -79,18 +81,18 @@ export default async function UsersPage({
   // One page, asked of the database. This used to be `.limit(300)`: the 301st
   // person simply did not exist on the screen, with nothing to say so.
   type UserRow = {
-      _id: unknown;
-      name: string;
-      email?: string;
-      phone?: string;
-      role: Role;
-      status: string;
-      createdAt: Date;
-      lastLoginAt?: Date;
-      doctor?: { specialization?: string; licenseNo?: string };
-      nurse?: { licenseNo?: string; serviceAreas?: string[]; doctorId?: unknown };
-      clinic?: { city?: string; pincode?: string };
-      patient?: { vitalityScore?: number; city?: string };
+    _id: unknown;
+    name: string;
+    email?: string;
+    phone?: string;
+    role: Role;
+    status: string;
+    createdAt: Date;
+    lastLoginAt?: Date;
+    doctor?: { specialization?: string; licenseNo?: string };
+    nurse?: { licenseNo?: string; serviceAreas?: string[]; doctorId?: unknown };
+    clinic?: { city?: string; pincode?: string };
+    patient?: { vitalityScore?: number; city?: string };
   };
   const { rows: users, meta } = await paginate<UserRow>(User, filter, { sort: { createdAt: -1 }, paging });
 
@@ -115,7 +117,14 @@ export default async function UsersPage({
           latitude?: number;
           longitude?: number;
         };
-        clinic?: { address?: string; city?: string; pincode?: string; gstin?: string; monthlyVolumeTarget?: number; onCredit?: boolean };
+        clinic?: {
+          address?: string;
+          city?: string;
+          pincode?: string;
+          gstin?: string;
+          monthlyVolumeTarget?: number;
+          onCredit?: boolean;
+        };
         patient?: { address?: string; city?: string; pincode?: string };
       } | null>()
     : null;
@@ -182,9 +191,7 @@ export default async function UsersPage({
                   pincode: editing.clinic?.pincode ?? editing.patient?.pincode ?? "",
                   gstin: editing.clinic?.gstin ?? "",
                   monthlyVolumeTarget:
-                    editing.clinic?.monthlyVolumeTarget != null
-                      ? String(editing.clinic.monthlyVolumeTarget)
-                      : "",
+                    editing.clinic?.monthlyVolumeTarget != null ? String(editing.clinic.monthlyVolumeTarget) : "",
                   onCredit: editing.clinic?.onCredit ? "yes" : "no",
                 },
               }}
@@ -250,62 +257,68 @@ export default async function UsersPage({
         />
       ) : (
         <PagedView>
-        <PagedResults>
-        <DataTable>
-          <THead>
-            <TR>
-              <TH>Name</TH>
-              <TH>Role</TH>
-              <TH>Contact</TH>
-              <TH>Detail</TH>
-              <TH>Joined</TH>
-              <TH>Last seen</TH>
-              <TH>Status</TH>
-              {session.role === "superadmin" && <TH>Edit</TH>}
-            </TR>
-          </THead>
-          <tbody>
-            {users.map((u) => (
-              <TR key={String(u._id)}>
-                <TD nowrap>
-                  <NameLink href={`/admin/users/${String(u._id)}`}>{u.name}</NameLink>
-                </TD>
-                <TD nowrap>
-                  <span className="t-small text-[var(--color-ink-2)]">{ROLE_LABEL[u.role]}</span>
-                </TD>
-                <TD>
-                  <span className="t-data text-[13px] text-[var(--color-ink-2)]">
-                    {u.email ?? u.phone ?? "—"}
-                  </span>
-                </TD>
-                <TD>
-                  <span className="t-small text-[var(--color-ink-2)]"><Pieces items={detailFor(u, session.role === "superadmin").split(" · ")} separator=" · " /></span>
-                </TD>
-                <TD mono nowrap>{formatDate(u.createdAt)}</TD>
-                <TD mono nowrap>{u.lastLoginAt ? formatDate(u.lastLoginAt) : "Never"}</TD>
-                <TD>
-                  <StatusPill status={u.status} dot />
-                </TD>
-                {session.role === "superadmin" && (
-                  <TD>
-                    {/* No scroll={false} here: the form opens at the top of
+          <PagedResults>
+            <DataTable>
+              <THead>
+                <TR>
+                  <TH>Name</TH>
+                  <TH>Role</TH>
+                  <TH>Contact</TH>
+                  <TH>Detail</TH>
+                  <TH>Joined</TH>
+                  <TH>Last seen</TH>
+                  <TH>Status</TH>
+                  {session.role === "superadmin" && <TH>Edit</TH>}
+                </TR>
+              </THead>
+              <tbody>
+                {users.map((u) => (
+                  <TR key={String(u._id)}>
+                    <TD nowrap>
+                      <NameLink href={`/admin/users/${String(u._id)}`}>{u.name}</NameLink>
+                    </TD>
+                    <TD nowrap>
+                      <span className="t-small text-[var(--color-ink-2)]">{ROLE_LABEL[u.role]}</span>
+                    </TD>
+                    <TD>
+                      <span className="t-data text-[13px] text-[var(--color-ink-2)]">{u.email ?? u.phone ?? "—"}</span>
+                    </TD>
+                    <TD>
+                      <span className="t-small text-[var(--color-ink-2)]">
+                        <Pieces items={detailFor(u, session.role === "superadmin").split(" · ")} separator=" · " />
+                      </span>
+                    </TD>
+                    <TD mono nowrap>
+                      {formatDate(u.createdAt)}
+                    </TD>
+                    <TD mono nowrap>
+                      {u.lastLoginAt ? formatDate(u.lastLoginAt) : "Never"}
+                    </TD>
+                    <TD>
+                      <StatusPill status={u.status} dot />
+                    </TD>
+                    {session.role === "superadmin" && (
+                      <TD>
+                        {/* No scroll={false} here: the form opens at the top of
                         the page, so staying put reads as nothing having
                         happened. EditPerson also pulls focus to itself. */}
-                    <Link
-                      href={editHref(String(u._id))}
-                      className="t-small text-[var(--color-primary)] underline"
-                    >
-                      Edit
-                    </Link>
-                  </TD>
-                )}
-              </TR>
-            ))}
-          </tbody>
-        </DataTable>
-        </PagedResults>
-        {/* Not in the edit form's params: paging away closes it, as it should. */}
-        <Pagination meta={meta} basePath="/admin/users" params={{ role, q, pageSize }} nouns={["account", "accounts"]} />
+                        <Link href={editHref(String(u._id))} className="t-small text-[var(--color-primary)] underline">
+                          Edit
+                        </Link>
+                      </TD>
+                    )}
+                  </TR>
+                ))}
+              </tbody>
+            </DataTable>
+          </PagedResults>
+          {/* Not in the edit form's params: paging away closes it, as it should. */}
+          <Pagination
+            meta={meta}
+            basePath="/admin/users"
+            params={{ role, q, pageSize }}
+            nouns={["account", "accounts"]}
+          />
         </PagedView>
       )}
     </ConsoleShell>

@@ -32,7 +32,6 @@ import {
 export const metadata: Metadata = { title: "Audit trail" };
 export const dynamic = "force-dynamic";
 
-
 type Row = {
   _id: unknown;
   actorId?: unknown;
@@ -146,7 +145,6 @@ export default async function AuditPage({
     byGroup.set(g, (byGroup.get(g) ?? 0) + c.n);
   }
 
-
   return (
     <ConsoleShell
       session={session}
@@ -155,163 +153,155 @@ export default async function AuditPage({
       activeHref="/admin/audit"
       breadcrumb={["Admin", "Audit trail"]}
       title="Audit trail"
-      meta={`${total.toLocaleString("en-IN")} entr${total === 1 ? "y" : "ies"}${
-        rangeLabel ? ` ${rangeLabel}` : ""
-      }`}
+      meta={`${total.toLocaleString("en-IN")} entr${total === 1 ? "y" : "ies"}${rangeLabel ? ` ${rangeLabel}` : ""}`}
     >
       <p className="t-body text-[var(--color-ink-2)] max-w-[76ch] mb-6" style={{ textWrap: "pretty" }}>
-        Every clinical and administrative action, with who did it and what changed. Refused
-        access is recorded here too — the sign-in page and the privacy policy both promise it,
-        and this is where that promise is kept. Rows are never edited or deleted.
+        Every clinical and administrative action, with who did it and what changed. Refused access is recorded here too
+        — the sign-in page and the privacy policy both promise it, and this is where that promise is kept. Rows are
+        never edited or deleted.
       </p>
 
       {/* One pending state for the bar and the rows: a filter shows at once,
           and the rows dim until the server has the new ones. */}
       <AuditView>
-      <AuditFilters
-        group={activeGroup}
-        action={action}
-        actor={actor}
-        from={from}
-        to={to}
-        presets={presetsFor(new Date())}
-        counts={counts.map((c) => ({ action: c._id, n: c.n }))}
-        actors={actorOptions}
-        byGroup={Object.fromEntries(byGroup)}
-        total={counts.reduce((n, c) => n + c.n, 0)}
-        pageSize={query.pageSize}
-      />
-
-      <AuditResults>
-      {rows.length === 0 ? (
-        <EmptyState
-          kind="filtered"
-          title={range ? "Nothing in that date range" : "Nothing recorded under that"}
-          // An empty table has to say *which* filter emptied it, or it reads as
-          // "this never happens" when the truth is "not in the days you chose".
-          body={
-            range
-              ? `No action was recorded ${rangeLabel}. The trail only goes back as far as the first row in it.`
-              : "No action of that kind has been taken yet."
-          }
-          actionLabel="Show everything"
-          actionHref="/admin/audit"
+        <AuditFilters
+          group={activeGroup}
+          action={action}
+          actor={actor}
+          from={from}
+          to={to}
+          presets={presetsFor(new Date())}
+          counts={counts.map((c) => ({ action: c._id, n: c.n }))}
+          actors={actorOptions}
+          byGroup={Object.fromEntries(byGroup)}
+          total={counts.reduce((n, c) => n + c.n, 0)}
+          pageSize={query.pageSize}
         />
-      ) : (
-        <>
-          <DataTable>
-            <THead>
-              <TR>
-                <TH>When</TH>
-                <TH>Who</TH>
-                <TH>Action</TH>
-                <TH>On</TH>
-                <TH>What changed</TH>
-                <TH> </TH>
-              </TR>
-            </THead>
-            <tbody>
-              {rows.map((r) => {
-                const withheld = withholdsDetail(session.role, r.action);
-                const changes = withheld ? [] : describeChange(r.before, r.after);
-                // A record is called what people call it — a name, a booking
-                // number, an order number. Falls back to the id only when the
-                // record itself is gone, which is worth seeing in its own right.
-                const onName =
-                  r.entity && r.entityId ? names.get(nameKey(r.entity, r.entityId)) : undefined;
-                return (
-                  <TR key={String(r._id)}>
-                    <TD>
-                      <span className="t-data text-[13px] whitespace-nowrap block">
-                        {formatDate(r.at)}
-                      </span>
-                      <span className="t-small text-[var(--color-ink-3)] whitespace-nowrap">
-                        {formatTime(r.at)}
-                      </span>
-                    </TD>
-                    <TD>
-                      <span className="block whitespace-nowrap">
-                        {r.actorId
-                          ? (nameById(String(r.actorId)) ??
-                            `Deleted account …${String(r.actorId).slice(-6)}`)
-                          : "System"}
-                      </span>
-                      <span className="t-small text-[var(--color-ink-3)]">{r.actorRole ?? "—"}</span>
-                    </TD>
-                    <TD nowrap>
-                      {isNotable(r.action) ? (
-                        <Pill tone="caution">{actionLabel(r.action)}</Pill>
-                      ) : (
-                        <span className="t-small">{actionLabel(r.action)}</span>
-                      )}
-                    </TD>
-                    <TD>
-                      <span className="t-small block whitespace-nowrap">{r.entity ? entityLabel(r.entity) : "—"}</span>
-                      {onName ? (
-                        <span className="t-small block whitespace-nowrap text-[var(--color-ink-2)]">{onName}</span>
-                      ) : r.entityId ? (
-                        <span className="t-data text-[12px] text-[var(--color-ink-3)] break-all">
-                          {/* Shortened only when it is an opaque id. An
+
+        <AuditResults>
+          {rows.length === 0 ? (
+            <EmptyState
+              kind="filtered"
+              title={range ? "Nothing in that date range" : "Nothing recorded under that"}
+              // An empty table has to say *which* filter emptied it, or it reads as
+              // "this never happens" when the truth is "not in the days you chose".
+              body={
+                range
+                  ? `No action was recorded ${rangeLabel}. The trail only goes back as far as the first row in it.`
+                  : "No action of that kind has been taken yet."
+              }
+              actionLabel="Show everything"
+              actionHref="/admin/audit"
+            />
+          ) : (
+            <>
+              <DataTable>
+                <THead>
+                  <TR>
+                    <TH>When</TH>
+                    <TH>Who</TH>
+                    <TH>Action</TH>
+                    <TH>On</TH>
+                    <TH>What changed</TH>
+                    <TH> </TH>
+                  </TR>
+                </THead>
+                <tbody>
+                  {rows.map((r) => {
+                    const withheld = withholdsDetail(session.role, r.action);
+                    const changes = withheld ? [] : describeChange(r.before, r.after);
+                    // A record is called what people call it — a name, a booking
+                    // number, an order number. Falls back to the id only when the
+                    // record itself is gone, which is worth seeing in its own right.
+                    const onName = r.entity && r.entityId ? names.get(nameKey(r.entity, r.entityId)) : undefined;
+                    return (
+                      <TR key={String(r._id)}>
+                        <TD>
+                          <span className="t-data text-[13px] whitespace-nowrap block">{formatDate(r.at)}</span>
+                          <span className="t-small text-[var(--color-ink-3)] whitespace-nowrap">
+                            {formatTime(r.at)}
+                          </span>
+                        </TD>
+                        <TD>
+                          <span className="block whitespace-nowrap">
+                            {r.actorId
+                              ? (nameById(String(r.actorId)) ?? `Deleted account …${String(r.actorId).slice(-6)}`)
+                              : "System"}
+                          </span>
+                          <span className="t-small text-[var(--color-ink-3)]">{r.actorRole ?? "—"}</span>
+                        </TD>
+                        <TD nowrap>
+                          {isNotable(r.action) ? (
+                            <Pill tone="caution">{actionLabel(r.action)}</Pill>
+                          ) : (
+                            <span className="t-small">{actionLabel(r.action)}</span>
+                          )}
+                        </TD>
+                        <TD>
+                          <span className="t-small block whitespace-nowrap">
+                            {r.entity ? entityLabel(r.entity) : "—"}
+                          </span>
+                          {onName ? (
+                            <span className="t-small block whitespace-nowrap text-[var(--color-ink-2)]">{onName}</span>
+                          ) : r.entityId ? (
+                            <span className="t-data text-[12px] text-[var(--color-ink-3)] break-all">
+                              {/* Shortened only when it is an opaque id. An
                               access.refused row carries the route or the
                               permission that was refused, and "…t.view" out of
                               "audit.view" destroys the one useful part. */}
-                          {/^[0-9a-f]{24}$/.test(r.entityId)
-                            ? `…${r.entityId.slice(-6)}`
-                            : r.entityId}
-                        </span>
-                      ) : null}
-                    </TD>
-                    <TD>
-                      {withheld ? (
-                        <span className="t-small text-[var(--color-ink-3)]">{CLINICAL_WITHHELD}</span>
-                      ) : changes.length === 0 ? (
-                        <span className="t-small text-[var(--color-ink-3)]">—</span>
-                      ) : (
-                        <div className="flex flex-col gap-[3px]">
-                          {changes.slice(0, 4).map((c) => (
-                            <span key={c.field} className="t-small leading-[1.5]">
-                              <span className="text-[var(--color-ink-3)]">{c.field}</span>{" "}
-                              {c.from !== undefined && c.to !== undefined ? (
-                                <>
-                                  <span className="t-data text-[12px] line-through text-[var(--color-ink-3)]">
-                                    {c.from}
-                                  </span>
-                                  <span className="text-[var(--color-ink-3)]"> → </span>
-                                  <span className="t-data text-[12px]">{c.to}</span>
-                                </>
-                              ) : (
-                                <span className="t-data text-[12px]">{c.to ?? c.from}</span>
-                              )}
-                            </span>
-                          ))}
-                          {changes.length > 4 ? (
-                            <span className="t-small text-[var(--color-ink-3)]">
-                              +{changes.length - 4} more
+                              {/^[0-9a-f]{24}$/.test(r.entityId) ? `…${r.entityId.slice(-6)}` : r.entityId}
                             </span>
                           ) : null}
-                        </div>
-                      )}
-                    </TD>
-                    <TD>
-                      <Link
-                        href={`/admin/audit/${String(r._id)}`}
-                        className="t-small font-semibold whitespace-nowrap"
-                      >
-                        Open
-                      </Link>
-                    </TD>
-                  </TR>
-                );
-              })}
-            </tbody>
-          </DataTable>
-        </>
-      )}
-      </AuditResults>
+                        </TD>
+                        <TD>
+                          {withheld ? (
+                            <span className="t-small text-[var(--color-ink-3)]">{CLINICAL_WITHHELD}</span>
+                          ) : changes.length === 0 ? (
+                            <span className="t-small text-[var(--color-ink-3)]">—</span>
+                          ) : (
+                            <div className="flex flex-col gap-[3px]">
+                              {changes.slice(0, 4).map((c) => (
+                                <span key={c.field} className="t-small leading-[1.5]">
+                                  <span className="text-[var(--color-ink-3)]">{c.field}</span>{" "}
+                                  {c.from !== undefined && c.to !== undefined ? (
+                                    <>
+                                      <span className="t-data text-[12px] line-through text-[var(--color-ink-3)]">
+                                        {c.from}
+                                      </span>
+                                      <span className="text-[var(--color-ink-3)]"> → </span>
+                                      <span className="t-data text-[12px]">{c.to}</span>
+                                    </>
+                                  ) : (
+                                    <span className="t-data text-[12px]">{c.to ?? c.from}</span>
+                                  )}
+                                </span>
+                              ))}
+                              {changes.length > 4 ? (
+                                <span className="t-small text-[var(--color-ink-3)]">+{changes.length - 4} more</span>
+                              ) : null}
+                            </div>
+                          )}
+                        </TD>
+                        <TD>
+                          <Link
+                            href={`/admin/audit/${String(r._id)}`}
+                            className="t-small font-semibold whitespace-nowrap"
+                          >
+                            Open
+                          </Link>
+                        </TD>
+                      </TR>
+                    );
+                  })}
+                </tbody>
+              </DataTable>
+            </>
+          )}
+        </AuditResults>
 
-      {/* Outside the dimmed wrapper, so the controls stay sharp while the rows
+        {/* Outside the dimmed wrapper, so the controls stay sharp while the rows
           are on their way. Every filter rides along in the links. */}
-      <Pagination meta={pageMeta} basePath="/admin/audit" params={query} nouns={["entry", "entries"]} />
+        <Pagination meta={pageMeta} basePath="/admin/audit" params={query} nouns={["entry", "entries"]} />
       </AuditView>
     </ConsoleShell>
   );

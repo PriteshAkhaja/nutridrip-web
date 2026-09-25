@@ -40,9 +40,9 @@ export default async function ClinicProfilePage() {
     // Counted and summed by the database. An aggregation does not cast ids the
     // way find() does, so the clinic's id is made an ObjectId here.
     Booking.aggregate<{ count: number; revenue: number }>([
-        { $match: { clinicId: new Types.ObjectId(session.sub), status: "completed", completedAt: { $gte: monthStart } } },
-        { $group: { _id: null, count: { $sum: 1 }, revenue: { $sum: { $ifNull: ["$amount", 0] } } } },
-      ]),
+      { $match: { clinicId: new Types.ObjectId(session.sub), status: "completed", completedAt: { $gte: monthStart } } },
+      { $group: { _id: null, count: { $sum: 1 }, revenue: { $sum: { $ifNull: ["$amount", 0] } } } },
+    ]),
   ]);
 
   const c = clinic?.clinic ?? {};

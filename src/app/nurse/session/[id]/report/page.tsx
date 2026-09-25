@@ -138,8 +138,8 @@ export default async function NurseReportPage({ params }: { params: Promise<{ id
         <div className="rounded-[var(--radius-lg)] border border-[var(--color-line)] bg-[var(--color-surface-2)] p-5 mb-4">
           <span className="t-micro">What the patient agreed to</span>
           <p className="t-small text-[var(--color-ink-3)] mt-2">
-            This consent was captured before the wording was kept on the record, so only the version
-            is known: {booking.consent.version ?? "unknown"}.
+            This consent was captured before the wording was kept on the record, so only the version is known:{" "}
+            {booking.consent.version ?? "unknown"}.
           </p>
         </div>
       ) : null}
@@ -210,9 +210,7 @@ export default async function NurseReportPage({ params }: { params: Promise<{ id
               <div key={i} className="flex justify-between gap-4 items-baseline">
                 <div className="flex flex-col min-w-0">
                   <span className="t-body text-[var(--color-ink-2)]">{c.name}</span>
-                  {c.batchNo && (
-                    <span className="t-data text-[13px] text-[var(--color-ink-3)]">Batch {c.batchNo}</span>
-                  )}
+                  {c.batchNo && <span className="t-data text-[13px] text-[var(--color-ink-3)]">Batch {c.batchNo}</span>}
                 </div>
                 <span className="t-data text-[14.5px] flex-none">
                   {c.dose?.toLocaleString("en-IN")} {c.unit}

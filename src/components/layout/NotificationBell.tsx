@@ -165,9 +165,7 @@ export function NotificationBell({ media }: { media?: string } = {}) {
           aria-label="Notifications"
         >
           <div className="flex items-center justify-between gap-3 px-4 py-3 border-b border-[var(--color-line)]">
-            <span className="t-micro">
-              {unread ? `${unread} unread` : "All caught up"}
-            </span>
+            <span className="t-micro">{unread ? `${unread} unread` : "All caught up"}</span>
             {unread > 0 && (
               <button
                 type="button"
@@ -215,9 +213,7 @@ export function NotificationBell({ media }: { media?: string } = {}) {
                       >
                         {n.title}
                       </span>
-                      <span className="t-data text-[11px] text-[var(--color-ink-3)] flex-none">
-                        {ago(n.createdAt)}
-                      </span>
+                      <span className="t-data text-[11px] text-[var(--color-ink-3)] flex-none">{ago(n.createdAt)}</span>
                     </span>
                     {n.body && <span className="t-small text-[var(--color-ink-2)] block mt-[2px]">{n.body}</span>}
                   </span>

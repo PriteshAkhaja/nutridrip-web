@@ -34,7 +34,8 @@ export async function issueSessionCode(opts: {
     purpose: opts.purpose,
     createdAt: { $gt: new Date(Date.now() - RATE_WINDOW_MS) },
   });
-  if (recent >= RATE_LIMIT) return { error: "Too many codes requested for this patient. Wait a few minutes.", status: 429 };
+  if (recent >= RATE_LIMIT)
+    return { error: "Too many codes requested for this patient. Wait a few minutes.", status: 429 };
 
   const code = String(Math.floor(100000 + Math.random() * 900000));
   await OtpToken.create({
@@ -92,7 +93,10 @@ export async function checkSessionCode(opts: {
   const left = RX_OTP_MAX_ATTEMPTS - newest.attempts;
   return {
     ok: false,
-    error: left > 0 ? `That code is not right — ${left} ${left === 1 ? "try" : "tries"} left` : "Too many attempts. Send the patient a new code.",
+    error:
+      left > 0
+        ? `That code is not right — ${left} ${left === 1 ? "try" : "tries"} left`
+        : "Too many attempts. Send the patient a new code.",
     status: left > 0 ? 400 : 429,
   };
 }

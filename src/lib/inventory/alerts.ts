@@ -165,20 +165,18 @@ export async function traceBatch(lotId: string) {
   await connectDB();
   const { Consumption, Order } = await import("@/lib/models");
 
-  const rows = await Consumption.find({ lotId })
-    .sort({ dispatchedAt: -1 })
-    .lean<
-      Array<{
-        _id: unknown;
-        orderId: unknown;
-        batchNo: string;
-        drugName: string;
-        unitsConsumed: number;
-        activeUsed: number;
-        contentUnit?: string;
-        dispatchedAt: Date;
-      }>
-    >();
+  const rows = await Consumption.find({ lotId }).sort({ dispatchedAt: -1 }).lean<
+    Array<{
+      _id: unknown;
+      orderId: unknown;
+      batchNo: string;
+      drugName: string;
+      unitsConsumed: number;
+      activeUsed: number;
+      contentUnit?: string;
+      dispatchedAt: Date;
+    }>
+  >();
 
   const orderIds = [...new Set(rows.map((r) => String(r.orderId)))];
   const orders = await Order.find({ _id: { $in: orderIds } }).lean<
@@ -189,10 +187,7 @@ export async function traceBatch(lotId: string) {
   return rows.map((r) => ({
     id: String(r._id),
     orderNo: orderById.get(String(r.orderId))?.orderNo ?? "—",
-    patientRef:
-      orderById.get(String(r.orderId))?.patientRef ??
-      orderById.get(String(r.orderId))?.patientName ??
-      "—",
+    patientRef: orderById.get(String(r.orderId))?.patientRef ?? orderById.get(String(r.orderId))?.patientName ?? "—",
     batchNo: r.batchNo,
     drugName: r.drugName,
     unitsConsumed: r.unitsConsumed,

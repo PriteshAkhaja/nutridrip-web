@@ -58,9 +58,7 @@ export default async function PatientReviewPage({ params }: { params: Promise<{ 
           Patient record
         </ButtonLink>
       }
-      meta={
-        <HeaderCounts items={[`Submitted ${formatDate(review.submittedAt)}`, formatTime(review.submittedAt)]} />
-      }
+      meta={<HeaderCounts items={[`Submitted ${formatDate(review.submittedAt)}`, formatTime(review.submittedAt)]} />}
     >
       {/* Answers the patient has since corrected. Kept, because history is
           never deleted, but nobody should decide on them. */}
@@ -83,8 +81,8 @@ export default async function PatientReviewPage({ params }: { params: Promise<{ 
       {review.screening.length > 0 && (
         <div className="rounded-[var(--radius-md)] border border-[var(--color-critical)] bg-[var(--color-critical-soft)] px-4 py-3 mb-6">
           <span className="t-body font-semibold text-[var(--color-critical-text)]">
-            {review.screening.length === 1 ? "Screening answer" : `${review.screening.length} screening answers`} — check
-            before approving
+            {review.screening.length === 1 ? "Screening answer" : `${review.screening.length} screening answers`} —
+            check before approving
           </span>
           <ul className="mt-2 flex flex-col gap-1 list-disc pl-5">
             {review.screening.map((s) => (
@@ -140,8 +138,8 @@ export default async function PatientReviewPage({ params }: { params: Promise<{ 
           <section>
             <h2 className="t-h3 mb-1">Nutrient markers</h2>
             <p className="t-body text-[var(--color-ink-2)] mb-4">
-              Sixteen markers derived from the quiz, banded against reference ranges. Under 35% is critical, under
-              60% is low.
+              Sixteen markers derived from the quiz, banded against reference ranges. Under 35% is critical, under 60%
+              is low.
             </p>
             <Card padding="p-6">
               <div className="grid grid-cols-1 gap-x-8 gap-y-[14px] md:grid-cols-2">

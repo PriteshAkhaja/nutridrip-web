@@ -80,18 +80,16 @@ export default async function PatientDetailPage({
   });
 
   const [quizzes, sessions, labs] = await Promise.all([
-    HealthQuiz.find({ patientId: id })
-      .sort({ completedAt: -1 })
-      .lean<
-        Array<{
-          _id: unknown;
-          vitalityScore: number;
-          nutrientRisks: Array<{ name: string; pct: number }>;
-          reviewStatus: string;
-          completedAt: Date;
-          doctorNotes?: string;
-        }>
-      >(),
+    HealthQuiz.find({ patientId: id }).sort({ completedAt: -1 }).lean<
+      Array<{
+        _id: unknown;
+        vitalityScore: number;
+        nutrientRisks: Array<{ name: string; pct: number }>;
+        reviewStatus: string;
+        completedAt: Date;
+        doctorNotes?: string;
+      }>
+    >(),
     // One page of sessions. A patient on a long course builds up years of them,
     // and the two figures beside the heading are counts, so paging the table
     // must not turn them into "how many are on this page".
@@ -108,7 +106,13 @@ export default async function PatientDetailPage({
     }>(Booking, { patientId: id }, { sort: { scheduledAt: -1 }, paging: parsePaging({ page, pageSize }) }),
     LabReport.find({ patientId: id })
       .sort({ uploadedAt: -1 })
-      .select({ fileName: 1, category: 1, notes: 1, uploadedAt: 1, hasFile: { $gt: [{ $strLenCP: { $ifNull: ["$fileUrl", ""] } }, 0] } })
+      .select({
+        fileName: 1,
+        category: 1,
+        notes: 1,
+        uploadedAt: 1,
+        hasFile: { $gt: [{ $strLenCP: { $ifNull: ["$fileUrl", ""] } }, 0] },
+      })
       .lean<
         Array<{
           _id: unknown;
@@ -182,9 +186,7 @@ export default async function PatientDetailPage({
                 <div className="flex-1 min-w-[240px]">
                   <div className="flex items-baseline justify-between gap-3 mb-3">
                     <span className="t-micro">Weakest markers</span>
-                    <span className="t-small text-[var(--color-ink-3)]">
-                      {formatDate(latest.completedAt)}
-                    </span>
+                    <span className="t-small text-[var(--color-ink-3)]">{formatDate(latest.completedAt)}</span>
                   </div>
                   <div className="flex flex-col gap-[14px]">
                     {lowest.map((m) => (
@@ -233,58 +235,60 @@ export default async function PatientDetailPage({
               <EmptyState kind="first-run" title="No sessions yet" body="Nothing has been booked for this patient." />
             ) : (
               <PagedView>
-              <PagedResults>
-              <DataTable>
-                <THead>
-                  <TR>
-                    <TH width="120px">Booking</TH>
-                    <TH>Drip</TH>
-                    <TH>When</TH>
-                    <TH>Flags</TH>
-                    <TH>Status</TH>
-                    <TH>Feedback</TH>
-                    <TH numeric>Amount</TH>
-                  </TR>
-                </THead>
-                <tbody>
-                  {sessions.rows.map((b) => {
-                    const flagged = (b.vitals ?? []).some((v) => (v.outOfRange ?? []).length > 0);
-                    const events = (b.adverseEvents ?? []).length;
-                    return (
-                      <TR key={String(b._id)}>
-                        <TD mono nowrap>{b.bookingNo}</TD>
-                        <TD nowrap>{b.dripName ?? "—"}</TD>
-                        <TD mono nowrap>
-                          {formatDate(b.scheduledAt)} · {formatTime(b.scheduledAt)}
-                        </TD>
-                        <TD>
-                          <span className="flex gap-1 flex-wrap">
-                            {flagged && <Pill tone="caution">Vitals</Pill>}
-                            {events > 0 && <Pill tone="critical">AE</Pill>}
-                            {!flagged && events === 0 && (
-                              <span className="t-small text-[var(--color-ink-3)]">—</span>
-                            )}
-                          </span>
-                        </TD>
-                        <TD>
-                          <StatusPill status={b.status} dot />
-                        </TD>
-                        <TD>
-                          <SessionFeedback feedback={readFeedback(b.feedback)} />
-                        </TD>
-                        <TD numeric>{formatInr(b.amount ?? 0)}</TD>
+                <PagedResults>
+                  <DataTable>
+                    <THead>
+                      <TR>
+                        <TH width="120px">Booking</TH>
+                        <TH>Drip</TH>
+                        <TH>When</TH>
+                        <TH>Flags</TH>
+                        <TH>Status</TH>
+                        <TH>Feedback</TH>
+                        <TH numeric>Amount</TH>
                       </TR>
-                    );
-                  })}
-                </tbody>
-              </DataTable>
-              </PagedResults>
-              <Pagination
-                meta={sessions.meta}
-                basePath={`/doctor/patients/${id}`}
-                params={{ pageSize }}
-                nouns={["session", "sessions"]}
-              />
+                    </THead>
+                    <tbody>
+                      {sessions.rows.map((b) => {
+                        const flagged = (b.vitals ?? []).some((v) => (v.outOfRange ?? []).length > 0);
+                        const events = (b.adverseEvents ?? []).length;
+                        return (
+                          <TR key={String(b._id)}>
+                            <TD mono nowrap>
+                              {b.bookingNo}
+                            </TD>
+                            <TD nowrap>{b.dripName ?? "—"}</TD>
+                            <TD mono nowrap>
+                              {formatDate(b.scheduledAt)} · {formatTime(b.scheduledAt)}
+                            </TD>
+                            <TD>
+                              <span className="flex gap-1 flex-wrap">
+                                {flagged && <Pill tone="caution">Vitals</Pill>}
+                                {events > 0 && <Pill tone="critical">AE</Pill>}
+                                {!flagged && events === 0 && (
+                                  <span className="t-small text-[var(--color-ink-3)]">—</span>
+                                )}
+                              </span>
+                            </TD>
+                            <TD>
+                              <StatusPill status={b.status} dot />
+                            </TD>
+                            <TD>
+                              <SessionFeedback feedback={readFeedback(b.feedback)} />
+                            </TD>
+                            <TD numeric>{formatInr(b.amount ?? 0)}</TD>
+                          </TR>
+                        );
+                      })}
+                    </tbody>
+                  </DataTable>
+                </PagedResults>
+                <Pagination
+                  meta={sessions.meta}
+                  basePath={`/doctor/patients/${id}`}
+                  params={{ pageSize }}
+                  nouns={["session", "sessions"]}
+                />
               </PagedView>
             )}
           </section>
@@ -297,9 +301,7 @@ export default async function PatientDetailPage({
                 {[...quizzes].reverse().map((q) => (
                   <FillBar
                     key={String(q._id)}
-                    label={
-                      <Link href={`/doctor/review/${String(q._id)}`}>{formatDate(q.completedAt)}</Link>
-                    }
+                    label={<Link href={`/doctor/review/${String(q._id)}`}>{formatDate(q.completedAt)}</Link>}
                     value={String(q.vitalityScore)}
                     pct={q.vitalityScore}
                     color="var(--color-accent)"
@@ -317,7 +319,11 @@ export default async function PatientDetailPage({
             <div className="flex flex-col gap-3 mt-4">
               {(
                 [
-                  ["Allergies", p.allergies || "None declared", Boolean(p.allergies && p.allergies.toLowerCase() !== "none")],
+                  [
+                    "Allergies",
+                    p.allergies || "None declared",
+                    Boolean(p.allergies && p.allergies.toLowerCase() !== "none"),
+                  ],
                   ["Conditions", p.chronicConditions || "None declared", false],
                   ["Medication", p.currentMedications || "None declared", false],
                   ["Past surgeries", p.surgeries || "None declared", false],

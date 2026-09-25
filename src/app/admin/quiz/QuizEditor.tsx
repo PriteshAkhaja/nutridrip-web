@@ -75,7 +75,10 @@ export function QuizEditor({
       s === section ? next.map((q) => q.id) : ordered.filter((q) => q.section === s).map((q) => q.id)
     );
     // Refused here, before anything moves, if it would break a rule.
-    const broken = newProblems(ordered, nextIds.map((id) => byId.get(id)!));
+    const broken = newProblems(
+      ordered,
+      nextIds.map((id) => byId.get(id)!)
+    );
     if (broken.length) {
       setStatus({ section, tone: "error", text: broken[0] });
       return;
@@ -161,10 +164,12 @@ export function QuizEditor({
 
       {confirmRestore && (
         <div className="rounded-[var(--radius-md)] border border-[var(--color-critical)] bg-[var(--color-critical-soft)] px-4 py-3 mb-5">
-          <span className="t-body font-semibold block">Replace the whole questionnaire with the original questions?</span>
+          <span className="t-body font-semibold block">
+            Replace the whole questionnaire with the original questions?
+          </span>
           <span className="t-body text-[var(--color-ink-2)] block mt-1">
-            Every question you have added or changed — with its answers, follow-up rules and order — is replaced by
-            the original 21. Past submissions keep what patients answered. This cannot be undone.
+            Every question you have added or changed — with its answers, follow-up rules and order — is replaced by the
+            original 21. Past submissions keep what patients answered. This cannot be undone.
           </span>
           {restoreError && <span className="t-body text-[var(--color-critical-text)] block mt-2">{restoreError}</span>}
           <div className="flex gap-2 mt-3 flex-wrap">
@@ -266,13 +271,18 @@ export function QuizEditor({
                                 {q.options.map((o) => `${o.label} (${o.score})`).join(" · ")}
                               </p>
                             )}
-                            {q.type === "number" && (typeof q.min === "number" || typeof q.max === "number" || q.unit) && (
-                              <p className="t-small text-[var(--color-ink-3)] mt-1">
-                                {[typeof q.min === "number" ? `from ${q.min}` : null, typeof q.max === "number" ? `to ${q.max}` : null, q.unit]
-                                  .filter(Boolean)
-                                  .join(" ")}
-                              </p>
-                            )}
+                            {q.type === "number" &&
+                              (typeof q.min === "number" || typeof q.max === "number" || q.unit) && (
+                                <p className="t-small text-[var(--color-ink-3)] mt-1">
+                                  {[
+                                    typeof q.min === "number" ? `from ${q.min}` : null,
+                                    typeof q.max === "number" ? `to ${q.max}` : null,
+                                    q.unit,
+                                  ]
+                                    .filter(Boolean)
+                                    .join(" ")}
+                                </p>
+                              )}
                             {rule && (
                               <p className="t-small text-[var(--color-ink-2)] mt-2 flex gap-2">
                                 <span aria-hidden className="text-[var(--color-ink-3)]">

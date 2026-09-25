@@ -67,13 +67,11 @@ export default async function AuditEntryPage({ params }: { params: Promise<{ id:
   // names change and records get removed, and the id is what the trail is
   // keyed on. Resolved by the same helper the list uses, so the two agree.
   const names = await nameEntities([row], [row.actorId ? String(row.actorId) : null]);
-  const targetName =
-    row.entity && row.entityId ? (names.get(nameKey(row.entity, row.entityId)) ?? null) : null;
+  const targetName = row.entity && row.entityId ? (names.get(nameKey(row.entity, row.entityId)) ?? null) : null;
 
   const withheld = withholdsDetail(session.role, row.action);
   const changes = withheld ? [] : describeChange(row.before, row.after);
-  const target =
-    row.entity && row.entityId ? (LINK_FOR[row.entity]?.(row.entityId) ?? null) : null;
+  const target = row.entity && row.entityId ? (LINK_FOR[row.entity]?.(row.entityId) ?? null) : null;
 
   return (
     <ConsoleShell
@@ -118,11 +116,7 @@ export default async function AuditEntryPage({ params }: { params: Promise<{ id:
                   className="flex justify-between gap-6 items-baseline pb-3 border-b border-[var(--color-line)] last:border-0 last:pb-0"
                 >
                   <span className="t-body text-[var(--color-ink-2)] flex-none">{k}</span>
-                  <span
-                    className={`text-right break-all ${
-                      k === "Which one" ? "t-body" : "t-data text-[13.5px]"
-                    }`}
-                  >
+                  <span className={`text-right break-all ${k === "Which one" ? "t-body" : "t-data text-[13.5px]"}`}>
                     {v}
                   </span>
                 </div>
@@ -148,8 +142,8 @@ export default async function AuditEntryPage({ params }: { params: Promise<{ id:
               </p>
             ) : changes.length === 0 ? (
               <p className="t-body text-[var(--color-ink-2)] mt-2">
-                Nothing was recorded as changing. Some actions are events rather than edits —
-                a record being opened, a session being started — and carry no before and after.
+                Nothing was recorded as changing. Some actions are events rather than edits — a record being opened, a
+                session being started — and carry no before and after.
               </p>
             ) : (
               <div className="flex flex-col gap-4 mt-4">
@@ -181,9 +175,7 @@ export default async function AuditEntryPage({ params }: { params: Promise<{ id:
               <p className="t-body-lg mt-3">{actor.name}</p>
               <span className="t-small text-[var(--color-ink-3)]">{actor.role ?? row.actorRole}</span>
               <div className="flex flex-col gap-2 mt-4 pt-4 border-t border-[var(--color-line)]">
-                {actor.email ? (
-                  <span className="t-data text-[13px] break-all">{actor.email}</span>
-                ) : null}
+                {actor.email ? <span className="t-data text-[13px] break-all">{actor.email}</span> : null}
                 {actor.phone ? <span className="t-data text-[13px]">{actor.phone}</span> : null}
               </div>
               <Link

@@ -119,11 +119,7 @@ export function KitCheck({
               onClick={() => toggle(r.key)}
               className="text-left rounded-[var(--radius-md)] border p-4 flex gap-3 items-start cursor-pointer transition-colors duration-150"
               style={{
-                borderColor: short
-                  ? "var(--color-critical)"
-                  : on
-                    ? "var(--color-primary)"
-                    : "var(--color-line)",
+                borderColor: short ? "var(--color-critical)" : on ? "var(--color-primary)" : "var(--color-line)",
                 background: short
                   ? "var(--color-critical-soft)"
                   : on
@@ -159,9 +155,7 @@ export function KitCheck({
                   )}
                 </span>
 
-                {r.storage && (
-                  <span className="t-small text-[var(--color-ink-3)] block mt-1">{r.storage}</span>
-                )}
+                {r.storage && <span className="t-small text-[var(--color-ink-3)] block mt-1">{r.storage}</span>}
               </span>
             </button>
           );
@@ -177,16 +171,8 @@ export function KitCheck({
 
       {error && <span className="t-small text-[var(--color-caution-text)]">{error}</span>}
 
-      <Button
-        size="lg"
-        block
-        loading={busy}
-        disabled={!allChecked || missing.length > 0}
-        onClick={confirm}
-      >
-        {allChecked
-          ? "All seals confirmed"
-          : `${checked.size} of ${rows.length} checked`}
+      <Button size="lg" block loading={busy} disabled={!allChecked || missing.length > 0} onClick={confirm}>
+        {allChecked ? "All seals confirmed" : `${checked.size} of ${rows.length} checked`}
       </Button>
 
       <p className="t-small text-[var(--color-ink-3)] text-center">

@@ -73,11 +73,7 @@ export default async function PrescriptionPage({ params }: { params: Promise<{ i
         back={{ href: `/nurse/session/${id}`, label: "Back to the checklist" }}
       >
         {canOpenPrescription(booking.status) ? (
-          <PrescriptionGate
-            bookingId={id}
-            patientName={patientName}
-            override={overrideView}
-          />
+          <PrescriptionGate bookingId={id} patientName={patientName} override={overrideView} />
         ) : (
           <div className="rounded-[var(--radius-lg)] border border-[var(--color-line)] bg-[var(--color-surface-2)] p-6">
             <span className="t-body text-[var(--color-ink-2)]">

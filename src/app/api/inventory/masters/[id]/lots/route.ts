@@ -12,7 +12,10 @@ const ReceiveLot = z.object({
   brandName: z.string().min(1).max(160),
   manufacturer: z.string().max(160).optional(),
   batchNo: z.string().min(1).max(60),
-  expiry: z.string().datetime().or(z.string().regex(/^\d{4}-\d{2}-\d{2}$/)),
+  expiry: z
+    .string()
+    .datetime()
+    .or(z.string().regex(/^\d{4}-\d{2}-\d{2}$/)),
   /** Active content per physical unit, e.g. 500 mg per vial. */
   contentValue: z.number().positive(),
   contentUnit: z.enum(UNITS),

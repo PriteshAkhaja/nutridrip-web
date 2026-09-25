@@ -13,20 +13,17 @@ export async function GET(req: Request) {
     const limit = Math.min(50, Number(new URL(req.url).searchParams.get("limit")) || 20);
 
     const [items, unread] = await Promise.all([
-      Notification.find({ userId: session.sub })
-        .sort({ createdAt: -1 })
-        .limit(limit)
-        .lean<
-          Array<{
-            _id: unknown;
-            title: string;
-            body: string;
-            type: string;
-            link: string;
-            isRead: boolean;
-            createdAt: Date;
-          }>
-        >(),
+      Notification.find({ userId: session.sub }).sort({ createdAt: -1 }).limit(limit).lean<
+        Array<{
+          _id: unknown;
+          title: string;
+          body: string;
+          type: string;
+          link: string;
+          isRead: boolean;
+          createdAt: Date;
+        }>
+      >(),
       Notification.countDocuments({ userId: session.sub, isRead: false }),
     ]);
 
@@ -57,16 +54,10 @@ export async function PATCH(req: Request) {
     await connectDB();
 
     if (body.all === true) {
-      await Notification.updateMany(
-        { userId: session.sub, isRead: false },
-        { $set: { isRead: true } }
-      );
+      await Notification.updateMany({ userId: session.sub, isRead: false }, { $set: { isRead: true } });
     } else if (typeof body.id === "string" && body.id) {
       // Scoped to the caller so an id from elsewhere cannot be marked read.
-      const res = await Notification.updateOne(
-        { _id: body.id, userId: session.sub },
-        { $set: { isRead: true } }
-      );
+      const res = await Notification.updateOne({ _id: body.id, userId: session.sub }, { $set: { isRead: true } });
       if (res.matchedCount === 0) return fail("Notification not found", 404);
     } else {
       return fail("Provide an id or all:true", 400);

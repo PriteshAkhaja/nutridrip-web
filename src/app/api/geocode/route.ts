@@ -1,11 +1,6 @@
 import { z } from "zod";
 import { getSession } from "@/lib/auth/session";
-import {
-  geocodingConfigured,
-  resolvePlace,
-  reverseGeocode,
-  suggestAddresses,
-} from "@/lib/geo/geocode";
+import { geocodingConfigured, resolvePlace, reverseGeocode, suggestAddresses } from "@/lib/geo/geocode";
 import { ok, fail, handleError } from "@/lib/api";
 
 export const dynamic = "force-dynamic";

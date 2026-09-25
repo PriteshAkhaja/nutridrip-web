@@ -88,7 +88,10 @@ export function ReviewDecision({
   const toggleDrip = (id: string) =>
     setDripIds((ids) => (ids.includes(id) ? ids.filter((x) => x !== id) : [...ids, id]));
 
-  const suggestedIds = suggestedDrips.map((d) => d.id).sort().join(",");
+  const suggestedIds = suggestedDrips
+    .map((d) => d.id)
+    .sort()
+    .join(",");
   const changedDrips = [...dripIds].sort().join(",") !== suggestedIds;
 
   const decided = reviewStatus !== "pending";
@@ -318,17 +321,17 @@ export function ReviewDecision({
         )}
 
         {!asking && (
-        <Textarea
-          label={declining ? "Anything to add" : "Notes for the nurse"}
-          placeholder={
-            declining
-              ? "Private. The patient is shown the reason above and whatever you write for them."
-              : "Rate, order of additives, anything the nurse must know."
-          }
-          value={notes}
-          onChange={(e) => setNotes(e.target.value)}
-          rows={3}
-        />
+          <Textarea
+            label={declining ? "Anything to add" : "Notes for the nurse"}
+            placeholder={
+              declining
+                ? "Private. The patient is shown the reason above and whatever you write for them."
+                : "Rate, order of additives, anything the nurse must know."
+            }
+            value={notes}
+            onChange={(e) => setNotes(e.target.value)}
+            rows={3}
+          />
         )}
 
         {error && <span className="t-small text-[var(--color-critical-text)]">{error}</span>}

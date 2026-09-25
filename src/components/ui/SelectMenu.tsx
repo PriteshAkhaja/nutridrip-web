@@ -83,7 +83,10 @@ export function SelectMenu({
   const listRef = useRef<HTMLUListElement>(null);
   const id = useId();
 
-  const selectedIndex = Math.max(0, options.findIndex((o) => o.value === value));
+  const selectedIndex = Math.max(
+    0,
+    options.findIndex((o) => o.value === value)
+  );
   const selected = options[selectedIndex];
 
   // Clicking anywhere else closes it, which is what every dropdown does and

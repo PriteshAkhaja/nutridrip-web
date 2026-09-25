@@ -46,9 +46,7 @@ export function InventoryFilters({
             key={key}
             href={href({ tab: key })}
             className={`px-4 min-h-[36px] inline-flex items-center rounded-[6px] text-[13px] font-semibold no-underline hover:no-underline ${
-              tab === key
-                ? "bg-[var(--color-surface)] text-[var(--color-ink)]"
-                : "text-[var(--color-ink-2)]"
+              tab === key ? "bg-[var(--color-surface)] text-[var(--color-ink)]" : "text-[var(--color-ink-2)]"
             }`}
           >
             {label}

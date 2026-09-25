@@ -15,9 +15,19 @@ export const dynamic = "force-dynamic";
 function primaryAction(status: string, id: string) {
   switch (status) {
     case "completed":
-      return { label: "Report", href: `/nurse/session/${id}/report`, variant: "secondary" as const, size: "md" as const };
+      return {
+        label: "Report",
+        href: `/nurse/session/${id}/report`,
+        variant: "secondary" as const,
+        size: "md" as const,
+      };
     case "in_progress":
-      return { label: "Open checklist", href: `/nurse/session/${id}`, variant: "primary" as const, size: "lg" as const };
+      return {
+        label: "Open checklist",
+        href: `/nurse/session/${id}`,
+        variant: "primary" as const,
+        size: "lg" as const,
+      };
     default:
       return { label: "Prepare", href: `/nurse/session/${id}`, variant: "secondary" as const, size: "md" as const };
   }

@@ -245,12 +245,7 @@ function ComponentRow({
       />
 
       <div className="flex md:block">
-        <Button
-          variant="ghost"
-          size="sm"
-          onClick={onRemove}
-          aria-label={`Remove ${c.name || "this component"}`}
-        >
+        <Button variant="ghost" size="sm" onClick={onRemove} aria-label={`Remove ${c.name || "this component"}`}>
           Remove
         </Button>
       </div>
@@ -295,11 +290,7 @@ function SessionCard({
       </div>
 
       <div className="grid grid-cols-1 gap-4 lg:grid-cols-[190px_minmax(0,1fr)]">
-        <DatePicker
-          label="Date"
-          value={s.day}
-          onChange={(v) => onChange({ ...s, day: v })}
-        />
+        <DatePicker label="Date" value={s.day} onChange={(v) => onChange({ ...s, day: v })} />
         <DripPicker
           label="Protocol"
           hint="Changing this rewrites the components below"
@@ -523,9 +514,7 @@ export function PlanBuilder({
   };
 
   const removeWeek = (weekNum: number) => {
-    setEditedWeeks(
-      weeks.filter((w) => w.weekNum !== weekNum).map((w, i) => ({ ...w, weekNum: i + 1 }))
-    );
+    setEditedWeeks(weeks.filter((w) => w.weekNum !== weekNum).map((w, i) => ({ ...w, weekNum: i + 1 })));
     setActiveWeek(1);
   };
 
@@ -701,11 +690,7 @@ export function PlanBuilder({
       <div className="mt-5 pt-5 border-t border-[var(--color-line)]">
         <span className="t-micro block mb-3">Lay out the schedule</span>
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
-          <DatePicker
-            label="Starts"
-            value={startDate}
-            onChange={setStartDate}
-          />
+          <DatePicker label="Starts" value={startDate} onChange={setStartDate} />
           <Input
             label="Weeks"
             type="number"
@@ -793,10 +778,7 @@ export function PlanBuilder({
                     const last = week.sessions.at(-1);
                     editWeek(week.weekNum, [
                       ...week.sessions,
-                      sessionFor(
-                        last ? shiftDay(last.day, spacing) : startDate,
-                        dripById.get(dripId)
-                      ),
+                      sessionFor(last ? shiftDay(last.day, spacing) : startDate, dripById.get(dripId)),
                     ]);
                   }}
                 >
@@ -851,12 +833,7 @@ export function PlanBuilder({
             </option>
           ))}
         </Select>
-        <Checkbox
-          label="Share with the nurse now"
-          checked={share}
-          onChange={setShare}
-          disabled={!nurseId}
-        />
+        <Checkbox label="Share with the nurse now" checked={share} onChange={setShare} disabled={!nurseId} />
       </div>
 
       {incomplete ? (
@@ -872,12 +849,7 @@ export function PlanBuilder({
       ) : null}
 
       <div className="mt-6">
-        <Button
-          size="md"
-          loading={busy}
-          disabled={!patientId || sessionCount === 0 || incomplete}
-          onClick={save}
-        >
+        <Button size="md" loading={busy} disabled={!patientId || sessionCount === 0 || incomplete} onClick={save}>
           {editing ? "Save the changes" : "Write the plan"}
         </Button>
       </div>

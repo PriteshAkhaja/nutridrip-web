@@ -75,11 +75,17 @@ export function QuestionForm({
   }, [draft, questions, isNew, initialDraft.qid]);
 
   // The questions that follow this one: their rules read its answers.
-  const followers = isNew ? [] : dependentsOf(initialDraft.qid, after.filter((q) => q.isActive !== false));
+  const followers = isNew
+    ? []
+    : dependentsOf(
+        initialDraft.qid,
+        after.filter((q) => q.isActive !== false)
+      );
   const numberProblem = numberSettingsProblem(draft);
   const typeChanged = !isNew && answered > 0 && draft.type !== initialDraft.type;
 
-  const blocked = !draft.qid || !draft.question.trim() || Boolean(keyProblem) || Boolean(numberProblem) || problems.length > 0;
+  const blocked =
+    !draft.qid || !draft.question.trim() || Boolean(keyProblem) || Boolean(numberProblem) || problems.length > 0;
 
   const renameOption = (i: number, label: string) => {
     const old = draft.options[i].value;
@@ -135,9 +141,9 @@ export function QuestionForm({
 
       {answered > 0 && (
         <Notice tone="caution">
-          <span className="t-data text-[14.5px]">{answered}</span> submission{answered === 1 ? " has" : "s have"} already
-          answered this. Changing the scores does not rescore old results — they keep the numbers they were given at the
-          time.
+          <span className="t-data text-[14.5px]">{answered}</span> submission{answered === 1 ? " has" : "s have"}{" "}
+          already answered this. Changing the scores does not rescore old results — they keep the numbers they were
+          given at the time.
         </Notice>
       )}
 
@@ -151,7 +157,10 @@ export function QuestionForm({
             {followers.map((f) => (
               <li key={f.id}>
                 <span className="font-medium">{f.question}</span>
-                <span className="text-[var(--color-ink-3)]"> — {describeShowIf(f, byId)?.replace(/^Asked /, "asked ")}</span>
+                <span className="text-[var(--color-ink-3)]">
+                  {" "}
+                  — {describeShowIf(f, byId)?.replace(/^Asked /, "asked ")}
+                </span>
               </li>
             ))}
           </ul>
@@ -205,7 +214,11 @@ export function QuestionForm({
       {/* ---------------- Answer type ---------------- */}
       <div className="mt-6">
         <span className="t-micro block mb-3">How the patient answers</span>
-        <div role="radiogroup" aria-label="Answer type" className="grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-4">
+        <div
+          role="radiogroup"
+          aria-label="Answer type"
+          className="grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-4"
+        >
           {TYPES.map((t) => {
             const on = draft.type === t.value;
             return (
@@ -221,7 +234,10 @@ export function QuestionForm({
                   background: on ? "var(--color-primary-soft)" : "var(--color-surface)",
                 }}
               >
-                <span className="t-body font-semibold" style={{ color: on ? "var(--color-primary-dark)" : "var(--color-ink)" }}>
+                <span
+                  className="t-body font-semibold"
+                  style={{ color: on ? "var(--color-primary-dark)" : "var(--color-ink)" }}
+                >
                   {TYPE_LABEL[t.value]}
                 </span>
                 <span className="t-small text-[var(--color-ink-3)]">{t.body}</span>
@@ -231,8 +247,8 @@ export function QuestionForm({
         </div>
         {typeChanged && (
           <p className="t-small text-[var(--color-caution-text)] mt-2">
-            {answered} submission{answered === 1 ? " was" : "s were"} answered as {TYPE_LABEL[initialDraft.type].toLowerCase()}.
-            Changing the type does not change what they answered.
+            {answered} submission{answered === 1 ? " was" : "s were"} answered as{" "}
+            {TYPE_LABEL[initialDraft.type].toLowerCase()}. Changing the type does not change what they answered.
           </p>
         )}
         <div className="flex gap-6 flex-wrap mt-3">
@@ -260,7 +276,11 @@ export function QuestionForm({
                   draft.type === "multi" ? "sm:grid-cols-[1fr_110px_auto_auto]" : "sm:grid-cols-[1fr_110px_auto]"
                 }`}
               >
-                <Input label={i === 0 ? "Answer" : undefined} value={o.label} onChange={(e) => renameOption(i, e.target.value)} />
+                <Input
+                  label={i === 0 ? "Answer" : undefined}
+                  value={o.label}
+                  onChange={(e) => renameOption(i, e.target.value)}
+                />
                 <Input
                   label={i === 0 ? "Score" : undefined}
                   type="number"
@@ -304,7 +324,10 @@ export function QuestionForm({
             <Button
               variant="secondary"
               onClick={() =>
-                setDraft({ ...draft, options: [...draft.options, { value: "", label: "", score: 50, exclusive: false }] })
+                setDraft({
+                  ...draft,
+                  options: [...draft.options, { value: "", label: "", score: 50, exclusive: false }],
+                })
               }
             >
               Add an answer
@@ -370,8 +393,8 @@ export function QuestionForm({
         <div className="mt-6">
           <span className="t-micro block mb-1">Which markers this answer moves</span>
           <p className="t-small text-[var(--color-ink-2)] mb-3 max-w-[62ch]">
-            Weight 0 to 1. A marker at 1 takes this answer&apos;s score at full strength; at 0.5 it counts half as
-            much as another question feeding the same marker. Leave a marker at 0 and it is not touched.
+            Weight 0 to 1. A marker at 1 takes this answer&apos;s score at full strength; at 0.5 it counts half as much
+            as another question feeding the same marker. Leave a marker at 0 and it is not touched.
           </p>
           <div className="grid grid-cols-1 gap-x-6 gap-y-3 md:grid-cols-2">
             {markers.map((m) => {

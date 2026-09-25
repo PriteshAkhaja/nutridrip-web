@@ -21,7 +21,9 @@ const CreateOrder = z.object({
   notes: z.string().max(2000).optional(),
   scheduledDelivery: z.string().datetime().optional(),
   lines: z
-    .array(z.object({ dripId: z.string(), quantity: z.number().int().min(1).max(500), withKit: z.boolean().default(true) }))
+    .array(
+      z.object({ dripId: z.string(), quantity: z.number().int().min(1).max(500), withKit: z.boolean().default(true) })
+    )
     .min(1),
 });
 
@@ -61,7 +63,9 @@ export async function POST(req: Request) {
     let onCredit: boolean | undefined;
     if (session!.role === "clinic") {
       clinicId = session!.sub;
-      const me = await User.findById(clinicId).select("clinic.onCredit").lean<{ clinic?: { onCredit?: boolean } } | null>();
+      const me = await User.findById(clinicId)
+        .select("clinic.onCredit")
+        .lean<{ clinic?: { onCredit?: boolean } } | null>();
       onCredit = me?.clinic?.onCredit ?? false;
     } else if (input.clinicId) {
       const clinic = await User.findOne({ _id: input.clinicId, role: "clinic", status: "active" })

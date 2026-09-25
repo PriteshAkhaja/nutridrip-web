@@ -37,15 +37,15 @@ export default async function OrdersPage({
   const filter = status === "all" ? {} : { status: status.toUpperCase() };
   // One page from the database; the old `.limit(100)` hid every order past it.
   type OrderRow = {
-      _id: unknown;
-      orderNo: string;
-      patientRef?: string;
-      patientName?: string;
-      status: string;
-      amount: number;
-      lines: Array<{ dripName?: string; quantity: number }>;
-      createdAt: Date;
-      scheduledDelivery?: Date;
+    _id: unknown;
+    orderNo: string;
+    patientRef?: string;
+    patientName?: string;
+    status: string;
+    amount: number;
+    lines: Array<{ dripName?: string; quantity: number }>;
+    createdAt: Date;
+    scheduledDelivery?: Date;
     clinicId?: unknown;
     onCredit?: boolean;
     payment?: OrderPayment;
@@ -53,9 +53,7 @@ export default async function OrdersPage({
   const { rows: orders, meta } = await paginate<OrderRow>(Order, filter, { sort: { createdAt: -1 }, paging });
 
   const counts = Object.fromEntries(
-    await Promise.all(
-      ORDER_STATUS.map(async (s) => [s, await Order.countDocuments({ status: s })] as const)
-    )
+    await Promise.all(ORDER_STATUS.map(async (s) => [s, await Order.countDocuments({ status: s })] as const))
   ) as Record<string, number>;
   const total = Object.values(counts).reduce((a, b) => a + b, 0);
 
@@ -85,100 +83,115 @@ export default async function OrdersPage({
     >
       <p className="t-body text-[var(--color-ink-2)] max-w-[76ch] mb-5" style={{ textWrap: "pretty" }}>
         Confirming an order soft-reserves the exact units it will need, so two orders cannot promise the same vial.
-        Dispatching consumes them FEFO and writes the immutable consumption ledger. Cancelling releases the
-        reservation.
+        Dispatching consumes them FEFO and writes the immutable consumption ledger. Cancelling releases the reservation.
       </p>
 
       <div className="flex gap-1 p-1 rounded-[var(--radius-sm)] bg-[var(--color-surface-2)] border border-[var(--color-line)] mb-5 w-fit flex-wrap">
-        {[["all", "All", total] as const, ...ORDER_STATUS.map((s) => [s.toLowerCase(), s.charAt(0) + s.slice(1).toLowerCase(), counts[s] ?? 0] as const)].map(
-          ([key, label, count]) => (
-            <Link
-              key={key}
-              href={hrefWith("/admin/inventory/orders", { pageSize }, { status: key })}
-              className={`px-4 min-h-[36px] inline-flex items-center gap-2 rounded-[6px] text-[13px] font-semibold no-underline hover:no-underline ${
-                status === key ? "bg-[var(--color-surface)] text-[var(--color-ink)]" : "text-[var(--color-ink-2)]"
-              }`}
-            >
-              {label}
-              <span className="t-data text-[13px] text-[var(--color-ink-3)]">{count}</span>
-            </Link>
-          )
-        )}
+        {[
+          ["all", "All", total] as const,
+          ...ORDER_STATUS.map(
+            (s) => [s.toLowerCase(), s.charAt(0) + s.slice(1).toLowerCase(), counts[s] ?? 0] as const
+          ),
+        ].map(([key, label, count]) => (
+          <Link
+            key={key}
+            href={hrefWith("/admin/inventory/orders", { pageSize }, { status: key })}
+            className={`px-4 min-h-[36px] inline-flex items-center gap-2 rounded-[6px] text-[13px] font-semibold no-underline hover:no-underline ${
+              status === key ? "bg-[var(--color-surface)] text-[var(--color-ink)]" : "text-[var(--color-ink-2)]"
+            }`}
+          >
+            {label}
+            <span className="t-data text-[13px] text-[var(--color-ink-3)]">{count}</span>
+          </Link>
+        ))}
       </div>
 
       {/* Side by side only from 1760px. Below that the table takes the full width and this panel sits under it: with names and dates held on one line, the table does not fit beside the panel on a laptop or a 1536-1680px monitor (measured; the orders list beside its 400px composer needs about 1740px). */}
       <div className="grid grid-cols-1 gap-6 min-[1760px]:grid-cols-[minmax(0,1fr)_400px] items-start">
-      <div>
-      {orders.length === 0 ? (
-        <EmptyState
-          kind="filtered"
-          title="No orders in this state"
-          body="Nothing matches that filter — which may well be the answer you wanted."
-          actionLabel="Show all orders"
-          actionHref="/admin/inventory/orders?status=all"
-        />
-      ) : (
-        <PagedView>
-        <PagedResults>
-        <DataTable>
-          <THead>
-            <TR>
-              <TH width="150px">Order</TH>
-              <TH>Patient reference</TH>
-              <TH>Items</TH>
-              <TH>Raised</TH>
-              <TH>Delivery</TH>
-              <TH>Status</TH>
-              <TH numeric>Amount</TH>
-            </TR>
-          </THead>
-          <tbody>
-            {orders.map((o) => (
-              <TR key={String(o._id)}>
-                <TD nowrap>
-                  <Link href={`/admin/inventory/orders/${String(o._id)}`} className="t-data text-[14.5px]">
-                    {o.orderNo}
-                  </Link>
-                </TD>
-                <TD nowrap>
-                  <span className="t-data text-[13px] text-[var(--color-ink-2)]">
-                    {o.patientRef ?? o.patientName ?? "—"}
-                  </span>
-                </TD>
-                <TD>
-                  <Pieces items={o.lines.map((l) => `${l.dripName} × ${l.quantity}`)} />
-                </TD>
-                <TD mono nowrap>{formatDate(o.createdAt)}</TD>
-                <TD mono nowrap>{o.scheduledDelivery ? formatDate(o.scheduledDelivery) : "—"}</TD>
-                <TD>
-                  <span className="flex gap-2 flex-wrap items-center">
-                    <StatusPill status={o.status} dot />
-                    <OrderPayPill order={o} clinicOnCredit={creditById.get(String(o.clinicId)) ?? false} audience="team" />
-                  </span>
-                </TD>
-                <TD numeric>{formatInr(o.amount ?? 0)}</TD>
-              </TR>
-            ))}
-          </tbody>
-        </DataTable>
-        </PagedResults>
-        <Pagination meta={meta} basePath="/admin/inventory/orders" params={{ status, pageSize }} nouns={["order", "orders"]} />
-        </PagedView>
-      )}
-      </div>
+        <div>
+          {orders.length === 0 ? (
+            <EmptyState
+              kind="filtered"
+              title="No orders in this state"
+              body="Nothing matches that filter — which may well be the answer you wanted."
+              actionLabel="Show all orders"
+              actionHref="/admin/inventory/orders?status=all"
+            />
+          ) : (
+            <PagedView>
+              <PagedResults>
+                <DataTable>
+                  <THead>
+                    <TR>
+                      <TH width="150px">Order</TH>
+                      <TH>Patient reference</TH>
+                      <TH>Items</TH>
+                      <TH>Raised</TH>
+                      <TH>Delivery</TH>
+                      <TH>Status</TH>
+                      <TH numeric>Amount</TH>
+                    </TR>
+                  </THead>
+                  <tbody>
+                    {orders.map((o) => (
+                      <TR key={String(o._id)}>
+                        <TD nowrap>
+                          <Link href={`/admin/inventory/orders/${String(o._id)}`} className="t-data text-[14.5px]">
+                            {o.orderNo}
+                          </Link>
+                        </TD>
+                        <TD nowrap>
+                          <span className="t-data text-[13px] text-[var(--color-ink-2)]">
+                            {o.patientRef ?? o.patientName ?? "—"}
+                          </span>
+                        </TD>
+                        <TD>
+                          <Pieces items={o.lines.map((l) => `${l.dripName} × ${l.quantity}`)} />
+                        </TD>
+                        <TD mono nowrap>
+                          {formatDate(o.createdAt)}
+                        </TD>
+                        <TD mono nowrap>
+                          {o.scheduledDelivery ? formatDate(o.scheduledDelivery) : "—"}
+                        </TD>
+                        <TD>
+                          <span className="flex gap-2 flex-wrap items-center">
+                            <StatusPill status={o.status} dot />
+                            <OrderPayPill
+                              order={o}
+                              clinicOnCredit={creditById.get(String(o.clinicId)) ?? false}
+                              audience="team"
+                            />
+                          </span>
+                        </TD>
+                        <TD numeric>{formatInr(o.amount ?? 0)}</TD>
+                      </TR>
+                    ))}
+                  </tbody>
+                </DataTable>
+              </PagedResults>
+              <Pagination
+                meta={meta}
+                basePath="/admin/inventory/orders"
+                params={{ status, pageSize }}
+                nouns={["order", "orders"]}
+              />
+            </PagedView>
+          )}
+        </div>
 
-      <OrderComposer
-        mode="admin"
-        clinics={clinics.map((c) => ({ id: String(c._id), name: c.name, city: c.clinic?.city ?? "" }))}
-        drips={drips.map((d) => ({
-          id: d.id,
-          name: d.name,
-          priceInr: d.priceInr,
-          available: availableById.get(d.id) ?? 0,
-          category: d.category,
-          keywords: d.headline,
-        }))}
-      />
+        <OrderComposer
+          mode="admin"
+          clinics={clinics.map((c) => ({ id: String(c._id), name: c.name, city: c.clinic?.city ?? "" }))}
+          drips={drips.map((d) => ({
+            id: d.id,
+            name: d.name,
+            priceInr: d.priceInr,
+            available: availableById.get(d.id) ?? 0,
+            category: d.category,
+            keywords: d.headline,
+          }))}
+        />
       </div>
     </ConsoleShell>
   );

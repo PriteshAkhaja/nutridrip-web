@@ -108,9 +108,15 @@ export default async function AboutPage() {
               <span className="t-data text-[14.5px] text-[var(--color-ink)]">{copy["footer.registration"]}</span>.
             </p>
             <div className="flex gap-x-5 flex-wrap mt-2">
-              <Link href="/legal/terms" className="t-body inline-flex items-center min-h-[44px]">Terms</Link>
-              <Link href="/legal/privacy" className="t-body inline-flex items-center min-h-[44px]">Privacy</Link>
-              <Link href="/legal/grievance" className="t-body inline-flex items-center min-h-[44px]">Grievance officer</Link>
+              <Link href="/legal/terms" className="t-body inline-flex items-center min-h-[44px]">
+                Terms
+              </Link>
+              <Link href="/legal/privacy" className="t-body inline-flex items-center min-h-[44px]">
+                Privacy
+              </Link>
+              <Link href="/legal/grievance" className="t-body inline-flex items-center min-h-[44px]">
+                Grievance officer
+              </Link>
             </div>
           </Card>
           <Card padding="p-6">
@@ -121,9 +127,15 @@ export default async function AboutPage() {
               infusion. How it works follows one session from quiz to report.
             </p>
             <div className="flex gap-x-5 flex-wrap mt-2">
-              <Link href="/safety" className="t-body inline-flex items-center min-h-[44px]">Safety</Link>
-              <Link href="/how-it-works" className="t-body inline-flex items-center min-h-[44px]">How it works</Link>
-              <Link href="/faqs" className="t-body inline-flex items-center min-h-[44px]">FAQs</Link>
+              <Link href="/safety" className="t-body inline-flex items-center min-h-[44px]">
+                Safety
+              </Link>
+              <Link href="/how-it-works" className="t-body inline-flex items-center min-h-[44px]">
+                How it works
+              </Link>
+              <Link href="/faqs" className="t-body inline-flex items-center min-h-[44px]">
+                FAQs
+              </Link>
             </div>
           </Card>
         </div>
@@ -134,8 +146,8 @@ export default async function AboutPage() {
           <div>
             <h2 className="t-h2 mb-3">Start with the quiz.</h2>
             <p className="t-body-lg text-[var(--color-ink-2)] max-w-[58ch]" style={{ textWrap: "pretty" }}>
-              A physician reads it before anything is booked. If you would rather ask a question first, we would like
-              to hear it.
+              A physician reads it before anything is booked. If you would rather ask a question first, we would like to
+              hear it.
             </p>
           </div>
           <div className="flex flex-col gap-3">

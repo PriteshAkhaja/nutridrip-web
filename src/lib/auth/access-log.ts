@@ -25,13 +25,7 @@ import type { SessionPayload } from "@/lib/auth/session";
  * opening a chart at the bedside; the write is best-effort and says so.
  */
 export type RecordKind =
-  | "patient chart"
-  | "patient profile"
-  | "session"
-  | "prescription"
-  | "lab report"
-  | "assessment"
-  | "treatment plan";
+  "patient chart" | "patient profile" | "session" | "prescription" | "lab report" | "assessment" | "treatment plan";
 
 export async function logRecordAccess(opts: {
   session: Pick<SessionPayload, "sub" | "role">;

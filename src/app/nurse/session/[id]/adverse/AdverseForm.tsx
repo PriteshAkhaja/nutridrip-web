@@ -172,14 +172,7 @@ export function AdverseForm({ bookingId }: { bookingId: string }) {
 
       {error && <span className="t-small text-[var(--color-caution-text)]">{error}</span>}
 
-      <Button
-        variant="danger"
-        size="lg"
-        block
-        loading={busy}
-        disabled={symptoms.length === 0}
-        onClick={submit}
-      >
+      <Button variant="danger" size="lg" block loading={busy} disabled={symptoms.length === 0} onClick={submit}>
         File and escalate
       </Button>
     </div>

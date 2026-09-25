@@ -56,7 +56,10 @@ export async function PATCH(req: Request, { params }: { params: Promise<{ id: st
     if (input.isMultidose !== undefined && input.isMultidose !== master.isMultidose) {
       const reserved = await Allocation.exists({ masterId: id, releasedAt: null });
       if (reserved) {
-        return fail("Confirmed orders hold reservations against this product. Dispatch or cancel them before changing how it is dosed.", 409);
+        return fail(
+          "Confirmed orders hold reservations against this product. Dispatch or cancel them before changing how it is dosed.",
+          409
+        );
       }
     }
 
@@ -90,7 +93,16 @@ export async function PATCH(req: Request, { params }: { params: Promise<{ id: st
       isActive: master.isActive,
     };
 
-    for (const key of ["name", "molecule", "gstRate", "reorderLevel", "isMultidose", "storageCondition", "notes", "isActive"] as const) {
+    for (const key of [
+      "name",
+      "molecule",
+      "gstRate",
+      "reorderLevel",
+      "isMultidose",
+      "storageCondition",
+      "notes",
+      "isActive",
+    ] as const) {
       if (input[key] !== undefined) (master as Record<string, unknown>)[key] = input[key];
     }
     await master.save();
@@ -110,7 +122,13 @@ export async function PATCH(req: Request, { params }: { params: Promise<{ id: st
       },
     });
 
-    return ok({ id, name: master.name, reorderLevel: master.reorderLevel, isMultidose: master.isMultidose, isActive: master.isActive });
+    return ok({
+      id,
+      name: master.name,
+      reorderLevel: master.reorderLevel,
+      isMultidose: master.isMultidose,
+      isActive: master.isActive,
+    });
   } catch (err) {
     return handleError(err);
   }

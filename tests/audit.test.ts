@@ -44,9 +44,7 @@ describe("grouping an action", () => {
 
 describe("naming an action for a human", () => {
   it("turns dots and underscores into words", () => {
-    expect(actionLabel("prescription.override.break_glass")).toBe(
-      "Prescription override break glass"
-    );
+    expect(actionLabel("prescription.override.break_glass")).toBe("Prescription override break glass");
     expect(actionLabel("access.refused")).toBe("Access refused");
   });
 });
@@ -62,10 +60,7 @@ describe("what deserves a second look", () => {
 
 describe("describing what changed", () => {
   it("shows only the fields that actually moved", () => {
-    const out = describeChange(
-      { name: "HealthFirst", status: "active" },
-      { name: "HealthFirst", status: "inactive" }
-    );
+    const out = describeChange({ name: "HealthFirst", status: "active" }, { name: "HealthFirst", status: "inactive" });
     expect(out).toEqual([{ field: "status", from: "active", to: "inactive" }]);
   });
 
@@ -95,9 +90,7 @@ describe("describing what changed", () => {
   });
 
   it("writes an absent value as a dash, not as 'undefined'", () => {
-    expect(describeChange({ nurseId: "abc" }, { nurseId: null })).toEqual([
-      { field: "nurseId", from: "abc", to: "—" },
-    ]);
+    expect(describeChange({ nurseId: "abc" }, { nurseId: null })).toEqual([{ field: "nurseId", from: "abc", to: "—" }]);
   });
 
   it("copes with both sides missing", () => {
@@ -252,12 +245,7 @@ describe("the date window", () => {
 
   it("builds the quick ranges around the day it is given", () => {
     const presets = presetsFor(new Date(2026, 2, 12, 15, 0));
-    expect(presets.map((p) => p.label)).toEqual([
-      "Today",
-      "Last 7 days",
-      "Last 30 days",
-      "This month",
-    ]);
+    expect(presets.map((p) => p.label)).toEqual(["Today", "Last 7 days", "Last 30 days", "This month"]);
     expect(presets[0]).toEqual({ label: "Today", from: "2026-03-12", to: "2026-03-12" });
     // Seven days inclusive of today, not eight.
     expect(presets[1].from).toBe("2026-03-06");

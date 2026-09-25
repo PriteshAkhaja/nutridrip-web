@@ -10,11 +10,30 @@ export const dynamic = "force-dynamic";
 
 const blank = z.literal("");
 const Save = z.object({
-  upiId: z.union([blank, z.string().trim().regex(/^[\w.-]{2,}@[a-zA-Z]{2,}$/, "A UPI ID looks like name@bank")]),
+  upiId: z.union([
+    blank,
+    z
+      .string()
+      .trim()
+      .regex(/^[\w.-]{2,}@[a-zA-Z]{2,}$/, "A UPI ID looks like name@bank"),
+  ]),
   accountName: z.string().trim().max(80),
   bankName: z.string().trim().max(80),
-  accountNo: z.union([blank, z.string().trim().regex(/^\d{6,20}$/, "Digits only, 6 to 20")]),
-  ifsc: z.union([blank, z.string().trim().toUpperCase().regex(/^[A-Z]{4}0[A-Z0-9]{6}$/, "An IFSC is 11 characters, like HDFC0001234")]),
+  accountNo: z.union([
+    blank,
+    z
+      .string()
+      .trim()
+      .regex(/^\d{6,20}$/, "Digits only, 6 to 20"),
+  ]),
+  ifsc: z.union([
+    blank,
+    z
+      .string()
+      .trim()
+      .toUpperCase()
+      .regex(/^[A-Z]{4}0[A-Z0-9]{6}$/, "An IFSC is 11 characters, like HDFC0001234"),
+  ]),
 });
 
 export async function GET() {
@@ -36,7 +55,10 @@ export async function PATCH(req: Request) {
     await connectDB();
 
     if (!BillingSettings.schema.path("payeeUpiId")) {
-      return fail("The server is running an older version and would not keep this. Restart it (stop it and run npm run dev again).", 500);
+      return fail(
+        "The server is running an older version and would not keep this. Restart it (stop it and run npm run dev again).",
+        500
+      );
     }
     // A bank account is no use without the rest of it.
     if (input.accountNo && (!input.ifsc || !input.accountName)) {

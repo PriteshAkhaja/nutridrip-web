@@ -3,12 +3,7 @@ import { AuditLog, User } from "@/lib/models";
 import { getSession } from "@/lib/auth/session";
 import { can } from "@/lib/auth/rbac";
 import { ok, fail, handleError } from "@/lib/api";
-import {
-  LetterheadInput,
-  hasLetterhead,
-  letterheadChanges,
-  normaliseLetterhead,
-} from "@/lib/clinical/letterhead";
+import { LetterheadInput, hasLetterhead, letterheadChanges, normaliseLetterhead } from "@/lib/clinical/letterhead";
 
 export const dynamic = "force-dynamic";
 

@@ -28,11 +28,7 @@ export const dynamic = "force-dynamic";
  * screen like this reads as a control over what patients are told, and until a
  * model is connected it is not one — so the page says so before anything else.
  */
-export default async function StudioPage({
-  searchParams,
-}: {
-  searchParams: Promise<{ edit?: string; new?: string }>;
-}) {
+export default async function StudioPage({ searchParams }: { searchParams: Promise<{ edit?: string; new?: string }> }) {
   // Switched off for now (lib/ai/enabled.ts). A 404 rather than a refusal, so an
   // old link does not write a refused-access row.
   if (!AI_STUDIO_ENABLED) notFound();
@@ -136,7 +132,7 @@ export default async function StudioPage({
               <TH numeric>Max length</TH>
               <TH>Status</TH>
               <TH>Updated</TH>
-              <TH>{" "}</TH>
+              <TH> </TH>
             </TR>
           </THead>
           <tbody>
@@ -150,17 +146,27 @@ export default async function StudioPage({
                     ) : null}
                   </div>
                 </TD>
-                <TD mono nowrap>{m.model}</TD>
-                <TD numeric mono>{m.temperature}</TD>
-                <TD numeric mono>{m.maxTokens.toLocaleString("en-IN")}</TD>
+                <TD mono nowrap>
+                  {m.model}
+                </TD>
+                <TD numeric mono>
+                  {m.temperature}
+                </TD>
+                <TD numeric mono>
+                  {m.maxTokens.toLocaleString("en-IN")}
+                </TD>
                 <TD nowrap>
                   {m.status === "active" ? (
-                    <Pill tone="safe" dot>Active</Pill>
+                    <Pill tone="safe" dot>
+                      Active
+                    </Pill>
                   ) : (
                     <Pill tone="neutral">Test</Pill>
                   )}
                 </TD>
-                <TD mono nowrap>{m.updatedAt ? formatDate(m.updatedAt) : "—"}</TD>
+                <TD mono nowrap>
+                  {m.updatedAt ? formatDate(m.updatedAt) : "—"}
+                </TD>
                 <TD>
                   <StudioActions
                     id={m.id}

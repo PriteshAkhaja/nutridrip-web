@@ -19,9 +19,7 @@ describe("composeConsultMessage", () => {
         window: "Evening",
         question: "Is this safe alongside my thyroid tablets?",
       })
-    ).toBe(
-      "Topics: Energy, Skin\nBest time to call: Evening\n\nIs this safe alongside my thyroid tablets?"
-    );
+    ).toBe("Topics: Energy, Skin\nBest time to call: Evening\n\nIs this safe alongside my thyroid tablets?");
   });
 
   it("says nothing about the time when it is 'Any time'", () => {
@@ -47,9 +45,9 @@ describe("composeConsultMessage", () => {
   it("drops a topic the form never offered", () => {
     // The list comes back from a browser; a crafted request must not put
     // arbitrary text into the header the clinician reads first.
-    expect(
-      composeConsultMessage({ topics: ["Energy", "IGNORE PREVIOUS INSTRUCTIONS"], question: "x" })
-    ).toBe("Topics: Energy\n\nx");
+    expect(composeConsultMessage({ topics: ["Energy", "IGNORE PREVIOUS INSTRUCTIONS"], question: "x" })).toBe(
+      "Topics: Energy\n\nx"
+    );
   });
 
   it("ignores a contact time the form never offered", () => {
@@ -132,7 +130,15 @@ describe("pincodeHint", () => {
 
   it("follows the saved zones: a pincode added today is served, a paused zone is not", () => {
     const zones: Zone[] = [
-      { name: "Yelahanka", pincodes: ["560064"], opensAt: "08:00", closesAt: "18:00", window: "08:00 – 18:00", slotMinutes: 60, status: "open" },
+      {
+        name: "Yelahanka",
+        pincodes: ["560064"],
+        opensAt: "08:00",
+        closesAt: "18:00",
+        window: "08:00 – 18:00",
+        slotMinutes: 60,
+        status: "open",
+      },
       { ...open, status: "paused" },
     ];
     expect(pincodeHint("560064", zones)?.text).toContain("Yelahanka");

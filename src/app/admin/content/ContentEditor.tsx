@@ -62,9 +62,7 @@ export function ContentEditor({
               return (
                 <div
                   key={key}
-                  className={`px-5 py-4 flex flex-col gap-2 ${
-                    i > 0 ? "border-t border-[var(--color-line)]" : ""
-                  }`}
+                  className={`px-5 py-4 flex flex-col gap-2 ${i > 0 ? "border-t border-[var(--color-line)]" : ""}`}
                 >
                   <div className="flex items-center justify-between gap-3 flex-wrap">
                     <span className="t-data text-[13px] text-[var(--color-ink-3)]">{key}</span>

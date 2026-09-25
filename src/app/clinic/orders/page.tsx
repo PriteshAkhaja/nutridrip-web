@@ -55,7 +55,9 @@ export default async function ClinicOrdersPage({
   );
 
   // This clinic's terms, for orders placed before each order kept its own.
-  const me = await User.findById(session.sub).select("clinic.onCredit").lean<{ clinic?: { onCredit?: boolean } } | null>();
+  const me = await User.findById(session.sub)
+    .select("clinic.onCredit")
+    .lean<{ clinic?: { onCredit?: boolean } } | null>();
   const onCreditNow = me?.clinic?.onCredit ?? false;
 
   const drips = await listDrips();
@@ -87,47 +89,53 @@ export default async function ClinicOrdersPage({
           ) : (
             <PagedView>
               <PagedResults>
-            <DataTable>
-              <THead>
-                <TR>
-                  <TH width="150px">Order</TH>
-                  <TH>Items</TH>
-                  <TH>Raised</TH>
-                  <TH>Delivery</TH>
-                  <TH>Status</TH>
-                  <TH numeric>Amount</TH>
-                </TR>
-              </THead>
-              <tbody>
-                {orders.map((o) => (
-                  <TR key={String(o._id)}>
-                    <TD nowrap>
-                      <Link href={`/clinic/orders/${String(o._id)}`} className="t-data text-[14.5px]">
-                        {o.orderNo}
-                      </Link>
-                    </TD>
-                    <TD><Pieces items={o.lines.map((l) => `${l.dripName} × ${l.quantity}`)} /></TD>
-                    <TD mono nowrap>{formatDate(o.createdAt)}</TD>
-                    <TD mono nowrap>{o.scheduledDelivery ? formatDate(o.scheduledDelivery) : "—"}</TD>
-                    <TD>
-                      <span className="flex gap-2 flex-wrap items-center">
-                        <StatusPill status={o.status} dot />
-                        <OrderPayPill order={o} clinicOnCredit={onCreditNow} audience="clinic" />
-                      </span>
-                    </TD>
-                    <TD numeric>{formatInr(o.amount ?? 0)}</TD>
-                  </TR>
-                ))}
-              </tbody>
-            </DataTable>
+                <DataTable>
+                  <THead>
+                    <TR>
+                      <TH width="150px">Order</TH>
+                      <TH>Items</TH>
+                      <TH>Raised</TH>
+                      <TH>Delivery</TH>
+                      <TH>Status</TH>
+                      <TH numeric>Amount</TH>
+                    </TR>
+                  </THead>
+                  <tbody>
+                    {orders.map((o) => (
+                      <TR key={String(o._id)}>
+                        <TD nowrap>
+                          <Link href={`/clinic/orders/${String(o._id)}`} className="t-data text-[14.5px]">
+                            {o.orderNo}
+                          </Link>
+                        </TD>
+                        <TD>
+                          <Pieces items={o.lines.map((l) => `${l.dripName} × ${l.quantity}`)} />
+                        </TD>
+                        <TD mono nowrap>
+                          {formatDate(o.createdAt)}
+                        </TD>
+                        <TD mono nowrap>
+                          {o.scheduledDelivery ? formatDate(o.scheduledDelivery) : "—"}
+                        </TD>
+                        <TD>
+                          <span className="flex gap-2 flex-wrap items-center">
+                            <StatusPill status={o.status} dot />
+                            <OrderPayPill order={o} clinicOnCredit={onCreditNow} audience="clinic" />
+                          </span>
+                        </TD>
+                        <TD numeric>{formatInr(o.amount ?? 0)}</TD>
+                      </TR>
+                    ))}
+                  </tbody>
+                </DataTable>
               </PagedResults>
               <Pagination meta={meta} basePath="/clinic/orders" params={{ pageSize }} nouns={["order", "orders"]} />
             </PagedView>
           )}
 
           <p className="t-small text-[var(--color-ink-3)] mt-4">
-            A draft holds nothing. Confirmation is what reserves the vials, and only the pharmacy can dispatch. Open
-            an order to see the batch numbers once it has gone out.
+            A draft holds nothing. Confirmation is what reserves the vials, and only the pharmacy can dispatch. Open an
+            order to see the batch numbers once it has gone out.
           </p>
         </div>
 

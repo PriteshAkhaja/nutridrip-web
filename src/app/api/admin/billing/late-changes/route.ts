@@ -38,7 +38,10 @@ export async function PATCH(req: Request) {
 
     // A server started before these fields existed would accept the save and keep nothing.
     if (!BillingSettings.schema.path("lateWindowHours")) {
-      return fail("The server is running an older version and would not keep this. Restart it (stop it and run npm run dev again).", 500);
+      return fail(
+        "The server is running an older version and would not keep this. Restart it (stop it and run npm run dev again).",
+        500
+      );
     }
 
     const before = await getLatePolicy();

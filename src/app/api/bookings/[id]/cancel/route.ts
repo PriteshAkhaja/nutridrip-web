@@ -44,7 +44,10 @@ export async function POST(req: Request, { params }: { params: Promise<{ id: str
 
     // A server started before charges existed would cancel and lose the fee.
     if (fee > 0 && !Booking.schema.path("charges")) {
-      return fail("The server is running an older version and would not record the fee. Restart it (stop it and run npm run dev again).", 500);
+      return fail(
+        "The server is running an older version and would not record the fee. Restart it (stop it and run npm run dev again).",
+        500
+      );
     }
 
     booking.status = "cancelled";

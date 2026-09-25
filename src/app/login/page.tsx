@@ -18,11 +18,7 @@ const DEMO: readonly DemoAccount[] = [
   ["Patient", "patient@example.com", "patient123"],
 ];
 
-export default async function LoginPage({
-  searchParams,
-}: {
-  searchParams: Promise<{ e?: string; next?: string }>;
-}) {
+export default async function LoginPage({ searchParams }: { searchParams: Promise<{ e?: string; next?: string }> }) {
   const session = await getSession();
   if (session) redirect(HOME_FOR_ROLE[session.role]);
 
@@ -65,23 +61,23 @@ export default async function LoginPage({
             `hidden lg:flex`, which is why the demo accounts never appeared on a
             phone or a portrait tablet — nothing to do with the viewport unit. */}
         {showDemo && (
-        <div className="flex flex-col justify-center bg-[var(--color-surface)] border-t lg:border-t-0 lg:border-l border-[var(--color-line)] px-6 md:px-12 lg:px-16 py-10 lg:py-12">
-          <div className="w-full max-w-[420px] lg:max-w-[440px] mx-auto lg:mx-0">
-            <span className="t-micro">Demo accounts</span>
-            <h2 className="t-h3 mt-2 mb-4">Six roles, one platform</h2>
-            <p className="t-body text-[var(--color-ink-2)] mb-6 max-w-[52ch]">
-              The seeded dataset carries one account per role, so every screen in the pack can be walked without setting
-              up data first. Pick one to fill the form.
-            </p>
+          <div className="flex flex-col justify-center bg-[var(--color-surface)] border-t lg:border-t-0 lg:border-l border-[var(--color-line)] px-6 md:px-12 lg:px-16 py-10 lg:py-12">
+            <div className="w-full max-w-[420px] lg:max-w-[440px] mx-auto lg:mx-0">
+              <span className="t-micro">Demo accounts</span>
+              <h2 className="t-h3 mt-2 mb-4">Six roles, one platform</h2>
+              <p className="t-body text-[var(--color-ink-2)] mb-6 max-w-[52ch]">
+                The seeded dataset carries one account per role, so every screen in the pack can be walked without
+                setting up data first. Pick one to fill the form.
+              </p>
 
-            <DemoAccounts accounts={DEMO} />
+              <DemoAccounts accounts={DEMO} />
 
-            <p className="t-small text-[var(--color-ink-3)] mt-4">
-              Patient sign-in sends a six-digit code. Outside production the code is shown on screen, since no SMS
-              gateway is connected yet.
-            </p>
+              <p className="t-small text-[var(--color-ink-3)] mt-4">
+                Patient sign-in sends a six-digit code. Outside production the code is shown on screen, since no SMS
+                gateway is connected yet.
+              </p>
+            </div>
           </div>
-        </div>
         )}
       </div>
     </LoginStateProvider>

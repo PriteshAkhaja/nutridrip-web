@@ -150,7 +150,9 @@ export async function PATCH(req: Request, { params }: { params: Promise<{ id: st
       const nowDoctorId = user.nurse?.doctorId ? String(user.nurse.doctorId) : null;
       const ids = [...new Set([wasDoctorId, nowDoctorId].filter((x): x is string => Boolean(x)))];
       const doctors = ids.length
-        ? await User.find({ _id: { $in: ids } }).select("name").lean<Array<{ _id: unknown; name: string }>>()
+        ? await User.find({ _id: { $in: ids } })
+            .select("name")
+            .lean<Array<{ _id: unknown; name: string }>>()
         : [];
       doctorNames = Object.fromEntries(doctors.map((d) => [String(d._id), d.name]));
       const notices = noticesForNurseChange({

@@ -146,11 +146,15 @@ export default async function PersonPage({
   // ---- Sessions: one paged list, whoever the person is. Only the scheduling
   // fields leave the database -- never vitals, checklists, reactions or consent.
   const sessions = field
-    ? await paginate<SessionRow>(Booking, { [field]: oid }, {
-        sort: { scheduledAt: -1 },
-        paging: parsePaging({ page, pageSize }),
-        select: ADMIN_BOOKING_SELECT,
-      })
+    ? await paginate<SessionRow>(
+        Booking,
+        { [field]: oid },
+        {
+          sort: { scheduledAt: -1 },
+          paging: parsePaging({ page, pageSize }),
+          select: ADMIN_BOOKING_SELECT,
+        }
+      )
     : null;
 
   // Everything else on the page is a count or a sum, done by the database.
@@ -180,8 +184,7 @@ export default async function PersonPage({
 
   const here = `/admin/users/${id}`;
 
-  const figureCount =
-    (field ? 2 : 0) + (isPatient || role === "clinic" ? 1 : 0) + extras.cards.length;
+  const figureCount = (field ? 2 : 0) + (isPatient || role === "clinic" ? 1 : 0) + extras.cards.length;
 
   return (
     <ConsoleShell
@@ -215,28 +218,28 @@ export default async function PersonPage({
           three numbers), and as many columns as there are cards on a wide screen,
           so three cards do not leave a hole where a fourth would be. */}
       {figureCount > 0 && (
-      <div className={`grid grid-cols-2 gap-4 ${XL_COLUMNS[Math.min(figureCount, 4)]} mb-6`}>
-        {field && <StatCard label="Sessions" value={String(totalSessions)} />}
-        {field && (
-          <StatCard
-            label="Completed"
-            value={String(statusCount("completed"))}
-            pct={totalSessions ? (statusCount("completed") / totalSessions) * 100 : 0}
-            color="var(--color-safe)"
-          />
-        )}
-        {(isPatient || role === "clinic") && (
-          <StatCard
-            label="Cancelled"
-            value={String(statusCount("cancelled"))}
-            pct={totalSessions ? (statusCount("cancelled") / totalSessions) * 100 : 0}
-            color="var(--color-caution)"
-          />
-        )}
-        {extras.cards.map((c) => (
-          <StatCard key={c.label} label={c.label} value={c.value} note={c.note} />
-        ))}
-      </div>
+        <div className={`grid grid-cols-2 gap-4 ${XL_COLUMNS[Math.min(figureCount, 4)]} mb-6`}>
+          {field && <StatCard label="Sessions" value={String(totalSessions)} />}
+          {field && (
+            <StatCard
+              label="Completed"
+              value={String(statusCount("completed"))}
+              pct={totalSessions ? (statusCount("completed") / totalSessions) * 100 : 0}
+              color="var(--color-safe)"
+            />
+          )}
+          {(isPatient || role === "clinic") && (
+            <StatCard
+              label="Cancelled"
+              value={String(statusCount("cancelled"))}
+              pct={totalSessions ? (statusCount("cancelled") / totalSessions) * 100 : 0}
+              color="var(--color-caution)"
+            />
+          )}
+          {extras.cards.map((c) => (
+            <StatCard key={c.label} label={c.label} value={c.value} note={c.note} />
+          ))}
+        </div>
       )}
 
       {/* ---------------- Account, and the role's own details ---------------- */}
@@ -402,12 +405,7 @@ export default async function PersonPage({
                   </tbody>
                 </DataTable>
               </PagedResults>
-              <Pagination
-                meta={sessions.meta}
-                basePath={here}
-                params={{ pageSize }}
-                nouns={["session", "sessions"]}
-              />
+              <Pagination meta={sessions.meta} basePath={here} params={{ pageSize }} nouns={["session", "sessions"]} />
             </PagedView>
           )}
         </section>
@@ -502,7 +500,10 @@ async function roleExtras(
         {
           label: "Patient rating",
           value: fb.average !== null ? `${fb.average}/5` : "—",
-          note: fb.count === 0 ? "No ratings yet" : `from ${fb.count} ${fb.count === 1 ? "rating" : "ratings"}${fb.poor ? ` · ${fb.poor} of 2 or less` : ""}`,
+          note:
+            fb.count === 0
+              ? "No ratings yet"
+              : `from ${fb.count} ${fb.count === 1 ? "rating" : "ratings"}${fb.poor ? ` · ${fb.poor} of 2 or less` : ""}`,
         },
       ],
       panel: null,
@@ -526,7 +527,11 @@ async function roleExtras(
     const total = orders.reduce((n, o) => n + o.n, 0);
     return {
       cards: [
-        { label: "Revenue this month", value: formatInr(month[0]?.revenue ?? 0), note: `${month[0]?.n ?? 0} completed sessions` },
+        {
+          label: "Revenue this month",
+          value: formatInr(month[0]?.revenue ?? 0),
+          note: `${month[0]?.n ?? 0} completed sessions`,
+        },
       ],
       panel: (
         <Card padding="p-5" className="mb-8">

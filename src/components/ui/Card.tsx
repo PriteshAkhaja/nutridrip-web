@@ -23,9 +23,7 @@ export function Card({
     info: "bg-[var(--color-info-soft)] border-[var(--color-info)]",
   }[tone];
 
-  return (
-    <div className={`rounded-[var(--radius-lg)] border ${TONE} ${padding} ${className}`}>{children}</div>
-  );
+  return <div className={`rounded-[var(--radius-lg)] border ${TONE} ${padding} ${className}`}>{children}</div>;
 }
 
 export function SectionHead({

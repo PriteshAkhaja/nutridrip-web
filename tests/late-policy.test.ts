@@ -33,6 +33,10 @@ describe("late changes", () => {
 
   it("never stores a nonsense policy", () => {
     expect(tidyPolicy(null)).toEqual(P);
-    expect(tidyPolicy({ windowHours: 0, rescheduleFee: -5, cancelFee: 250.6 })).toEqual({ windowHours: 1, rescheduleFee: 0, cancelFee: 251 });
+    expect(tidyPolicy({ windowHours: 0, rescheduleFee: -5, cancelFee: 250.6 })).toEqual({
+      windowHours: 1,
+      rescheduleFee: 0,
+      cancelFee: 251,
+    });
   });
 });

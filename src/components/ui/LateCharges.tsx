@@ -22,7 +22,9 @@ export function LateCharges({ charges }: { charges?: Charge[] | null }) {
   return (
     <div
       className={`rounded-[var(--radius-sm)] border px-3 py-2 mt-3 flex flex-col gap-1 ${
-        settled ? "border-[var(--color-line)] bg-[var(--color-surface-2)]" : "border-[var(--color-caution)] bg-[var(--color-caution-soft)]"
+        settled
+          ? "border-[var(--color-line)] bg-[var(--color-surface-2)]"
+          : "border-[var(--color-caution)] bg-[var(--color-caution-soft)]"
       }`}
     >
       {charges.map((c, i) => (
@@ -32,11 +34,19 @@ export function LateCharges({ charges }: { charges?: Charge[] | null }) {
               {c.kind === "late_reschedule" ? "Moved late" : "Cancelled late"}
             </span>{" "}
             ·{" "}
-            {new Date(c.at).toLocaleString("en-IN", { day: "2-digit", month: "short", hour: "2-digit", minute: "2-digit", hour12: true })}
+            {new Date(c.at).toLocaleString("en-IN", {
+              day: "2-digit",
+              month: "short",
+              hour: "2-digit",
+              minute: "2-digit",
+              hour12: true,
+            })}
           </span>
           <span className="t-data text-[13px] flex-none">
             {inr(c.amount)}
-            {c.settledAs ? <span className="t-small text-[var(--color-ink-2)]"> · {c.settledAs === "paid" ? "Paid" : "Waived"}</span> : null}
+            {c.settledAs ? (
+              <span className="t-small text-[var(--color-ink-2)]"> · {c.settledAs === "paid" ? "Paid" : "Waived"}</span>
+            ) : null}
           </span>
         </div>
       ))}

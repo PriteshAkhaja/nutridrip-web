@@ -8,7 +8,15 @@ import { ZoneBody, auditView, checkZone, nursesCovering, staleServer } from "../
 
 export const dynamic = "force-dynamic";
 
-type ZoneRow = { _id: unknown; name: string; pincodes: string[]; opensAt: string; closesAt: string; slotMinutes?: number; status: string };
+type ZoneRow = {
+  _id: unknown;
+  name: string;
+  pincodes: string[];
+  opensAt: string;
+  closesAt: string;
+  slotMinutes?: number;
+  status: string;
+};
 
 /**
  * Change a zone: its name, pincodes, hours or status. A new name is carried

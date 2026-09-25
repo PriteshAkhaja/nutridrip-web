@@ -25,8 +25,8 @@ export default async function ConsultPage() {
           <span className="t-micro">Ask a clinician</span>
           <h1 className="t-h1 mt-2 mb-4">Not sure yet? Ask first.</h1>
           <p className="t-body-lg text-[var(--color-ink-2)] mb-8" style={{ textWrap: "pretty" }}>
-            Leave a question and how to reach you, and our clinical team will get back to you. It is the right place
-            for the things a quiz cannot ask — a medicine you already take, a condition you are unsure about, whether a
+            Leave a question and how to reach you, and our clinical team will get back to you. It is the right place for
+            the things a quiz cannot ask — a medicine you already take, a condition you are unsure about, whether a
             protocol suits what you are after.
           </p>
 

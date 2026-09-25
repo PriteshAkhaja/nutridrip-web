@@ -37,15 +37,11 @@ export default async function QuizAdminPage() {
     >
       <p className="t-body text-[var(--color-ink-2)] max-w-[76ch] mb-6" style={{ textWrap: "pretty" }}>
         This is the questionnaire every patient answers, and it is live — a change here reaches the next patient who
-        opens the quiz, with no deploy. Each answer carries a score from 0 to 100, and the markers it feeds are
-        weighted 0 to 1. A patient&apos;s vitality score is the average of all sixteen markers afterwards.
+        opens the quiz, with no deploy. Each answer carries a score from 0 to 100, and the markers it feeds are weighted
+        0 to 1. A patient&apos;s vitality score is the average of all sixteen markers afterwards.
       </p>
 
-      <QuizEditor
-        initial={questions}
-        markers={MARKERS.map((m) => m.name)}
-        answeredByQid={answeredByQid}
-      />
+      <QuizEditor initial={questions} markers={MARKERS.map((m) => m.name)} answeredByQid={answeredByQid} />
     </ConsoleShell>
   );
 }

@@ -56,7 +56,8 @@ export function backFor(
   if (!origin) return fallback;
   const from = pathOf(origin);
   // Only within the same app: a nurse's Back never leads into the patient app, or out of both.
-  const root = (p: string) => (p === "/nurse" || p.startsWith("/nurse/") ? "nurse" : p === "/app" || p.startsWith("/app/") ? "app" : null);
+  const root = (p: string) =>
+    p === "/nurse" || p.startsWith("/nurse/") ? "nurse" : p === "/app" || p.startsWith("/app/") ? "app" : null;
   if (!root(from) || root(from) !== root(to) || from === to || from.startsWith(`${to}/`)) return fallback;
   const label = LABELS.find(([re]) => re.test(from))?.[1];
   return label ? { href: origin, label } : fallback;

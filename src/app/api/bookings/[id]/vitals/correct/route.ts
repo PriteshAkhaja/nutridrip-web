@@ -2,7 +2,13 @@ import { z } from "zod";
 import { connectDB } from "@/lib/db/mongoose";
 import { AuditLog, Booking, User } from "@/lib/models";
 import { notify, notifyRole } from "@/lib/notify";
-import { CORRECTION_REASONS, VITAL_RANGES, correctReading, vitalsLine, type VitalsReading } from "@/lib/clinical/checklist";
+import {
+  CORRECTION_REASONS,
+  VITAL_RANGES,
+  correctReading,
+  vitalsLine,
+  type VitalsReading,
+} from "@/lib/clinical/checklist";
 import { getSession } from "@/lib/auth/session";
 import { can } from "@/lib/auth/rbac";
 import { nurseOwns } from "@/lib/auth/ownership";
@@ -50,7 +56,10 @@ export async function POST(req: Request, { params }: { params: Promise<{ id: str
     if (!booking) return fail("Session not found", 404);
     if (!nurseOwns(session, booking)) return fail("This session is not on your route", 403);
     if (!WORKABLE.includes(booking.status)) {
-      return fail(`This session is ${labelFor(booking.status).toLowerCase()} — its readings can no longer be changed`, 409);
+      return fail(
+        `This session is ${labelFor(booking.status).toLowerCase()} — its readings can no longer be changed`,
+        409
+      );
     }
 
     const input = Input.parse(await req.json());
@@ -86,7 +95,9 @@ export async function POST(req: Request, { params }: { params: Promise<{ id: str
     await booking.save();
 
     const which = input.index === 0 ? "Baseline" : "Closing";
-    const stillBlocked = (booking.vitals ?? []).some((v: { outOfRange?: string[] }) => (v.outOfRange ?? []).length > 0) && !booking.vitalsClearedAt;
+    const stillBlocked =
+      (booking.vitals ?? []).some((v: { outOfRange?: string[] }) => (v.outOfRange ?? []).length > 0) &&
+      !booking.vitalsClearedAt;
     const touchedRange = (before.outOfRange ?? []).length > 0 || (fixed.outOfRange ?? []).length > 0;
 
     if (touchedRange) {
@@ -100,7 +111,8 @@ export async function POST(req: Request, { params }: { params: Promise<{ id: str
           : stillBlocked
             ? "Another reading is still out of range — the infusion stays blocked."
             : "Now in range, so the block has lifted.");
-      if (booking.doctorId) await notify(String(booking.doctorId), title, body, flagged.length ? "error" : "warning", "/doctor/adverse");
+      if (booking.doctorId)
+        await notify(String(booking.doctorId), title, body, flagged.length ? "error" : "warning", "/doctor/adverse");
       else await notifyRole("doctor", title, body, flagged.length ? "error" : "warning", "/doctor/adverse");
     }
 
@@ -110,7 +122,11 @@ export async function POST(req: Request, { params }: { params: Promise<{ id: str
       action: "vitals.corrected",
       entity: "Booking",
       entityId: id,
-      before: { reading: which.toLowerCase(), values: vitalsLine(before), outOfRange: (before.outOfRange ?? []).join(", ") || "none" },
+      before: {
+        reading: which.toLowerCase(),
+        values: vitalsLine(before),
+        outOfRange: (before.outOfRange ?? []).join(", ") || "none",
+      },
       after: {
         reading: which.toLowerCase(),
         values: vitalsLine(fixed),

@@ -31,7 +31,16 @@ export async function recentFeedbackForDoctor(
       .sort({ "feedback.givenAt": -1 })
       .limit(limit)
       .select("bookingNo patientId nurseId dripName feedback")
-      .lean<Array<{ _id: unknown; bookingNo: string; patientId: unknown; nurseId?: unknown; dripName?: string; feedback?: StoredFeedback }>>(),
+      .lean<
+        Array<{
+          _id: unknown;
+          bookingNo: string;
+          patientId: unknown;
+          nurseId?: unknown;
+          dripName?: string;
+          feedback?: StoredFeedback;
+        }>
+      >(),
     Booking.countDocuments({
       ...rated,
       "feedback.givenAt": { $gte: new Date(Date.now() - 30 * 86_400_000) },

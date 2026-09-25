@@ -215,9 +215,7 @@ export function groupFilter(group: AuditGroup): RegExp {
 export function entityLabel(entity: string): string {
   // "TreatmentPlan" splits at lower-to-upper; "AIModel" also at the end of a
   // run of capitals ("AI" | "Model"), or the acronym would be read as one word.
-  const words = entity
-    .replace(/([a-z0-9])([A-Z])/g, "$1 $2")
-    .replace(/([A-Z]+)([A-Z][a-z])/g, "$1 $2");
+  const words = entity.replace(/([a-z0-9])([A-Z])/g, "$1 $2").replace(/([A-Z]+)([A-Z][a-z])/g, "$1 $2");
   // Lower-case every word except an acronym (two or more capitals).
   return words
     .split(" ")
@@ -314,8 +312,7 @@ export type DatePreset = { label: string; from: string; to: string };
  */
 export function presetsFor(now: Date): DatePreset[] {
   const today = toDay(now);
-  const back = (days: number) =>
-    toDay(new Date(now.getFullYear(), now.getMonth(), now.getDate() - days));
+  const back = (days: number) => toDay(new Date(now.getFullYear(), now.getMonth(), now.getDate() - days));
   return [
     { label: "Today", from: today, to: today },
     { label: "Last 7 days", from: back(6), to: today },

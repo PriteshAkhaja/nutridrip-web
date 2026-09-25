@@ -20,7 +20,9 @@ export function RecallPicker({
         value={selected}
         onChange={(e) =>
           router.push(
-            e.target.value ? `/admin/inventory/recall?batch=${encodeURIComponent(e.target.value)}` : "/admin/inventory/recall"
+            e.target.value
+              ? `/admin/inventory/recall?batch=${encodeURIComponent(e.target.value)}`
+              : "/admin/inventory/recall"
           )
         }
       >

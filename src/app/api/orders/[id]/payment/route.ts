@@ -68,11 +68,16 @@ export async function POST(req: Request, { params }: { params: Promise<{ id: str
           .select("name clinic.onCredit")
           .lean<{ name: string; clinic?: { onCredit?: boolean } } | null>()
       : null;
-    if (!needsPayment(order, clinic?.clinic?.onCredit ?? false)) return fail("This order does not need paying first", 409);
+    if (!needsPayment(order, clinic?.clinic?.onCredit ?? false))
+      return fail("This order does not need paying first", 409);
     if (order.status !== "DRAFT") return fail("This order has moved on; its payment can no longer be changed", 409);
 
     const current: Pay = order.payment?.state ? (order.payment.toObject?.() ?? order.payment) : { state: "awaiting" };
-    const before = { state: current.state ?? "awaiting", method: current.method ?? null, reference: current.reference ?? null };
+    const before = {
+      state: current.state ?? "awaiting",
+      method: current.method ?? null,
+      reference: current.reference ?? null,
+    };
 
     let next: Pay;
     if (input.action === "submit") {
@@ -91,7 +96,8 @@ export async function POST(req: Request, { params }: { params: Promise<{ id: str
       };
     } else {
       if (!staff) return fail("Only the NutriDrip team can check a payment", 403);
-      if (current.state !== "submitted") return fail("Nothing to check yet: the clinic has not recorded a payment", 409);
+      if (current.state !== "submitted")
+        return fail("Nothing to check yet: the clinic has not recorded a payment", 409);
       next =
         input.action === "received"
           ? { ...current, state: "received", verifiedAt: new Date(), verifiedBy: session.sub, note: undefined }

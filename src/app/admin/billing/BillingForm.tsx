@@ -68,10 +68,9 @@ export function BillingForm({ config }: { config: BillingConfig }) {
         <div>
           <h2 className="t-h3">GST</h2>
           <p className="t-body text-[var(--color-ink-2)] mt-1 max-w-[62ch]">
-            With this off, every clinic downloads a <strong>bill of supply</strong> and nothing is
-            taxed — whatever rate a drip carries. With it on, they get a <strong>tax invoice</strong>
-            , and the first two digits of the GSTIN below decide whether a supply is CGST + SGST or
-            IGST.
+            With this off, every clinic downloads a <strong>bill of supply</strong> and nothing is taxed — whatever rate
+            a drip carries. With it on, they get a <strong>tax invoice</strong>, and the first two digits of the GSTIN
+            below decide whether a supply is CGST + SGST or IGST.
           </p>
         </div>
         <Pill tone={gstEnabled ? "safe" : "neutral"} dot>
@@ -114,9 +113,7 @@ export function BillingForm({ config }: { config: BillingConfig }) {
           placeholder="e.g. 8th Block Koramangala, Bengaluru 560095"
         />
         {verdict.warning ? (
-          <p className="t-small text-[var(--color-caution-text)] lg:col-span-2">
-            {verdict.warning}
-          </p>
+          <p className="t-small text-[var(--color-caution-text)] lg:col-span-2">{verdict.warning}</p>
         ) : null}
       </div>
 
@@ -134,8 +131,8 @@ export function BillingForm({ config }: { config: BillingConfig }) {
           only reaches bills raised afterwards. Saying so beats somebody
           changing the GSTIN and concluding it did not work. */}
       <p className="t-small text-[var(--color-ink-3)] mt-4" style={{ textWrap: "pretty" }}>
-        Invoices already raised keep the details they were issued with. A bill is a document of
-        record, not a view of today&rsquo;s settings.
+        Invoices already raised keep the details they were issued with. A bill is a document of record, not a view of
+        today&rsquo;s settings.
       </p>
 
       {error ? (

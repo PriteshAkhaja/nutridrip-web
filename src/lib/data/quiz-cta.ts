@@ -34,7 +34,8 @@ export async function quizCtaFor(session: SessionPayload | null, drip?: string |
   const quiz = await latestQuiz(session.sub);
   if (!quiz) return null;
 
-  const withDrip = (base: string, joiner: "?" | "&") => (drip ? `${base}${joiner}drip=${encodeURIComponent(drip)}` : base);
+  const withDrip = (base: string, joiner: "?" | "&") =>
+    drip ? `${base}${joiner}drip=${encodeURIComponent(drip)}` : base;
   const approval = approvalState(quiz);
 
   switch (approval.status) {
@@ -49,7 +50,11 @@ export async function quizCtaFor(session: SessionPayload | null, drip?: string |
       };
     // Nothing moves until the patient answers, and the question is on their results.
     case "info_needed":
-      return { label: "Answer your physician", short: "Answer your physician", href: `/app/results/${String(quiz._id)}` };
+      return {
+        label: "Answer your physician",
+        short: "Answer your physician",
+        href: `/app/results/${String(quiz._id)}`,
+      };
     // The reason for a decline is on the results page.
     case "rejected":
       return { label: "See your results", short: "Your results", href: `/app/results/${String(quiz._id)}` };

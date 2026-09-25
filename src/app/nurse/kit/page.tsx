@@ -155,11 +155,7 @@ export default async function KitPage() {
                   value={`${i.units} ${i.units === 1 ? "unit" : "units"}`}
                   pct={i.coverage}
                   color={
-                    i.units === 0
-                      ? "var(--color-critical)"
-                      : i.enough
-                        ? "var(--color-safe)"
-                        : "var(--color-caution)"
+                    i.units === 0 ? "var(--color-critical)" : i.enough ? "var(--color-safe)" : "var(--color-caution)"
                   }
                   markerPct={100}
                   note={

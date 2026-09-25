@@ -32,10 +32,7 @@ export async function POST(req: Request, { params }: { params: Promise<{ id: str
       if (next < 0) return fail(`Only ${lot.qtyOnHand} units are on hand — stock cannot go negative`, 422);
       // Units already promised to a confirmed order are not yours to write off.
       if (next < lot.qtyReserved) {
-        return fail(
-          `${lot.qtyReserved} units are reserved against confirmed orders. Cancel those first.`,
-          409
-        );
+        return fail(`${lot.qtyReserved} units are reserved against confirmed orders. Cancel those first.`, 409);
       }
       lot.qtyOnHand = next;
     }

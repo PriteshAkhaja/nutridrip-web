@@ -59,8 +59,8 @@ export default async function NursePlanPage({ params }: { params: Promise<{ id: 
       <PlanSchedule sessions={plan.sessions} />
 
       <p className="t-small text-[var(--color-ink-3)] mt-6" style={{ textWrap: "pretty" }}>
-        This is the physician&rsquo;s prescription. Record what you actually gave on the session
-        report — if it has to differ from this, ring the physician first.
+        This is the physician&rsquo;s prescription. Record what you actually gave on the session report — if it has to
+        differ from this, ring the physician first.
       </p>
     </MobileShell>
   );

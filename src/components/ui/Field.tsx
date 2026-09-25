@@ -1,10 +1,4 @@
-import type {
-  InputHTMLAttributes,
-  SelectHTMLAttributes,
-  TextareaHTMLAttributes,
-  ReactNode,
-  WheelEvent,
-} from "react";
+import type { InputHTMLAttributes, SelectHTMLAttributes, TextareaHTMLAttributes, ReactNode, WheelEvent } from "react";
 
 const CONTROL =
   "min-h-[44px] w-full px-[14px] rounded-[var(--radius-sm)] border bg-[var(--color-surface)] " +
@@ -65,10 +59,7 @@ export function Input({ label, hint, error, mono, className = "", ...rest }: Inp
    * Blurring on wheel hands the scroll back to the page and leaves the number
    * alone. Arrow keys and typing still work, so nothing is taken away.
    */
-  const guardWheel =
-    rest.type === "number"
-      ? (e: WheelEvent<HTMLInputElement>) => e.currentTarget.blur()
-      : undefined;
+  const guardWheel = rest.type === "number" ? (e: WheelEvent<HTMLInputElement>) => e.currentTarget.blur() : undefined;
 
   return (
     <Field label={label} hint={hint} error={error}>

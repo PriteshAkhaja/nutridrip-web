@@ -23,8 +23,7 @@ export async function GET(req: Request) {
     const params = new URL(req.url).searchParams;
     const patientId = params.get("patientId");
     // A patient may only ever read their own.
-    const filter =
-      session!.role === "patient" ? { patientId: session!.sub } : patientId ? { patientId } : {};
+    const filter = session!.role === "patient" ? { patientId: session!.sub } : patientId ? { patientId } : {};
 
     const paging = parsePaging({ page: params.get("page"), pageSize: params.get("pageSize") });
     const { rows: reports, meta } = await paginate(LabReport, filter, {

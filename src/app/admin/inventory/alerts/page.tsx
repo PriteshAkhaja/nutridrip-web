@@ -41,8 +41,12 @@ function ExpiryTable({ rows, expired }: { rows: StockAlert[]; expired: boolean }
             <TD nowrap>
               <span className="font-medium">{a.drugName}</span>
             </TD>
-            <TD mono nowrap>{a.batchNo}</TD>
-            <TD mono nowrap>{a.expiry ? formatDate(a.expiry) : "—"}</TD>
+            <TD mono nowrap>
+              {a.batchNo}
+            </TD>
+            <TD mono nowrap>
+              {a.expiry ? formatDate(a.expiry) : "—"}
+            </TD>
             <TD nowrap>
               <span
                 className="t-small"
@@ -60,11 +64,7 @@ function ExpiryTable({ rows, expired }: { rows: StockAlert[]; expired: boolean }
   );
 }
 
-export default async function AlertsPage({
-  searchParams,
-}: {
-  searchParams: Promise<{ tab?: string; days?: string }>;
-}) {
+export default async function AlertsPage({ searchParams }: { searchParams: Promise<{ tab?: string; days?: string }> }) {
   const session = await requireRole("superadmin", "admin");
   const nav = await adminNav();
 

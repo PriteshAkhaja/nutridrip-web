@@ -77,9 +77,7 @@ function toDraft(p: PlanDoc, masterByName: Map<string, string>): PlanDraft {
         dripName: s.dripName,
         sessionNotes: s.sessionNotes ?? "",
         components: (s.components ?? []).map((c) => ({
-          masterId: c.masterId
-            ? String(c.masterId)
-            : masterByName.get(c.name.trim().toLowerCase()),
+          masterId: c.masterId ? String(c.masterId) : masterByName.get(c.name.trim().toLowerCase()),
           name: c.name,
           dose: c.dose,
           unit: c.unit,
@@ -118,42 +116,36 @@ export default async function PlansPage({
       },
       { sort: { createdAt: -1 }, paging }
     ),
-    User.find({ role: "patient", status: "active" })
-      .sort({ name: 1 })
-      .lean<
-        Array<{
-          _id: unknown;
-          name: string;
-          patient?: {
-            city?: string;
-            dob?: Date;
-            weightKg?: number;
-            heightCm?: number;
-            bloodGroup?: string;
-          };
-        }>
-      >(),
-    User.find({ role: "nurse", status: "active" })
-      .sort({ name: 1 })
-      .lean<Array<{ _id: unknown; name: string }>>(),
+    User.find({ role: "patient", status: "active" }).sort({ name: 1 }).lean<
+      Array<{
+        _id: unknown;
+        name: string;
+        patient?: {
+          city?: string;
+          dob?: Date;
+          weightKg?: number;
+          heightCm?: number;
+          bloodGroup?: string;
+        };
+      }>
+    >(),
+    User.find({ role: "nurse", status: "active" }).sort({ name: 1 }).lean<Array<{ _id: unknown; name: string }>>(),
     // The recipe comes down with the drip so choosing one fills the session's
     // components in on the spot, with no round trip and nothing to get stale.
-    Drip.find({ isActive: true })
-      .sort({ name: 1 })
-      .lean<
-        Array<{
-          _id: unknown;
-          name: string;
-          category?: string;
-          ingredients?: Array<{
-            masterId?: unknown;
-            name?: string;
-            dose: number;
-            unit: string;
-            role?: string;
-          }>;
-        }>
-      >(),
+    Drip.find({ isActive: true }).sort({ name: 1 }).lean<
+      Array<{
+        _id: unknown;
+        name: string;
+        category?: string;
+        ingredients?: Array<{
+          masterId?: unknown;
+          name?: string;
+          dose: number;
+          unit: string;
+          role?: string;
+        }>;
+      }>
+    >(),
     ProductMaster.find({ isActive: true })
       .sort({ name: 1 })
       .lean<Array<{ _id: unknown; name: string; canonicalUnit: string }>>(),
@@ -219,10 +211,10 @@ export default async function PlansPage({
       meta={`${meta.total} plan${meta.total === 1 ? "" : "s"}`}
     >
       <p className="t-body text-[var(--color-ink-2)] max-w-[76ch] mb-6" style={{ textWrap: "pretty" }}>
-        A plan is a course, not a single session — several weeks of drips with their doses and routes written out.
-        Each session can carry a different protocol, its own components and a note for the nurse. It stays a draft
-        until you share it, and sharing is what puts it on a nurse&apos;s schedule. Every plan prints as a
-        prescription slip carrying your council registration.
+        A plan is a course, not a single session — several weeks of drips with their doses and routes written out. Each
+        session can carry a different protocol, its own components and a note for the nurse. It stays a draft until you
+        share it, and sharing is what puts it on a nurse&apos;s schedule. Every plan prints as a prescription slip
+        carrying your council registration.
       </p>
 
       {/* Archived plans have to be reachable, or "archive" is indistinguishable
@@ -249,11 +241,7 @@ export default async function PlansPage({
 
       <div className="mb-6">
         {showArchived ? null : editing ? (
-          <PlanBuilder
-            key={String(editing._id)}
-            {...builderProps}
-            initial={toDraft(editing, masterByName)}
-          />
+          <PlanBuilder key={String(editing._id)} {...builderProps} initial={toDraft(editing, masterByName)} />
         ) : (
           <PlanBuilder {...builderProps} />
         )}
@@ -271,95 +259,97 @@ export default async function PlansPage({
         />
       ) : (
         <PagedView>
-        <PagedResults>
-        <div className="grid grid-cols-1 gap-4 xl:grid-cols-2">
-          {plans.map((p) => {
-            const sessions = p.weeks.flatMap((w) => w.sessions);
-            const past = sessions.filter((s) => new Date(s.date) < new Date()).length;
-            const protocols = [...new Set(sessions.map((s) => s.dripName).filter(Boolean))];
-            const noted = sessions.filter((s) => s.sessionNotes).length;
+          <PagedResults>
+            <div className="grid grid-cols-1 gap-4 xl:grid-cols-2">
+              {plans.map((p) => {
+                const sessions = p.weeks.flatMap((w) => w.sessions);
+                const past = sessions.filter((s) => new Date(s.date) < new Date()).length;
+                const protocols = [...new Set(sessions.map((s) => s.dripName).filter(Boolean))];
+                const noted = sessions.filter((s) => s.sessionNotes).length;
 
-            return (
-              <Card key={String(p._id)} padding="p-6" className="h-full flex flex-col">
-                <div className="flex items-start justify-between gap-4 mb-4">
-                  <div className="min-w-0">
-                    <div className="flex items-baseline gap-3 flex-wrap">
-                      <Link
-                        href={`/doctor/patients/${String(p.patientId)}`}
-                        className="t-h3 no-underline hover:no-underline"
-                      >
-                        {nameById.get(String(p.patientId)) ?? "Unknown patient"}
-                      </Link>
-                      {/* An active plan is a course still being given, so it
+                return (
+                  <Card key={String(p._id)} padding="p-6" className="h-full flex flex-col">
+                    <div className="flex items-start justify-between gap-4 mb-4">
+                      <div className="min-w-0">
+                        <div className="flex items-baseline gap-3 flex-wrap">
+                          <Link
+                            href={`/doctor/patients/${String(p.patientId)}`}
+                            className="t-h3 no-underline hover:no-underline"
+                          >
+                            {nameById.get(String(p.patientId)) ?? "Unknown patient"}
+                          </Link>
+                          {/* An active plan is a course still being given, so it
                           pulses. Set here rather than in the shared live list:
                           "active" on an account means only that it is enabled,
                           and those rows must stay still. */}
-                      <StatusPill status={p.status} dot pulse={p.status === "active"} />
+                          <StatusPill status={p.status} dot pulse={p.status === "active"} />
+                        </div>
+                        {p.diagnosis && (
+                          <p className="t-body text-[var(--color-ink-2)] mt-1 max-w-[46ch]">{p.diagnosis}</p>
+                        )}
+                      </div>
+                      <div className="flex flex-col items-end flex-none">
+                        <span className="t-data text-[18px]">{p.totalWeeks}</span>
+                        <span className="t-small text-[var(--color-ink-3)]">weeks</span>
+                      </div>
                     </div>
-                    {p.diagnosis && (
-                      <p className="t-body text-[var(--color-ink-2)] mt-1 max-w-[46ch]">{p.diagnosis}</p>
-                    )}
-                  </div>
-                  <div className="flex flex-col items-end flex-none">
-                    <span className="t-data text-[18px]">{p.totalWeeks}</span>
-                    <span className="t-small text-[var(--color-ink-3)]">weeks</span>
-                  </div>
-                </div>
 
-                <div className="py-4 border-y border-[var(--color-line)]">
-                  <FillSegments name="Sessions run" done={past} total={sessions.length} />
-                </div>
+                    <div className="py-4 border-y border-[var(--color-line)]">
+                      <FillSegments name="Sessions run" done={past} total={sessions.length} />
+                    </div>
 
-                {/* mb-4 carries the fixed gap above the footer rule. It cannot
+                    {/* mb-4 carries the fixed gap above the footer rule. It cannot
                     live on the footer as mt-4, because that footer uses mt-auto
                     to sink to the card's base and auto absorbs the whole
                     margin — leaving 0 on any card tall enough to have no slack. */}
-                <div className="flex flex-col gap-2 mt-4 mb-4">
-                  {[
-                    ["Starts", p.startDate ? formatDate(p.startDate) : "—"],
-                    ["Protocols", protocols.length ? protocols.join(" · ") : "—"],
-                    ["Session notes", noted ? `${noted} of ${sessions.length}` : "None"],
-                    ["Nurse", p.nurseId ? (nameById.get(String(p.nurseId)) ?? "—") : "Not assigned"],
-                    ["Written", formatDate(p.createdAt)],
-                  ].map(([k, v]) => (
-                    <div key={k} className="flex justify-between gap-4 items-baseline">
-                      <span className="t-body text-[var(--color-ink-2)]">{k}</span>
-                      <span className="t-data text-[14.5px] text-right">{v}</span>
+                    <div className="flex flex-col gap-2 mt-4 mb-4">
+                      {[
+                        ["Starts", p.startDate ? formatDate(p.startDate) : "—"],
+                        ["Protocols", protocols.length ? protocols.join(" · ") : "—"],
+                        ["Session notes", noted ? `${noted} of ${sessions.length}` : "None"],
+                        ["Nurse", p.nurseId ? (nameById.get(String(p.nurseId)) ?? "—") : "Not assigned"],
+                        ["Written", formatDate(p.createdAt)],
+                      ].map(([k, v]) => (
+                        <div key={k} className="flex justify-between gap-4 items-baseline">
+                          <span className="t-body text-[var(--color-ink-2)]">{k}</span>
+                          <span className="t-data text-[14.5px] text-right">{v}</span>
+                        </div>
+                      ))}
                     </div>
-                  ))}
-                </div>
 
-                <div className="mt-auto pt-4 border-t border-[var(--color-line)] flex items-center gap-5 flex-wrap">
-                  <Link
-                    href={hrefWith("/doctor/plans", { show, page, pageSize }, { edit: String(p._id) })}
-                    className="t-small font-semibold"
-                  >
-                    Edit the plan&nbsp;<Arrow />
-                  </Link>
-                  <Link href={`/doctor/plans/${String(p._id)}/print`} className="t-small font-semibold">
-                    Print Rx&nbsp;<Arrow />
-                  </Link>
-                </div>
-                <div className="mt-4 pt-4 border-t border-[var(--color-line)] flex flex-col gap-4">
-                  <PlanActions
-                    planId={String(p._id)}
-                    status={p.status}
-                    shared={p.sharedWithNurse}
-                    patientName={nameById.get(String(p.patientId)) ?? "this patient"}
-                  />
-                  <ShareToggle
-                    planId={String(p._id)}
-                    shared={p.sharedWithNurse}
-                    nurseId={p.nurseId ? String(p.nurseId) : null}
-                    nurses={nurses.map((n) => ({ id: String(n._id), name: n.name }))}
-                  />
-                </div>
-              </Card>
-            );
-          })}
-        </div>
-        </PagedResults>
-        <Pagination meta={meta} basePath="/doctor/plans" params={{ show, pageSize }} nouns={["plan", "plans"]} />
+                    <div className="mt-auto pt-4 border-t border-[var(--color-line)] flex items-center gap-5 flex-wrap">
+                      <Link
+                        href={hrefWith("/doctor/plans", { show, page, pageSize }, { edit: String(p._id) })}
+                        className="t-small font-semibold"
+                      >
+                        Edit the plan&nbsp;
+                        <Arrow />
+                      </Link>
+                      <Link href={`/doctor/plans/${String(p._id)}/print`} className="t-small font-semibold">
+                        Print Rx&nbsp;
+                        <Arrow />
+                      </Link>
+                    </div>
+                    <div className="mt-4 pt-4 border-t border-[var(--color-line)] flex flex-col gap-4">
+                      <PlanActions
+                        planId={String(p._id)}
+                        status={p.status}
+                        shared={p.sharedWithNurse}
+                        patientName={nameById.get(String(p.patientId)) ?? "this patient"}
+                      />
+                      <ShareToggle
+                        planId={String(p._id)}
+                        shared={p.sharedWithNurse}
+                        nurseId={p.nurseId ? String(p.nurseId) : null}
+                        nurses={nurses.map((n) => ({ id: String(n._id), name: n.name }))}
+                      />
+                    </div>
+                  </Card>
+                );
+              })}
+            </div>
+          </PagedResults>
+          <Pagination meta={meta} basePath="/doctor/plans" params={{ show, pageSize }} nouns={["plan", "plans"]} />
         </PagedView>
       )}
     </ConsoleShell>

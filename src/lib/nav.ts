@@ -25,7 +25,9 @@ export async function adminNav(activeCounts = true): Promise<NavItem[]> {
       { section: "Inventory", label: "Alerts", href: "/admin/inventory/alerts" },
       { section: "Inventory", label: "Recall trace", href: "/admin/inventory/recall" },
       { section: "Admin", label: "Billing", href: "/admin/billing" },
-      ...(AI_STUDIO_ENABLED ? [{ section: "Admin", label: "AI Studio", href: "/admin/studio", permission: "ai.configure" } as const] : []),
+      ...(AI_STUDIO_ENABLED
+        ? [{ section: "Admin", label: "AI Studio", href: "/admin/studio", permission: "ai.configure" } as const]
+        : []),
       { section: "Admin", label: "Audit trail", href: "/admin/audit" },
     ];
   }
@@ -47,16 +49,33 @@ export async function adminNav(activeCounts = true): Promise<NavItem[]> {
   // Admin — and ordered within each as before.
   return [
     { section: "Platform", label: "Overview", href: "/admin" },
-    { section: "Platform", label: "Approvals", href: "/admin/approvals", badge: pendingQuizzes || undefined, badgeTone: "caution" },
+    {
+      section: "Platform",
+      label: "Approvals",
+      href: "/admin/approvals",
+      badge: pendingQuizzes || undefined,
+      badgeTone: "caution",
+    },
     { section: "Platform", label: "People", href: "/admin/users", badge: users },
     { section: "Platform", label: "Quiz builder", href: "/admin/quiz" },
     { section: "Platform", label: "Site copy", href: "/admin/content" },
     { section: "Platform", label: "Service zones", href: "/admin/zones", permission: "zones.manage" },
-    { section: "Platform", label: "Enquiries", href: "/admin/leads", badge: newLeads || undefined, badgeTone: "caution" },
+    {
+      section: "Platform",
+      label: "Enquiries",
+      href: "/admin/leads",
+      badge: newLeads || undefined,
+      badgeTone: "caution",
+    },
     { section: "Inventory", label: "Availability", href: "/admin/inventory/availability" },
     { section: "Inventory", label: "Products & batches", href: "/admin/inventory", badge: products },
     { section: "Inventory", label: "Drip builder", href: "/admin/inventory/drips" },
-    { section: "Inventory", label: "Preparation orders", href: "/admin/inventory/orders", badge: openOrders || undefined },
+    {
+      section: "Inventory",
+      label: "Preparation orders",
+      href: "/admin/inventory/orders",
+      badge: openOrders || undefined,
+    },
     {
       section: "Inventory",
       label: "Alerts",
@@ -66,7 +85,9 @@ export async function adminNav(activeCounts = true): Promise<NavItem[]> {
     },
     { section: "Inventory", label: "Recall trace", href: "/admin/inventory/recall" },
     { section: "Admin", label: "Billing", href: "/admin/billing" },
-    ...(AI_STUDIO_ENABLED ? [{ section: "Admin", label: "AI Studio", href: "/admin/studio", permission: "ai.configure" } as const] : []),
+    ...(AI_STUDIO_ENABLED
+      ? [{ section: "Admin", label: "AI Studio", href: "/admin/studio", permission: "ai.configure" } as const]
+      : []),
     { section: "Admin", label: "Audit trail", href: "/admin/audit" },
   ];
 }
@@ -92,11 +113,23 @@ export async function doctorNav(doctorId: string): Promise<NavItem[]> {
   const escalations = blockedVitals + openAdverse;
 
   return [
-    { section: "Clinical", label: "Approvals queue", href: "/doctor", badge: pendingQuizzes || undefined, badgeTone: "caution" },
+    {
+      section: "Clinical",
+      label: "Approvals queue",
+      href: "/doctor",
+      badge: pendingQuizzes || undefined,
+      badgeTone: "caution",
+    },
     { section: "Clinical", label: "Patients", href: "/doctor/patients" },
     { section: "Clinical", label: "Treatment plans", href: "/doctor/plans" },
     { section: "Clinical", label: "Schedule", href: "/doctor/schedule", badge: todaySessions || undefined },
-    { section: "Clinical", label: "Escalations", href: "/doctor/adverse", badge: escalations || undefined, badgeTone: "critical" },
+    {
+      section: "Clinical",
+      label: "Escalations",
+      href: "/doctor/adverse",
+      badge: escalations || undefined,
+      badgeTone: "critical",
+    },
     { section: "Account", label: "Letterhead", href: "/doctor/letterhead", permission: "letterhead.edit" },
   ];
 }

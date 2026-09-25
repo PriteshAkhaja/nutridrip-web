@@ -121,11 +121,11 @@ export default async function PatientProfilePage() {
     >
       <div className="mb-4">
         <ProfileForm
-            initial={initial}
-            mapsKey={process.env.NEXT_PUBLIC_GOOGLE_MAPS_BROWSER_KEY ?? null}
-            searchEnabled={geocodingConfigured()}
-            zones={servedZones(await getZones())}
-          />
+          initial={initial}
+          mapsKey={process.env.NEXT_PUBLIC_GOOGLE_MAPS_BROWSER_KEY ?? null}
+          searchEnabled={geocodingConfigured()}
+          zones={servedZones(await getZones())}
+        />
       </div>
 
       <div className="flex flex-col gap-4">

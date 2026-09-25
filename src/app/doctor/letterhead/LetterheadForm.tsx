@@ -78,7 +78,8 @@ export function LetterheadForm({
         const issues: Array<{ path: string; message: string }> = json.issues ?? [];
         if (issues.length) {
           const next: Partial<Record<keyof Form, string>> = {};
-          for (const i of issues) if ((FIELDS as readonly string[]).includes(i.path)) next[i.path as keyof Form] = i.message;
+          for (const i of issues)
+            if ((FIELDS as readonly string[]).includes(i.path)) next[i.path as keyof Form] = i.message;
           setFieldErrors(next);
           setError("Some of these need another look.");
         } else setError(json.error ?? "Could not save that");
@@ -118,9 +119,7 @@ export function LetterheadForm({
             placeholder={credentials.name}
             error={fieldErrors.practiceName}
           />
-          <p className="t-small text-[var(--color-ink-3)] -mt-3">
-            Left blank, the slip is headed by your own name.
-          </p>
+          <p className="t-small text-[var(--color-ink-3)] -mt-3">Left blank, the slip is headed by your own name.</p>
 
           <Input
             label="Qualifications"

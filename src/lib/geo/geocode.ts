@@ -141,12 +141,7 @@ function cityAmong(results: Array<{ address_components?: LegacyComponent[] }>): 
  * Indian addresses rarely carry a clean street number, so the street line is
  * assembled from whatever the provider did return, most specific first.
  */
-function toAddress(
-  components: Component[],
-  formatted: string,
-  latitude: number,
-  longitude: number
-): ResolvedAddress {
+function toAddress(components: Component[], formatted: string, latitude: number, longitude: number): ResolvedAddress {
   const streetBits = [
     pick(components, "street_number"),
     pick(components, "route"),
@@ -337,12 +332,7 @@ async function resolveViaLegacyPlaces(placeId: string, key: string): Promise<Res
     const lng = json.result.geometry?.location?.lng;
     if (typeof lat !== "number" || typeof lng !== "number") return null;
 
-    return toAddress(
-      fromLegacy(json.result.address_components),
-      json.result.formatted_address ?? "",
-      lat,
-      lng
-    );
+    return toAddress(fromLegacy(json.result.address_components), json.result.formatted_address ?? "", lat, lng);
   } catch (err) {
     console.error("[geocode] classic place details could not be reached:", err);
     return null;

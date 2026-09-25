@@ -28,11 +28,7 @@ export const dynamic = "force-dynamic";
  * not — the app records what was invoiced and nothing about payment — so the
  * sheet says that in a sentence rather than leave it to be assumed.
  */
-export default async function StatementPage({
-  searchParams,
-}: {
-  searchParams: Promise<{ month?: string }>;
-}) {
+export default async function StatementPage({ searchParams }: { searchParams: Promise<{ month?: string }> }) {
   const session = await requireRole("clinic", "superadmin");
   const { month: rawMonth } = await searchParams;
   const month = parseMonth(rawMonth);
@@ -56,7 +52,8 @@ export default async function StatementPage({
     <div className="min-h-screen bg-[var(--color-surface-2)] print:bg-white py-8 print:py-0 px-4">
       <div className="no-print mx-auto max-w-[820px] flex items-center justify-between gap-4 mb-5 flex-wrap">
         <Link href={back} className="t-body inline-flex items-center min-h-[44px]">
-          <Arrow dir="left" />&nbsp;Back to billing
+          <Arrow dir="left" />
+          &nbsp;Back to billing
         </Link>
         <PrintButton />
       </div>
@@ -108,7 +105,9 @@ export default async function StatementPage({
 
         <section className="py-6">
           {rows.length === 0 ? (
-            <p className="t-body text-[var(--color-ink-2)]">No invoices were raised for goods sent in {monthLabel(month)}.</p>
+            <p className="t-body text-[var(--color-ink-2)]">
+              No invoices were raised for goods sent in {monthLabel(month)}.
+            </p>
           ) : (
             <table className="w-full border-collapse">
               <thead>
@@ -123,16 +122,24 @@ export default async function StatementPage({
               </thead>
               <tbody>
                 {rows.map((r) => (
-                  <tr key={r.invoiceNo + r.orderId} className="border-b border-[var(--color-line)]" style={{ breakInside: "avoid" }}>
+                  <tr
+                    key={r.invoiceNo + r.orderId}
+                    className="border-b border-[var(--color-line)]"
+                    style={{ breakInside: "avoid" }}
+                  >
                     <td className="t-data text-[13px] py-3 pr-3 whitespace-nowrap">
                       {r.invoiceNo}
                       {r.documentType === "bill_of_supply" ? (
                         <span className="t-small text-[var(--color-ink-3)] block">Bill of supply</span>
                       ) : null}
                     </td>
-                    <td className="t-data text-[13px] py-3 pr-3 whitespace-nowrap">{r.date ? formatDate(r.date) : "—"}</td>
+                    <td className="t-data text-[13px] py-3 pr-3 whitespace-nowrap">
+                      {r.date ? formatDate(r.date) : "—"}
+                    </td>
                     <td className="t-data text-[13px] py-3 pr-3 whitespace-nowrap">{r.orderNo}</td>
-                    <td className="t-data text-[13px] py-3 pr-3 text-right whitespace-nowrap">{formatInr(r.taxable)}</td>
+                    <td className="t-data text-[13px] py-3 pr-3 text-right whitespace-nowrap">
+                      {formatInr(r.taxable)}
+                    </td>
                     {taxed ? (
                       <td className="t-data text-[13px] py-3 pr-3 text-right whitespace-nowrap">
                         {r.gst ? formatInr(r.gst) : "—"}

@@ -6,13 +6,7 @@ import { useOptimistic, useTransition, type MouseEvent } from "react";
 import { useNavigation } from "@/components/ui/Paged";
 import { Select } from "@/components/ui/Field";
 import { DatePicker } from "@/components/ui/DatePicker";
-import {
-  actionLabel,
-  AUDIT_GROUPS,
-  groupFor,
-  type AuditGroup,
-  type DatePreset,
-} from "@/lib/data/audit";
+import { actionLabel, AUDIT_GROUPS, groupFor, type AuditGroup, type DatePreset } from "@/lib/data/audit";
 
 /**
  * The audit filter bar.
@@ -163,9 +157,7 @@ export function AuditFilters({
   // Somebody opening it is looking for one action they can already name, so a
   // frequency-ordered list means reading every row to find it. The count stays
   // on the option -- it is worth knowing once found, and no help in finding.
-  const actions = [...inGroup].sort((a, b) =>
-    actionLabel(a.action).localeCompare(actionLabel(b.action)),
-  );
+  const actions = [...inGroup].sort((a, b) => actionLabel(a.action).localeCompare(actionLabel(b.action)));
 
   const anyFilter = Boolean(view.group || view.action || view.actor || view.from || view.to);
   const clearAll: Patch = { group: null, action: null, actor: null, from: null, to: null };
@@ -195,14 +187,8 @@ export function AuditFilters({
             to size itself takes the width of its widest option, so the whole
             bar jumped every time a group changed the list underneath it. */}
         <div className="w-full sm:w-[280px]">
-          <Select
-            label="Action"
-            value={view.action ?? ""}
-            onChange={(e) => go({ action: e.target.value || null })}
-          >
-            <option value="">
-              {view.group ? `Every ${view.group.toLowerCase()} action` : "Every action"}
-            </option>
+          <Select label="Action" value={view.action ?? ""} onChange={(e) => go({ action: e.target.value || null })}>
+            <option value="">{view.group ? `Every ${view.group.toLowerCase()} action` : "Every action"}</option>
             {actions.map((c) => (
               <option key={c.action} value={c.action}>
                 {actionLabel(c.action)} ({c.n})
@@ -212,11 +198,7 @@ export function AuditFilters({
         </div>
 
         <div className="w-full sm:w-[240px]">
-          <Select
-            label="Who"
-            value={view.actor ?? ""}
-            onChange={(e) => go({ actor: e.target.value || null })}
-          >
+          <Select label="Who" value={view.actor ?? ""} onChange={(e) => go({ actor: e.target.value || null })}>
             <option value="">Anyone</option>
             {actors.map((a) => (
               <option key={a.id} value={a.id}>
@@ -256,11 +238,7 @@ export function AuditFilters({
         {/* Downloads the filter, not the page. A plain link, not a fetch: the
             browser handles the file, so a big export never sits in a tab's
             memory and the download survives navigating away. */}
-        <a
-          href={exportHref}
-          className="t-small font-semibold pb-[13px] ml-auto whitespace-nowrap"
-          download
-        >
+        <a href={exportHref} className="t-small font-semibold pb-[13px] ml-auto whitespace-nowrap" download>
           Download CSV
           {anyFilter ? <span className="text-[var(--color-ink-3)]"> (this filter)</span> : null}
         </a>
@@ -272,8 +250,7 @@ export function AuditFilters({
       <div className="flex flex-wrap gap-2 items-center">
         <span className="t-small text-[var(--color-ink-3)]">Quick range</span>
         {presets.map((p) => {
-          const next: Patch =
-            activePreset === p.label ? { from: null, to: null } : { from: p.from, to: p.to };
+          const next: Patch = activePreset === p.label ? { from: null, to: null } : { from: p.from, to: p.to };
           return (
             <Link
               key={p.label}
