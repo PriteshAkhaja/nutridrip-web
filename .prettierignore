@@ -1,0 +1,19 @@
+# Built and installed
+.next/
+node_modules/
+coverage/
+package-lock.json
+next-env.d.ts
+*.tsbuildinfo
+
+# Client documents, mockups and the progress logs. The logs are append-only:
+# a formatter re-aligning a table someone has already read counts as rewriting it.
+_reference/
+__MACOSX/
+
+# Hand-written prose
+*.md
+
+# Static assets
+public/
+*.zip

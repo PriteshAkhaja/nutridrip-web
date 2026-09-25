@@ -1,0 +1,11 @@
+# LF in the repository and in every checkout, whatever core.autocrlf says on
+# the machine. Prettier writes LF (.prettierrc.json); without this, Git on
+# Windows checks files out as CRLF and every one of them reads as unformatted.
+* text=auto eol=lf
+
+*.png binary
+*.jpg binary
+*.ico binary
+*.pdf binary
+*.zip binary
+*.woff2 binary

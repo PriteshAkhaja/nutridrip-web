@@ -1,0 +1,16 @@
+{
+  // Format with the project's Prettier (node_modules, .prettierrc.json) on every save.
+  "editor.defaultFormatter": "esbenp.prettier-vscode",
+  "editor.formatOnSave": true,
+  "prettier.requireConfig": true,
+  "files.eol": "\n",
+  // Per-language entries win over a user-level formatter set for that language.
+  "[typescript]": { "editor.defaultFormatter": "esbenp.prettier-vscode" },
+  "[typescriptreact]": { "editor.defaultFormatter": "esbenp.prettier-vscode" },
+  "[javascript]": { "editor.defaultFormatter": "esbenp.prettier-vscode" },
+  "[json]": { "editor.defaultFormatter": "esbenp.prettier-vscode" },
+  "[jsonc]": { "editor.defaultFormatter": "esbenp.prettier-vscode" },
+  "[css]": { "editor.defaultFormatter": "esbenp.prettier-vscode" },
+  // Prose and the append-only logs are not reformatted on save.
+  "[markdown]": { "editor.formatOnSave": false }
+}
