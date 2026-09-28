@@ -77,9 +77,13 @@ export async function POST(req: Request) {
     }
 
     const drips = await Drip.find({ _id: { $in: input.lines.map((l) => l.dripId) } }).lean<
-      Array<{ _id: unknown; name: string; priceInr: number }>
+      Array<{ _id: unknown; name: string; priceInr: number; isActive?: boolean }>
     >();
     const dripById = new Map(drips.map((d) => [String(d._id), d]));
+
+    // A drip switched off (not Live) is not offered, so it cannot be ordered either.
+    const retired = drips.filter((d) => d.isActive === false).map((d) => d.name);
+    if (retired.length > 0) return fail(`${retired.join(", ")} is no longer offered. Remove it from the order.`, 409);
 
     const lines = input.lines.map((l) => {
       const drip = dripById.get(l.dripId);

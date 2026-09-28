@@ -3,7 +3,7 @@ import { requireRole } from "@/lib/auth/guard";
 import { adminNav } from "@/lib/nav";
 import { ConsoleShell } from "@/components/layout/ConsoleShell";
 import { checkAvailability } from "@/lib/inventory/availability";
-import { listDrips } from "@/lib/data/drips";
+import { listLiveDrips } from "@/lib/data/drips";
 import { formatInr } from "@/lib/inventory/units";
 import { expiryPhrase, formatDate } from "@/lib/data/inventory";
 import { Card } from "@/components/ui/Card";
@@ -22,7 +22,7 @@ export default async function AvailabilityPage({
   const nav = await adminNav();
 
   const { drip: dripSlug, qty, kit } = await searchParams;
-  const drips = await listDrips();
+  const drips = await listLiveDrips();
   const selected = drips.find((d) => d.slug === dripSlug) ?? drips[0];
   const quantity = Math.max(1, Number(qty) || 10);
   const includeKits = kit !== "0";

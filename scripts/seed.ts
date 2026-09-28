@@ -1012,6 +1012,9 @@ type DripSeed = {
   benefits?: Array<{ title: string; description?: string }>;
 };
 
+/** Ticked "Most popular" in the demo, so the home page row has its usual four. */
+const POPULAR_SLUGS = new Set(["myers-revive", "immune-shield", "glow-protocol", "hydrate-plus"]);
+
 /** The nine-drip catalogue from Block 1. */
 const DRIPS: DripSeed[] = [
   {
@@ -1383,6 +1386,8 @@ async function seedDrips(byKey: Map<string, { _id: unknown; name: string }>, kit
       bestFor: d.bestFor,
       goodToKnow: d.goodToKnow,
       isPublic: true,
+      // The home page's "Most popular" row reads this tick.
+      isPopular: POPULAR_SLUGS.has(d.slug),
       requiresApproval: d.requiresApproval ?? true,
       withKit: true,
       kitId,

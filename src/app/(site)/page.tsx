@@ -29,6 +29,7 @@ import { getLatePolicy } from "@/lib/billing/settings";
 import { fillLatePolicy } from "@/lib/billing/late-policy";
 import { getZones } from "@/lib/zones-store";
 import { fillZoneCount } from "@/lib/zones";
+import { POPULAR_ON_HOME } from "@/lib/data/drips";
 
 export const dynamic = "force-dynamic";
 
@@ -43,9 +44,10 @@ export default async function HomePage() {
   const latePolicy = await getLatePolicy();
   const [drips, copy, zones] = await Promise.all([listDrips(), getContent(), getZones()]);
 
-  const bestSellers = ["myers-revive", "immune-shield", "glow-protocol", "hydrate-plus"]
-    .map((slug) => drips.find((d) => d.slug === slug))
-    .filter(Boolean) as typeof drips;
+  // The drips the super admin ticked "Most popular" in the Drip builder (up to
+  // four, one row). None ticked: the section is left out rather than filled
+  // with a guess.
+  const bestSellers = drips.filter((d) => d.isPopular).slice(0, POPULAR_ON_HOME);
 
   return (
     <>
@@ -164,54 +166,56 @@ export default async function HomePage() {
       </Section>
 
       {/* ================= BEST SELLERS ================= */}
-      <Section>
-        <div className="flex items-end justify-between gap-6 flex-wrap mb-10">
-          <SectionHeading
-            eyebrow="Most booked"
-            title="Where most people start"
-            sub="Availability below is live — it counts only in-date stock that is not already promised to another session."
-          />
-          <Link href="/drips" className="t-body font-semibold mb-10">
-            All {drips.length} drips&nbsp;
-            <Arrow />
-          </Link>
-        </div>
-
-        <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-4">
-          {bestSellers.map((d) => (
-            <Link
-              key={d.slug}
-              href={`/drips/${d.slug}`}
-              className="group rounded-[var(--radius-lg)] border border-[var(--color-line)] bg-[var(--color-surface)] overflow-hidden no-underline hover:no-underline flex flex-col transition-colors duration-150 hover:border-[var(--color-ink)]"
-            >
-              <div className="aspect-[4/3] bg-[var(--color-surface-2)] relative flex items-center justify-center">
-                <Vial />
-                <span
-                  className="absolute top-3 left-3 t-micro px-[10px] py-1 rounded-full"
-                  style={{ background: "#fff", border: "1px solid var(--color-line)" }}
-                >
-                  {d.category}
-                </span>
-              </div>
-              <div className="p-5 flex flex-col gap-2 flex-1">
-                <h3 style={{ font: "600 19px/1.25 var(--font-display)", letterSpacing: "-0.02em" }}>{d.name}</h3>
-                <Stars rating={5} size={12} />
-                <p className="t-small text-[var(--color-ink-2)] flex-1">{d.tagline ?? d.description}</p>
-                <div className="flex items-baseline justify-between gap-3 pt-3 mt-1 border-t border-[var(--color-line)]">
-                  <span className="t-data text-[17px]">{formatInr(d.priceInr)}</span>
-                  <span className="t-small text-[var(--color-ink-3)]">{d.durationMin} min</span>
-                </div>
-                <span
-                  className="mt-2 inline-flex items-center justify-center rounded-[var(--radius-sm)] min-h-[40px] px-4 font-semibold text-[13px] transition-colors duration-150"
-                  style={{ background: "var(--color-ink)", color: "#fff" }}
-                >
-                  See the formula
-                </span>
-              </div>
+      {bestSellers.length > 0 && (
+        <Section>
+          <div className="flex items-end justify-between gap-6 flex-wrap mb-10">
+            <SectionHeading
+              eyebrow="Most booked"
+              title="Where most people start"
+              sub="Availability below is live — it counts only in-date stock that is not already promised to another session."
+            />
+            <Link href="/drips" className="t-body font-semibold mb-10">
+              All {drips.length} drips&nbsp;
+              <Arrow />
             </Link>
-          ))}
-        </div>
-      </Section>
+          </div>
+
+          <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-4">
+            {bestSellers.map((d) => (
+              <Link
+                key={d.slug}
+                href={`/drips/${d.slug}`}
+                className="group rounded-[var(--radius-lg)] border border-[var(--color-line)] bg-[var(--color-surface)] overflow-hidden no-underline hover:no-underline flex flex-col transition-colors duration-150 hover:border-[var(--color-ink)]"
+              >
+                <div className="aspect-[4/3] bg-[var(--color-surface-2)] relative flex items-center justify-center">
+                  <Vial />
+                  <span
+                    className="absolute top-3 left-3 t-micro px-[10px] py-1 rounded-full"
+                    style={{ background: "#fff", border: "1px solid var(--color-line)" }}
+                  >
+                    {d.category}
+                  </span>
+                </div>
+                <div className="p-5 flex flex-col gap-2 flex-1">
+                  <h3 style={{ font: "600 19px/1.25 var(--font-display)", letterSpacing: "-0.02em" }}>{d.name}</h3>
+                  <Stars rating={5} size={12} />
+                  <p className="t-small text-[var(--color-ink-2)] flex-1">{d.tagline ?? d.description}</p>
+                  <div className="flex items-baseline justify-between gap-3 pt-3 mt-1 border-t border-[var(--color-line)]">
+                    <span className="t-data text-[17px]">{formatInr(d.priceInr)}</span>
+                    <span className="t-small text-[var(--color-ink-3)]">{d.durationMin} min</span>
+                  </div>
+                  <span
+                    className="mt-2 inline-flex items-center justify-center rounded-[var(--radius-sm)] min-h-[40px] px-4 font-semibold text-[13px] transition-colors duration-150"
+                    style={{ background: "var(--color-ink)", color: "#fff" }}
+                  >
+                    See the formula
+                  </span>
+                </div>
+              </Link>
+            ))}
+          </div>
+        </Section>
+      )}
 
       {/* ================= CATEGORIES ================= */}
       <Section tone="soft">

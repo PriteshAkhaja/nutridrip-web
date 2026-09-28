@@ -58,9 +58,11 @@ export async function PATCH(req: Request, { params }: { params: Promise<{ id: st
 
     // Against the values that will END UP on the record, not just what was
     // sent: an edit that raises only the short end has to be caught too.
+    // `sent`, not `??`: an unsent durationMin still parses as the schema's
+    // default 45, which refused any edit of a 30–40 minute drip.
     const badRange = durationRangeError(
-      input.durationMin ?? drip.durationMin,
-      input.durationToMin !== undefined ? input.durationToMin : drip.durationToMin
+      sent.has("durationMin") ? input.durationMin : drip.durationMin,
+      sent.has("durationToMin") ? input.durationToMin : drip.durationToMin
     );
     if (badRange) return fail(badRange, 422);
 

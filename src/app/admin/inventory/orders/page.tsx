@@ -11,7 +11,7 @@ import { EmptyState } from "@/components/ui/States";
 import { formatInr } from "@/lib/inventory/units";
 import { formatDate } from "@/lib/data/inventory";
 import { ORDER_STATUS } from "@/lib/models/types";
-import { listDrips } from "@/lib/data/drips";
+import { listLiveDrips } from "@/lib/data/drips";
 import { checkAvailability } from "@/lib/inventory/availability";
 import { OrderComposer } from "@/components/orders/OrderComposer";
 import { PagedResults, PagedView, Pagination } from "@/components/ui/Paged";
@@ -58,7 +58,7 @@ export default async function OrdersPage({
   const total = Object.values(counts).reduce((a, b) => a + b, 0);
 
   const [drips, clinics] = await Promise.all([
-    listDrips(),
+    listLiveDrips(),
     User.find({ role: "clinic", status: "active" })
       .sort({ name: 1 })
       .lean<Array<{ _id: unknown; name: string; clinic?: { city?: string; onCredit?: boolean } }>>(),

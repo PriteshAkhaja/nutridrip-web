@@ -115,6 +115,25 @@ export async function PATCH(req: Request, { params }: { params: Promise<{ id: st
     if (input.startDate) plan.startDate = new Date(input.startDate);
 
     if (input.weeks) {
+      // A drip switched off (not Live) cannot be added. One the plan already
+      // had stays, so a plan written before the drip was retired can still be edited.
+      const had = new Set(
+        (plan.weeks ?? []).flatMap((w: { sessions?: Array<{ dripId?: unknown }> }) =>
+          (w.sessions ?? []).map((s) => String(s.dripId ?? ""))
+        )
+      );
+      const added = [
+        ...new Set(
+          input.weeks.flatMap((w) => w.sessions.map((s) => s.dripId)).filter((id) => id && !had.has(String(id)))
+        ),
+      ];
+      const retired = await Drip.find({ _id: { $in: added }, isActive: false })
+        .select("name")
+        .lean<Array<{ name: string }>>();
+      if (retired.length > 0) {
+        return fail(`${retired.map((d) => d.name).join(", ")} is no longer offered. Choose another drip.`, 409);
+      }
+
       const weeks = [];
       for (const w of input.weeks) {
         const sessions = [];

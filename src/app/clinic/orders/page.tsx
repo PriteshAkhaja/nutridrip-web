@@ -5,7 +5,7 @@ import { clinicNav } from "@/lib/nav";
 import { ConsoleShell } from "@/components/layout/ConsoleShell";
 import { connectDB } from "@/lib/db/mongoose";
 import { Order, User } from "@/lib/models";
-import { listDrips } from "@/lib/data/drips";
+import { listLiveDrips } from "@/lib/data/drips";
 import { checkAvailability } from "@/lib/inventory/availability";
 import { DataTable, THead, TH, TR, TD, Pieces } from "@/components/ui/Table";
 import { StatusPill } from "@/components/ui/Pill";
@@ -60,7 +60,7 @@ export default async function ClinicOrdersPage({
     .lean<{ clinic?: { onCredit?: boolean } } | null>();
   const onCreditNow = me?.clinic?.onCredit ?? false;
 
-  const drips = await listDrips();
+  const drips = await listLiveDrips();
   const { results } = await checkAvailability(
     drips.map((d) => ({ dripId: d.id, quantity: 1 })),
     true

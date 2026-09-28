@@ -18,6 +18,8 @@ export type DripCard = {
   tags: string[];
   icon: string | null;
   isPopular: boolean;
+  /** On the website. Off: clinics, doctors and the pharmacy still see it; the public does not. */
+  isPublic: boolean;
   requiresApproval: boolean;
   /** Headline ingredients for the catalogue card. */
   headline: string[];
@@ -56,6 +58,7 @@ type LeanDrip = {
   tags?: string[];
   icon?: string | null;
   isPopular?: boolean;
+  isPublic?: boolean;
   requiresApproval: boolean;
   bestFor?: string[];
   goodToKnow?: string[];
@@ -115,21 +118,56 @@ function toCard(d: LeanDrip): DripCard {
     tags: d.tags ?? [],
     icon: d.icon ?? null,
     isPopular: Boolean(d.isPopular),
+    isPublic: d.isPublic !== false,
     requiresApproval: d.requiresApproval,
     headline: headlineOf(d),
     ingredientCount: d.ingredients.length,
   };
 }
 
+/** How many "Most popular" drips the home page shows: one row of cards. */
+export const POPULAR_ON_HOME = 4;
+
+/**
+ * The public catalogue: Live and "Show on the public catalogue" ticked. Only
+ * the website reads this: Home, Drips, Pricing, About, For clinics.
+ */
 export async function listDrips(): Promise<DripCard[]> {
   await connectDB();
   const drips = await Drip.find({ isActive: true, isPublic: true }).sort({ priceInr: 1 }).lean<LeanDrip[]>();
   return drips.map(toCard);
 }
 
+/**
+ * Every Live drip, on the website or not: what a clinic orders, a physician
+ * recommends and the pharmacy counts. "Show on the public catalogue" is about
+ * advertising, not about whether a drip exists.
+ */
+export async function listLiveDrips(): Promise<DripCard[]> {
+  await connectDB();
+  const drips = await Drip.find({ isActive: true }).sort({ priceInr: 1 }).lean<LeanDrip[]>();
+  return drips.map(toCard);
+}
+
+/**
+ * What a patient may book: the public catalogue, plus a drip kept off the
+ * website that their physician recommended to them.
+ */
+export async function listBookableDrips(recommendedIds: string[]): Promise<DripCard[]> {
+  await connectDB();
+  const drips = await Drip.find({
+    isActive: true,
+    $or: [{ isPublic: true }, { _id: { $in: recommendedIds } }],
+  })
+    .sort({ priceInr: 1 })
+    .lean<LeanDrip[]>();
+  return drips.map(toCard);
+}
+
 export async function getDrip(slug: string): Promise<DripDetail | null> {
   await connectDB();
-  const d = await Drip.findOne({ slug, isActive: true }).lean<LeanDrip | null>();
+  // A drip kept off the website has no public page either.
+  const d = await Drip.findOne({ slug, isActive: true, isPublic: true }).lean<LeanDrip | null>();
   if (!d) return null;
 
   // Doses across units are not comparable, so the bar is scaled within the

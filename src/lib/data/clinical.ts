@@ -350,7 +350,7 @@ export async function patientReview(quizId: string): Promise<PatientReview | nul
   if (!patient) return null;
 
   const { Drip } = await import("@/lib/models");
-  const suggested = await Drip.find({ _id: { $in: quiz.suggestedDripIds } }).lean<
+  const suggested = await Drip.find({ _id: { $in: quiz.suggestedDripIds }, isActive: true }).lean<
     Array<{ _id: unknown; name: string; slug: string }>
   >();
 

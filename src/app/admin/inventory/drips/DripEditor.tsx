@@ -309,7 +309,11 @@ export function DripEditor({
           placeholder="⚡"
         />
         <div className="flex items-end pb-[10px]">
-          <Checkbox label="Most popular" checked={d.isPopular} onChange={(v) => setD({ ...d, isPopular: v })} />
+          <Checkbox
+            label="Most popular — on the home page (first 4)"
+            checked={d.isPopular}
+            onChange={(v) => setD({ ...d, isPopular: v })}
+          />
         </div>
       </div>
 

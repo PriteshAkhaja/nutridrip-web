@@ -806,3 +806,40 @@ Fixed, with six more problems found by checking the whole calendar:
 | 18.33 | Live, S. Krishnan (approved): a second session at the same time refused, and one starting 30 minutes in; one 3 hours later taken; moving it onto the first refused; moving it to a clear time works | ✅ 6 checks |
 | 18.34 | Card spacing measured at 390px: 20 padding, 24 below the call card, 8 / 8 / 16 inside, no sideways scroll | ✅ |
 | 18.35 | Typecheck, lint, Prettier, production build | ✅ clean |
+
+
+## 20. "Most popular" drives the home page, and a drip that is not Live is offered nowhere
+
+**Asked (28 Sept):** make "Most popular" dynamic instead of a fixed list, and when a drip is not Live, show it nowhere.
+
+- **The home page's "Most popular" row now shows the drips ticked "Most popular" in the Drip builder**, up to 4 (one row). Before, it was a fixed list of four written in the code, and the tick only added a badge on the Drips page. With nothing ticked, the row is left out. The tick now reads "Most popular — on the home page (first 4)". The seed ticks the same four as before (Myers' Revive, Immune Shield, Glow Protocol, Hydrate Plus).
+- **A drip that is not Live can no longer be chosen anywhere new.** It was already hidden from the site, booking and the order forms. Three gaps are closed:
+  - a clinic order sent straight to the server was accepted;
+  - a new treatment plan could prescribe it;
+  - the doctor's review screen still listed it as suggested.
+
+  Sessions, orders and plans made before it was switched off are left alone and keep working, and a plan that already had it can still be edited. The Drip builder still lists it, so it can be switched back on.
+- **Fixed on the way:** saving only part of a drip (one tick, for example) was refused for drips shorter than 45 minutes, like Jetlag Reset and Hydrate Plus, with "The longer end of the range must be more than the shorter end". The check compared against a default of 45 minutes instead of the drip's own length. No data was affected.
+
+| # | Test | Result |
+|---|---|---|
+| 20.1 | Live, on a scratch database: the seed's four show on the home page; tick Jetlag Reset and untick Glow Protocol, and the row follows; seven ticked still shows one row of 4; none ticked leaves the row out and the page still renders | ✅ 7 checks |
+| 20.2 | Jetlag Reset switched off: gone from the home row (though ticked), the Drips page, its own page, Pricing, the booking page and the clinic order form; booking it directly refused (404); a clinic order for it refused (409) while one for a Live drip goes through; a new plan with it refused, a plan written before it was retired still edits, adding it to a plan refused; not suggested on the doctor's review; still listed in the Drip builder; switched back on, it returns | ✅ 17 checks |
+| 20.3 | Typecheck, lint, Prettier, 626 unit tests, production build | ✅ clean |
+
+
+**20, follow-up (28 Sept): "Show on the public catalogue" means the website only.** Before, unticking it also hid the drip from the clinic order form, the pharmacy's screens, the doctor's recommend list and the booking page. Yet the quiz could still suggest it and a doctor could still prescribe it.
+- **Unticked, the drip is off the website:** Home (including the "Most popular" row), the Drips page, Pricing, About, For clinics, the related drips on other drip pages, and its own page, which no longer opens.
+- **Staff still see it:** clinic and admin order forms, stock availability, the doctor's recommend list and treatment plans.
+- **A patient can book it only when their physician recommended it.** Their booking page then offers it, and their results page shows it as a card without a link. Anyone else booking it directly is refused: "That drip is booked on your physician's recommendation only."
+- **The quiz's automatic suggestions come from website drips only.** A physician can still recommend a hidden one.
+- **The Drip builder marks it "Not on the website"** and has no "Public page" button for it.
+- **Fixed:** opening a drip in the Drip builder always showed **"Show on the public catalogue"** and **"Needs physician approval"** ticked, whatever was saved. Pressing **Save the recipe** then put a hidden drip back on the website and a no-approval drip back behind approval. The editor now opens with what is saved.
+
+| # | Test | Result |
+|---|---|---|
+| 20.4 | Unit tests: a website drip can be booked by anyone; a hidden one only when recommended; a drip saved before the setting counts as on the website | ✅ 4 new, 630 pass |
+| 20.5 | Live, Glow Protocol hidden (still Live): gone from the home row, the Drips page (8 protocols), its own page, Pricing and the related lists; still offered on the clinic and admin order forms, stock availability and the doctor's review; the clinic can order it | ✅ 11 checks |
+| 20.6 | Live, patients: not offered to S. Krishnan and refused if booked directly (403); once his physician recommends it, it is offered and books; his results page shows it without a link | ✅ 5 checks |
+| 20.7 | Live, Drip builder: "Not on the website" label and no Public page button; editing Glow Protocol shows the box unticked and saving keeps it hidden; editing Hydrate Plus (no approval) shows "Needs physician approval" unticked and saving keeps it; label 12 px from its neighbours | ✅ 10 checks |
+| 20.8 | Typecheck, lint, Prettier, production build | ✅ clean |

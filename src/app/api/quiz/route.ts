@@ -57,7 +57,9 @@ export async function POST(req: Request) {
     await connectDB();
 
     const slugs = suggestDripSlugs(scored.nutrientRisks);
-    const drips = await Drip.find({ slug: { $in: slugs }, isActive: true }).lean<
+    // Automatic suggestions are advertising, so they come from the public
+    // catalogue. A physician can still recommend a drip kept off the website.
+    const drips = await Drip.find({ slug: { $in: slugs }, isActive: true, isPublic: true }).lean<
       Array<{ _id: unknown; slug: string }>
     >();
 

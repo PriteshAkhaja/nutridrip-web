@@ -23,6 +23,7 @@ import { callWhen } from "@/lib/clinical/calls";
 import { getClockFormat } from "@/lib/settings/clock";
 import { clockText, shortDateClock } from "@/lib/time";
 import { heldDripOf, patientClash } from "@/lib/data/own-sessions";
+import { patientMayBook } from "@/lib/clinical/drip-access";
 
 const CreateBooking = z.object({
   dripId: z.string(),
@@ -78,8 +79,19 @@ export async function POST(req: Request) {
       priceInr: number;
       durationMin: number;
       isActive: boolean;
+      isPublic?: boolean;
     } | null>();
     if (!drip || !drip.isActive) return fail("That drip is no longer available", 404);
+    // A drip kept off the website is booked on a physician's recommendation only.
+    if (drip.isPublic === false) {
+      const latest = await HealthQuiz.findOne({ patientId: session!.sub })
+        .sort({ completedAt: -1 })
+        .select("recommendedDripIds")
+        .lean<{ recommendedDripIds?: unknown[] } | null>();
+      if (!patientMayBook(drip, latest?.recommendedDripIds ?? [])) {
+        return fail("That drip is booked on your physician's recommendation only.", 403);
+      }
+    }
 
     const when = new Date(input.scheduledAt);
     if (when.getTime() - Date.now() < MIN_LEAD_MS) return fail("Pick a slot at least an hour from now", 422);

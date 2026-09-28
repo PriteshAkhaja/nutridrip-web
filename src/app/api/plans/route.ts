@@ -94,6 +94,15 @@ export async function POST(req: Request) {
     } | null>();
     if (!patient || patient.role !== "patient") return fail("That is not a patient account", 422);
 
+    // A drip switched off (not Live) is not prescribed on a new plan.
+    const asked = [...new Set(input.weeks.flatMap((w) => w.sessions.map((s) => s.dripId)).filter(Boolean))];
+    const retired = await Drip.find({ _id: { $in: asked }, isActive: false })
+      .select("name")
+      .lean<Array<{ name: string }>>();
+    if (retired.length > 0) {
+      return fail(`${retired.map((d) => d.name).join(", ")} is no longer offered. Choose another drip.`, 409);
+    }
+
     // The builder sends components it has already filled from the recipe. A
     // caller that sends none still gets them, through the same helper the form
     // uses — so the prescription reads the same either way.

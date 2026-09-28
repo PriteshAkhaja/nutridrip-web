@@ -11,7 +11,7 @@ import { Pill } from "@/components/ui/Pill";
 import { formatDate, formatTime } from "@/lib/data/inventory";
 import { ReviewDecision } from "./Decision";
 import { nurseChoicesFor } from "@/lib/data/nurse-choices";
-import { listDrips } from "@/lib/data/drips";
+import { listLiveDrips } from "@/lib/data/drips";
 import { HeaderCounts } from "@/components/layout/HeaderCounts";
 import { ButtonLink } from "@/components/ui/Button";
 import { connectDB } from "@/lib/db/mongoose";
@@ -47,7 +47,7 @@ export default async function PatientReviewPage({ params }: { params: Promise<{ 
   await connectDB();
   const [nurses, catalogue, held, call] = await Promise.all([
     pending ? nurseChoicesFor(review.location, session.sub) : Promise.resolve(null),
-    pending ? listDrips() : Promise.resolve([]),
+    pending ? listLiveDrips() : Promise.resolve([]),
     // The drip the patient is holding for this decision, and their call.
     pending
       ? Booking.findOne({ patientId: review.patient.id, status: "awaiting_review", scheduledAt: { $gte: new Date() } })

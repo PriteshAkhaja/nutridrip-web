@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { requireRole } from "@/lib/auth/guard";
 import { MobileShell } from "@/components/layout/MobileShell";
-import { listDrips } from "@/lib/data/drips";
+import { listBookableDrips } from "@/lib/data/drips";
 import { checkAvailability } from "@/lib/inventory/availability";
 import { connectDB } from "@/lib/db/mongoose";
 import { HealthQuiz, User } from "@/lib/models";
@@ -92,7 +92,8 @@ export default async function BookPage({ searchParams }: { searchParams: Promise
   const clockFmt = await getClockFormat();
 
   const [drips, user, clinics] = await Promise.all([
-    listDrips(),
+    // The public catalogue, plus anything kept off the website that their physician recommended.
+    listBookableDrips((quiz.recommendedDripIds ?? []).map(String)),
     User.findById(session.sub).lean<{
       phone?: string;
       patient?: { address?: string; pincode?: string };

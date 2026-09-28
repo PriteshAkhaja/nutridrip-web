@@ -43,6 +43,8 @@ export default async function DripBuilderPage() {
       gstRate?: number;
       durationMin: number;
       isActive: boolean;
+      isPublic?: boolean;
+      requiresApproval?: boolean;
       withKit: boolean;
       category?: string | null;
       kitId?: unknown;
@@ -124,8 +126,11 @@ export default async function DripBuilderPage() {
               benefits: (d.benefits ?? []).map((b) => ({ title: b.title, description: b.description ?? "" })),
               withKit: d.withKit,
               kitId: d.kitId ? String(d.kitId) : "",
-              isPublic: true,
-              requiresApproval: true,
+              // What is saved, not a default: a hard-coded true re-ticked both
+              // boxes on every edit, and saving put a hidden drip back on the
+              // website and a no-approval drip back behind approval.
+              isPublic: d.isPublic !== false,
+              requiresApproval: d.requiresApproval !== false,
               isActive: d.isActive,
               ingredients: d.ingredients.map((i) => ({
                 masterId: String(i.masterId),
@@ -157,6 +162,7 @@ export default async function DripBuilderPage() {
                   <div className="flex items-center gap-3 flex-wrap">
                     <h2 className="t-h3">{d.name}</h2>
                     {d.isActive ? <Pill tone="safe">Active</Pill> : <Pill tone="neutral">Inactive</Pill>}
+                    {d.isPublic === false && <Pill tone="neutral">Not on the website</Pill>}
                     {d.withKit && <Pill tone="primary">Kit included</Pill>}
                   </div>
                   {d.description && (
@@ -220,9 +226,12 @@ export default async function DripBuilderPage() {
                   </div>
                 </div>
                 <div className="flex gap-2">
-                  <ButtonLink href={`/drips/${d.slug}`} variant="secondary" size="sm">
-                    Public page
-                  </ButtonLink>
+                  {/* A drip kept off the website has no public page to open. */}
+                  {d.isActive && d.isPublic !== false && (
+                    <ButtonLink href={`/drips/${d.slug}`} variant="secondary" size="sm">
+                      Public page
+                    </ButtonLink>
+                  )}
                   <ButtonLink href={`/admin/inventory/availability?drip=${d.slug}&qty=10`} variant="ghost" size="sm">
                     Check stock
                   </ButtonLink>

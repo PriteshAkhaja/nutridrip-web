@@ -83,10 +83,23 @@ export default async function ResultsPage({
       } | null>()
     : null;
   const drips = await Drip.find({
-    $or: [{ _id: { $in: suggestedIds } }, ...(preferred ? [{ slug: preferred }] : [])],
+    $or: [
+      // The physician's choice is shown even if it is kept off the website;
+      // the quiz's own suggestions and a drip picked on the site are public ones.
+      physicianChose ? { _id: { $in: suggestedIds } } : { _id: { $in: suggestedIds }, isPublic: true },
+      ...(preferred ? [{ slug: preferred, isPublic: true }] : []),
+    ],
     isActive: true,
   }).lean<
-    Array<{ _id: unknown; name: string; slug: string; description?: string; priceInr: number; durationMin: number }>
+    Array<{
+      _id: unknown;
+      name: string;
+      slug: string;
+      description?: string;
+      priceInr: number;
+      durationMin: number;
+      isPublic?: boolean;
+    }>
   >();
 
   const lowest = [...quiz.nutrientRisks].sort((a, b) => a.pct - b.pct).slice(0, 3);
@@ -147,20 +160,33 @@ export default async function ResultsPage({
             {physicianChose ? "What your physician recommends" : "Suggested for review"}
           </span>
           <div className="flex flex-col gap-3">
-            {drips.map((d) => (
-              <Link
-                key={d.slug}
-                href={`/drips/${d.slug}`}
-                className="rounded-[var(--radius-lg)] border border-[var(--color-line)] bg-[var(--color-surface)] p-5 no-underline hover:no-underline hover:border-[var(--color-primary-line)] transition-colors duration-150"
-              >
-                <h3 className="t-h3">{d.name}</h3>
-                {d.description && <p className="t-body text-[var(--color-ink-2)] mt-1">{d.description}</p>}
-                <div className="flex gap-5 mt-3 pt-3 border-t border-[var(--color-line)]">
-                  <span className="t-data text-[14.5px]">{formatInr(d.priceInr)}</span>
-                  <span className="t-data text-[14.5px] text-[var(--color-ink-3)]">{d.durationMin} min</span>
+            {drips.map((d) => {
+              const body = (
+                <>
+                  <h3 className="t-h3">{d.name}</h3>
+                  {d.description && <p className="t-body text-[var(--color-ink-2)] mt-1">{d.description}</p>}
+                  <div className="flex gap-5 mt-3 pt-3 border-t border-[var(--color-line)]">
+                    <span className="t-data text-[14.5px]">{formatInr(d.priceInr)}</span>
+                    <span className="t-data text-[14.5px] text-[var(--color-ink-3)]">{d.durationMin} min</span>
+                  </div>
+                </>
+              );
+              const box = "rounded-[var(--radius-lg)] border border-[var(--color-line)] bg-[var(--color-surface)] p-5";
+              // A drip kept off the website has no public page, so its card is not a link.
+              return d.isPublic === false ? (
+                <div key={d.slug} className={box}>
+                  {body}
                 </div>
-              </Link>
-            ))}
+              ) : (
+                <Link
+                  key={d.slug}
+                  href={`/drips/${d.slug}`}
+                  className={`${box} no-underline hover:no-underline hover:border-[var(--color-primary-line)] transition-colors duration-150`}
+                >
+                  {body}
+                </Link>
+              );
+            })}
           </div>
           <p className="t-small text-[var(--color-ink-3)] mt-3">
             {physicianChose
