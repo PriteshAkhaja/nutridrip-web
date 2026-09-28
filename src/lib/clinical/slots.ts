@@ -12,6 +12,8 @@
  * "10:00 on Friday" means. The database side is lib/clinical/slot-availability.ts.
  */
 
+import { clock, dateIN, type ClockFormat } from "@/lib/time";
+
 /** Inside this window the nurse is already dispatched with the batch drawn. */
 export const LATE_CHANGE_HOURS = 4;
 export const LATE_CANCEL_FEE_INR = 500;
@@ -37,6 +39,38 @@ export const DEFAULT_SLOT_MINUTES = 60;
  * held slot waiting on the physician counts too — the patient was promised it.
  */
 export const HOLDING_STATUSES = ["awaiting_review", "approved", "nurse_assigned", "en_route", "in_progress"];
+
+/** One of the patient's own sessions, as far as the overlap rule needs it. */
+export type OwnSession = {
+  bookingNo: string;
+  dripName?: string | null;
+  scheduledAt: Date | string;
+  durationMin?: number | null;
+};
+
+/**
+ * The first of a patient's own sessions that a new one from `start`, lasting
+ * `durationMin`, would overlap. One person cannot be on two drips at once, and
+ * each booking sends a nurse and draws stock, so a clash is refused rather
+ * than left for the nurse to discover at the door.
+ */
+export function ownClash<T extends OwnSession>(sessions: T[], start: number, durationMin: number): T | null {
+  const end = start + durationMin * 60_000;
+  for (const s of sessions) {
+    const from = new Date(s.scheduledAt).getTime();
+    const to = from + (s.durationMin ?? 45) * 60_000;
+    if (start < to && from < end) return s;
+  }
+  return null;
+}
+
+/** "You already have ND-4421 (Myers' Revive) on 30 Sept, 10:00 AM–10:45 AM. …" */
+export function ownClashMessage(s: OwnSession, fmt: ClockFormat): string {
+  const from = new Date(s.scheduledAt).getTime();
+  const to = from + (s.durationMin ?? 45) * 60_000;
+  const when = `${dateIN(from, { year: undefined })}, ${clock(from, fmt)}–${clock(to, fmt)}`;
+  return `You already have ${s.bookingNo}${s.dripName ? ` (${s.dripName})` : ""} on ${when}. Pick a time that does not overlap it.`;
+}
 
 export type Hours = { opensAt: string; closesAt: string; slotMinutes: number };
 

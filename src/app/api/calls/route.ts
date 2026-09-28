@@ -6,12 +6,13 @@ import { can } from "@/lib/auth/rbac";
 import { notify } from "@/lib/notify";
 import { normalisePhone } from "@/lib/auth/phone";
 import { approvalState } from "@/lib/clinical/validity";
-import { callProblem, callWhen } from "@/lib/clinical/calls";
+import { DRIP_AFTER_CALL_MIN, callProblem, callWhen, earliestDrip } from "@/lib/clinical/calls";
 import { bookedCalls, ensureCallIndexes, hoursOf } from "@/lib/data/calls";
 import { createWithReference, nextReference } from "@/lib/sequence";
 import { ok, fail, handleError } from "@/lib/api";
 import { getClockFormat } from "@/lib/settings/clock";
 import { clockText } from "@/lib/time";
+import { heldDripOf } from "@/lib/data/own-sessions";
 
 export const dynamic = "force-dynamic";
 
@@ -67,6 +68,17 @@ export async function POST(req: Request) {
     );
     const problem = callProblem(hours, booked, at);
     if (problem) return fail(clockText(problem.error, clockFmt), problem.status);
+
+    // A drip still held (from a call that was cancelled or missed) waits for
+    // this one, so the call has to end 2 hours before it.
+    const held = await heldDripOf(session!.sub);
+    if (held && earliestDrip(at.getTime(), hours.callMinutes) > new Date(held.scheduledAt).getTime()) {
+      const latest = new Date(held.scheduledAt).getTime() - (hours.callMinutes + DRIP_AFTER_CALL_MIN) * 60_000;
+      return fail(
+        `Your held drip ${held.bookingNo} is on ${callWhen(held.scheduledAt, clockFmt)}, and the call has to end 2 hours before it. Pick a call by ${callWhen(new Date(latest), clockFmt)}, or move the drip from Home first.`,
+        422
+      );
+    }
 
     await ensureCallIndexes();
     let call;

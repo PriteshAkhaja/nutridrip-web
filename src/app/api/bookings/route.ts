@@ -12,7 +12,7 @@ import { pickNurse } from "@/lib/clinical/assign";
 import { nextReference, createWithReference } from "@/lib/sequence";
 import { zoneForPincode } from "@/lib/zones";
 import { getZones } from "@/lib/zones-store";
-import { MIN_LEAD_MS, slotProblem } from "@/lib/clinical/slots";
+import { MIN_LEAD_MS, ownClashMessage, slotProblem } from "@/lib/clinical/slots";
 import { slotContext } from "@/lib/clinical/slot-availability";
 import { paginate } from "@/lib/pagination-db";
 import { pageInfo, parsePaging } from "@/lib/pagination";
@@ -22,6 +22,7 @@ import { callGate } from "@/lib/data/calls";
 import { callWhen } from "@/lib/clinical/calls";
 import { getClockFormat } from "@/lib/settings/clock";
 import { clockText, shortDateClock } from "@/lib/time";
+import { heldDripOf, patientClash } from "@/lib/data/own-sessions";
 
 const CreateBooking = z.object({
   dripId: z.string(),
@@ -82,6 +83,10 @@ export async function POST(req: Request) {
 
     const when = new Date(input.scheduledAt);
     if (when.getTime() - Date.now() < MIN_LEAD_MS) return fail("Pick a slot at least an hour from now", 422);
+    // Not two sessions of the patient's own at once. Checked before stock and
+    // nurses: "you already have a session then" is the answer that helps.
+    const clash = await patientClash(session!.sub, when, drip.durationMin);
+    if (clash) return fail(ownClashMessage(clash, clockFmt), 409);
 
     // A slot is only real if the stock behind it is real — and a booking does
     // not reserve, so the sessions already promised have to be counted too.
@@ -168,6 +173,14 @@ export async function POST(req: Request) {
         return fail(
           `Your drip must be at least 2 hours after your call — from ${callWhen(new Date(gate.notBefore), clockFmt)}.`,
           422
+        );
+      }
+      // One held drip per decision: it is the session the approval confirms.
+      const held = await heldDripOf(session!.sub);
+      if (held) {
+        return fail(
+          `You already have ${held.bookingNo}${held.dripName ? ` (${held.dripName})` : ""} held for ${callWhen(held.scheduledAt, clockFmt)}. It is confirmed when your physician approves — move it from Home if the time does not suit.`,
+          409
         );
       }
     }

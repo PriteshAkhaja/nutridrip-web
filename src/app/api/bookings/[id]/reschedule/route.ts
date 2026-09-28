@@ -5,7 +5,7 @@ import { approvalState } from "@/lib/clinical/validity";
 import { getSession } from "@/lib/auth/session";
 import { canManageBooking } from "@/lib/auth/ownership";
 import { notify, notifyRole } from "@/lib/notify";
-import { MIN_LEAD_MS, busyNurses, slotProblem } from "@/lib/clinical/slots";
+import { MIN_LEAD_MS, busyNurses, ownClashMessage, slotProblem } from "@/lib/clinical/slots";
 import { slotContext } from "@/lib/clinical/slot-availability";
 import { pickNurse } from "@/lib/clinical/assign";
 import { getLatePolicy } from "@/lib/billing/settings";
@@ -15,6 +15,7 @@ import { openCallFor } from "@/lib/data/calls";
 import { callWhen, earliestDrip } from "@/lib/clinical/calls";
 import { getClockFormat } from "@/lib/settings/clock";
 import { clockText, shortDateClock } from "@/lib/time";
+import { patientClash } from "@/lib/data/own-sessions";
 
 const Input = z.object({
   scheduledAt: z.string().datetime(),
@@ -79,6 +80,9 @@ export async function POST(req: Request, { params }: { params: Promise<{ id: str
     // moved does not count against itself.
     const durationMin = booking.durationMin ?? 45;
     const ctx = await slotContext({ pincode: booking.pincode, from: next, to: next, excludeBookingId: id });
+    // Not onto another of the patient's own sessions (asked first: it is the answer that helps).
+    const clash = await patientClash(String(booking.patientId), next, durationMin, id);
+    if (clash) return fail(ownClashMessage(clash, clockFmt), 409);
     const slot = slotProblem(ctx, next, durationMin);
     if (slot) return fail(clockText(slot.error, clockFmt), slot.status);
     // A drip still held for the physician stays 2 hours after the patient's call.

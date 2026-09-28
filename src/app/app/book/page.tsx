@@ -14,6 +14,10 @@ import { getZones } from "@/lib/zones-store";
 import { servedZones } from "@/lib/zones";
 import { CallStep } from "./CallStep";
 import { bookableDoctors, callGate, expireStaleHolds } from "@/lib/data/calls";
+import { heldDripOf } from "@/lib/data/own-sessions";
+import { callWhen } from "@/lib/clinical/calls";
+import { getClockFormat } from "@/lib/settings/clock";
+import { ButtonLink } from "@/components/ui/Button";
 
 export const metadata: Metadata = { title: "Book a session" };
 export const dynamic = "force-dynamic";
@@ -83,6 +87,9 @@ export default async function BookPage({ searchParams }: { searchParams: Promise
   const needsCall = !approval.canBook;
   const gate = needsCall ? await callGate(session.sub, quiz.completedAt) : null;
   const doctors = needsCall && gate && !gate.ok ? await bookableDoctors() : [];
+  // Already holding a drip for this decision: it is shown, not a second one offered.
+  const held = needsCall ? await heldDripOf(session.sub) : null;
+  const clockFmt = await getClockFormat();
 
   const [drips, user, clinics] = await Promise.all([
     listDrips(),
@@ -145,7 +152,25 @@ export default async function BookPage({ searchParams }: { searchParams: Promise
         />
       )}
 
-      {needsCall && gate && !gate.ok ? (
+      {held ? (
+        <section className="rounded-[var(--radius-lg)] border border-[var(--color-line)] bg-[var(--color-surface)] p-5">
+          <span className="t-micro block">Step 2 · Your drip</span>
+          <p className="t-body mt-2">
+            <span className="font-semibold">{held.dripName ?? "Your drip"}</span> is held for{" "}
+            <span className="t-data text-[14px]">{callWhen(held.scheduledAt, clockFmt)}</span> ({held.bookingNo}).
+          </p>
+          <p className="t-small text-[var(--color-ink-2)] mt-2">
+            {gate?.ok
+              ? "It is confirmed when your physician approves after the call. To change the time or cancel it, use Move or Cancel on Home."
+              : "It waits for your call. Book one above that ends at least 2 hours before it, or move the drip on Home first."}
+          </p>
+          <div className="mt-4">
+            <ButtonLink href="/app" variant="secondary">
+              Go to Home
+            </ButtonLink>
+          </div>
+        </section>
+      ) : needsCall && gate && !gate.ok ? (
         <section className="rounded-[var(--radius-lg)] border border-dashed border-[var(--color-line-2)] p-5">
           <span className="t-micro block">Step 2 · Your drip</span>
           <p className="t-body text-[var(--color-ink-2)] mt-1">

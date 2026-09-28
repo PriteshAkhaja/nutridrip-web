@@ -790,3 +790,19 @@ Fixed, with six more problems found by checking the whole calendar:
 | 19.5 | Super admin switches to 24-hour: saved, audit row 12h → 24h; nurse route "10:00 – 10:58"; calls "10:00–13:00"; time panel hours 00–23 with no AM/PM column; "9:30 am" typed becomes 09:30; patient "11:00"; Zones in 24-hour; switched back to 12-hour; "36h" refused (422) | ✅ 20 checks |
 | 19.6 | Settings page spacing, measured: card padding 24, 20 above the choices, 12 between them, 16 to the note, 24 to Save; at 390px the choices stack full width with no sideways scroll | ✅ |
 | 19.7 | Typecheck, lint, production build | ✅ clean |
+
+
+**18, follow-up (28 Sept): one held drip per patient, and no overlapping sessions.** Found while testing: V. Iyer cancelled his call, booked a new one, and the booking page let him hold a **second** drip. He ended up with two drips at 10:00 AM on the same day. The server never checked the patient's own sessions.
+- **A patient waiting for approval can hold only one drip.** A second one is refused: "You already have ND-4421 (Myers' Revive) held for Tue, 29 Sept, 4:00 PM. It is confirmed when your physician approves — move it from Home if the time does not suit."
+- **A patient's sessions can never overlap**, whether booking or moving (including a drip moved together with a call). The message names the session already at that time: "You already have ND-4422 … on 29 Sept, 7:00 AM–7:45 AM. Pick a time that does not overlap it." Sessions back to back are fine.
+- **The booking page shows the drip already held** ("Step 2 · Your drip: Myers' Revive is held for …") with **Go to Home**, instead of offering another one.
+- **A new call has to end 2 hours before a drip still held.** Otherwise it is refused, with the latest time allowed: "Pick a call by Tue, 29 Sept, 1:45 PM, or move the drip from Home first."
+- Existing duplicates are not removed automatically. In a dev database, run `npm run seed`, or cancel one from Home.
+
+| # | Test | Result |
+|---|---|---|
+| 18.31 | Unit tests: same time, overlap from either side, a longer session covering it, back to back allowed, 45 minutes when no length is recorded, the message in 12- and 24-hour | ✅ 5 new, 626 pass |
+| 18.32 | Live, V. Iyer: booking page shows ND-4421 held and no picker; a second held drip refused (409), also at the same time; still one held drip; after cancelling his call the page says "It waits for your call"; a call at 5:00 PM refused (drip at 4:00 PM), a call at 12:45 PM taken | ✅ 11 checks |
+| 18.33 | Live, S. Krishnan (approved): a second session at the same time refused, and one starting 30 minutes in; one 3 hours later taken; moving it onto the first refused; moving it to a clear time works | ✅ 6 checks |
+| 18.34 | Card spacing measured at 390px: 20 padding, 24 below the call card, 8 / 8 / 16 inside, no sideways scroll | ✅ |
+| 18.35 | Typecheck, lint, Prettier, production build | ✅ clean |

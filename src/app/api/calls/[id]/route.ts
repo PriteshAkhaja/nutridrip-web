@@ -5,12 +5,13 @@ import { getSession, type SessionPayload } from "@/lib/auth/session";
 import { can } from "@/lib/auth/rbac";
 import { notify } from "@/lib/notify";
 import { MAX_NO_ANSWER, callProblem, callWhen, callsOverlap, earliestDrip } from "@/lib/clinical/calls";
-import { slotProblem } from "@/lib/clinical/slots";
+import { ownClashMessage, slotProblem } from "@/lib/clinical/slots";
 import { slotContext } from "@/lib/clinical/slot-availability";
 import { bookedCalls, ensureCallIndexes, hoursOf, unansweredSince } from "@/lib/data/calls";
 import { ok, fail, handleError } from "@/lib/api";
 import { getClockFormat } from "@/lib/settings/clock";
 import { clockText } from "@/lib/time";
+import { patientClash } from "@/lib/data/own-sessions";
 
 export const dynamic = "force-dynamic";
 
@@ -116,6 +117,8 @@ export async function PATCH(req: Request, { params }: { params: Promise<{ id: st
         if (dripAt.getTime() < needFrom) {
           return fail(`Pick a drip time from ${callWhen(new Date(needFrom), clockFmt)}, 2 hours after the call.`, 422);
         }
+        const clash = await patientClash(String(call.patientId), dripAt, drip.durationMin ?? 45, String(drip._id));
+        if (clash) return fail(ownClashMessage(clash, clockFmt), 409);
         const slot = slotProblem(
           await slotContext({ pincode: drip.pincode, from: dripAt, to: dripAt, excludeBookingId: String(drip._id) }),
           dripAt,
