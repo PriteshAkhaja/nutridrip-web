@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useId, useRef, useState, type ReactNode } from "react";
+import { useEffect, useId, useLayoutEffect, useRef, useState, type ReactNode } from "react";
 
 /**
  * A calendar that belongs to this product rather than to Chrome.
@@ -102,6 +102,30 @@ export const addMonths = (d: Date, n: number) => {
   return new Date(target.getFullYear(), target.getMonth(), Math.min(d.getDate(), last));
 };
 
+/** Whether any day of a month can be chosen, given inclusive ISO bounds. */
+export const monthOpen = (year: number, month: number, min?: string, max?: string) => {
+  const first = iso(new Date(year, month, 1));
+  const last = iso(new Date(year, month + 1, 0));
+  return !((min && last < min) || (max && first > max));
+};
+
+/** An ISO date kept inside [min, max]. */
+export const clampISO = (s: string, min?: string, max?: string) => (min && s < min ? min : max && s > max ? max : s);
+
+/**
+ * The years the Year list offers: the bounds (or a century back and fifteen
+ * years on), plus any year on screen or chosen, so the list can always show
+ * the year the calendar is actually on.
+ */
+export function yearOptions(thisYear: number, min?: string, max?: string, include: number[] = []): number[] {
+  const first = fromISO(min)?.getFullYear() ?? thisYear - 100;
+  const last = fromISO(max)?.getFullYear() ?? thisYear + 15;
+  const years = new Set<number>();
+  for (let y = first; y <= Math.max(first, last); y++) years.add(y);
+  for (const y of include) if (Number.isFinite(y)) years.add(y);
+  return [...years].sort((a, b) => a - b);
+}
+
 /**
  * The month and year in the panel heading. Sized to their own text, with the
  * hover a select earns for being clickable — the native arrow is kept, the
@@ -117,6 +141,8 @@ const mondayIndex = (d: Date) => (d.getDay() + 6) % 7;
 
 export type DatePickerProps = {
   label?: ReactNode;
+  /** For a field with no visible label, e.g. "Add a day off". */
+  ariaLabel?: string;
   hint?: ReactNode;
   error?: string;
   value: string;
@@ -138,6 +164,7 @@ export type DatePickerProps = {
 
 export function DatePicker({
   label,
+  ariaLabel,
   hint,
   error,
   value,
@@ -157,6 +184,8 @@ export function DatePicker({
   const [{ enhanced, today }, setBrowser] = useState({ enhanced: false, today: "" });
   const [open, setOpen] = useState(false);
   const [alignRight, setAlignRight] = useState(false);
+  /** Opens above the field when there is not room for it below. */
+  const [dropUp, setDropUp] = useState(false);
   const [cursor, setCursor] = useState<Date>(() => fromISO(value) ?? new Date());
   const [focused, setFocused] = useState<string>(value || "");
   /**
@@ -169,8 +198,14 @@ export function DatePicker({
   const text = draft ?? display(value);
 
   const wrapRef = useRef<HTMLDivElement>(null);
+  /** The field itself: the panel is placed against it, not against the label or the error. */
+  const anchorRef = useRef<HTMLDivElement>(null);
+  const panelRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
   const gridRef = useRef<HTMLDivElement>(null);
+  const monthRef = useRef<HTMLSelectElement>(null);
+  /** Set when the month changes from the heading: the roving day moves, the keyboard focus stays put. */
+  const quietFocus = useRef(false);
   const id = useId();
 
   /**
@@ -194,31 +229,70 @@ export function DatePicker({
     const onDown = (e: MouseEvent) => {
       if (wrapRef.current && !wrapRef.current.contains(e.target as Node)) setOpen(false);
     };
+    // Escape closes it wherever the focus is -- after a click on a part of the
+    // panel that takes no focus, it is on nothing at all.
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key !== "Escape") return;
+      setOpen(false);
+      inputRef.current?.focus();
+    };
     document.addEventListener("mousedown", onDown);
-    return () => document.removeEventListener("mousedown", onDown);
+    document.addEventListener("keydown", onKey);
+    return () => {
+      document.removeEventListener("mousedown", onDown);
+      document.removeEventListener("keydown", onKey);
+    };
   }, [open]);
 
   // A 150px filter field sits anywhere on the row; a 292px panel hanging off
   // its left edge can leave the screen. Measured on open, not guessed.
-  useEffect(() => {
-    if (!open || !wrapRef.current) return;
-    const box = wrapRef.current.getBoundingClientRect();
+  useLayoutEffect(() => {
+    if (!open || !anchorRef.current) return;
+    // Placed where it fits, measured before paint so it never flashes in the
+    // wrong place first: leftwards near the right edge, and upwards when the
+    // field sits too low for the panel to open below it.
+    const box = anchorRef.current.getBoundingClientRect();
+    const height = panelRef.current?.offsetHeight ?? 360;
+    const below = window.innerHeight - box.bottom;
     setAlignRight(box.left + 292 > window.innerWidth - 8);
+    setDropUp(below < height + 12 && box.top > below);
   }, [open]);
 
   // Move the DOM focus with the roving cell so a screen reader follows along.
   useEffect(() => {
     if (!open) return;
+    if (quietFocus.current) {
+      quietFocus.current = false;
+      return;
+    }
     gridRef.current?.querySelector<HTMLElement>(`[data-iso="${focused}"]`)?.focus();
   }, [open, focused]);
 
   const outOfRange = (s: string) => Boolean((min && s < min) || (max && s > max));
 
   const openPanel = () => {
-    const start = fromISO(value) ?? fromISO(today) ?? new Date();
+    // A chosen date opens on its own month; otherwise today, kept inside the
+    // bounds, so a field that only takes past dates never opens on a month
+    // where nothing can be picked.
+    const startISO = value && fromISO(value) ? value : clampISO(today || iso(new Date()), min, max);
+    const start = fromISO(startISO) ?? new Date();
     setCursor(start);
-    setFocused(value || iso(start));
+    setFocused(iso(start));
     setOpen(true);
+  };
+
+  /**
+   * Shows a month from the heading (the steppers and the two lists). The
+   * roving day follows onto the same date in the new month, inside the bounds,
+   * so Tab still reaches the grid; the keyboard focus stays on the control.
+   */
+  const showMonth = (year: number, month: number) => {
+    if (!monthOpen(year, month, min, max)) return;
+    const daysIn = new Date(year, month + 1, 0).getDate();
+    const day = Math.min(fromISO(focused)?.getDate() ?? 1, daysIn);
+    setCursor(new Date(year, month, 1));
+    quietFocus.current = true;
+    setFocused(clampISO(iso(new Date(year, month, day)), min, max));
   };
 
   const close = (restoreFocus = true) => {
@@ -233,7 +307,10 @@ export function DatePicker({
     close();
   };
 
-  const moveFocus = (next: Date) => {
+  const moveFocus = (to: Date) => {
+    // Held at the first or last allowed day rather than walking into dates
+    // that cannot be chosen.
+    const next = fromISO(clampISO(iso(to), min, max)) ?? to;
     setFocused(iso(next));
     if (next.getMonth() !== cursor.getMonth() || next.getFullYear() !== cursor.getFullYear()) {
       setCursor(next);
@@ -245,7 +322,8 @@ export function DatePicker({
   const commitDraft = () => {
     const trimmed = text.trim();
     if (trimmed === "") {
-      if (value) onChange("");
+      // A field that must hold a date puts its date back instead.
+      if (value && clearable) onChange("");
       setDraft(null);
       return;
     }
@@ -356,6 +434,7 @@ export function DatePicker({
           <input
             id={`${id}-native`}
             type="date"
+            aria-label={label ? undefined : ariaLabel}
             value={value}
             min={min}
             max={max}
@@ -381,9 +460,17 @@ export function DatePicker({
   // Wide enough for a date of birth without paging a hundred times, bounded by
   // min/max where the caller gave them.
   const thisYear = fromISO(today)?.getFullYear() ?? new Date().getFullYear();
-  const firstYear = fromISO(min)?.getFullYear() ?? thisYear - 100;
-  const lastYear = fromISO(max)?.getFullYear() ?? thisYear + 15;
-  const years = Array.from({ length: Math.max(1, lastYear - firstYear + 1) }, (_, i) => firstYear + i);
+  const years = yearOptions(thisYear, min, max, [cursor.getFullYear(), fromISO(value)?.getFullYear() ?? NaN]);
+  const cy = cursor.getFullYear();
+  const cm = cursor.getMonth();
+  const prev = new Date(cy, cm - 1, 1);
+  const next = new Date(cy, cm + 1, 1);
+  /** The month to show when a year is picked: the same month if it has a day to choose, else the first that does. */
+  const firstOpenMonth = (y: number) => {
+    if (monthOpen(y, cm, min, max)) return cm;
+    for (let m = 0; m < 12; m++) if (monthOpen(y, m, min, max)) return m;
+    return -1;
+  };
 
   return (
     <div
@@ -394,7 +481,11 @@ export function DatePicker({
       onBlur={(e) => {
         if (!open) return;
         const next = e.relatedTarget as Node | null;
-        if (next && wrapRef.current?.contains(next)) return;
+        // Closed only when focus moves to something outside. Focus that goes
+        // nowhere -- a button inside turning itself off (Previous at the first
+        // allowed month), or a click on a part of the panel that takes no
+        // focus -- is not leaving; a click outside closes it via mousedown.
+        if (!next || wrapRef.current?.contains(next)) return;
         setOpen(false);
       }}
     >
@@ -411,222 +502,269 @@ export function DatePicker({
           what reads as the control, and hunting a 32px target inside it is a
           worse version of the same click. Opening rather than toggling: a
           click into the text to correct a digit must not shut the panel. */}
-      <div
-        onClick={() => {
-          if (disabled || open) return;
-          inputRef.current?.focus();
-          openPanel();
-        }}
-        className={`min-h-[44px] w-full pl-[14px] pr-[6px] rounded-[var(--radius-sm)] border bg-[var(--color-surface)] flex items-center gap-1 transition-colors duration-150 ease-out ${
-          disabled ? "bg-[var(--color-surface-2)] border-[var(--color-line)]" : "cursor-pointer"
-        } ${
-          error
-            ? "border-[var(--color-critical)] bg-[var(--color-critical-soft)]"
-            : open
-              ? "border-[var(--color-primary)]"
-              : "border-[var(--color-line-2)]"
-        }`}
-      >
-        <input
-          ref={inputRef}
-          type="text"
-          inputMode="numeric"
-          autoComplete="off"
-          placeholder={placeholder}
-          aria-labelledby={label ? `${id}-label` : undefined}
-          aria-invalid={error ? true : undefined}
-          disabled={disabled}
-          required={required}
-          value={text}
-          onChange={(e) => setDraft(e.target.value)}
-          onBlur={commitDraft}
-          onKeyDown={(e) => {
-            if (e.key === "Enter") {
-              e.preventDefault();
-              commitDraft();
-            } else if (e.key === "Escape" && open) {
-              e.preventDefault();
-              close();
-            } else if (e.key === "ArrowDown" && !open) {
-              e.preventDefault();
-              openPanel();
-            }
-          }}
-          className={`flex-1 min-w-0 bg-transparent border-0 outline-none cursor-pointer text-[14.5px] text-[var(--color-ink)] placeholder:text-[var(--color-ink-3)] disabled:text-[var(--color-ink-3)] ${
-            // Mono is for the figure, not for the hint about the figure: an
-            // empty field shows its format in the prose face, at prose weight,
-            // so it reads as a note rather than as a value already entered.
-            text ? "t-data" : "font-normal"
-          }`}
-        />
-        <button
-          type="button"
-          disabled={disabled}
-          aria-haspopup="dialog"
-          aria-expanded={open}
-          aria-label={open ? "Close calendar" : "Open calendar"}
-          // Stops the wrapper's opener seeing this click too, so the glyph can
-          // still close a panel the rest of the field only ever opens.
-          onClick={(e) => {
-            e.stopPropagation();
-            if (open) close();
-            else openPanel();
-          }}
-          className="flex-none w-[32px] h-[32px] rounded-[var(--radius-sm)] flex items-center justify-center cursor-pointer text-[var(--color-ink-3)] hover:bg-[var(--color-surface-2)] hover:text-[var(--color-primary)] disabled:cursor-default disabled:hover:bg-transparent"
-        >
-          <CalendarGlyph />
-        </button>
-      </div>
-
-      {error && <span className="t-small text-[var(--color-critical-text)]">{error}</span>}
-
-      {open && (
+      <div ref={anchorRef} className="relative">
         <div
-          role="dialog"
-          aria-label={`Choose a date${typeof label === "string" ? ` for ${label}` : ""}`}
-          className={`absolute top-full z-30 mt-1 w-[292px] p-[14px] rounded-[var(--radius-md)] border border-[var(--color-line-2)] bg-[var(--color-surface)] shadow-[var(--shadow-pop)] ${
-            alignRight ? "right-0" : "left-0"
+          onClick={() => {
+            if (disabled || open) return;
+            inputRef.current?.focus();
+            openPanel();
+          }}
+          className={`min-h-[44px] w-full pl-[14px] pr-[6px] rounded-[var(--radius-sm)] border bg-[var(--color-surface)] flex items-center gap-1 transition-colors duration-150 ease-out ${
+            disabled ? "bg-[var(--color-surface-2)] border-[var(--color-line)]" : "cursor-pointer"
+          } ${
+            error
+              ? "border-[var(--color-critical)] bg-[var(--color-critical-soft)]"
+              : open
+                ? "border-[var(--color-primary)]"
+                : "border-[var(--color-line-2)]"
           }`}
         >
-          {/* A month and a year are exactly the "short options, nothing to
+          <input
+            ref={inputRef}
+            type="text"
+            inputMode="numeric"
+            autoComplete="off"
+            placeholder={placeholder}
+            aria-labelledby={label ? `${id}-label` : undefined}
+            aria-label={label ? undefined : ariaLabel}
+            aria-invalid={error ? true : undefined}
+            disabled={disabled}
+            required={required}
+            value={text}
+            onChange={(e) => setDraft(e.target.value)}
+            onBlur={commitDraft}
+            onKeyDown={(e) => {
+              if (e.key === "Enter") {
+                e.preventDefault();
+                commitDraft();
+              } else if (e.key === "Escape" && open) {
+                e.preventDefault();
+                close();
+              } else if (e.key === "ArrowDown" && !open) {
+                e.preventDefault();
+                openPanel();
+              }
+            }}
+            className={`flex-1 min-w-0 bg-transparent border-0 outline-none cursor-pointer text-[14.5px] text-[var(--color-ink)] placeholder:text-[var(--color-ink-3)] disabled:text-[var(--color-ink-3)] ${
+              // Mono is for the figure, not for the hint about the figure: an
+              // empty field shows its format in the prose face, at prose weight,
+              // so it reads as a note rather than as a value already entered.
+              text ? "t-data" : "font-normal"
+            }`}
+          />
+          <button
+            type="button"
+            disabled={disabled}
+            aria-haspopup="dialog"
+            aria-expanded={open}
+            aria-label={open ? "Close calendar" : "Open calendar"}
+            // Stops the wrapper's opener seeing this click too, so the glyph can
+            // still close a panel the rest of the field only ever opens.
+            onClick={(e) => {
+              e.stopPropagation();
+              if (open) close();
+              else openPanel();
+            }}
+            className="flex-none w-[32px] h-[32px] rounded-[var(--radius-sm)] flex items-center justify-center cursor-pointer text-[var(--color-ink-3)] hover:bg-[var(--color-surface-2)] hover:text-[var(--color-primary)] disabled:cursor-default disabled:hover:bg-transparent"
+          >
+            <CalendarGlyph />
+          </button>
+        </div>
+
+        {open && (
+          <div
+            ref={panelRef}
+            role="dialog"
+            // Escape from anywhere in the panel, the month and year lists included.
+            onKeyDown={(e) => {
+              if (e.key === "Escape") {
+                e.preventDefault();
+                e.stopPropagation();
+                close();
+              }
+            }}
+            aria-label={`Choose a date${typeof label === "string" ? ` for ${label}` : ""}`}
+            className={`absolute z-30 ${dropUp ? "bottom-full mb-1" : "top-full mt-1"} w-[292px] p-[14px] rounded-[var(--radius-md)] border border-[var(--color-line-2)] bg-[var(--color-surface)] shadow-[var(--shadow-pop)] ${
+              alignRight ? "right-0" : "left-0"
+            }`}
+          >
+            {/* A month and a year are exactly the "short options, nothing to
               explain" case SelectMenu's own note reserves for a native select,
               and they turn a date of birth from a hundred clicks into two. */}
-          {/* Both selects size to their own text and sit together as one
+            {/* Both selects size to their own text and sit together as one
               phrase — "September 2026". Stretching the month to fill the row
               pushed its arrow to the far right, which read as two unrelated
               controls rather than one heading. The steppers take the slack. */}
-          <div className="flex items-center gap-[2px] mb-[10px]">
-            <select
-              aria-label="Month"
-              value={cursor.getMonth()}
-              onChange={(e) => setCursor(new Date(cursor.getFullYear(), Number(e.target.value), 1))}
-              className={`${HEADING_SELECT} font-semibold`}
-            >
-              {MONTHS.map((m, i) => (
-                <option key={m} value={i}>
-                  {m}
-                </option>
-              ))}
-            </select>
-            <select
-              aria-label="Year"
-              value={cursor.getFullYear()}
-              onChange={(e) => setCursor(new Date(Number(e.target.value), cursor.getMonth(), 1))}
-              className={`${HEADING_SELECT} t-data font-medium`}
-            >
-              {years.map((y) => (
-                <option key={y} value={y}>
-                  {y}
-                </option>
-              ))}
-            </select>
-            <span className="flex gap-1 ml-auto flex-none pl-2">
-              <Step label="Previous month" onClick={() => setCursor(addMonths(cursor, -1))} d="M10 3L5.5 8l4.5 5" />
-              <Step label="Next month" onClick={() => setCursor(addMonths(cursor, 1))} d="M6 3l4.5 5L6 13" />
+            <div className="flex items-center gap-[2px] mb-[10px]">
+              <select
+                ref={monthRef}
+                aria-label="Month"
+                value={cursor.getMonth()}
+                onChange={(e) => showMonth(cy, Number(e.target.value))}
+                className={`${HEADING_SELECT} font-semibold`}
+              >
+                {MONTHS.map((m, i) => (
+                  <option key={m} value={i} disabled={!monthOpen(cy, i, min, max)}>
+                    {m}
+                  </option>
+                ))}
+              </select>
+              <select
+                aria-label="Year"
+                value={cursor.getFullYear()}
+                onChange={(e) => {
+                  const y = Number(e.target.value);
+                  const m = firstOpenMonth(y);
+                  if (m >= 0) showMonth(y, m);
+                }}
+                className={`${HEADING_SELECT} t-data font-medium`}
+              >
+                {years.map((y) => (
+                  <option key={y} value={y} disabled={firstOpenMonth(y) < 0}>
+                    {y}
+                  </option>
+                ))}
+              </select>
+              <span className="flex gap-1 ml-auto flex-none pl-2">
+                <Step
+                  label="Previous month"
+                  disabled={!monthOpen(prev.getFullYear(), prev.getMonth(), min, max)}
+                  onClick={() => {
+                    showMonth(prev.getFullYear(), prev.getMonth());
+                    // This click switches Previous off (nothing earlier can be
+                    // chosen): hand the focus to the month list first, or the
+                    // browser drops it on the page.
+                    if (!monthOpen(prev.getFullYear(), prev.getMonth() - 1, min, max)) monthRef.current?.focus();
+                  }}
+                  d="M10 3L5.5 8l4.5 5"
+                />
+                <Step
+                  label="Next month"
+                  disabled={!monthOpen(next.getFullYear(), next.getMonth(), min, max)}
+                  onClick={() => {
+                    showMonth(next.getFullYear(), next.getMonth());
+                    if (!monthOpen(next.getFullYear(), next.getMonth() + 1, min, max)) monthRef.current?.focus();
+                  }}
+                  d="M6 3l4.5 5L6 13"
+                />
+              </span>
+            </div>
+
+            {/* Screen readers hear the month change without it stealing focus. */}
+            <span className="sr-only" aria-live="polite">
+              {MONTHS[cursor.getMonth()]} {cursor.getFullYear()}
             </span>
-          </div>
 
-          {/* Screen readers hear the month change without it stealing focus. */}
-          <span className="sr-only" aria-live="polite">
-            {MONTHS[cursor.getMonth()]} {cursor.getFullYear()}
-          </span>
-
-          <div role="grid" aria-label="Calendar" ref={gridRef} onKeyDown={onGridKey}>
-            <div role="row" className="grid grid-cols-7 mb-[6px]">
-              {WEEKDAYS.map((d) => (
-                <abbr
-                  key={d.short}
-                  role="columnheader"
-                  title={d.full}
-                  aria-label={d.full}
-                  className="t-small text-center text-[var(--color-ink-3)] font-medium no-underline"
-                >
-                  {d.short}
-                </abbr>
-              ))}
-            </div>
-
-            <div className="grid grid-cols-7 gap-y-[2px]">
-              {cells.map((d) => {
-                const s = iso(d);
-                const otherMonth = d.getMonth() !== cursor.getMonth();
-                const selected = s === value;
-                const isToday = s === today;
-                const blocked = outOfRange(s);
-                return (
-                  <button
-                    key={s}
-                    type="button"
-                    role="gridcell"
-                    data-iso={s}
-                    tabIndex={s === focused ? 0 : -1}
-                    aria-selected={selected}
-                    aria-current={isToday ? "date" : undefined}
-                    aria-disabled={blocked || undefined}
-                    aria-label={`${d.getDate()} ${MONTHS[d.getMonth()]} ${d.getFullYear()}`}
-                    onClick={() => choose(s)}
-                    className={`h-[34px] rounded-[var(--radius-sm)] t-data text-[13px] transition-colors duration-100 ${
-                      blocked
-                        ? "text-[var(--color-line-2)] cursor-not-allowed"
-                        : "cursor-pointer hover:bg-[var(--color-primary-soft)]"
-                    } ${
-                      selected
-                        ? "bg-[var(--color-primary)] text-white font-semibold hover:bg-[var(--color-primary)]"
-                        : otherMonth
-                          ? "text-[var(--color-ink-3)] opacity-55"
-                          : "text-[var(--color-ink)]"
-                    }`}
-                    // Today is a position, not a status, so it gets a ring
-                    // rather than one of the clinical hues.
-                    style={
-                      isToday && !selected ? { boxShadow: "inset 0 0 0 1.5px var(--color-primary-line)" } : undefined
-                    }
+            <div role="grid" aria-label="Calendar" ref={gridRef} onKeyDown={onGridKey}>
+              <div role="row" className="grid grid-cols-7 mb-[6px]">
+                {WEEKDAYS.map((d) => (
+                  <abbr
+                    key={d.short}
+                    role="columnheader"
+                    title={d.full}
+                    aria-label={d.full}
+                    className="t-small text-center text-[var(--color-ink-3)] font-medium no-underline"
                   >
-                    {d.getDate()}
-                  </button>
-                );
-              })}
-            </div>
-          </div>
+                    {d.short}
+                  </abbr>
+                ))}
+              </div>
 
-          <div className="flex items-center justify-between gap-3 mt-[10px] pt-[10px] border-t border-[var(--color-line)]">
-            {clearable ? (
+              <div className="grid grid-cols-7 gap-y-[2px]">
+                {cells.map((d) => {
+                  const s = iso(d);
+                  const otherMonth = d.getMonth() !== cursor.getMonth();
+                  const selected = s === value;
+                  const isToday = s === today;
+                  const blocked = outOfRange(s);
+                  return (
+                    <button
+                      key={s}
+                      type="button"
+                      role="gridcell"
+                      data-iso={s}
+                      tabIndex={s === focused ? 0 : -1}
+                      aria-selected={selected}
+                      aria-current={isToday ? "date" : undefined}
+                      aria-disabled={blocked || undefined}
+                      aria-label={`${d.getDate()} ${MONTHS[d.getMonth()]} ${d.getFullYear()}`}
+                      onClick={() => choose(s)}
+                      // One state each, never two: the pale hover used to land on
+                      // the chosen day too and wash out its white figure.
+                      className={`h-[34px] rounded-[var(--radius-sm)] t-data text-[13px] transition-colors duration-100 ${
+                        selected
+                          ? "bg-[var(--color-primary)] text-white font-semibold cursor-pointer hover:bg-[var(--color-primary-dark)]"
+                          : blocked
+                            ? "text-[var(--color-line-2)] cursor-not-allowed"
+                            : `cursor-pointer hover:bg-[var(--color-primary-soft)] ${
+                                otherMonth ? "text-[var(--color-ink-3)] opacity-55" : "text-[var(--color-ink)]"
+                              }`
+                      }`}
+                      // Today is a position, not a status, so it gets a ring
+                      // rather than one of the clinical hues.
+                      style={
+                        isToday && !selected ? { boxShadow: "inset 0 0 0 1.5px var(--color-primary-line)" } : undefined
+                      }
+                    >
+                      {d.getDate()}
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+
+            <div className="flex items-center justify-between gap-3 mt-[10px] pt-[10px] border-t border-[var(--color-line)]">
+              {clearable ? (
+                <button
+                  type="button"
+                  onClick={() => {
+                    onChange("");
+                    setDraft(null);
+                    close();
+                  }}
+                  className="t-small font-semibold text-[var(--color-ink-2)] cursor-pointer hover:text-[var(--color-ink)]"
+                >
+                  Clear
+                </button>
+              ) : (
+                <span />
+              )}
               <button
                 type="button"
-                onClick={() => {
-                  onChange("");
-                  setDraft(null);
-                  close();
-                }}
-                className="t-small font-semibold text-[var(--color-ink-2)] cursor-pointer hover:text-[var(--color-ink)]"
+                disabled={!today || outOfRange(today)}
+                onClick={() => choose(today)}
+                className="t-small font-semibold text-[var(--color-primary)] cursor-pointer disabled:text-[var(--color-ink-3)] disabled:cursor-not-allowed"
               >
-                Clear
+                Today
               </button>
-            ) : (
-              <span />
-            )}
-            <button
-              type="button"
-              disabled={!today || outOfRange(today)}
-              onClick={() => choose(today)}
-              className="t-small font-semibold text-[var(--color-primary)] cursor-pointer disabled:text-[var(--color-ink-3)] disabled:cursor-not-allowed"
-            >
-              Today
-            </button>
+            </div>
           </div>
-        </div>
-      )}
+        )}
+      </div>
+
+      {error && <span className="t-small text-[var(--color-critical-text)]">{error}</span>}
     </div>
   );
 }
 
-function Step({ label, onClick, d }: { label: string; onClick: () => void; d: string }) {
+function Step({
+  label,
+  onClick,
+  d,
+  disabled = false,
+}: {
+  label: string;
+  onClick: () => void;
+  d: string;
+  disabled?: boolean;
+}) {
   return (
     <button
       type="button"
       aria-label={label}
+      disabled={disabled}
       onClick={onClick}
-      className="w-[28px] h-[28px] rounded-[var(--radius-sm)] border border-[var(--color-line)] bg-[var(--color-surface)] text-[var(--color-ink-2)] flex items-center justify-center cursor-pointer hover:bg-[var(--color-surface-2)] hover:border-[var(--color-line-2)]"
+      className="w-[28px] h-[28px] rounded-[var(--radius-sm)] border border-[var(--color-line)] bg-[var(--color-surface)] text-[var(--color-ink-2)] flex items-center justify-center cursor-pointer hover:bg-[var(--color-surface-2)] hover:border-[var(--color-line-2)] disabled:text-[var(--color-line-2)] disabled:cursor-not-allowed disabled:hover:bg-[var(--color-surface)] disabled:hover:border-[var(--color-line)]"
     >
       <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true">
         <path d={d} stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />

@@ -23,11 +23,13 @@ import {
   type OrderPayment,
   type PayMethod,
 } from "@/lib/billing/order-payment";
+import { getClockFormat } from "@/lib/settings/clock";
 
 export const dynamic = "force-dynamic";
 export const metadata: Metadata = { title: "Order" };
 
 export default async function OrderDetailPage({ params }: { params: Promise<{ id: string }> }) {
+  const clockFmt = await getClockFormat();
   const session = await requireRole("superadmin", "admin");
   const nav = await adminNav();
   const { id } = await params;
@@ -139,12 +141,12 @@ export default async function OrderDetailPage({ params }: { params: Promise<{ id
         <StatusPill status={order.status} dot />
         {order.confirmedAt && (
           <span className="t-small text-[var(--color-ink-3)]">
-            Confirmed {formatDate(order.confirmedAt)} · {formatTime(order.confirmedAt)}
+            Confirmed {formatDate(order.confirmedAt)} · {formatTime(order.confirmedAt, clockFmt)}
           </span>
         )}
         {order.dispatchedAt && (
           <span className="t-small text-[var(--color-ink-3)]">
-            Dispatched {formatDate(order.dispatchedAt)} · {formatTime(order.dispatchedAt)}
+            Dispatched {formatDate(order.dispatchedAt)} · {formatTime(order.dispatchedAt, clockFmt)}
           </span>
         )}
         {order.cancelledAt && (

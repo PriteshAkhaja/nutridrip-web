@@ -14,11 +14,13 @@ import { nurseOwns } from "@/lib/auth/ownership";
 import { VitalsCorrected } from "@/components/ui/VitalsCorrected";
 import type { VitalsCorrection } from "@/lib/clinical/checklist";
 import { isLow, readFeedback, type StoredFeedback } from "@/lib/clinical/feedback";
+import { getClockFormat } from "@/lib/settings/clock";
 
 export const metadata: Metadata = { title: "Session report" };
 export const dynamic = "force-dynamic";
 
 export default async function NurseReportPage({ params }: { params: Promise<{ id: string }> }) {
+  const clockFmt = await getClockFormat();
   const session = await requireRole("nurse", "superadmin");
   const { id } = await params;
 
@@ -92,13 +94,13 @@ export default async function NurseReportPage({ params }: { params: Promise<{ id
         <span className="t-micro">{booking.dripName}</span>
         <div className="flex flex-col gap-2 mt-3">
           {[
-            ["Scheduled", `${formatDate(booking.scheduledAt)} · ${formatTime(booking.scheduledAt)}`],
-            ["Started", booking.startedAt ? formatTime(booking.startedAt) : "—"],
-            ["Finished", booking.completedAt ? formatTime(booking.completedAt) : "Not yet"],
+            ["Scheduled", `${formatDate(booking.scheduledAt)} · ${formatTime(booking.scheduledAt, clockFmt)}`],
+            ["Started", booking.startedAt ? formatTime(booking.startedAt, clockFmt) : "—"],
+            ["Finished", booking.completedAt ? formatTime(booking.completedAt, clockFmt) : "Not yet"],
             [
               "Consent",
               booking.consent?.givenAt
-                ? `${formatTime(booking.consent.givenAt)} · ${
+                ? `${formatTime(booking.consent.givenAt, clockFmt)} · ${
                     booking.consent.version ?? "—"
                   } · ${booking.consent.viaOtp ? "code" : "signature"}`
                 : "Not captured",
@@ -164,7 +166,9 @@ export default async function NurseReportPage({ params }: { params: Promise<{ id
               <div key={i}>
                 <div className="flex items-baseline justify-between gap-3 mb-2">
                   <span className="t-body font-medium capitalize">{v.label ?? "reading"}</span>
-                  <span className="t-data text-[13px] text-[var(--color-ink-3)]">{formatTime(v.takenAt)}</span>
+                  <span className="t-data text-[13px] text-[var(--color-ink-3)]">
+                    {formatTime(v.takenAt, clockFmt)}
+                  </span>
                 </div>
                 <div className="grid grid-cols-2 gap-2">
                   {(
@@ -228,7 +232,7 @@ export default async function NurseReportPage({ params }: { params: Promise<{ id
           <Timeline
             items={booking.observations.map((o) => ({
               label: o.text,
-              time: formatTime(o.at),
+              time: formatTime(o.at, clockFmt),
               state: "done" as const,
             }))}
           />
@@ -243,7 +247,7 @@ export default async function NurseReportPage({ params }: { params: Promise<{ id
             {booking.adverseEvents.map((e, i) => (
               <div key={i} className="flex flex-col gap-2">
                 <span className="t-data text-[13px]">
-                  {formatTime(e.at)}
+                  {formatTime(e.at, clockFmt)}
                   {e.severity ? ` · ${e.severity}` : ""}
                 </span>
                 <div className="flex gap-2 flex-wrap">
@@ -308,7 +312,7 @@ export default async function NurseReportPage({ params }: { params: Promise<{ id
           )}
           {said.givenAt && (
             <span className="t-small text-[var(--color-ink-3)]">
-              {formatDate(said.givenAt)} · {formatTime(said.givenAt)}
+              {formatDate(said.givenAt)} · {formatTime(said.givenAt, clockFmt)}
             </span>
           )}
         </div>

@@ -1,9 +1,12 @@
 import { connectDB } from "@/lib/db/mongoose";
-import { Booking, HealthQuiz, LabReport, User } from "@/lib/models";
+import { Booking, HealthQuiz, LabReport, User, Consultation } from "@/lib/models";
 import { riskBand, riskColor } from "@/lib/models/types";
 import type { QuizQuestion as QuizQuestionDef } from "@/lib/clinical/quiz";
 import { screeningHit } from "@/lib/clinical/quiz-rules";
 import { loadQuestions } from "@/lib/clinical/quiz-store";
+import { isOverdue } from "@/lib/clinical/calls";
+import { getClockFormat } from "@/lib/settings/clock";
+import { shortDateClock } from "@/lib/time";
 
 const HOUR = 3_600_000;
 /** How long a physician has to review a submission before it breaches. */
@@ -27,6 +30,8 @@ export type QueueItem = {
   slaLabel: string;
   slaPct: number;
   submittedAt: string;
+  /** The patient's phone call with a physician: who, when, and whether it has happened. */
+  call: { doctorId: string; doctorName: string; startAt: string; status: string; overdue: boolean } | null;
 };
 
 export function ageFrom(dob?: Date | null): string {
@@ -96,8 +101,13 @@ function screeningPill(screening: string[]): ReviewFlag[] {
   return n ? [{ label: n === 1 ? "Screening answer" : `${n} screening answers`, kind: "crit" }] : [];
 }
 
-function slaOf(submittedAt: Date): { msLeft: number; label: string; pct: number } {
-  const deadline = submittedAt.getTime() + REVIEW_SLA_HOURS * HOUR;
+/**
+ * The review clock. It starts when the physician can act: when the patient's
+ * call ends (or was marked), or, with no call, when the answers came in. A
+ * call booked for tomorrow is not a review running a day late.
+ */
+function slaOf(from: Date): { msLeft: number; label: string; pct: number } {
+  const deadline = from.getTime() + REVIEW_SLA_HOURS * HOUR;
   const msLeft = deadline - Date.now();
   const pct = Math.max(0, Math.min(100, (msLeft / (REVIEW_SLA_HOURS * HOUR)) * 100));
 
@@ -112,6 +122,7 @@ function slaOf(submittedAt: Date): { msLeft: number; label: string; pct: number 
 
 /** The approvals queue, ordered by how close each submission is to breaching. */
 export async function reviewQueue(): Promise<QueueItem[]> {
+  const clockFmt = await getClockFormat();
   await connectDB();
 
   const quizzes = await HealthQuiz.find({ reviewStatus: "pending" }).sort({ completedAt: 1 }).lean<
@@ -150,6 +161,22 @@ export async function reviewQueue(): Promise<QueueItem[]> {
     .sort({ scheduledAt: 1 })
     .lean<Array<{ patientId: unknown; bookingNo: string; dripName?: string; scheduledAt: Date }>>();
 
+  // The patient's latest call that was not cancelled: it says whose patient this is.
+  const calls = await Consultation.find({
+    patientId: { $in: quizzes.map((q) => q.patientId) },
+    status: { $in: ["booked", "done", "no_answer"] },
+  })
+    .sort({ createdAt: -1 })
+    .lean<
+      Array<{ patientId: unknown; doctorId: unknown; startAt: Date; minutes: number; status: string; outcomeAt?: Date }>
+    >();
+  const callByPatient = new Map<string, (typeof calls)[number]>();
+  for (const c of calls) if (!callByPatient.has(String(c.patientId))) callByPatient.set(String(c.patientId), c);
+  const callDoctors = await User.find({ _id: { $in: calls.map((c) => c.doctorId) } })
+    .select("name")
+    .lean<Array<{ _id: unknown; name: string }>>();
+  const callDoctorName = new Map(callDoctors.map((d) => [String(d._id), d.name]));
+
   const bookingByPatient = new Map<string, (typeof bookings)[number]>();
   for (const b of bookings) {
     const k = String(b.patientId);
@@ -159,7 +186,13 @@ export async function reviewQueue(): Promise<QueueItem[]> {
   const items = quizzes.map((q) => {
     const patient = patientById.get(String(q.patientId));
     const booking = bookingByPatient.get(String(q.patientId));
-    const sla = slaOf(q.completedAt);
+    const c = callByPatient.get(String(q.patientId));
+    const clockFrom = !c
+      ? q.completedAt
+      : c.status === "booked"
+        ? new Date(new Date(c.startAt).getTime() + c.minutes * 60_000)
+        : (c.outcomeAt ?? c.startAt);
+    const sla = slaOf(new Date(Math.max(q.completedAt.getTime(), new Date(clockFrom).getTime())));
 
     return {
       quizId: String(q._id),
@@ -169,21 +202,25 @@ export async function reviewQueue(): Promise<QueueItem[]> {
       gender: patient?.patient?.gender?.charAt(0).toUpperCase() ?? "—",
       bookingNo: booking?.bookingNo ?? null,
       dripName: booking?.dripName ?? null,
-      slot: booking
-        ? booking.scheduledAt.toLocaleString("en-IN", {
-            day: "2-digit",
-            month: "short",
-            hour: "2-digit",
-            minute: "2-digit",
-            hour12: true,
-          })
-        : null,
+      slot: booking ? shortDateClock(booking.scheduledAt, clockFmt) : null,
       vitalityScore: q.vitalityScore,
       flags: [...screeningPill(screeningOf(q, questions)), ...(patient ? flagsFor(patient) : [])],
       msLeft: sla.msLeft,
       slaLabel: sla.label,
       slaPct: sla.pct,
       submittedAt: q.completedAt.toISOString(),
+      call: (() => {
+        const c = callByPatient.get(String(q.patientId));
+        return c
+          ? {
+              doctorId: String(c.doctorId),
+              doctorName: callDoctorName.get(String(c.doctorId)) ?? "A physician",
+              startAt: new Date(c.startAt).toISOString(),
+              status: c.status,
+              overdue: isOverdue(c),
+            }
+          : null;
+      })(),
     };
   });
 
@@ -251,6 +288,7 @@ export type PatientReview = {
 };
 
 export async function patientReview(quizId: string): Promise<PatientReview | null> {
+  const clockFmt = await getClockFormat();
   await connectDB();
 
   const quiz = await HealthQuiz.findById(quizId).lean<{
@@ -387,13 +425,7 @@ export async function patientReview(quizId: string): Promise<PatientReview | nul
     bookedSessions: booked.map((b) => ({
       bookingNo: b.bookingNo,
       dripName: b.dripName ?? null,
-      when: b.scheduledAt.toLocaleString("en-IN", {
-        day: "2-digit",
-        month: "short",
-        hour: "2-digit",
-        minute: "2-digit",
-        hour12: true,
-      }),
+      when: shortDateClock(b.scheduledAt, clockFmt),
       status: b.status,
     })),
     answers: quiz.answers ?? [],

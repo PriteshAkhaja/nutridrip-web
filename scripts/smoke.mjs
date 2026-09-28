@@ -536,6 +536,63 @@ async function main() {
     offGrid.json?.error
   );
 
+  /* ---------------- Calls with a physician ---------------- */
+  section("Calls with a physician");
+  const bookable = (await get(patient.jar, "/api/calls/doctors")).json?.data?.doctors ?? [];
+  ok(
+    "patients are offered physicians with hours, and when each is next free",
+    bookable.length > 0 && bookable.every((d) => d.hours && "nextFree" in d),
+    JSON.stringify(bookable.map((d) => d.name))
+  );
+  const myCalls = (await get(patient.jar, "/api/calls")).json?.data?.calls ?? [];
+  const openCall = myCalls.find((c) => c.status === "booked");
+  if (openCall && bookable[0]?.nextFree) {
+    const second = await post(patient.jar, "/api/calls", { doctorId: bookable[0].id, startAt: bookable[0].nextFree });
+    ok(
+      "a patient cannot hold two calls at once",
+      second.status === 409 && /already have a call/.test(second.json?.error ?? ""),
+      second.json?.error
+    );
+    const early =
+      (await get(patient.jar, `/api/bookings/slots?dripId=${jetlag._id}&location=home&pincode=560095`)).json?.data
+        ?.days ?? [];
+    const beforeCall = early.flatMap((d) => d.slots).find((x) => x.state === "before_call");
+    if (beforeCall) {
+      const tooClose = await post(patient.jar, "/api/bookings", {
+        dripId: jetlag._id,
+        scheduledAt: beforeCall.at,
+        location: "home",
+        address: "Koramangala 8th Block",
+        pincode: "560095",
+      });
+      ok(
+        "a held drip less than 2 hours after the call is refused",
+        tooClose.status === 422 && /2 hours after your call/.test(tooClose.json?.error ?? ""),
+        tooClose.json?.error
+      );
+    } else skip("a drip too close to the call", "no time before the call inside the released days");
+    const notYet = await patch(doctor.jar, `/api/calls/${openCall._id}`, { action: "no_answer" });
+    ok("a call cannot be marked before its time", notYet.status === 409 || notYet.status === 403, notYet.json?.error);
+    const opsHand = await patch(admin.jar, `/api/calls/${openCall._id}`, {
+      action: "handover",
+      doctorId: bookable[0].id,
+    });
+    ok("an ordinary admin cannot hand a call over", opsHand.status === 403);
+  } else skip("call rules", "the seeded patient has no booked call — run `npm run seed`");
+  const otherHours = await call(
+    doctor.jar,
+    "PUT",
+    `/api/calls/hours/${bookable.find((d) => d.name !== doctor.user.name)?.id ?? "000000000000000000000000"}`,
+    { weekly: [], callMinutes: 15, daysOff: [] }
+  );
+  ok("a physician cannot change another physician's hours", otherHours.status === 403, `status ${otherHours.status}`);
+  const badHours = await call(doctor.jar, "PUT", `/api/calls/hours/${doctor.user.id}`, {
+    weekly: [{ day: 1, start: "10:00", end: "10:05" }],
+    callMinutes: 15,
+    daysOff: [],
+  });
+  ok("hours shorter than one call are refused", badHours.status === 422, badHours.json?.error);
+
   const badZone = await post(patient.jar, "/api/bookings", {
     dripId: jetlag._id,
     scheduledAt: tomorrow,

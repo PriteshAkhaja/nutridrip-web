@@ -19,6 +19,7 @@ import {
 } from "@/lib/data/audit";
 import { nameEntities, nameKey } from "@/lib/data/audit-names";
 import { formatDate, formatTime } from "@/lib/data/inventory";
+import { getClockFormat } from "@/lib/settings/clock";
 
 /**
  * The audit trail as a CSV, for the compliance review that happens outside
@@ -75,6 +76,7 @@ const HEADERS = [
 ];
 
 export async function GET(req: Request) {
+  const clockFmt = await getClockFormat();
   try {
     const session = await getSession();
     if (!session) return fail("Unauthorized", 401);
@@ -163,7 +165,7 @@ export async function GET(req: Request) {
             chunk += csvRow([
               r.at,
               formatDate(r.at),
-              formatTime(r.at),
+              formatTime(r.at, clockFmt),
               who,
               r.actorRole ?? "",
               groupFor(r.action),

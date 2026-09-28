@@ -13,11 +13,14 @@ import { VitalsCorrected } from "@/components/ui/VitalsCorrected";
 import type { VitalsCorrection } from "@/lib/clinical/checklist";
 import { NurseCodes } from "../../NurseCodes";
 import { liveCodesFor } from "@/lib/data/session-codes";
+import { getClockFormat } from "@/lib/settings/clock";
+import { clock } from "@/lib/time";
 
 export const metadata: Metadata = { title: "Your session" };
 export const dynamic = "force-dynamic";
 
 export default async function LiveSessionPage({ params }: { params: Promise<{ id: string }> }) {
+  const clockFmt = await getClockFormat();
   const session = await requireRole("patient", "superadmin");
   const { id } = await params;
 
@@ -95,7 +98,7 @@ export default async function LiveSessionPage({ params }: { params: Promise<{ id
           {booking.startedAt && (
             <div className="flex flex-col">
               <span className="t-micro">Started</span>
-              <span className="t-data text-[14.5px]">{formatTime(booking.startedAt)}</span>
+              <span className="t-data text-[14.5px]">{formatTime(booking.startedAt, clockFmt)}</span>
             </div>
           )}
         </div>
@@ -115,7 +118,7 @@ export default async function LiveSessionPage({ params }: { params: Promise<{ id
       {/* ---------------- Baseline vitals ---------------- */}
       {baseline && (
         <div className="rounded-[var(--radius-lg)] border border-[var(--color-line)] bg-[var(--color-surface)] p-5 mb-4">
-          <span className="t-micro">Baseline vitals · {formatTime(baseline.takenAt)}</span>
+          <span className="t-micro">Baseline vitals · {formatTime(baseline.takenAt, clockFmt)}</span>
           <div className="grid grid-cols-2 gap-3 mt-3">
             {[
               ["Blood pressure", `${baseline.systolic}/${baseline.diastolic}`],
@@ -151,8 +154,10 @@ export default async function LiveSessionPage({ params }: { params: Promise<{ id
           <div className="flex flex-col gap-3">
             {booking.observations.map((o, i) => (
               <div key={i} className="flex gap-3 items-start">
-                <span className="t-data text-[13px] text-[var(--color-ink-3)] flex-none w-[44px]">
-                  {o.at.toLocaleTimeString("en-IN", { hour: "2-digit", minute: "2-digit", hour12: false })}
+                <span
+                  className={`t-data text-[13px] text-[var(--color-ink-3)] flex-none whitespace-nowrap ${clockFmt === "24h" ? "w-[44px]" : "w-[64px]"}`}
+                >
+                  {clock(o.at, clockFmt)}
                 </span>
                 <span className="t-body text-[var(--color-ink-2)]">{o.text}</span>
               </div>

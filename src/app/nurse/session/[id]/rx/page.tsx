@@ -10,6 +10,8 @@ import { FillBar } from "@/components/ui/Fill";
 import { canOpenPrescription, rxLockState } from "@/lib/clinical/prescription";
 import { PrescriptionGate } from "../PrescriptionGate";
 import { rxOverrideView } from "@/lib/data/rx-override-view";
+import { clock } from "@/lib/time";
+import { getClockFormat } from "@/lib/settings/clock";
 
 export const metadata: Metadata = { title: "Prescription" };
 export const dynamic = "force-dynamic";
@@ -29,6 +31,7 @@ const ROLE_MEANING: Record<string, string> = {
 };
 
 export default async function PrescriptionPage({ params }: { params: Promise<{ id: string }> }) {
+  const clockFmt = await getClockFormat();
   const session = await requireRole("nurse", "superadmin");
   const { id } = await params;
 
@@ -137,16 +140,8 @@ export default async function PrescriptionPage({ params }: { params: Promise<{ i
               : lock.method === "physician"
                 ? "Opened on a physician's authorisation at "
                 : `Opened with ${patientName}'s code at `}
-            <span className="t-data text-[13px]">
-              {lock.unlockedAt
-                ? new Date(lock.unlockedAt).toLocaleTimeString("en-IN", {
-                    hour: "2-digit",
-                    minute: "2-digit",
-                    hour12: true,
-                  })
-                : "—"}
-            </span>
-            . It stays open for this session.
+            <span className="t-data text-[13px]">{lock.unlockedAt ? clock(lock.unlockedAt, clockFmt) : "—"}</span>. It
+            stays open for this session.
           </span>
 
           {lock.overridden && booking.rxOverride?.reason && (

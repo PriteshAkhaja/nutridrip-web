@@ -12,6 +12,7 @@ import { StatCard } from "@/components/ui/Card";
 import { EmptyState } from "@/components/ui/States";
 import { formatDate, formatTime } from "@/lib/data/inventory";
 import { NameLink } from "@/components/ui/NameLink";
+import { getClockFormat } from "@/lib/settings/clock";
 
 export const metadata: Metadata = { title: "Approvals" };
 export const dynamic = "force-dynamic";
@@ -24,6 +25,7 @@ const FLAG_TONE = { crit: "critical", warn: "caution", info: "info" } as const;
  * the review itself stays in the physician console.
  */
 export default async function AdminApprovalsPage() {
+  const clockFmt = await getClockFormat();
   const session = await requireRole("superadmin", "admin");
   const nav = await adminNav();
   const queue = await reviewQueue();
@@ -162,7 +164,7 @@ export default async function AdminApprovalsPage() {
                     {q.dripName ?? <span className="t-small text-[var(--color-ink-3)]">No booking yet</span>}
                   </TD>
                   <TD mono nowrap>
-                    {formatDate(q.submittedAt)} · {formatTime(q.submittedAt)}
+                    {formatDate(q.submittedAt)} · {formatTime(q.submittedAt, clockFmt)}
                   </TD>
                   <TD nowrap>
                     <span
@@ -222,7 +224,7 @@ export default async function AdminApprovalsPage() {
                   </TD>
                   <TD nowrap>{r.reviewedBy ? (nameById.get(String(r.reviewedBy)) ?? "—") : "—"}</TD>
                   <TD mono nowrap>
-                    {r.reviewedAt ? `${formatDate(r.reviewedAt)} · ${formatTime(r.reviewedAt)}` : "—"}
+                    {r.reviewedAt ? `${formatDate(r.reviewedAt)} · ${formatTime(r.reviewedAt, clockFmt)}` : "—"}
                   </TD>
                 </TR>
               ))}

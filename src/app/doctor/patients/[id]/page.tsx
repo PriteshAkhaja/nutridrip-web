@@ -21,6 +21,7 @@ import { PagedResults, PagedView, Pagination } from "@/components/ui/Paged";
 import { paginate } from "@/lib/pagination-db";
 import { parsePaging } from "@/lib/pagination";
 import { readFeedback, type FeedbackView, type StoredFeedback } from "@/lib/clinical/feedback";
+import { getClockFormat } from "@/lib/settings/clock";
 
 export const metadata: Metadata = { title: "Patient" };
 export const dynamic = "force-dynamic";
@@ -32,6 +33,7 @@ export default async function PatientDetailPage({
   params: Promise<{ id: string }>;
   searchParams: Promise<{ page?: string; pageSize?: string }>;
 }) {
+  const clockFmt = await getClockFormat();
   const session = await requireRole("doctor", "superadmin");
   const nav = await doctorNav(session.sub);
   const { id } = await params;
@@ -259,7 +261,7 @@ export default async function PatientDetailPage({
                             </TD>
                             <TD nowrap>{b.dripName ?? "—"}</TD>
                             <TD mono nowrap>
-                              {formatDate(b.scheduledAt)} · {formatTime(b.scheduledAt)}
+                              {formatDate(b.scheduledAt)} · {formatTime(b.scheduledAt, clockFmt)}
                             </TD>
                             <TD>
                               <span className="flex gap-1 flex-wrap">

@@ -14,6 +14,7 @@ import {
   stateName,
 } from "@/lib/billing/gst";
 import { PAY_METHOD_LABEL, type PayMethod } from "@/lib/billing/order-payment";
+import { dateIN } from "@/lib/time";
 
 export type InvoiceParty = {
   name: string;
@@ -78,9 +79,7 @@ export function termsFor(order: Pick<OrderDoc, "payment">, creditTerms: string):
   const p = order.payment;
   if (p?.state !== "received") return creditTerms;
   const how = PAY_METHOD_LABEL[p.method as PayMethod] ?? "payment";
-  const on = p.paidOn
-    ? ` on ${new Date(p.paidOn).toLocaleDateString("en-IN", { day: "2-digit", month: "short", year: "numeric" })}`
-    : "";
+  const on = p.paidOn ? ` on ${dateIN(p.paidOn)}` : "";
   return `Paid in advance${on} by ${how}${p.reference ? `, ref ${p.reference}` : ""}. Nothing further is due.`;
 }
 

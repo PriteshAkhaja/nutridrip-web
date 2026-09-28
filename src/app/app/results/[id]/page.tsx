@@ -212,8 +212,8 @@ export default async function ResultsPage({
         <div className="rounded-[var(--radius-lg)] border border-[var(--color-info)] bg-[var(--color-info-soft)] p-5">
           <span className="t-body font-semibold">With a physician now</span>
           <p className="t-body text-[var(--color-ink-2)] mt-1">
-            You can book once they approve — usually within two hours. If anything in your answers rules IV therapy out,
-            they will tell you why.
+            Book a short phone call with a physician from Book a session: they read your answers, call you at the time
+            you choose, then decide. If anything in your answers rules IV therapy out, they will tell you why.
           </p>
         </div>
       ) : quiz.reviewStatus === "info_needed" ? (

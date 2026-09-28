@@ -1,6 +1,8 @@
 import { User } from "@/lib/models";
 import { describeWait } from "@/lib/clinical/prescription";
 import type { OverrideState } from "@/app/nurse/session/[id]/PrescriptionGate";
+import { getClockFormat } from "@/lib/settings/clock";
+import { shortDateClock, type ClockFormat } from "@/lib/time";
 
 /**
  * The state of an override request, in the words the nurse needs.
@@ -25,21 +27,13 @@ export type OverrideSource = {
   } | null;
 } | null;
 
-const when = (d?: Date | null): string | null =>
-  d
-    ? new Date(d).toLocaleString("en-IN", {
-        day: "2-digit",
-        month: "short",
-        hour: "2-digit",
-        minute: "2-digit",
-        hour12: true,
-      })
-    : null;
+const when = (d: Date | null | undefined, fmt: ClockFormat): string | null => (d ? shortDateClock(d, fmt) : null);
 
 const nameOf = async (id: unknown): Promise<string | null> =>
   id ? ((await User.findById(id).lean<{ name: string } | null>())?.name ?? null) : null;
 
 export async function rxOverrideView(booking: OverrideSource): Promise<OverrideState> {
+  const clockFmt = await getClockFormat();
   const o = booking?.rxOverride ?? null;
 
   /**
@@ -61,8 +55,8 @@ export async function rxOverrideView(booking: OverrideSource): Promise<OverrideS
 
   return {
     asked: Boolean(o?.requestedAt),
-    askedAt: when(o?.requestedAt),
-    chasedAt: when(chased),
+    askedAt: when(o?.requestedAt, clockFmt),
+    chasedAt: when(chased, clockFmt),
     reason: o?.reason ?? null,
     askedWho: doctor?.name ?? null,
     askedPhone: doctor?.phone ?? null,
@@ -71,7 +65,7 @@ export async function rxOverrideView(booking: OverrideSource): Promise<OverrideS
     askedAtIso: o?.requestedAt ? new Date(o.requestedAt).toISOString() : null,
     waited: describeWait(o?.requestedAt),
     denied: Boolean(o?.deniedAt),
-    deniedAt: when(o?.deniedAt),
+    deniedAt: when(o?.deniedAt, clockFmt),
     deniedWho: await nameOf(o?.deniedBy),
     denyReason: o?.denyReason ?? null,
   };

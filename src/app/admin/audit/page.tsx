@@ -28,6 +28,7 @@ import {
   presetsFor,
   type AuditGroup,
 } from "@/lib/data/audit";
+import { getClockFormat } from "@/lib/settings/clock";
 
 export const metadata: Metadata = { title: "Audit trail" };
 export const dynamic = "force-dynamic";
@@ -57,6 +58,7 @@ export default async function AuditPage({
     pageSize?: string;
   }>;
 }) {
+  const clockFmt = await getClockFormat();
   const session = await requirePermission("audit.view");
   const query = await searchParams;
   const { group, action, actor, from, to, page, pageSize } = query;
@@ -219,7 +221,7 @@ export default async function AuditPage({
                         <TD>
                           <span className="t-data text-[13px] whitespace-nowrap block">{formatDate(r.at)}</span>
                           <span className="t-small text-[var(--color-ink-3)] whitespace-nowrap">
-                            {formatTime(r.at)}
+                            {formatTime(r.at, clockFmt)}
                           </span>
                         </TD>
                         <TD>

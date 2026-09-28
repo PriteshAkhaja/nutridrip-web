@@ -10,6 +10,8 @@ import { zoneForPincode, type Zone } from "@/lib/zones";
 import { SlotPicker, slotLabel } from "@/components/ui/SlotPicker";
 import { latePolicySentence, type LatePolicy } from "@/lib/billing/late-policy";
 import { filterDrips, noMatchMessage } from "@/lib/data/drip-search";
+import { useClockFormat } from "@/components/ClockProvider";
+import { clockText } from "@/lib/time";
 
 type DripOption = {
   id: string;
@@ -35,6 +37,7 @@ const LOCATIONS = [
 
 /** Where a pincode stands: served, served with limited cover, or not yet. */
 export function CoverageNote({ pincode, zones }: { pincode: string; zones: Zone[] }) {
+  const clockFmt = useClockFormat();
   if (pincode.length !== 6) return null;
   const zone = zoneForPincode(pincode, zones);
   if (!zone) {
@@ -46,7 +49,7 @@ export function CoverageNote({ pincode, zones }: { pincode: string; zones: Zone[
   }
   return (
     <span className="t-small" style={{ color: zone.status === "open" ? "var(--color-safe)" : "var(--color-caution)" }}>
-      {zone.name} · open {zone.window}
+      {zone.name} · open {clockText(zone.window, clockFmt)}
       {zone.status === "limited" ? " · limited cover, expect a narrower choice of times" : ""}
     </span>
   );
@@ -76,6 +79,7 @@ export function BookingFlow({
   /** The late-change rule and fees, from the Billing page. */
   latePolicy: LatePolicy;
 }) {
+  const clockFmt = useClockFormat();
   const router = useRouter();
 
   /**
@@ -304,7 +308,7 @@ export function BookingFlow({
           <div className="flex flex-col gap-2 mt-3">
             {[
               ["Drip", drip.name],
-              ["When", slotAt ? slotLabel(slotAt) : "Pick a time"],
+              ["When", slotAt ? slotLabel(slotAt, clockFmt) : "Pick a time"],
               [
                 "Where",
                 atClinic

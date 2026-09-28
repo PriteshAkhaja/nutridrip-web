@@ -13,11 +13,13 @@ import { ButtonLink } from "@/components/ui/Button";
 import { formatInr } from "@/lib/inventory/units";
 import { formatDate, formatTime } from "@/lib/data/inventory";
 import { Arrow } from "@/components/ui/Arrow";
+import { getClockFormat } from "@/lib/settings/clock";
 
 export const metadata: Metadata = { title: "Clinic" };
 export const dynamic = "force-dynamic";
 
 export default async function ClinicPage() {
+  const clockFmt = await getClockFormat();
   const session = await requireRole("clinic", "superadmin");
   const nav = await clinicNav(session.sub);
   await connectDB();
@@ -136,7 +138,7 @@ export default async function ClinicPage() {
                 {todayBookings.map((b) => (
                   <TR key={String(b._id)}>
                     <TD mono nowrap>
-                      {formatTime(b.scheduledAt)}
+                      {formatTime(b.scheduledAt, clockFmt)}
                     </TD>
                     <TD nowrap>{patientNames.get(String(b.patientId)) ?? "—"}</TD>
                     <TD nowrap>{b.dripName ?? "—"}</TD>

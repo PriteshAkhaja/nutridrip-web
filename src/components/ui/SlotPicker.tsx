@@ -1,7 +1,15 @@
 "use client";
 
-import { useEffect, useState, type Dispatch, type SetStateAction } from "react";
-import type { SlotDay } from "@/lib/clinical/slots";
+import { useEffect, useRef, useState, type Dispatch, type SetStateAction } from "react";
+import type { SlotDay, SlotState } from "@/lib/clinical/slots";
+import { useClockFormat } from "@/components/ClockProvider";
+import { clock, clockOf, dateIN, type ClockFormat } from "@/lib/time";
+
+const UNAVAILABLE: Record<Exclude<SlotState, "free">, string> = {
+  taken: "taken",
+  too_soon: "too soon",
+  before_call: "before call",
+};
 
 type Loaded = {
   /** The query these came from, so a stale answer is never shown as current. */
@@ -23,6 +31,9 @@ const isFree = (days: SlotDay[], at: string | null) =>
  * hiding them, so a full morning reads as full and not as a shorter day.
  * `value` is the chosen moment as an ISO string; it is cleared if a reload
  * shows it has been taken since.
+ *
+ * The same picker shows a physician's call times (/api/calls/slots), which
+ * answer in the same shape.
  */
 export function SlotPicker({
   query,
@@ -31,6 +42,8 @@ export function SlotPicker({
   compact = false,
   idleMessage = "Enter the address first to see the times.",
   reloadKey = 0,
+  endpoint = "/api/bookings/slots",
+  who = "nurse",
 }: {
   /** The search for /api/bookings/slots, or null while there is nothing to ask about. */
   query: string | null;
@@ -41,15 +54,27 @@ export function SlotPicker({
   idleMessage?: string;
   /** Bump to ask again, e.g. after the server refused a time as just taken. */
   reloadKey?: number;
+  /** Where the times come from: drip slots, or a physician's call times. */
+  endpoint?: string;
+  /** Whose time is being booked, for the words on an empty day. */
+  who?: "nurse" | "physician";
 }) {
+  const clockFmt = useClockFormat();
   const [loaded, setLoaded] = useState<Loaded | null>(null);
   const [pickedDay, setPickedDay] = useState<string | null>(null);
   const [attempt, setAttempt] = useState(0);
 
+  // The latest onChange, without making it a reason to reload: a caller that
+  // passes a new function each render would otherwise refetch on every render.
+  const onChangeRef = useRef(onChange);
+  useEffect(() => {
+    onChangeRef.current = onChange;
+  });
+
   useEffect(() => {
     if (!query) return;
     let live = true;
-    fetch(`/api/bookings/slots?${query}`)
+    fetch(`${endpoint}?${query}`)
       .then((r) => r.json())
       .then((json) => {
         if (!live) return;
@@ -60,7 +85,7 @@ export function SlotPicker({
         const days: SlotDay[] = json.data.days ?? [];
         setLoaded({ query, served: json.data.served, zone: json.data.zone, days });
         // A time chosen before this answer may have gone in the meantime.
-        onChange((cur) => (isFree(days, cur) ? cur : null));
+        onChangeRef.current((cur) => (isFree(days, cur) ? cur : null));
       })
       .catch(() => {
         if (live)
@@ -75,7 +100,7 @@ export function SlotPicker({
     return () => {
       live = false;
     };
-  }, [query, attempt, reloadKey, onChange]);
+  }, [query, attempt, reloadKey, endpoint]);
 
   if (!query) return <p className="t-small text-[var(--color-ink-3)]">{idleMessage}</p>;
 
@@ -113,7 +138,11 @@ export function SlotPicker({
       <div>
         <span className="t-micro block mb-3">Which day</span>
         {days.length === 0 ? (
-          <p className="t-small text-[var(--color-ink-3)]">Checking which times a nurse is free…</p>
+          <p className="t-small text-[var(--color-ink-3)]">
+            {loading
+              ? `Checking which times ${who === "nurse" ? "a nurse is" : "the physician is"} free…`
+              : "No times this week."}
+          </p>
         ) : (
           <div className="grid grid-cols-5 gap-2">
             {days.map((d) => {
@@ -143,7 +172,7 @@ export function SlotPicker({
                     {d.day}
                   </span>
                   <span className="text-[11px] leading-[1.3] text-[var(--color-ink-3)]">
-                    {d.freeCount === 0 ? "full" : `${d.freeCount} free`}
+                    {d.note ? d.note.toLowerCase() : d.freeCount === 0 ? "full" : `${d.freeCount} free`}
                   </span>
                 </button>
               );
@@ -164,7 +193,9 @@ export function SlotPicker({
           </div>
           {chosenDay.freeCount === 0 && (
             <p className="t-small text-[var(--color-ink-2)] mb-3">
-              No nurse is free on {chosenDay.weekday} {chosenDay.day} {chosenDay.month}. Try another day.
+              {chosenDay.note
+                ? `${chosenDay.note} on ${chosenDay.weekday} ${chosenDay.day} ${chosenDay.month}. Try another day.`
+                : `No ${who === "nurse" ? "nurse is free" : "free call times"} on ${chosenDay.weekday} ${chosenDay.day} ${chosenDay.month}. Try another day.`}
             </p>
           )}
           <div className={`grid ${compact ? "grid-cols-3" : "grid-cols-3 sm:grid-cols-4"} gap-2`}>
@@ -177,7 +208,11 @@ export function SlotPicker({
                   type="button"
                   disabled={!open || loading}
                   aria-pressed={selected}
-                  aria-label={open ? s.time : `${s.time}, ${s.state === "taken" ? "taken" : "too soon"}`}
+                  aria-label={
+                    open
+                      ? clockOf(s.time, clockFmt)
+                      : `${clockOf(s.time, clockFmt)}, ${UNAVAILABLE[s.state as Exclude<SlotState, "free">]}`
+                  }
                   onClick={() => onChange(s.at)}
                   className={`${cell} ${radius} border flex flex-col items-center justify-center t-data ${open ? "cursor-pointer" : "cursor-not-allowed"}`}
                   style={{
@@ -190,10 +225,10 @@ export function SlotPicker({
                     color: selected ? "var(--color-primary-dark)" : open ? "var(--color-ink)" : "var(--color-ink-3)",
                   }}
                 >
-                  <span className={open ? "" : "line-through"}>{s.time}</span>
+                  <span className={`whitespace-nowrap ${open ? "" : "line-through"}`}>{clockOf(s.time, clockFmt)}</span>
                   {!open && (
                     <span className="text-[10.5px] leading-[1.2] font-[var(--font-sans)] tracking-normal">
-                      {s.state === "taken" ? "taken" : "too soon"}
+                      {UNAVAILABLE[s.state as Exclude<SlotState, "free">]}
                     </span>
                   )}
                 </button>
@@ -206,11 +241,8 @@ export function SlotPicker({
   );
 }
 
-/** "25 Sept · 10:00" for a chosen moment, in India time. */
-export function slotLabel(at: string | null): string {
+/** "25 Sept · 10:00 AM" for a chosen moment, in India time. */
+export function slotLabel(at: string | null, fmt: ClockFormat): string {
   if (!at) return "—";
-  const d = new Date(at);
-  const day = d.toLocaleDateString("en-IN", { day: "2-digit", month: "short", timeZone: "Asia/Kolkata" });
-  const time = d.toLocaleTimeString("en-GB", { hour: "2-digit", minute: "2-digit", timeZone: "Asia/Kolkata" });
-  return `${day} · ${time}`;
+  return `${dateIN(at, { year: undefined })} · ${clock(at, fmt)}`;
 }

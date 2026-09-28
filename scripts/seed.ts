@@ -11,6 +11,10 @@ import bcrypt from "bcryptjs";
 
 loadEnv({ path: [".env.local", ".env"], quiet: true });
 process.env.MONGODB_URI ??= "mongodb://127.0.0.1:27017/nutridrip";
+// Today's demo sessions are set with setHours, which reads the machine's clock.
+// Pinned to India time as the app server is (src/instrumentation.ts), so a seed
+// run on a UTC machine still puts the 10:00 session at 10:00 in Bengaluru.
+process.env.TZ = process.env.APP_TIME_ZONE || "Asia/Kolkata";
 
 import {
   User,
@@ -32,7 +36,10 @@ import {
   ContentBlock,
   AIModel,
   Zone,
+  DoctorHours,
+  Consultation,
 } from "../src/lib/models";
+import { istInstant, istParts } from "../src/lib/clinical/slots";
 import { ZONE_DEFAULTS } from "../src/lib/zones";
 import { connectDB } from "../src/lib/db/mongoose";
 import { blockedByVitals, CHECKLIST_STEPS } from "../src/lib/clinical/checklist";
@@ -45,6 +52,70 @@ const DAY = 86_400_000;
 const days = (n: number) => new Date(Date.now() + n * DAY);
 
 const hash = (pw: string) => bcrypt.hashSync(pw, 12);
+
+/**
+ * The next day Dr. Menon takes calls (Mon–Sat), from tomorrow, as "YYYY-MM-DD"
+ * in India. The seeded calls fall on it, and V. Iyer's held drip that afternoon.
+ */
+function callDay(): string {
+  for (let i = 1; i <= 7; i++) {
+    const d = istParts(new Date(Date.now() + i * DAY)).date;
+    if (new Date(`${d}T00:00:00Z`).getUTCDay() !== 0) return d;
+  }
+  return istParts(new Date(Date.now() + DAY)).date;
+}
+
+/**
+ * Physicians' call hours, and the calls booked by the patients still waiting
+ * for an approval: V. Iyer and Riya with Dr. Menon. A. Bhatt has not booked
+ * one, so Home shows "Book your call" and the queue "No call booked yet".
+ */
+async function seedCalls(users: Awaited<ReturnType<typeof seedUsers>>) {
+  const { doctor, doctor2, patients } = users;
+  const [riya, , , iyer] = patients;
+  // The no-double-booking indexes first, on a fresh database.
+  await Promise.all([Consultation.init(), DoctorHours.init()]);
+  await DoctorHours.create([
+    {
+      doctorId: doctor._id,
+      weekly: [1, 2, 3, 4, 5, 6].flatMap((day) => [
+        { day, start: "10:00", end: "13:00" },
+        { day, start: "17:00", end: "19:00" },
+      ]),
+      callMinutes: 15,
+      daysOff: [],
+    },
+    {
+      doctorId: doctor2._id,
+      weekly: [1, 2, 3, 4, 5].flatMap((day) => [
+        { day, start: "09:00", end: "12:00" },
+        { day, start: "16:00", end: "18:00" },
+      ]),
+      callMinutes: 20,
+      daysOff: [],
+    },
+  ]);
+  const day = callDay();
+  await Consultation.create([
+    {
+      callNo: "CL-5001",
+      patientId: iyer._id,
+      doctorId: doctor._id,
+      startAt: istInstant(day, "10:30"),
+      minutes: 15,
+      phone: iyer.phone ?? "+919800000011",
+    },
+    {
+      callNo: "CL-5002",
+      patientId: riya._id,
+      doctorId: doctor._id,
+      startAt: istInstant(day, "11:00"),
+      minutes: 15,
+      phone: riya.phone ?? "+919845550001",
+    },
+  ]);
+  return day;
+}
 
 async function wipe() {
   await Promise.all(
@@ -68,6 +139,8 @@ async function wipe() {
       ContentBlock,
       AIModel,
       Zone,
+      DoctorHours,
+      Consultation,
     ].map((m) => m.deleteMany({}))
   );
 }
@@ -1555,7 +1628,8 @@ async function seedClinical(
       dripId: myers._id,
       dripName: myers.name,
       // On the slot grid (hourly), like any booking made through the app.
-      scheduledAt: new Date(days(2).setHours(11, 0, 0, 0)),
+      // Held for the physician: the afternoon after V. Iyer's seeded call (see seedCalls).
+      scheduledAt: istInstant(callDay(), "16:00"),
       location: "clinic",
       city: "Bengaluru",
       pincode: "560103",
@@ -1925,6 +1999,10 @@ async function main() {
 
   console.log("Seeding clinical records…");
   await seedClinical(users, drips);
+
+  console.log("Seeding physicians' call hours and calls…");
+  const day = await seedCalls(users);
+  console.log(`  Dr. Menon calls V. Iyer and Riya on ${day} — editable at /doctor/availability`);
 
   console.log("\nDone. Sign in with:");
   // Said here rather than left to be discovered: GST is off on a fresh

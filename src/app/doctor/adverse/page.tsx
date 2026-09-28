@@ -20,6 +20,7 @@ import { parsePaging } from "@/lib/pagination";
 import { paginate } from "@/lib/pagination-db";
 import { VitalsCorrected } from "@/components/ui/VitalsCorrected";
 import type { VitalsCorrection } from "@/lib/clinical/checklist";
+import { getClockFormat } from "@/lib/settings/clock";
 
 export const metadata: Metadata = { title: "Escalations" };
 export const dynamic = "force-dynamic";
@@ -84,6 +85,7 @@ export default async function EscalationsPage({
 }: {
   searchParams: Promise<{ page?: string; pageSize?: string }>;
 }) {
+  const clockFmt = await getClockFormat();
   const { page, pageSize } = await searchParams;
   const paging = parsePaging({ page, pageSize });
   const session = await requireRole("doctor", "superadmin");
@@ -233,7 +235,7 @@ export default async function EscalationsPage({
                       {/* The same context line the card below carries: when the
                           session is, where it is, and which nurse is there. */}
                       <span className="t-small text-[var(--color-ink-2)]">
-                        {formatDate(b.scheduledAt)} · {formatTime(b.scheduledAt)}
+                        {formatDate(b.scheduledAt)} · {formatTime(b.scheduledAt, clockFmt)}
                         {b.location ? ` · ${WHERE[b.location] ?? b.location}` : ""} · nurse{" "}
                         {nameOf(b.nurseId, "unassigned")}
                       </span>
@@ -253,12 +255,12 @@ export default async function EscalationsPage({
                         <dd className="t-small text-[var(--color-ink-2)] m-0">
                           {b.rxOverride?.requestedAt ? (
                             <>
-                              {formatDate(b.rxOverride.requestedAt)} · {formatTime(b.rxOverride.requestedAt)}
+                              {formatDate(b.rxOverride.requestedAt)} · {formatTime(b.rxOverride.requestedAt, clockFmt)}
                             </>
                           ) : (
                             "—"
                           )}
-                          {chased ? ` · chased again ${formatTime(chased)}` : ""}
+                          {chased ? ` · chased again ${formatTime(chased, clockFmt)}` : ""}
                         </dd>
 
                         <dt className="t-small text-[var(--color-ink-3)]">Session</dt>
@@ -322,13 +324,13 @@ export default async function EscalationsPage({
                         </span>
                       </div>
                       <span className="t-small text-[var(--color-ink-2)] block mt-1">
-                        {formatDate(b.scheduledAt)} · {formatTime(b.scheduledAt)} · nurse{" "}
+                        {formatDate(b.scheduledAt)} · {formatTime(b.scheduledAt, clockFmt)} · nurse{" "}
                         {nameOf(b.nurseId, "unassigned")}
                       </span>
 
                       <div className="rounded-[var(--radius-md)] bg-[var(--color-surface)] border border-[var(--color-critical)] p-4 mt-4">
                         <span className="t-micro text-[var(--color-critical-text)]">
-                          Out of range · {latest ? formatTime(latest.takenAt) : ""}
+                          Out of range · {latest ? formatTime(latest.takenAt, clockFmt) : ""}
                         </span>
                         <p className="t-body font-semibold mt-1">{latest ? describe(latest) : "—"}</p>
                         {latest && (
@@ -395,7 +397,7 @@ export default async function EscalationsPage({
                             </span>
                           </div>
                           <span className="t-small text-[var(--color-ink-2)] block mt-1">
-                            {formatDate(e.at)} · {formatTime(e.at)} · reported by{" "}
+                            {formatDate(e.at)} · {formatTime(e.at, clockFmt)} · reported by{" "}
                             {nameOf(b.nurseId, "the attending nurse")}
                           </span>
                         </div>
@@ -445,7 +447,7 @@ export default async function EscalationsPage({
                         {e.acknowledgedAt ? (
                           <div className="flex flex-col gap-1">
                             <span className="t-micro" style={{ color: "var(--color-safe)" }}>
-                              Closed {formatDate(e.acknowledgedAt)} · {formatTime(e.acknowledgedAt)}
+                              Closed {formatDate(e.acknowledgedAt)} · {formatTime(e.acknowledgedAt, clockFmt)}
                             </span>
                             <span className="t-body text-[var(--color-ink-2)]">{e.determination}</span>
                           </div>

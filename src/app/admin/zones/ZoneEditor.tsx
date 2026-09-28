@@ -4,6 +4,7 @@ import { useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/Button";
 import { Input, Select, Textarea } from "@/components/ui/Field";
+import { TimePicker } from "@/components/ui/TimePicker";
 import { Card } from "@/components/ui/Card";
 import { Pill, type PillTone } from "@/components/ui/Pill";
 import { DataTable, THead, TR, TH, TD } from "@/components/ui/Table";
@@ -17,6 +18,8 @@ import {
   type ZoneStatus,
 } from "@/lib/zones";
 import { SLOT_STEPS, slotTimes, stepLabel } from "@/lib/clinical/slots";
+import { useClockFormat } from "@/components/ClockProvider";
+import { clockText } from "@/lib/time";
 
 export type ZoneRow = Zone & { id: string; nurses: number };
 
@@ -51,6 +54,7 @@ function StatusPill({ status }: { status: ZoneStatus }) {
  * you type, so a pincode already in another zone is caught before Save.
  */
 export function ZoneEditor({ zones }: { zones: ZoneRow[] }) {
+  const clockFmt = useClockFormat();
   const router = useRouter();
   /** The zone being edited, "new" for the add form, or nothing open. */
   const [editing, setEditing] = useState<string | null>(null);
@@ -187,7 +191,7 @@ export function ZoneEditor({ zones }: { zones: ZoneRow[] }) {
                 ? `${pin} is not in any zone — a patient there is told we do not serve it.`
                 : found.status === "paused"
                   ? `${pin} is in ${found.name}, which is paused — not offered to patients.`
-                  : `${pin} is in ${found.name} · ${found.window}`}
+                  : `${pin} is in ${found.name} · ${clockText(found.window, clockFmt)}`}
             </span>
           )}
         </div>
@@ -238,19 +242,20 @@ export function ZoneEditor({ zones }: { zones: ZoneRow[] }) {
                 />
               </div>
               <div className="grid grid-cols-2 gap-4">
-                <Input
+                <TimePicker
                   label="Opens"
-                  type="time"
                   value={form.opensAt}
                   error={show("opensAt")}
-                  onChange={set("opensAt")}
+                  step={30}
+                  onChange={(v) => setForm((f) => ({ ...f, opensAt: v }))}
                 />
-                <Input
+                <TimePicker
                   label="Closes"
-                  type="time"
                   value={form.closesAt}
                   error={show("closesAt")}
-                  onChange={set("closesAt")}
+                  min={form.opensAt || undefined}
+                  step={30}
+                  onChange={(v) => setForm((f) => ({ ...f, closesAt: v }))}
                 />
               </div>
               <div className="flex flex-col gap-[7px]">
@@ -346,7 +351,7 @@ export function ZoneEditor({ zones }: { zones: ZoneRow[] }) {
                 <span className="t-data text-[13px]">{z.pincodes.join(", ")}</span>
               </TD>
               <TD>
-                <span className="t-data text-[13px] block">{z.window}</span>
+                <span className="t-data text-[13px] block">{clockText(z.window, clockFmt)}</span>
                 <span className="t-small text-[var(--color-ink-3)]">{stepLabel(z.slotMinutes)}</span>
               </TD>
               <TD>

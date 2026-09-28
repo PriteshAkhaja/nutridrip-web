@@ -14,8 +14,8 @@ export const CONTENT_DEFAULTS = {
   "home.cta": "Take the health quiz · 3 min",
   "home.stat1.value": "4.9",
   "home.stat1.label": "avg. nurse rating",
-  "home.stat2.value": "2 hr",
-  "home.stat2.label": "typical review time",
+  "home.stat2.value": "15 min",
+  "home.stat2.label": "phone call with your physician",
   // {{zone-count}} is the live number of zones (Service zones page).
   "home.stat3.value": "{{zone-count}}",
   "home.stat3.label": "zones served in Bengaluru",

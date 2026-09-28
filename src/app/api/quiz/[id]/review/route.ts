@@ -1,6 +1,6 @@
 import { z } from "zod";
 import { connectDB } from "@/lib/db/mongoose";
-import { AuditLog, Booking, Drip, HealthQuiz, User } from "@/lib/models";
+import { AuditLog, Booking, Consultation, Drip, HealthQuiz, User } from "@/lib/models";
 import { notify } from "@/lib/notify";
 import { pickNurse } from "@/lib/clinical/assign";
 import { getSession } from "@/lib/auth/session";
@@ -26,6 +26,11 @@ const Input = z.object({
    * so an approval is never blocked by the physician's own team being busy.
    */
   nurseId: z.string().max(40).nullable().optional(),
+  /**
+   * Approving a different drip from the one the patient held: switch the held
+   * session to this drip, so what is booked is what was approved.
+   */
+  switchHeldTo: z.string().max(40).nullable().optional(),
 });
 
 export async function POST(req: Request, { params }: { params: Promise<{ id: string }> }) {
@@ -36,9 +41,8 @@ export async function POST(req: Request, { params }: { params: Promise<{ id: str
     }
 
     const { id } = await params;
-    const { decision, notes, nurseId, patientNote, dripIds, strength, infoRequest, declineReason } = Input.parse(
-      await req.json()
-    );
+    const { decision, notes, nurseId, patientNote, dripIds, strength, infoRequest, declineReason, switchHeldTo } =
+      Input.parse(await req.json());
     await connectDB();
 
     const quiz = await HealthQuiz.findById(id);
@@ -84,6 +88,14 @@ export async function POST(req: Request, { params }: { params: Promise<{ id: str
       }
     }
 
+    let switchTo: { _id: unknown; name: string; priceInr: number; durationMin: number } | null = null;
+    if (switchHeldTo && (decision === "approved" || decision === "modified")) {
+      switchTo = await Drip.findOne({ _id: switchHeldTo, isActive: true })
+        .select("name priceInr durationMin")
+        .lean<{ _id: unknown; name: string; priceInr: number; durationMin: number } | null>();
+      if (!switchTo) return fail("The drip to switch the held session to no longer exists", 422);
+    }
+
     quiz.reviewStatus = decision;
     quiz.reviewedBy = session!.sub;
     quiz.reviewedAt = new Date();
@@ -110,6 +122,21 @@ export async function POST(req: Request, { params }: { params: Promise<{ id: str
       patient?: { latitude?: number; longitude?: number; pincode?: string };
     } | null>();
 
+    // The patient's call with a physician has served its purpose once a decision
+    // is made -- whether or not it was marked, and even if it was still ahead.
+    // A question to the patient keeps a call that has not happened yet.
+    await Consultation.updateMany(
+      {
+        patientId: quiz.patientId,
+        status: "booked",
+        ...(decision === "info_needed" ? { startAt: { $lte: new Date(Date.now() + 15 * 60_000) } } : {}),
+      },
+      { $set: { status: "done", outcomeAt: new Date(), outcomeBy: session!.sub, outcomeNote: `Decided: ${decision}` } }
+    );
+
+    const switched: string[] = [];
+    const lapsed: string[] = [];
+
     const assigned: Array<{
       bookingNo: string;
       nurseId: string;
@@ -134,6 +161,25 @@ export async function POST(req: Request, { params }: { params: Promise<{ id: str
         booking.rejectionReason = notes;
         await booking.save();
         continue;
+      }
+
+      // Approved after the held time had passed: nothing to send a nurse to.
+      // The patient picks a new time, now without waiting.
+      if (booking.scheduledAt.getTime() < Date.now()) {
+        booking.status = "cancelled";
+        booking.cancelledAt = new Date();
+        booking.cancelReason = "Its time passed before the approval. Book a new time.";
+        await booking.save();
+        lapsed.push(booking.bookingNo);
+        continue;
+      }
+
+      if (switchTo && String(booking.dripId) !== String(switchTo._id)) {
+        booking.dripId = switchTo._id;
+        booking.dripName = switchTo.name;
+        booking.durationMin = switchTo.durationMin;
+        booking.amount = switchTo.priceInr;
+        switched.push(booking.bookingNo);
       }
 
       booking.status = "approved";
@@ -249,15 +295,26 @@ export async function POST(req: Request, { params }: { params: Promise<{ id: str
       );
     } else {
       const changed = decision === "modified";
+      const extra = [
+        switched.length && switchTo ? `Your held session ${switched.join(", ")} is now ${switchTo.name}.` : "",
+        lapsed.length ? `The time of ${lapsed.join(", ")} had passed, so pick a new time.` : "",
+      ]
+        .filter(Boolean)
+        .join(" ");
       await notify(
         String(quiz.patientId),
         changed ? "Your protocol was approved with changes" : "Your protocol was approved",
-        patientNote?.trim() ||
-          (changed
-            ? `${recommended.map((d) => d.name).join(" and ") || "A different protocol"} is what your physician recommends. Tap to read why.`
-            : assigned.length
-              ? `${assigned[0].nurseName} will attend your session.`
-              : "You can book a session now."),
+        [
+          patientNote?.trim() ||
+            (changed
+              ? `${recommended.map((d) => d.name).join(" and ") || "A different protocol"} is what your physician recommends. Tap to read why.`
+              : assigned.length
+                ? `${assigned[0].nurseName} will attend your session.`
+                : "You can book a session now."),
+          extra,
+        ]
+          .filter(Boolean)
+          .join(" "),
         "success",
         `/app/results/${id}`
       );
@@ -301,6 +358,8 @@ export async function POST(req: Request, { params }: { params: Promise<{ id: str
         infoRequest,
         nurseId: nurseId || null,
         assigned: assigned.map((a) => a.nurseName),
+        ...(switched.length ? { heldSwitchedTo: switchTo?.name, switched } : {}),
+        ...(lapsed.length ? { heldLapsed: lapsed } : {}),
       },
     });
 

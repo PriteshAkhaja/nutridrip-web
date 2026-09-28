@@ -23,6 +23,7 @@ import { EmptyState } from "@/components/ui/States";
 import { NameLink } from "@/components/ui/NameLink";
 import { PagedResults, PagedView, Pagination } from "@/components/ui/Paged";
 import type { Role } from "@/lib/models/types";
+import { getClockFormat } from "@/lib/settings/clock";
 
 export const metadata: Metadata = { title: "Person" };
 export const dynamic = "force-dynamic";
@@ -103,6 +104,7 @@ export default async function PersonPage({
   params: Promise<{ id: string }>;
   searchParams: Promise<{ page?: string; pageSize?: string }>;
 }) {
+  const clockFmt = await getClockFormat();
   const session = await requireRole("superadmin", "admin");
   const nav = await adminNav();
   const { id } = await params;
@@ -255,7 +257,9 @@ export default async function PersonPage({
             <Fact label="Phone">{person.phone}</Fact>
             <Fact label="Joined">{formatDate(person.createdAt)}</Fact>
             <Fact label="Last seen">
-              {person.lastLoginAt ? `${formatDate(person.lastLoginAt)} · ${formatTime(person.lastLoginAt)}` : "Never"}
+              {person.lastLoginAt
+                ? `${formatDate(person.lastLoginAt)} · ${formatTime(person.lastLoginAt, clockFmt)}`
+                : "Never"}
             </Fact>
           </div>
         </Card>
@@ -392,7 +396,7 @@ export default async function PersonPage({
                         )}
                         <TD nowrap>{b.dripName ?? "—"}</TD>
                         <TD mono nowrap>
-                          {formatDate(b.scheduledAt)} · {formatTime(b.scheduledAt)}
+                          {formatDate(b.scheduledAt)} · {formatTime(b.scheduledAt, clockFmt)}
                         </TD>
                         <TD>
                           <StatusPill status={b.status} dot />

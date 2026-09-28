@@ -1,4 +1,8 @@
+"use client";
+
 import { vitalsLine, type VitalsCorrection } from "@/lib/clinical/checklist";
+import { useClockFormat } from "@/components/ClockProvider";
+import { clock } from "@/lib/time";
 
 /**
  * "Corrected 12:41 pm · Typing mistake · was 1200/80 · 72 bpm …" -- under a
@@ -19,6 +23,7 @@ export function VitalsCorrected({
   name?: string;
   detail?: boolean;
 }) {
+  const clockFmt = useClockFormat();
   if (!corrections?.length) return null;
   return (
     <div className="flex flex-col gap-[2px] mt-2">
@@ -27,9 +32,7 @@ export function VitalsCorrected({
           {name ? `${name} reading corrected` : "Corrected"}
           {detail ? "" : " by your nurse"}
           {" at "}
-          <span className="t-data text-[12.5px]">
-            {new Date(c.at).toLocaleTimeString("en-IN", { hour: "2-digit", minute: "2-digit", hour12: true })}
-          </span>
+          <span className="t-data text-[12.5px]">{clock(c.at, clockFmt)}</span>
           {` · ${c.reason}`}
           {detail && c.before ? ` · was ${vitalsLine(c.before)}` : ""}
         </span>

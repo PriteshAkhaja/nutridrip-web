@@ -1,5 +1,15 @@
 import { describe, expect, it } from "vitest";
-import { addDays, addMonths, display, fromISO, iso, parseTyped } from "@/components/ui/DatePicker";
+import {
+  addDays,
+  addMonths,
+  clampISO,
+  display,
+  fromISO,
+  iso,
+  monthOpen,
+  parseTyped,
+  yearOptions,
+} from "@/components/ui/DatePicker";
 
 describe("date arithmetic in the picker", () => {
   it("round-trips a date without drifting across the timezone", () => {
@@ -97,5 +107,43 @@ describe("what somebody types into the box", () => {
     expect(parseTyped("09/16/2026")).toBe("");
     // But a date that is valid in both orders has to take the local reading.
     expect(parseTyped("05/09/2026")).toBe("2026-09-05");
+  });
+});
+
+describe("staying inside a field's allowed dates", () => {
+  // "Add a day off": today onwards. "Date paid": today and before.
+  const today = "2026-09-25";
+
+  it("knows which months have a day that can be chosen", () => {
+    expect(monthOpen(2026, 8, today)).toBe(true); // September: the 25th onwards
+    expect(monthOpen(2026, 7, today)).toBe(false); // August: all past
+    expect(monthOpen(2025, 11, today)).toBe(false); // December 2025, the reported case
+    expect(monthOpen(2026, 9, undefined, today)).toBe(false); // October, for a past-only field
+    expect(monthOpen(2026, 8, undefined, today)).toBe(true);
+    expect(monthOpen(1990, 0)).toBe(true); // no bounds at all
+  });
+
+  it("keeps a date inside the bounds", () => {
+    expect(clampISO("2026-09-01", today)).toBe(today);
+    expect(clampISO("2026-10-01", undefined, today)).toBe(today);
+    expect(clampISO("2026-09-30", today)).toBe("2026-09-30");
+  });
+
+  it("the Year list always holds the year on screen and the chosen one", () => {
+    // Min in 2026: 2026 onwards … and 2025 if the calendar is showing it.
+    expect(yearOptions(2026, today, undefined, [2025])[0]).toBe(2025);
+    expect(yearOptions(2026, today, undefined, [2026])[0]).toBe(2026);
+    // A date of birth older than a century back is still shown as itself.
+    expect(yearOptions(2026, undefined, undefined, [1920])[0]).toBe(1920);
+    expect(yearOptions(2026, undefined, today)).toContain(1926);
+    expect(yearOptions(2026, undefined, today).at(-1)).toBe(2026);
+    // No duplicates, in order.
+    const ys = yearOptions(2026, "2026-01-01", "2027-12-31", [2026, 2027]);
+    expect(ys).toEqual([2026, 2027]);
+  });
+
+  it("paging back from January lands in December of the year before", () => {
+    const dec = addMonths(new Date(2026, 0, 1), -1);
+    expect([dec.getFullYear(), dec.getMonth()]).toEqual([2025, 11]);
   });
 });

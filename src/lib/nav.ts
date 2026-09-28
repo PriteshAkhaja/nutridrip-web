@@ -1,5 +1,5 @@
 import { connectDB } from "@/lib/db/mongoose";
-import { Booking, HealthQuiz, Lead, Order, ProductMaster, User } from "@/lib/models";
+import { Booking, Consultation, HealthQuiz, Lead, Order, ProductMaster, User } from "@/lib/models";
 import { getAlerts } from "@/lib/inventory/alerts";
 import type { NavItem } from "@/components/layout/ConsoleShell";
 import { AI_STUDIO_ENABLED } from "@/lib/ai/enabled";
@@ -17,6 +17,7 @@ export async function adminNav(activeCounts = true): Promise<NavItem[]> {
       { section: "Platform", label: "Quiz builder", href: "/admin/quiz" },
       { section: "Platform", label: "Site copy", href: "/admin/content" },
       { section: "Platform", label: "Service zones", href: "/admin/zones", permission: "zones.manage" },
+      { section: "Platform", label: "Doctor calls", href: "/admin/calls", permission: "calls.view" },
       { section: "Platform", label: "Enquiries", href: "/admin/leads" },
       { section: "Inventory", label: "Availability", href: "/admin/inventory/availability" },
       { section: "Inventory", label: "Products & batches", href: "/admin/inventory" },
@@ -25,6 +26,7 @@ export async function adminNav(activeCounts = true): Promise<NavItem[]> {
       { section: "Inventory", label: "Alerts", href: "/admin/inventory/alerts" },
       { section: "Inventory", label: "Recall trace", href: "/admin/inventory/recall" },
       { section: "Admin", label: "Billing", href: "/admin/billing" },
+      { section: "Admin", label: "Settings", href: "/admin/settings", permission: "settings.manage" },
       ...(AI_STUDIO_ENABLED
         ? [{ section: "Admin", label: "AI Studio", href: "/admin/studio", permission: "ai.configure" } as const]
         : []),
@@ -60,6 +62,7 @@ export async function adminNav(activeCounts = true): Promise<NavItem[]> {
     { section: "Platform", label: "Quiz builder", href: "/admin/quiz" },
     { section: "Platform", label: "Site copy", href: "/admin/content" },
     { section: "Platform", label: "Service zones", href: "/admin/zones", permission: "zones.manage" },
+    { section: "Platform", label: "Doctor calls", href: "/admin/calls", permission: "calls.view" },
     {
       section: "Platform",
       label: "Enquiries",
@@ -85,6 +88,7 @@ export async function adminNav(activeCounts = true): Promise<NavItem[]> {
     },
     { section: "Inventory", label: "Recall trace", href: "/admin/inventory/recall" },
     { section: "Admin", label: "Billing", href: "/admin/billing" },
+    { section: "Admin", label: "Settings", href: "/admin/settings", permission: "settings.manage" },
     ...(AI_STUDIO_ENABLED
       ? [{ section: "Admin", label: "AI Studio", href: "/admin/studio", permission: "ai.configure" } as const]
       : []),
@@ -94,7 +98,7 @@ export async function adminNav(activeCounts = true): Promise<NavItem[]> {
 
 export async function doctorNav(doctorId: string): Promise<NavItem[]> {
   await connectDB();
-  const [pendingQuizzes, todaySessions, blockedVitals, openAdverse] = await Promise.all([
+  const [pendingQuizzes, todaySessions, blockedVitals, openAdverse, callsToday] = await Promise.all([
     HealthQuiz.countDocuments({ reviewStatus: "pending" }),
     Booking.countDocuments({
       doctorId,
@@ -109,6 +113,8 @@ export async function doctorNav(doctorId: string): Promise<NavItem[]> {
     // filtering on status hid exactly the most serious ones. What makes an
     // event open is that no physician has closed it.
     Booking.countDocuments({ adverseEvents: { $elemMatch: { acknowledgedAt: null } } }),
+    // Calls still to make today: this physician's.
+    Consultation.countDocuments({ doctorId, status: "booked", startAt: { $gte: startOfToday(), $lt: endOfToday() } }),
   ]);
   const escalations = blockedVitals + openAdverse;
 
@@ -120,6 +126,7 @@ export async function doctorNav(doctorId: string): Promise<NavItem[]> {
       badge: pendingQuizzes || undefined,
       badgeTone: "caution",
     },
+    { section: "Clinical", label: "Calls", href: "/doctor/calls", badge: callsToday || undefined },
     { section: "Clinical", label: "Patients", href: "/doctor/patients" },
     { section: "Clinical", label: "Treatment plans", href: "/doctor/plans" },
     { section: "Clinical", label: "Schedule", href: "/doctor/schedule", badge: todaySessions || undefined },
@@ -130,6 +137,7 @@ export async function doctorNav(doctorId: string): Promise<NavItem[]> {
       badge: escalations || undefined,
       badgeTone: "critical",
     },
+    { section: "Account", label: "Availability", href: "/doctor/availability", permission: "letterhead.edit" },
     { section: "Account", label: "Letterhead", href: "/doctor/letterhead", permission: "letterhead.edit" },
   ];
 }

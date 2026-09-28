@@ -5,6 +5,8 @@ import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/Button";
 import { Textarea } from "@/components/ui/Field";
 import { queuedPost } from "@/lib/offline/queue";
+import { useClockFormat } from "@/components/ClockProvider";
+import { clock } from "@/lib/time";
 
 /** Observations at ten-minute intervals — anything the patient reports, however minor. */
 export function ObservationLog({
@@ -18,6 +20,7 @@ export function ObservationLog({
   remainingMl: number;
   observations: Array<{ at: string; text: string }>;
 }) {
+  const clockFmt = useClockFormat();
   const router = useRouter();
   const [text, setText] = useState("");
   const [rate, setRate] = useState(rateMlHr);
@@ -70,12 +73,10 @@ export function ObservationLog({
         <div className="flex flex-col gap-3 mt-3 mb-5">
           {observations.map((o, i) => (
             <div key={i} className="flex gap-3 items-start">
-              <span className="t-data text-[13px] text-[var(--color-ink-3)] flex-none w-[44px]">
-                {new Date(o.at).toLocaleTimeString("en-IN", {
-                  hour: "2-digit",
-                  minute: "2-digit",
-                  hour12: false,
-                })}
+              <span
+                className={`t-data text-[13px] text-[var(--color-ink-3)] flex-none whitespace-nowrap ${clockFmt === "24h" ? "w-[44px]" : "w-[64px]"}`}
+              >
+                {clock(o.at, clockFmt)}
               </span>
               <span className="t-body text-[var(--color-ink-2)]">{o.text}</span>
             </div>

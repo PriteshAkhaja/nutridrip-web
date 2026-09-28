@@ -4,6 +4,7 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Field";
+import { DatePicker } from "@/components/ui/DatePicker";
 import { PAY_METHODS, PAY_METHOD_LABEL, referenceProblem, type PayMethod } from "@/lib/billing/order-payment";
 
 /**
@@ -91,7 +92,7 @@ export function PayOrderForm({
           error={touched ? (problem ?? undefined) : undefined}
           onChange={(e) => setReference(e.target.value)}
         />
-        <Input label="Date paid" type="date" max={today} value={paidOn} onChange={(e) => setPaidOn(e.target.value)} />
+        <DatePicker label="Date paid" max={today} value={paidOn} onChange={setPaidOn} clearable={false} />
       </div>
 
       {error && (

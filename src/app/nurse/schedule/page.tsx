@@ -12,6 +12,7 @@ import { PagedResults, PagedView, Pagination } from "@/components/ui/Paged";
 import { paginate } from "@/lib/pagination-db";
 import { parsePaging } from "@/lib/pagination";
 import { NURSE_TABS } from "../tabs";
+import { getClockFormat } from "@/lib/settings/clock";
 
 export const metadata: Metadata = { title: "Schedule" };
 export const dynamic = "force-dynamic";
@@ -31,6 +32,7 @@ export default async function NurseSchedulePage({
 }: {
   searchParams: Promise<{ view?: string; page?: string; pageSize?: string }>;
 }) {
+  const clockFmt = await getClockFormat();
   const session = await requireRole("nurse", "superadmin");
   const { view = "upcoming", page, pageSize } = await searchParams;
   const past = view === "past";
@@ -125,7 +127,7 @@ export default async function NurseSchedulePage({
                         className="rounded-[var(--radius-md)] border border-[var(--color-line)] bg-[var(--color-surface)] p-4 flex items-center justify-between gap-3 no-underline hover:no-underline hover:border-[var(--color-primary-line)] transition-colors duration-150"
                       >
                         <div className="flex flex-col min-w-0">
-                          <span className="t-data text-[14.5px]">{formatTime(b.scheduledAt)}</span>
+                          <span className="t-data text-[14.5px]">{formatTime(b.scheduledAt, clockFmt)}</span>
                           <span className="t-body font-medium truncate">
                             {nameById.get(String(b.patientId)) ?? "—"}
                           </span>

@@ -1,4 +1,8 @@
+"use client";
+
 import { inr } from "@/lib/billing/late-policy";
+import { useClockFormat } from "@/components/ClockProvider";
+import { shortDateClock } from "@/lib/time";
 
 type Charge = {
   kind: "late_reschedule" | "late_cancel";
@@ -14,6 +18,7 @@ type Charge = {
  * is, not only on a bill that does not exist yet. Renders nothing without fees.
  */
 export function LateCharges({ charges }: { charges?: Charge[] | null }) {
+  const clockFmt = useClockFormat();
   if (!charges?.length) return null;
   const owed = charges.filter((c) => !c.settledAs);
   const total = owed.reduce((sum, c) => sum + c.amount, 0);
@@ -33,14 +38,7 @@ export function LateCharges({ charges }: { charges?: Charge[] | null }) {
             <span className="font-semibold text-[var(--color-ink)]">
               {c.kind === "late_reschedule" ? "Moved late" : "Cancelled late"}
             </span>{" "}
-            ·{" "}
-            {new Date(c.at).toLocaleString("en-IN", {
-              day: "2-digit",
-              month: "short",
-              hour: "2-digit",
-              minute: "2-digit",
-              hour12: true,
-            })}
+            · {shortDateClock(c.at, clockFmt)}
           </span>
           <span className="t-data text-[13px] flex-none">
             {inr(c.amount)}

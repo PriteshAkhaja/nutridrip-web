@@ -12,6 +12,9 @@ import { EmptyState } from "@/components/ui/States";
 import { Button } from "@/components/ui/Button";
 import { recentFeedbackForDoctor } from "@/lib/data/session-feedback";
 import { formatDate } from "@/lib/data/inventory";
+import { callWhen } from "@/lib/clinical/calls";
+import { expireStaleHolds } from "@/lib/data/calls";
+import { getClockFormat } from "@/lib/settings/clock";
 
 export const metadata: Metadata = { title: "Approvals" };
 export const dynamic = "force-dynamic";
@@ -21,7 +24,9 @@ const FLAG_TONE = { crit: "critical", warn: "caution", info: "info" } as const;
 const daysAgo = (n: number) => new Date(Date.now() - n * 86_400_000);
 
 export default async function DoctorQueuePage() {
+  const clockFmt = await getClockFormat();
   const session = await requireRole("doctor", "superadmin");
+  await expireStaleHolds();
   const nav = await doctorNav(session.sub);
   const queue = await reviewQueue();
 
@@ -44,6 +49,18 @@ export default async function DoctorQueuePage() {
   const escalations = openAdverse + blockedVitals;
 
   const breaching = queue.filter((q) => q.msLeft < 3_600_000).length;
+
+  // A physician's own patients first: the ones who booked a call with them.
+  // Then anyone with no call yet (answers from before calls existed, or a
+  // patient who has not picked a time), then other physicians' patients.
+  const me = session.role === "doctor" ? session.sub : null;
+  const groups: Array<{ title: string; note?: string; items: typeof queue }> = me
+    ? [
+        { title: "Your patients", note: "booked a call with you", items: queue.filter((q) => q.call?.doctorId === me) },
+        { title: "No call booked yet", note: "any physician can take these", items: queue.filter((q) => !q.call) },
+        { title: "With other physicians", items: queue.filter((q) => q.call && q.call.doctorId !== me) },
+      ]
+    : [{ title: "", items: queue }];
 
   // What patients said about this physician's sessions.
   const feedback = session.role === "doctor" ? await recentFeedbackForDoctor(session.sub) : null;
@@ -125,76 +142,110 @@ export default async function DoctorQueuePage() {
           actionHref="/doctor/patients"
         />
       ) : (
-        <div className="flex flex-col gap-3">
-          {queue.map((q) => {
-            const urgent = q.msLeft < 3_600_000;
-            return (
-              <div
-                key={q.quizId}
-                className="rounded-[var(--radius-lg)] border bg-[var(--color-surface)] p-5 grid gap-4 lg:grid-cols-[1.4fr_1fr_auto] items-center"
-                style={{ borderColor: urgent ? "var(--color-critical)" : "var(--color-line)" }}
-              >
-                {/* Who */}
-                <div className="min-w-0">
-                  <div className="flex items-baseline gap-3 flex-wrap">
-                    <Link href={`/doctor/review/${q.quizId}`} className="t-h3 no-underline hover:no-underline">
-                      {q.name}
-                    </Link>
+        <div className="flex flex-col gap-8">
+          {groups
+            .filter((g) => g.items.length > 0)
+            .map((g) => (
+              <section key={g.title || "all"}>
+                {g.title && (
+                  <div className="flex items-baseline justify-between gap-4 mb-3 flex-wrap">
+                    <h2 className="t-h3">{g.title}</h2>
                     <span className="t-data text-[13px] text-[var(--color-ink-3)]">
-                      {q.age} · {q.gender}
-                      {q.bookingNo ? ` · ${q.bookingNo}` : ""}
+                      {g.items.length}
+                      {g.note ? ` · ${g.note}` : ""}
                     </span>
                   </div>
-                  {q.flags.length > 0 && (
-                    <div className="flex gap-2 flex-wrap mt-2">
-                      {q.flags.map((f) => (
-                        <Pill key={f.label} tone={FLAG_TONE[f.kind]} dot={f.kind === "crit"}>
-                          {f.label}
-                        </Pill>
-                      ))}
-                    </div>
-                  )}
-                </div>
-
-                {/* What */}
-                <div className="flex gap-6 flex-wrap">
-                  <div className="flex flex-col">
-                    <span className="t-micro">Requested</span>
-                    <span className="t-body font-medium">{q.dripName ?? "No booking yet"}</span>
-                    {q.slot && <span className="t-data text-[13px] text-[var(--color-ink-3)]">{q.slot}</span>}
-                  </div>
-                  <div className="flex flex-col">
-                    <span className="t-micro">Vitality</span>
-                    <span className="t-data text-[18px]">{q.vitalityScore}</span>
-                  </div>
-                </div>
-
-                {/* SLA + action */}
-                <div className="flex items-center gap-4 justify-end flex-wrap">
-                  <div className="flex flex-col items-end gap-[6px] min-w-[110px]">
-                    <span
-                      className="t-data text-[13px]"
-                      style={{ color: urgent ? "var(--color-critical)" : "var(--color-ink-2)" }}
-                    >
-                      {q.slaLabel}
-                    </span>
-                    <div className="w-[110px] h-[6px] rounded-full bg-[var(--color-surface-2)] overflow-hidden">
+                )}
+                <div className="flex flex-col gap-3">
+                  {g.items.map((q) => {
+                    const urgent = q.msLeft < 3_600_000;
+                    return (
                       <div
-                        className="h-full rounded-full"
-                        style={{
-                          width: `${q.slaPct}%`,
-                          background: urgent ? "var(--color-critical)" : "var(--color-caution)",
-                        }}
-                      />
-                    </div>
-                  </div>
-                  <Link href={`/doctor/review/${q.quizId}`} className="no-underline hover:no-underline">
-                    <Button variant={urgent ? "primary" : "secondary"}>Review</Button>
-                  </Link>
+                        key={q.quizId}
+                        className="rounded-[var(--radius-lg)] border bg-[var(--color-surface)] p-5 grid gap-4 lg:grid-cols-[1fr_1.5fr_auto] items-center"
+                        style={{ borderColor: urgent ? "var(--color-critical)" : "var(--color-line)" }}
+                      >
+                        {/* Who */}
+                        <div className="min-w-0">
+                          <div className="flex items-baseline gap-3 flex-wrap">
+                            <Link href={`/doctor/review/${q.quizId}`} className="t-h3 no-underline hover:no-underline">
+                              {q.name}
+                            </Link>
+                            <span className="t-data text-[13px] text-[var(--color-ink-3)]">
+                              {q.age} · {q.gender}
+                              {q.bookingNo ? ` · ${q.bookingNo}` : ""}
+                            </span>
+                          </div>
+                          {q.flags.length > 0 && (
+                            <div className="flex gap-2 flex-wrap mt-2">
+                              {q.flags.map((f) => (
+                                <Pill key={f.label} tone={FLAG_TONE[f.kind]} dot={f.kind === "crit"}>
+                                  {f.label}
+                                </Pill>
+                              ))}
+                            </div>
+                          )}
+                        </div>
+
+                        {/* What */}
+                        <div className="flex gap-6 flex-wrap">
+                          <div className="flex flex-col">
+                            <span className="t-micro">Requested</span>
+                            <span className="t-body font-medium">{q.dripName ?? "No booking yet"}</span>
+                            {q.slot && <span className="t-data text-[13px] text-[var(--color-ink-3)]">{q.slot}</span>}
+                          </div>
+                          {q.call && (
+                            <div className="flex flex-col">
+                              <span className="t-micro">Call</span>
+                              <span className="t-body font-medium">
+                                {q.call.status === "done"
+                                  ? "Called"
+                                  : q.call.status === "no_answer"
+                                    ? "No answer"
+                                    : q.call.overdue
+                                      ? "Overdue"
+                                      : callWhen(q.call.startAt, clockFmt)}
+                              </span>
+                              <span className="t-data text-[13px] text-[var(--color-ink-3)]">
+                                {q.call.doctorId === me ? "with you" : q.call.doctorName}
+                              </span>
+                            </div>
+                          )}
+                          <div className="flex flex-col">
+                            <span className="t-micro">Vitality</span>
+                            <span className="t-data text-[18px]">{q.vitalityScore}</span>
+                          </div>
+                        </div>
+
+                        {/* SLA + action */}
+                        <div className="flex items-center gap-4 justify-end flex-wrap">
+                          <div className="flex flex-col items-end gap-[6px] min-w-[110px]">
+                            <span
+                              className="t-data text-[13px]"
+                              style={{ color: urgent ? "var(--color-critical)" : "var(--color-ink-2)" }}
+                            >
+                              {q.slaLabel}
+                            </span>
+                            <div className="w-[110px] h-[6px] rounded-full bg-[var(--color-surface-2)] overflow-hidden">
+                              <div
+                                className="h-full rounded-full"
+                                style={{
+                                  width: `${q.slaPct}%`,
+                                  background: urgent ? "var(--color-critical)" : "var(--color-caution)",
+                                }}
+                              />
+                            </div>
+                          </div>
+                          <Link href={`/doctor/review/${q.quizId}`} className="no-underline hover:no-underline">
+                            <Button variant={urgent ? "primary" : "secondary"}>Review</Button>
+                          </Link>
+                        </div>
+                      </div>
+                    );
+                  })}
                 </div>
-              </div>
-            );
-          })}
+              </section>
+            ))}
         </div>
       )}
 

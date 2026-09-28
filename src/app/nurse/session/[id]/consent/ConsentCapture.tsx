@@ -6,6 +6,8 @@ import { Button } from "@/components/ui/Button";
 import { CURRENT_CONSENT_VERSION } from "@/lib/clinical/consent";
 import { queuedPost } from "@/lib/offline/queue";
 import { OtpBoxes } from "@/components/ui/OtpBoxes";
+import { useClockFormat } from "@/components/ClockProvider";
+import { shortDateClock } from "@/lib/time";
 
 /**
  * A signature pad drawn on canvas. Pointer events cover mouse, touch and
@@ -96,6 +98,7 @@ function SignaturePad({ onChange }: { onChange: (dataUrl: string | null) => void
 }
 
 export function ConsentCapture({ bookingId, alreadyGivenAt }: { bookingId: string; alreadyGivenAt: string | null }) {
+  const clockFmt = useClockFormat();
   const router = useRouter();
   const [mode, setMode] = useState<"signature" | "otp">("signature");
   const [signature, setSignature] = useState<string | null>(null);
@@ -128,14 +131,7 @@ export function ConsentCapture({ bookingId, alreadyGivenAt }: { bookingId: strin
       <div className="rounded-[var(--radius-lg)] border border-[var(--color-safe)] bg-[var(--color-safe-soft)] p-5">
         <span className="t-body font-semibold">Consent already captured</span>
         <p className="t-body text-[var(--color-ink-2)] mt-1">
-          Version {CURRENT_CONSENT_VERSION} ·{" "}
-          {new Date(alreadyGivenAt).toLocaleString("en-IN", {
-            day: "2-digit",
-            month: "short",
-            hour: "2-digit",
-            minute: "2-digit",
-            hour12: true,
-          })}
+          Version {CURRENT_CONSENT_VERSION} · {shortDateClock(alreadyGivenAt, clockFmt)}
         </p>
         <div className="mt-3">
           <Button variant="secondary" block onClick={() => router.push(`/nurse/session/${bookingId}`)}>

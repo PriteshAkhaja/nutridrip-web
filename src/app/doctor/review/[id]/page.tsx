@@ -14,6 +14,11 @@ import { nurseChoicesFor } from "@/lib/data/nurse-choices";
 import { listDrips } from "@/lib/data/drips";
 import { HeaderCounts } from "@/components/layout/HeaderCounts";
 import { ButtonLink } from "@/components/ui/Button";
+import { connectDB } from "@/lib/db/mongoose";
+import { Booking } from "@/lib/models";
+import { lastCallFor } from "@/lib/data/calls";
+import { CALL_STATUS_LABEL, callWhen } from "@/lib/clinical/calls";
+import { getClockFormat } from "@/lib/settings/clock";
 
 export const metadata: Metadata = { title: "Patient review" };
 export const dynamic = "force-dynamic";
@@ -21,6 +26,7 @@ export const dynamic = "force-dynamic";
 const FLAG_TONE = { crit: "critical", warn: "caution", info: "info" } as const;
 
 export default async function PatientReviewPage({ params }: { params: Promise<{ id: string }> }) {
+  const clockFmt = await getClockFormat();
   const session = await requireRole("doctor", "superadmin");
   const nav = await doctorNav(session.sub);
   const { id } = await params;
@@ -38,9 +44,18 @@ export default async function PatientReviewPage({ params }: { params: Promise<{ 
 
   // Only worth loading while there is still a decision to make.
   const pending = review.reviewStatus === "pending";
-  const [nurses, catalogue] = await Promise.all([
+  await connectDB();
+  const [nurses, catalogue, held, call] = await Promise.all([
     pending ? nurseChoicesFor(review.location, session.sub) : Promise.resolve(null),
     pending ? listDrips() : Promise.resolve([]),
+    // The drip the patient is holding for this decision, and their call.
+    pending
+      ? Booking.findOne({ patientId: review.patient.id, status: "awaiting_review", scheduledAt: { $gte: new Date() } })
+          .sort({ scheduledAt: 1 })
+          .select("bookingNo dripId dripName scheduledAt")
+          .lean<{ bookingNo: string; dripId: unknown; dripName?: string; scheduledAt: Date } | null>()
+      : Promise.resolve(null),
+    pending ? lastCallFor(String(review.patient.id)) : Promise.resolve(null),
   ]);
 
   const lowest = [...review.markers].sort((a, b) => a.pct - b.pct).slice(0, 3);
@@ -58,7 +73,11 @@ export default async function PatientReviewPage({ params }: { params: Promise<{ 
           Patient record
         </ButtonLink>
       }
-      meta={<HeaderCounts items={[`Submitted ${formatDate(review.submittedAt)}`, formatTime(review.submittedAt)]} />}
+      meta={
+        <HeaderCounts
+          items={[`Submitted ${formatDate(review.submittedAt)}`, formatTime(review.submittedAt, clockFmt)]}
+        />
+      }
     >
       {/* Answers the patient has since corrected. Kept, because history is
           never deleted, but nobody should decide on them. */}
@@ -227,7 +246,44 @@ export default async function PatientReviewPage({ params }: { params: Promise<{ 
             </Card>
           )}
 
+          {/* The call: when to ring, on which number, and whether it happened. */}
+          {pending && (call || held) && (
+            <Card padding="p-5" tone={call?.overdue ? "caution" : "muted"}>
+              <span className="t-micro">Call and held drip</span>
+              {call ? (
+                <p className="t-body mt-1">
+                  {call.status === "booked" ? (
+                    <>
+                      {call.doctorId === session.sub ? "You call" : `${call.doctorName} calls`}{" "}
+                      <a href={`tel:${call.phone}`} className="t-data text-[14px]">
+                        {call.phone}
+                      </a>{" "}
+                      at <span className="font-semibold">{callWhen(call.startAt, clockFmt)}</span>
+                      {call.overdue ? " — overdue" : ""}.
+                    </>
+                  ) : (
+                    <>
+                      {CALL_STATUS_LABEL[call.status]} · {callWhen(call.startAt, clockFmt)} · {call.doctorName}
+                    </>
+                  )}
+                </p>
+              ) : (
+                <p className="t-body mt-1 text-[var(--color-ink-2)]">No call booked.</p>
+              )}
+              <p className="t-small text-[var(--color-ink-2)] mt-1">
+                {held
+                  ? `Holding ${held.bookingNo} · ${held.dripName ?? "a drip"} · ${callWhen(held.scheduledAt, clockFmt)}.`
+                  : "No drip held yet."}
+              </p>
+            </Card>
+          )}
+
           <ReviewDecision
+            heldDrip={
+              held
+                ? { bookingNo: held.bookingNo, dripId: String(held.dripId), dripName: held.dripName ?? "a drip" }
+                : null
+            }
             quizId={review.quizId}
             reviewStatus={review.reviewStatus}
             suggestedDrips={review.suggestedDrips}

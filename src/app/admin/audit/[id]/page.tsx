@@ -20,6 +20,7 @@ import {
   withholdsDetail,
 } from "@/lib/data/audit";
 import { nameEntities, nameKey } from "@/lib/data/audit-names";
+import { getClockFormat } from "@/lib/settings/clock";
 
 export const metadata: Metadata = { title: "Audit entry" };
 export const dynamic = "force-dynamic";
@@ -35,6 +36,7 @@ const LINK_FOR: Record<string, (id: string) => string | null> = {
 };
 
 export default async function AuditEntryPage({ params }: { params: Promise<{ id: string }> }) {
+  const clockFmt = await getClockFormat();
   const session = await requirePermission("audit.view");
   const { id } = await params;
   const nav = await adminNav();
@@ -81,7 +83,7 @@ export default async function AuditEntryPage({ params }: { params: Promise<{ id:
       activeHref="/admin/audit"
       breadcrumb={["Admin", "Audit trail", actionLabel(row.action)]}
       title={actionLabel(row.action)}
-      meta={`${formatDate(row.at)} · ${formatTime(row.at)}`}
+      meta={`${formatDate(row.at)} · ${formatTime(row.at, clockFmt)}`}
     >
       <Link href="/admin/audit" className="t-body inline-block mb-5">
         <Arrow dir="left" />
@@ -105,7 +107,7 @@ export default async function AuditEntryPage({ params }: { params: Promise<{ id:
             <div className="flex flex-col gap-3">
               {[
                 ["Action", row.action],
-                ["When", `${formatDate(row.at)} · ${formatTime(row.at)}`],
+                ["When", `${formatDate(row.at)} · ${formatTime(row.at, clockFmt)}`],
                 ["Record", row.entity ? entityLabel(row.entity) : "—"],
                 ...(targetName ? ([["Which one", targetName]] as Array<[string, string]>) : []),
                 ["Record id", row.entityId ?? "—"],

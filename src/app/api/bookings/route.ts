@@ -18,6 +18,10 @@ import { paginate } from "@/lib/pagination-db";
 import { pageInfo, parsePaging } from "@/lib/pagination";
 import { ADMIN_BOOKING_SELECT } from "@/lib/data/admin-view";
 import { ok, fail, handleError } from "@/lib/api";
+import { callGate } from "@/lib/data/calls";
+import { callWhen } from "@/lib/clinical/calls";
+import { getClockFormat } from "@/lib/settings/clock";
+import { clockText, shortDateClock } from "@/lib/time";
 
 const CreateBooking = z.object({
   dripId: z.string(),
@@ -59,6 +63,7 @@ export async function GET(req: Request) {
 }
 
 export async function POST(req: Request) {
+  const clockFmt = await getClockFormat();
   try {
     const session = await getSession();
     if (!can(session?.role, "bookings.create")) return fail("Not permitted", 403);
@@ -141,7 +146,7 @@ export async function POST(req: Request) {
     // same rule that greyed the others out on the booking screen, applied
     // again here because the screen may be minutes old.
     const slot = slotProblem(await slotContext({ pincode, from: when, to: when }), when, drip.durationMin);
-    if (slot) return fail(slot.error, slot.status);
+    if (slot) return fail(clockText(slot.error, clockFmt), slot.status);
 
     // A booking is only approved once a physician has read a quiz that is
     // still inside its review window.
@@ -153,6 +158,18 @@ export async function POST(req: Request) {
     // question -- is the one blocked state a patient may hold a slot against.
     if (!approval.canBook && !approval.canHold) {
       return fail(approval.message, 409);
+    }
+    // Waiting for an approval: the physician calls first, and the drip is held
+    // from two hours after the call, so the decision comes before the nurse sets off.
+    if (!approval.canBook) {
+      const gate = await callGate(session!.sub, quiz!.completedAt);
+      if (!gate.ok) return fail(gate.message, 409);
+      if (gate.notBefore && when.getTime() < gate.notBefore) {
+        return fail(
+          `Your drip must be at least 2 hours after your call — from ${callWhen(new Date(gate.notBefore), clockFmt)}.`,
+          422
+        );
+      }
     }
 
     const booking = await createWithReference(
@@ -188,13 +205,7 @@ export async function POST(req: Request) {
         )
     );
 
-    const slotLabel = when.toLocaleString("en-IN", {
-      day: "2-digit",
-      month: "short",
-      hour: "2-digit",
-      minute: "2-digit",
-      hour12: true,
-    });
+    const slotLabel = shortDateClock(when, clockFmt);
 
     if (booking.status === "awaiting_review") {
       await notifyRole(

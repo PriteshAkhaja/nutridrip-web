@@ -51,7 +51,8 @@ export function approvalState(
       status: "pending",
       daysLeft: null,
       reviewedAt: null,
-      message: "A physician is reading your answers now — usually within two hours. You can hold a slot meanwhile.",
+      message:
+        "Next, a short phone call with a physician: they read your answers, call you at the time you choose, then decide. You can hold a drip slot from two hours after the call.",
     };
   }
 
@@ -81,7 +82,8 @@ export function approvalState(
       status: "pending",
       daysLeft: null,
       reviewedAt: null,
-      message: "A physician is reading your answers now — usually within two hours. You can hold a slot meanwhile.",
+      message:
+        "Next, a short phone call with a physician: they read your answers, call you at the time you choose, then decide. You can hold a drip slot from two hours after the call.",
     };
   }
 

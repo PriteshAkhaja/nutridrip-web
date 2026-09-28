@@ -1,6 +1,6 @@
 import { z } from "zod";
 import { connectDB } from "@/lib/db/mongoose";
-import { AuditLog, Booking, User } from "@/lib/models";
+import { AuditLog, Booking, User, Consultation } from "@/lib/models";
 import { getSession } from "@/lib/auth/session";
 import { can } from "@/lib/auth/rbac";
 import { hashPassword } from "@/lib/auth/password";
@@ -73,6 +73,16 @@ export async function PATCH(req: Request, { params }: { params: Promise<{ id: st
           `${user.name} still has ${openWork} open session${openWork === 1 ? "" : "s"}. Reassign those first.`,
           409
         );
+      }
+      // Nor a physician with patients waiting for their call.
+      if (user.role === "doctor") {
+        const calls = await Consultation.countDocuments({ doctorId: id, status: "booked" });
+        if (calls > 0) {
+          return fail(
+            `${user.name} still has ${calls} booked call${calls === 1 ? "" : "s"}. Hand ${calls === 1 ? "it" : "them"} to another physician on Doctor calls first.`,
+            409
+          );
+        }
       }
     }
 

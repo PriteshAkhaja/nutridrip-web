@@ -152,7 +152,11 @@ export function freeNurses(opts: {
   return free - waiting;
 }
 
-export type SlotState = "free" | "taken" | "too_soon";
+/**
+ * free · taken (nobody free) · too_soon (inside the lead hour) · before_call
+ * (a held drip must come 2 hours after the patient's call with the physician).
+ */
+export type SlotState = "free" | "taken" | "too_soon" | "before_call";
 export type SlotCell = { time: string; at: string; state: SlotState };
 export type SlotDay = {
   date: string;
@@ -161,7 +165,19 @@ export type SlotDay = {
   month: string;
   slots: SlotCell[];
   freeCount: number;
+  /** Why a day has no times at all, e.g. "Day off". */
+  note?: string;
 };
+
+/** "Fri", 26, "Sept" for a "YYYY-MM-DD" date, whatever the server's timezone. */
+export function dayLabel(date: string): Pick<SlotDay, "weekday" | "day" | "month"> {
+  const label = new Date(`${date}T00:00:00Z`);
+  return {
+    weekday: label.toLocaleDateString("en-IN", { weekday: "short", timeZone: "UTC" }),
+    day: label.getUTCDate(),
+    month: label.toLocaleDateString("en-IN", { month: "short", timeZone: "UTC" }),
+  };
+}
 
 export type SlotContext = {
   hours: Hours;
@@ -171,30 +187,34 @@ export type SlotContext = {
   zoneName: string | null;
 };
 
-/** The days and times a patient is offered, each marked free, taken or too soon. */
-export function slotGrid(ctx: SlotContext, durationMin: number, dates: string[], now = Date.now()): SlotDay[] {
+/**
+ * The days and times a patient is offered, each marked free, taken or too soon.
+ * `notBefore` (ms): nothing earlier is offered — a held drip waits 2 hours after
+ * the patient's call with the physician.
+ */
+export function slotGrid(
+  ctx: SlotContext,
+  durationMin: number,
+  dates: string[],
+  now = Date.now(),
+  notBefore?: number | null
+): SlotDay[] {
   const times = slotTimes(ctx.hours);
   return dates.map((date) => {
-    const label = new Date(`${date}T00:00:00Z`);
     const slots = times.map((time): SlotCell => {
       const at = istInstant(date, time);
       const start = at.getTime();
       const state: SlotState =
         start - now < MIN_LEAD_MS
           ? "too_soon"
-          : freeNurses({ pool: ctx.pool, held: ctx.held, zoneName: ctx.zoneName, start, durationMin }) > 0
-            ? "free"
-            : "taken";
+          : notBefore && start < notBefore
+            ? "before_call"
+            : freeNurses({ pool: ctx.pool, held: ctx.held, zoneName: ctx.zoneName, start, durationMin }) > 0
+              ? "free"
+              : "taken";
       return { time, at: at.toISOString(), state };
     });
-    return {
-      date,
-      weekday: label.toLocaleDateString("en-IN", { weekday: "short", timeZone: "UTC" }),
-      day: label.getUTCDate(),
-      month: label.toLocaleDateString("en-IN", { month: "short", timeZone: "UTC" }),
-      slots,
-      freeCount: slots.filter((s) => s.state === "free").length,
-    };
+    return { date, ...dayLabel(date), slots, freeCount: slots.filter((s) => s.state === "free").length };
   });
 }
 

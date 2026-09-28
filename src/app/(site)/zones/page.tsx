@@ -6,6 +6,8 @@ import { servedZones } from "@/lib/zones";
 import { stepLabel } from "@/lib/clinical/slots";
 import { getZones } from "@/lib/zones-store";
 import { QuizButton } from "@/components/layout/QuizButton";
+import { getClockFormat } from "@/lib/settings/clock";
+import { clockText } from "@/lib/time";
 
 // The zones are edited by the super admin (Service zones), so this is read per request.
 export const dynamic = "force-dynamic";
@@ -19,6 +21,7 @@ export async function generateMetadata(): Promise<Metadata> {
 }
 
 export default async function ZonesPage() {
+  const clockFmt = await getClockFormat();
   // Paused zones are not offered, so they are not listed either.
   const zones = servedZones(await getZones());
   const open = zones.filter((z) => z.status === "open").length;
@@ -71,7 +74,7 @@ export default async function ZonesPage() {
               <div className="flex justify-between gap-3 items-baseline">
                 <span className="t-small text-[var(--color-ink-3)]">Hours</span>
                 <span className="t-data text-[13px]">
-                  {z.window} · {stepLabel(z.slotMinutes)}
+                  {clockText(z.window, clockFmt)} · {stepLabel(z.slotMinutes)}
                 </span>
               </div>
             </div>

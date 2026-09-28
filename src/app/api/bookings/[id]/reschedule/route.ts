@@ -11,6 +11,10 @@ import { pickNurse } from "@/lib/clinical/assign";
 import { getLatePolicy } from "@/lib/billing/settings";
 import { inr, lateFee } from "@/lib/billing/late-policy";
 import { ok, fail, handleError } from "@/lib/api";
+import { openCallFor } from "@/lib/data/calls";
+import { callWhen, earliestDrip } from "@/lib/clinical/calls";
+import { getClockFormat } from "@/lib/settings/clock";
+import { clockText, shortDateClock } from "@/lib/time";
 
 const Input = z.object({
   scheduledAt: z.string().datetime(),
@@ -26,6 +30,7 @@ const Input = z.object({
 const MAX_RESCHEDULES = 3;
 
 export async function POST(req: Request, { params }: { params: Promise<{ id: string }> }) {
+  const clockFmt = await getClockFormat();
   try {
     const session = await getSession();
     if (!session) return fail("Unauthorized", 401);
@@ -75,7 +80,18 @@ export async function POST(req: Request, { params }: { params: Promise<{ id: str
     const durationMin = booking.durationMin ?? 45;
     const ctx = await slotContext({ pincode: booking.pincode, from: next, to: next, excludeBookingId: id });
     const slot = slotProblem(ctx, next, durationMin);
-    if (slot) return fail(slot.error, slot.status);
+    if (slot) return fail(clockText(slot.error, clockFmt), slot.status);
+    // A drip still held for the physician stays 2 hours after the patient's call.
+    if (booking.status === "awaiting_review") {
+      const call = await openCallFor(String(booking.patientId));
+      const from = call ? earliestDrip(new Date(call.startAt).getTime(), call.minutes) : 0;
+      if (next.getTime() < from) {
+        return fail(
+          `A held drip must be at least 2 hours after your call — from ${callWhen(new Date(from), clockFmt)}.`,
+          422
+        );
+      }
+    }
 
     if ((booking.rescheduleCount ?? 0) >= MAX_RESCHEDULES) {
       return fail(
@@ -98,8 +114,7 @@ export async function POST(req: Request, { params }: { params: Promise<{ id: str
     }
 
     const previous = booking.scheduledAt;
-    const at = (d: Date) =>
-      d.toLocaleString("en-IN", { day: "2-digit", month: "short", hour: "2-digit", minute: "2-digit", hour12: true });
+    const at = (d: Date) => shortDateClock(d, clockFmt);
     booking.rescheduledFrom = previous;
     booking.scheduledAt = next;
     booking.rescheduleCount = (booking.rescheduleCount ?? 0) + 1;

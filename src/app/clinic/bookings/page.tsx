@@ -13,6 +13,7 @@ import { formatDate, formatTime } from "@/lib/data/inventory";
 import { PagedResults, PagedView, Pagination } from "@/components/ui/Paged";
 import { hrefWith, parsePaging } from "@/lib/pagination";
 import { paginate } from "@/lib/pagination-db";
+import { getClockFormat } from "@/lib/settings/clock";
 
 export const metadata: Metadata = { title: "Bookings" };
 export const dynamic = "force-dynamic";
@@ -28,6 +29,7 @@ export default async function ClinicBookingsPage({
 }: {
   searchParams: Promise<{ view?: string; page?: string; pageSize?: string }>;
 }) {
+  const clockFmt = await getClockFormat();
   const session = await requireRole("clinic", "superadmin");
   const nav = await clinicNav(session.sub);
   const { view = "upcoming", page, pageSize } = await searchParams;
@@ -118,7 +120,7 @@ export default async function ClinicBookingsPage({
                     <TD nowrap>{nameById.get(String(b.patientId)) ?? "—"}</TD>
                     <TD nowrap>{b.dripName ?? "—"}</TD>
                     <TD mono nowrap>
-                      {formatDate(b.scheduledAt)} · {formatTime(b.scheduledAt)}
+                      {formatDate(b.scheduledAt)} · {formatTime(b.scheduledAt, clockFmt)}
                     </TD>
                     <TD nowrap>{b.nurseId ? (nameById.get(String(b.nurseId)) ?? "—") : "Unassigned"}</TD>
                     <TD>

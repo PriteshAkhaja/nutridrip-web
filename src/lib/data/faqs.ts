@@ -52,7 +52,7 @@ const RAW_CATEGORIES: FaqCategory[] = [
     items: [
       {
         q: "Who reads my health quiz?",
-        a: "A registered physician reads every submission. They approve the protocol, change the doses, ask you for more information, or decline it. Their name and council registration number appear on your session report. Nothing is dispensed on a quiz score alone.",
+        a: "A registered physician reads every submission. You choose the physician and a time for a short phone call; they read your answers, call you, then approve the protocol, change the doses, ask you for more information, or decline it. Their name and council registration number appear on your session report. Nothing is dispensed on a quiz score alone.",
       },
       {
         q: "How long does an approval last?",

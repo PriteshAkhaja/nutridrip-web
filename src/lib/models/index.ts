@@ -22,3 +22,6 @@ export { default as QuizQuestion } from "./QuizQuestion";
 export { default as ContentBlock } from "./ContentBlock";
 export { default as AIModel } from "./AIModel";
 export { default as Zone } from "./Zone";
+export { default as DoctorHours } from "./DoctorHours";
+export { default as Consultation } from "./Consultation";
+export { default as PlatformSettings } from "./PlatformSettings";

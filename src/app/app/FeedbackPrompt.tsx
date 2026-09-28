@@ -3,6 +3,7 @@
 import { useState, useSyncExternalStore } from "react";
 import { RateSession } from "./sessions/SessionActions";
 import type { SessionToRate } from "@/lib/data/feedback-prompt";
+import { dateIN } from "@/lib/time";
 
 const later = (bookingId: string) => `nd_feedback_later:${bookingId}`;
 const PUT_AWAY = "nd-feedback-later";
@@ -62,7 +63,7 @@ export function FeedbackPrompt({ session }: { session: SessionToRate }) {
         <h2 className="t-h3 mt-1">How was it{first ? ` with ${first}` : ""}?</h2>
         <span className="t-small text-[var(--color-ink-2)] block mt-1">
           {session.dripName ?? "Your drip"} · <span className="t-data text-[12.5px]">{session.bookingNo}</span> ·{" "}
-          {new Date(session.completedAt).toLocaleDateString("en-IN", { day: "2-digit", month: "short" })}
+          {dateIN(session.completedAt, { year: undefined })}
         </span>
       </div>
 

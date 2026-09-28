@@ -12,11 +12,13 @@ import { DataTable, THead, TR, TH, TD } from "@/components/ui/Table";
 import { Pill } from "@/components/ui/Pill";
 import { inr } from "@/lib/billing/late-policy";
 import { formatDate, formatTime } from "@/lib/data/inventory";
+import { getClockFormat } from "@/lib/settings/clock";
 
 export const metadata: Metadata = { title: "Billing" };
 export const dynamic = "force-dynamic";
 
 export default async function BillingPage() {
+  const clockFmt = await getClockFormat();
   const session = await requireRole("admin", "superadmin");
   const [nav, config, payee, policy, { rows: charges, owed }] = await Promise.all([
     adminNav(),
@@ -82,7 +84,7 @@ export default async function BillingPage() {
                 {charges.map((c) => (
                   <TR key={`${c.bookingId}-${c.at}`}>
                     <TD mono nowrap>
-                      {formatDate(c.at)} · {formatTime(c.at)}
+                      {formatDate(c.at)} · {formatTime(c.at, clockFmt)}
                     </TD>
                     <TD nowrap>{c.patientName}</TD>
                     <TD mono nowrap>

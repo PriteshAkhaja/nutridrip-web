@@ -8,6 +8,8 @@ import { Pill } from "@/components/ui/Pill";
 import { queuedPost } from "@/lib/offline/queue";
 import { blockedByVitals, needsPrescription } from "@/lib/clinical/checklist";
 import type { StepView } from "./page";
+import { useClockFormat } from "@/components/ClockProvider";
+import { clock } from "@/lib/time";
 
 const SUB_SCREEN: Record<string, { label: string; path: string }> = {
   vitals: { label: "Open vitals", path: "vitals" },
@@ -43,6 +45,7 @@ export function Checklist({
   /** Set when a physician has cleared out-of-range baseline vitals. */
   clearance: { at: string; note?: string } | null;
 }) {
+  const clockFmt = useClockFormat();
   const router = useRouter();
   const [busy, setBusy] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -152,11 +155,7 @@ export function Checklist({
 
               {done && (
                 <span className="t-data text-[13px] text-[var(--color-ink-3)] block mt-1">
-                  {new Date(step.doneAt!).toLocaleTimeString("en-IN", {
-                    hour: "2-digit",
-                    minute: "2-digit",
-                    hour12: true,
-                  })}
+                  {clock(step.doneAt, clockFmt)}
                   {step.stamp ? ` · ${step.stamp}` : ""}
                 </span>
               )}
@@ -188,13 +187,7 @@ export function Checklist({
                     <div className="rounded-[var(--radius-sm)] border border-[var(--color-safe)] bg-[var(--color-safe-soft)] px-3 py-2 mt-3">
                       <span className="t-small text-[var(--color-ink-2)]">
                         Physician cleared the baseline vitals at{" "}
-                        <span className="t-data text-[13px]">
-                          {new Date(clearance.at).toLocaleTimeString("en-IN", {
-                            hour: "2-digit",
-                            minute: "2-digit",
-                            hour12: true,
-                          })}
-                        </span>
+                        <span className="t-data text-[13px]">{clock(clearance.at, clockFmt)}</span>
                         {clearance.note ? ` — ${clearance.note}` : "."}
                       </span>
                     </div>

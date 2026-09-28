@@ -15,6 +15,7 @@ import { formatTime } from "@/lib/data/inventory";
 import { Pill } from "@/components/ui/Pill";
 import { rxLockState } from "@/lib/clinical/prescription";
 import type { ChecklistPhase } from "@/lib/models/types";
+import { getClockFormat } from "@/lib/settings/clock";
 
 export const metadata: Metadata = { title: "Checklist" };
 export const dynamic = "force-dynamic";
@@ -31,6 +32,7 @@ export type StepView = {
 };
 
 export default async function ChecklistPage({ params }: { params: Promise<{ id: string }> }) {
+  const clockFmt = await getClockFormat();
   const session = await requireRole("nurse", "superadmin");
   const { id } = await params;
 
@@ -100,7 +102,7 @@ export default async function ChecklistPage({ params }: { params: Promise<{ id: 
       title={patient?.name ?? "Session"}
       subtitle={
         <span className="t-data text-[13px]">
-          {booking.bookingNo} · {booking.dripName} · {formatTime(booking.scheduledAt)}
+          {booking.bookingNo} · {booking.dripName} · {formatTime(booking.scheduledAt, clockFmt)}
         </span>
       }
       back={{ href: "/nurse", label: "Back to today" }}

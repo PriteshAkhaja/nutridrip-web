@@ -4,6 +4,8 @@ import { paginate } from "@/lib/pagination-db";
 import type { PageMeta, Paging } from "@/lib/pagination";
 import { phaseProgress, type PhaseProgress } from "@/lib/clinical/checklist";
 import type { BookingStatus, SessionLocation } from "@/lib/models/types";
+import { getClockFormat } from "@/lib/settings/clock";
+import { clock, type ClockFormat } from "@/lib/time";
 
 export type SessionCard = {
   id: string;
@@ -35,9 +37,7 @@ export type LateCharge = {
   settledAs?: "paid" | "waived" | null;
 };
 
-function timeOf(d: Date): string {
-  return d.toLocaleTimeString("en-IN", { hour: "2-digit", minute: "2-digit", hour12: false });
-}
+const timeOf = (d: Date, fmt: ClockFormat) => clock(d, fmt);
 
 type LeanBooking = {
   _id: unknown;
@@ -56,7 +56,7 @@ type LeanBooking = {
   paymentStatus?: string;
 };
 
-function toCard(b: LeanBooking, patientName: string): SessionCard {
+function toCard(b: LeanBooking, patientName: string, fmt: ClockFormat): SessionCard {
   const endsAt = new Date(b.scheduledAt.getTime() + (b.durationMin ?? 45) * 60_000);
   const progress = phaseProgress(b.checklist ?? []);
 
@@ -68,7 +68,7 @@ function toCard(b: LeanBooking, patientName: string): SessionCard {
     dripName: b.dripName ?? "—",
     scheduledAt: b.scheduledAt.toISOString(),
     endsAt: endsAt.toISOString(),
-    timeRange: `${timeOf(b.scheduledAt)} – ${timeOf(endsAt)}`,
+    timeRange: `${timeOf(b.scheduledAt, fmt)} – ${timeOf(endsAt, fmt)}`,
     where: b.address ?? b.city ?? "—",
     location: b.location,
     status: b.status,
@@ -92,7 +92,8 @@ async function withPatientNames(bookings: LeanBooking[]): Promise<SessionCard[]>
     Array<{ _id: unknown; name: string }>
   >();
   const nameById = new Map(patients.map((p) => [String(p._id), p.name]));
-  return bookings.map((b) => toCard(b, nameById.get(String(b.patientId)) ?? "Unknown patient"));
+  const fmt = await getClockFormat();
+  return bookings.map((b) => toCard(b, nameById.get(String(b.patientId)) ?? "Unknown patient", fmt));
 }
 
 /** A nurse's route for one day, in the order they will drive it. */

@@ -5,6 +5,8 @@ import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/Button";
 import { CORRECTION_REASONS, VITAL_RANGES, type VitalKey } from "@/lib/clinical/checklist";
 import { queuedPost } from "@/lib/offline/queue";
+import { useClockFormat } from "@/components/ClockProvider";
+import { clock } from "@/lib/time";
 
 type Values = {
   systolic: string;
@@ -88,6 +90,7 @@ export function VitalsForm({
     temperatureF?: number;
   } | null;
 }) {
+  const clockFmt = useClockFormat();
   const router = useRouter();
   // Correcting starts from the reading as recorded, so only the wrong value is retyped.
   const [values, setValues] = useState<Values>(
@@ -171,14 +174,7 @@ export function VitalsForm({
     <div className="flex flex-col gap-5">
       {correcting && (
         <div className="rounded-[var(--radius-md)] border border-[var(--color-line)] bg-[var(--color-surface-2)] px-4 py-3">
-          <span className="t-micro">
-            Recorded ·{" "}
-            {new Date(correcting.takenAt).toLocaleTimeString("en-IN", {
-              hour: "2-digit",
-              minute: "2-digit",
-              hour12: true,
-            })}
-          </span>
+          <span className="t-micro">Recorded · {clock(correcting.takenAt, clockFmt)}</span>
           <div className="t-data text-[14.5px] mt-1">
             {correcting.systolic}/{correcting.diastolic} · {correcting.heartRate} bpm · SpO₂ {correcting.spo2}% ·{" "}
             {correcting.temperatureF}°F
@@ -193,14 +189,7 @@ export function VitalsForm({
 
       {!correcting && previous && (
         <div className="rounded-[var(--radius-md)] border border-[var(--color-line)] bg-[var(--color-surface-2)] px-4 py-3">
-          <span className="t-micro">
-            Last reading ·{" "}
-            {new Date(previous.takenAt).toLocaleTimeString("en-IN", {
-              hour: "2-digit",
-              minute: "2-digit",
-              hour12: true,
-            })}
-          </span>
+          <span className="t-micro">Last reading · {clock(previous.takenAt, clockFmt)}</span>
           <div className="t-data text-[14.5px] mt-1">
             {previous.systolic}/{previous.diastolic} · {previous.heartRate} bpm · SpO₂ {previous.spo2}% ·{" "}
             {previous.temperatureF}°F

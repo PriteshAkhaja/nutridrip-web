@@ -10,11 +10,13 @@ import { DataTable, THead, TH, TR, TD } from "@/components/ui/Table";
 import { EmptyState } from "@/components/ui/States";
 import { Card } from "@/components/ui/Card";
 import { RecallPicker } from "./Picker";
+import { getClockFormat } from "@/lib/settings/clock";
 
 export const metadata: Metadata = { title: "Recall trace" };
 export const dynamic = "force-dynamic";
 
 export default async function RecallPage({ searchParams }: { searchParams: Promise<{ batch?: string }> }) {
+  const clockFmt = await getClockFormat();
   const session = await requireRole("superadmin", "admin");
   const nav = await adminNav();
   const { batch } = await searchParams;
@@ -104,7 +106,9 @@ export default async function RecallPage({ searchParams }: { searchParams: Promi
                           <span className="t-data text-[13px]">{r.patientRef}</span>
                         </TD>
                         <TD mono nowrap>
-                          {r.dispatchedAt ? `${formatDate(r.dispatchedAt)} · ${formatTime(r.dispatchedAt)}` : "—"}
+                          {r.dispatchedAt
+                            ? `${formatDate(r.dispatchedAt)} · ${formatTime(r.dispatchedAt, clockFmt)}`
+                            : "—"}
                         </TD>
                         <TD numeric>{r.unitsConsumed}</TD>
                         <TD numeric nowrap>

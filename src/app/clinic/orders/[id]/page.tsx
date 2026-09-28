@@ -15,15 +15,19 @@ import { Card } from "@/components/ui/Card";
 import { Timeline, type TimelineItem } from "@/components/ui/Timeline";
 import { formatInr } from "@/lib/inventory/units";
 import { formatDate, formatTime } from "@/lib/data/inventory";
+import { getClockFormat } from "@/lib/settings/clock";
+import type { ClockFormat } from "@/lib/time";
 
 export const metadata: Metadata = { title: "Order" };
 export const dynamic = "force-dynamic";
 
-const stamp = (d?: Date) => (d ? `${formatDate(d)} · ${formatTime(d)}` : "—");
+const stamp = (d: Date | undefined, clockFmt: ClockFormat) =>
+  d ? `${formatDate(d)} · ${formatTime(d, clockFmt)}` : "—";
 
 export default async function ClinicOrderPage({ params }: { params: Promise<{ id: string }> }) {
   const session = await requireRole("clinic", "superadmin");
   const nav = await clinicNav(session.sub);
+  const clockFmt = await getClockFormat();
   const { id } = await params;
 
   await connectDB();
@@ -87,14 +91,14 @@ export default async function ClinicOrderPage({ params }: { params: Promise<{ id
   const method = order.payment?.method ? PAY_METHOD_LABEL[order.payment.method as PayMethod] : null;
   const paid = pay === "received";
   const timeline: TimelineItem[] = [
-    { label: "Raised", time: stamp(order.createdAt), state: "done" },
+    { label: "Raised", time: stamp(order.createdAt, clockFmt), state: "done" },
     // Paid first: the step between placing the order and the pharmacy taking it.
     ...(payFirst
       ? [
           {
             label: "Paid — payment received",
             time: paid
-              ? stamp(order.payment?.verifiedAt)
+              ? stamp(order.payment?.verifiedAt, clockFmt)
               : cancelled
                 ? "—"
                 : pay === "submitted"
@@ -107,7 +111,7 @@ export default async function ClinicOrderPage({ params }: { params: Promise<{ id
     {
       label: "Confirmed — stock reserved",
       time: order.confirmedAt
-        ? stamp(order.confirmedAt)
+        ? stamp(order.confirmedAt, clockFmt)
         : cancelled
           ? "—"
           : payFirst && !paid
@@ -117,11 +121,11 @@ export default async function ClinicOrderPage({ params }: { params: Promise<{ id
     },
     {
       label: "Dispatched — batches on their way",
-      time: order.dispatchedAt ? stamp(order.dispatchedAt) : "—",
+      time: order.dispatchedAt ? stamp(order.dispatchedAt, clockFmt) : "—",
       state: order.dispatchedAt ? "done" : order.confirmedAt && !cancelled ? "now" : "next",
     },
   ];
-  if (cancelled) timeline.push({ label: "Cancelled", time: stamp(order.cancelledAt), state: "done" });
+  if (cancelled) timeline.push({ label: "Cancelled", time: stamp(order.cancelledAt, clockFmt), state: "done" });
 
   return (
     <ConsoleShell
@@ -345,7 +349,7 @@ export default async function ClinicOrderPage({ params }: { params: Promise<{ id
                 <span className="t-data text-[14px]">{order.payment?.reference}</span>
               </span>
               <span className="t-small text-[var(--color-ink-2)] block mt-1">
-                Received {order.payment?.verifiedAt ? stamp(order.payment.verifiedAt) : ""}
+                Received {order.payment?.verifiedAt ? stamp(order.payment.verifiedAt, clockFmt) : ""}
               </span>
             </Card>
           )}

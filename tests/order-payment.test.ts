@@ -44,7 +44,10 @@ describe("clinic orders are paid first", () => {
 });
 
 describe("the invoice of a paid-first order", () => {
-  it("says it was paid, instead of asking for the money again", async () => {
+  // The first import of the invoice module loads Mongoose and the models: about
+  // 1.6 s on an idle machine, and past the 5 s default while a dev server is
+  // recompiling alongside. The limit is for that load, not for the assertions.
+  it("says it was paid, instead of asking for the money again", { timeout: 20_000 }, async () => {
     const { termsFor } = await import("@/lib/billing/invoice");
     const credit = "Payable within 30 days of the invoice date.";
     expect(termsFor({}, credit)).toBe(credit);

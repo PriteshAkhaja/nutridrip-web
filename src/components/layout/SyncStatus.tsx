@@ -14,6 +14,8 @@ import {
 } from "@/lib/offline/queue";
 import { OfflineBanner } from "@/components/ui/States";
 import { Button } from "@/components/ui/Button";
+import { useClockFormat } from "@/components/ClockProvider";
+import { clock } from "@/lib/time";
 
 /** How often to try the outbox again when the network looks up but a send failed. */
 const RETRY_MS = 20_000;
@@ -29,10 +31,11 @@ function merge(prev: FlushOutcome | null, next: FlushOutcome): FlushOutcome {
  * is waiting, and replays it the moment the connection returns.
  */
 export function SyncStatus() {
+  const clockFmt = useClockFormat();
   const router = useRouter();
   const queue = useSyncExternalStore(subscribeQueue, getQueue, getEmptyQueue);
   const online = useSyncExternalStore(subscribeOnline, readOnline, readOnlineOnServer);
-  const [offlineSince, setOfflineSince] = useState<string | null>(null);
+  const [offlineSince, setOfflineSince] = useState<number | null>(null);
   const [outcome, setOutcome] = useState<FlushOutcome | null>(null);
   const [busy, setBusy] = useState(false);
 
@@ -53,8 +56,7 @@ export function SyncStatus() {
       setOfflineSince(null);
       replay();
     };
-    const onOffline = () =>
-      setOfflineSince(new Date().toLocaleTimeString("en-IN", { hour: "2-digit", minute: "2-digit", hour12: true }));
+    const onOffline = () => setOfflineSince(Date.now());
 
     window.addEventListener("online", onOnline);
     window.addEventListener("offline", onOffline);
@@ -80,7 +82,7 @@ export function SyncStatus() {
   if (!online) {
     return (
       <div className="mx-auto w-full max-w-[560px] px-5 pt-4">
-        <OfflineBanner since={offlineSince ?? "just now"} queued={queue.length} />
+        <OfflineBanner since={offlineSince ? clock(offlineSince, clockFmt) : "just now"} queued={queue.length} />
       </div>
     );
   }

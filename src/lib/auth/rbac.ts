@@ -59,6 +59,22 @@ export const PERMISSIONS = {
    */
   "zones.manage": ["superadmin"],
   /**
+   * Platform-wide display settings (Admin → Settings): today the 12- or
+   * 24-hour clock. Super admin only, because it changes every screen for every
+   * role at once.
+   */
+  "settings.manage": ["superadmin"],
+  /**
+   * Phone calls with a physician (lib/clinical/calls). A patient books their
+   * own; a physician works their own calls (called / no answer) and sets their
+   * own hours; the super admin can do both for any physician and hand a call
+   * to another one. Ops admins see the list, to answer the phone.
+   */
+  "calls.book": ["patient"],
+  "calls.view": ["superadmin", "admin", "doctor"],
+  "calls.work": ["superadmin", "doctor"],
+  "calls.manage": ["superadmin"],
+  /**
    * Reading the trail is its own capability.
    *
    * It carries who was refused what and when, across every role — closer to a

@@ -16,6 +16,7 @@ import { PATIENT_TABS } from "../tabs";
 import { quizCtaFor } from "@/lib/data/quiz-cta";
 import { getLatePolicy } from "@/lib/billing/settings";
 import { LateCharges } from "@/components/ui/LateCharges";
+import { getClockFormat } from "@/lib/settings/clock";
 
 export const metadata: Metadata = { title: "Sessions" };
 export const dynamic = "force-dynamic";
@@ -25,6 +26,7 @@ export default async function SessionsPage({
 }: {
   searchParams: Promise<{ page?: string; pageSize?: string }>;
 }) {
+  const clockFmt = await getClockFormat();
   const session = await requireRole("patient", "superadmin");
   const { page, pageSize } = await searchParams;
   const { upcoming, past, meta } = await patientSessionsPaged(session.sub, parsePaging({ page, pageSize }));
@@ -75,7 +77,7 @@ export default async function SessionsPage({
                   <Link href={`/app/session/${s.id}`} className="min-w-0 no-underline hover:no-underline">
                     <span className="t-h3 block text-[var(--color-ink)]">{s.dripName}</span>
                     <span className="t-data text-[13px] text-[var(--color-ink-2)] block mt-1">
-                      {formatDate(s.scheduledAt)} · {formatTime(s.scheduledAt)}
+                      {formatDate(s.scheduledAt)} · {formatTime(s.scheduledAt, clockFmt)}
                     </span>
                     <span className="t-small text-[var(--color-ink-3)] block">{s.where}</span>
                   </Link>

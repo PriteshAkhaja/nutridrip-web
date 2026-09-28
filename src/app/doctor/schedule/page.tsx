@@ -10,11 +10,13 @@ import { StatusPill } from "@/components/ui/Pill";
 import { EmptyState } from "@/components/ui/States";
 import { formatTime } from "@/lib/data/inventory";
 import { Reassign } from "./Reassign";
+import { getClockFormat } from "@/lib/settings/clock";
 
 export const metadata: Metadata = { title: "Schedule" };
 export const dynamic = "force-dynamic";
 
 export default async function DoctorSchedulePage() {
+  const clockFmt = await getClockFormat();
   const session = await requireRole("doctor", "superadmin");
   const nav = await doctorNav(session.sub);
   await connectDB();
@@ -114,7 +116,7 @@ export default async function DoctorSchedulePage() {
                   {items.map((b) => (
                     <TR key={String(b._id)}>
                       <TD mono nowrap>
-                        {formatTime(b.scheduledAt)}
+                        {formatTime(b.scheduledAt, clockFmt)}
                       </TD>
                       <TD nowrap>
                         <Link href={`/doctor/patients/${String(b.patientId)}`}>

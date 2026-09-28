@@ -1,5 +1,8 @@
 import type { Metadata, Viewport } from "next";
 import { Instrument_Sans, Inter, Noto_Sans_Mono } from "next/font/google";
+import { connection } from "next/server";
+import { ClockProvider } from "@/components/ClockProvider";
+import { getClockFormat } from "@/lib/settings/clock";
 import "./globals.css";
 
 const instrument = Instrument_Sans({
@@ -67,14 +70,22 @@ export const viewport: Viewport = {
   themeColor: "#FFFFFF",
 };
 
-export default function RootLayout({ children }: { children: React.ReactNode }) {
+export default async function RootLayout({ children }: { children: React.ReactNode }) {
+  // The 12- or 24-hour choice (Admin → Settings) reaches every client
+  // component through ClockProvider. Read per request, never at build time:
+  // the build has no database, and a baked-in format would ignore the setting.
+  await connection();
+  const clockFormat = await getClockFormat();
+
   return (
     <html lang="en-IN" className={`${instrument.variable} ${inter.variable} ${mono.variable}`}>
       {/* Extensions (ColorZilla, Grammarly, password managers) stamp attributes
           onto <body> before React hydrates, which reads as a server/client
           mismatch. This suppresses the warning for THIS element's own
           attributes only — children still report real hydration bugs. */}
-      <body suppressHydrationWarning>{children}</body>
+      <body suppressHydrationWarning>
+        <ClockProvider format={clockFormat}>{children}</ClockProvider>
+      </body>
     </html>
   );
 }

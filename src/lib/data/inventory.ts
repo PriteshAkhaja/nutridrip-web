@@ -4,6 +4,7 @@ import type { PageMeta, Paging } from "@/lib/pagination";
 import { BatchLot, ProductMaster } from "@/lib/models";
 import type { Category, Unit, UnitForm } from "@/lib/models/types";
 import type { StockStatus } from "@/components/ui/Fill";
+import { clock, dateIN, type ClockFormat } from "@/lib/time";
 
 const DAY = 86_400_000;
 const EXPIRING_SOON_DAYS = 90;
@@ -392,21 +393,14 @@ async function toLotRows(lots: LotDoc[]): Promise<LotRow[]> {
   });
 }
 
-/** Formats a date the way every date in the product is formatted. */
+/** Formats a date the way every date in the product is formatted, in India time. */
 export function formatDate(value: string | Date): string {
-  return new Date(value).toLocaleDateString("en-IN", {
-    day: "2-digit",
-    month: "short",
-    year: "numeric",
-  });
+  return dateIN(value);
 }
 
-export function formatTime(value: string | Date): string {
-  return new Date(value).toLocaleTimeString("en-IN", {
-    hour: "2-digit",
-    minute: "2-digit",
-    hour12: true,
-  });
+/** A clock time in India time, 12- or 24-hour as the super admin set it (getClockFormat). */
+export function formatTime(value: string | Date, fmt: ClockFormat): string {
+  return clock(value, fmt);
 }
 
 export function expiryPhrase(days: number): string {

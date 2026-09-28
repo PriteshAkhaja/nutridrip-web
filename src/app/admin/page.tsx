@@ -15,6 +15,7 @@ import { formatInr } from "@/lib/inventory/units";
 import { NameLink } from "@/components/ui/NameLink";
 import { formatDate, formatTime } from "@/lib/data/inventory";
 import { Arrow } from "@/components/ui/Arrow";
+import { getClockFormat } from "@/lib/settings/clock";
 
 export const metadata: Metadata = { title: "Overview" };
 export const dynamic = "force-dynamic";
@@ -22,6 +23,7 @@ export const dynamic = "force-dynamic";
 const MONTHLY_REVENUE_TARGET = 2_600_000;
 
 export default async function AdminOverviewPage() {
+  const clockFmt = await getClockFormat();
   const session = await requireRole("superadmin", "admin");
   const nav = await adminNav();
   await connectDB();
@@ -79,7 +81,7 @@ export default async function AdminOverviewPage() {
       activeHref="/admin"
       breadcrumb={["Platform", "Overview"]}
       title="Overview"
-      meta={`Updated ${formatTime(new Date())}`}
+      meta={`Updated ${formatTime(new Date(), clockFmt)}`}
       actions={<ButtonLink href="/admin/inventory/availability">Check availability</ButtonLink>}
     >
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4 mb-6">
@@ -172,7 +174,7 @@ export default async function AdminOverviewPage() {
                     </TD>
                     <TD nowrap>{b.dripName ?? "—"}</TD>
                     <TD mono nowrap>
-                      {formatDate(b.scheduledAt)} · {formatTime(b.scheduledAt)}
+                      {formatDate(b.scheduledAt)} · {formatTime(b.scheduledAt, clockFmt)}
                     </TD>
                     <TD>
                       <StatusPill status={b.status} dot />

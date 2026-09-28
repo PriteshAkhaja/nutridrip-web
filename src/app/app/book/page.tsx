@@ -12,6 +12,8 @@ import { approvalState } from "@/lib/clinical/validity";
 import { getLatePolicy } from "@/lib/billing/settings";
 import { getZones } from "@/lib/zones-store";
 import { servedZones } from "@/lib/zones";
+import { CallStep } from "./CallStep";
+import { bookableDoctors, callGate, expireStaleHolds } from "@/lib/data/calls";
 
 export const metadata: Metadata = { title: "Book a session" };
 export const dynamic = "force-dynamic";
@@ -73,9 +75,19 @@ export default async function BookPage({ searchParams }: { searchParams: Promise
     );
   }
 
+  // A held drip whose time passed without an approval is released first.
+  await expireStaleHolds(session.sub);
+
+  // Waiting for an approval: the physician's call comes first (step 1), and
+  // the drip is held from two hours after it (step 2).
+  const needsCall = !approval.canBook;
+  const gate = needsCall ? await callGate(session.sub, quiz.completedAt) : null;
+  const doctors = needsCall && gate && !gate.ok ? await bookableDoctors() : [];
+
   const [drips, user, clinics] = await Promise.all([
     listDrips(),
     User.findById(session.sub).lean<{
+      phone?: string;
       patient?: { address?: string; pincode?: string };
     } | null>(),
     User.find({ role: "clinic", status: "active" })
@@ -114,27 +126,55 @@ export default async function BookPage({ searchParams }: { searchParams: Promise
       tabs={PATIENT_TABS}
       activeHref="/app"
     >
-      <BookingFlow
-        drips={drips.map((d) => ({
-          id: d.id,
-          slug: d.slug,
-          name: d.name,
-          description: d.description,
-          priceInr: d.priceInr,
-          durationMin: d.durationMin,
-          available: availableById.get(d.id) ?? 0,
-          category: d.category,
-          keywords: [...d.headline, ...d.tags],
-        }))}
-        clinics={clinics.map((c) => ({ id: String(c._id), name: c.name, city: c.clinic?.city ?? "" }))}
-        recommendedIds={recommendedIds}
-        preferredSlug={preferred ?? null}
-        defaultAddress={user?.patient?.address ?? ""}
-        defaultPincode={user?.patient?.pincode ?? ""}
-        zones={servedZones(await getZones())}
-        pendingReview={approval.canHold}
-        latePolicy={await getLatePolicy()}
-      />
+      {needsCall && gate && (
+        <CallStep
+          doctors={doctors}
+          booked={
+            gate.ok && gate.call
+              ? {
+                  callNo: gate.call.callNo,
+                  doctorName: gate.call.doctorName,
+                  startAt: gate.call.startAt,
+                  minutes: gate.call.minutes,
+                  phone: gate.call.phone,
+                }
+              : null
+          }
+          spoken={gate.ok && !gate.call}
+          hasPhone={Boolean(user?.phone)}
+        />
+      )}
+
+      {needsCall && gate && !gate.ok ? (
+        <section className="rounded-[var(--radius-lg)] border border-dashed border-[var(--color-line-2)] p-5">
+          <span className="t-micro block">Step 2 · Your drip</span>
+          <p className="t-body text-[var(--color-ink-2)] mt-1">
+            Book the call first. Then choose your drip and a time at least two hours after the call.
+          </p>
+        </section>
+      ) : (
+        <BookingFlow
+          drips={drips.map((d) => ({
+            id: d.id,
+            slug: d.slug,
+            name: d.name,
+            description: d.description,
+            priceInr: d.priceInr,
+            durationMin: d.durationMin,
+            available: availableById.get(d.id) ?? 0,
+            category: d.category,
+            keywords: [...d.headline, ...d.tags],
+          }))}
+          clinics={clinics.map((c) => ({ id: String(c._id), name: c.name, city: c.clinic?.city ?? "" }))}
+          recommendedIds={recommendedIds}
+          preferredSlug={preferred ?? null}
+          defaultAddress={user?.patient?.address ?? ""}
+          defaultPincode={user?.patient?.pincode ?? ""}
+          zones={servedZones(await getZones())}
+          pendingReview={approval.canHold}
+          latePolicy={await getLatePolicy()}
+        />
+      )}
     </MobileShell>
   );
 }

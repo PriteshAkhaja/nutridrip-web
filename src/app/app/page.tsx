@@ -23,6 +23,11 @@ import { sessionToRate } from "@/lib/data/feedback-prompt";
 import { getLatePolicy } from "@/lib/billing/settings";
 import { LateCharges } from "@/components/ui/LateCharges";
 import { CancelSession, RescheduleSession } from "./sessions/SessionActions";
+import { CallCard } from "./CallCard";
+import { callGate, expireStaleHolds, lastCallFor } from "@/lib/data/calls";
+import { callWhen } from "@/lib/clinical/calls";
+import { getClockFormat } from "@/lib/settings/clock";
+import { shortDateClock, type ClockFormat } from "@/lib/time";
 
 export const metadata: Metadata = { title: "Home" };
 export const dynamic = "force-dynamic";
@@ -42,33 +47,27 @@ function nurseStageLabel(status: string): string {
 }
 
 /** The session's life, from booked to aftercare, as the patient sees it. */
-function timelineFor(booking: {
-  status: string;
-  createdAt?: Date;
-  approvedAt?: Date;
-  startedAt?: Date;
-  completedAt?: Date;
-  scheduledAt: Date;
-  durationMin?: number;
-  enRouteAt?: Date;
-  etaMinutes?: number;
-}): TimelineItem[] {
-  const fmt = (d?: Date) =>
-    d
-      ? d.toLocaleString("en-IN", {
-          day: "2-digit",
-          month: "short",
-          hour: "2-digit",
-          minute: "2-digit",
-          hour12: true,
-        })
-      : "—";
+function timelineFor(
+  booking: {
+    status: string;
+    createdAt?: Date;
+    approvedAt?: Date;
+    startedAt?: Date;
+    completedAt?: Date;
+    scheduledAt: Date;
+    durationMin?: number;
+    enRouteAt?: Date;
+    etaMinutes?: number;
+  },
+  clockFmt: ClockFormat
+): TimelineItem[] {
+  const fmt = (d?: Date) => (d ? shortDateClock(d, clockFmt) : "—");
 
   const stages: Array<[string, string, boolean]> = [
     ["Booked", fmt(booking.createdAt), Boolean(booking.createdAt)],
     [
       "Physician approved",
-      booking.approvedAt ? fmt(booking.approvedAt) : "Usually within two hours",
+      booking.approvedAt ? fmt(booking.approvedAt) : "After your call with the physician",
       Boolean(booking.approvedAt),
     ],
     [
@@ -102,8 +101,11 @@ function timelineFor(booking: {
 }
 
 export default async function PatientHomePage() {
+  const clockFmt = await getClockFormat();
   const session = await requireRole("patient", "superadmin");
   await connectDB();
+  // A held drip whose time passed without an approval is released first.
+  await expireStaleHolds(session.sub);
 
   const [user, quiz, upcoming, plans] = await Promise.all([
     User.findById(session.sub).lean<{ name: string; patient?: { vitalityScore?: number } } | null>(),
@@ -165,6 +167,25 @@ export default async function PatientHomePage() {
   // A finished session not yet rated, asked about while it is fresh.
   const toRate = await sessionToRate(session.sub);
 
+  // Waiting for an approval: the call with a physician is the next step.
+  const gate = quiz && !approval.canBook && approval.canHold ? await callGate(session.sub, quiz.completedAt) : null;
+  const needsCall = Boolean(gate && !gate.ok);
+  const lastCall = needsCall ? await lastCallFor(session.sub) : null;
+  const lastNote =
+    lastCall?.status === "no_answer"
+      ? `We could not reach you on ${callWhen(lastCall.startAt, clockFmt)}. Pick a new time.`
+      : lastCall?.status === "cancelled"
+        ? `Your call on ${callWhen(lastCall.startAt, clockFmt)} was cancelled. Pick a new time.`
+        : null;
+  const heldDrip = await Booking.findOne({
+    patientId: session.sub,
+    status: "awaiting_review",
+    scheduledAt: { $gte: new Date() },
+  })
+    .sort({ scheduledAt: 1 })
+    .select("bookingNo scheduledAt")
+    .lean<{ _id: unknown; bookingNo: string; scheduledAt: Date } | null>();
+
   /** What to do next when nothing is booked, by where the approval stands. */
   const next: { label: string; href: string } | null = !quiz
     ? null
@@ -173,7 +194,9 @@ export default async function PatientHomePage() {
       : approval.status === "info_needed"
         ? { label: "Answer the question", href: `/app/results/${String(quiz._id)}` }
         : approval.canHold
-          ? { label: "Hold a slot", href: "/app/book" }
+          ? needsCall
+            ? null // the call card above is the next step
+            : { label: "Hold a slot", href: "/app/book" }
           : approval.status === "expired"
             ? { label: "Retake the health quiz", href: "/quiz?retake=1" }
             : approval.status === "rejected"
@@ -189,6 +212,34 @@ export default async function PatientHomePage() {
     >
       {/* ---------------- A code the nurse is waiting on ---------------- */}
       <NurseCodes initial={codes} active={Boolean(sessionOn)} />
+
+      {/* ---------------- The call with a physician ---------------- */}
+      <CallCard
+        call={
+          gate?.ok && gate.call
+            ? {
+                id: gate.call.id,
+                callNo: gate.call.callNo,
+                doctorName: gate.call.doctorName,
+                startAt: gate.call.startAt,
+                minutes: gate.call.minutes,
+                phone: gate.call.phone,
+                overdue: gate.call.overdue,
+              }
+            : null
+        }
+        needed={needsCall}
+        lastNote={lastNote}
+        heldDrip={
+          heldDrip
+            ? {
+                id: String(heldDrip._id),
+                bookingNo: heldDrip.bookingNo,
+                scheduledAt: heldDrip.scheduledAt.toISOString(),
+              }
+            : null
+        }
+      />
 
       {/* ---------------- How was it? ---------------- */}
       {toRate && <FeedbackPrompt session={toRate} />}
@@ -275,13 +326,13 @@ export default async function PatientHomePage() {
               <span className="t-micro">Next session</span>
               <h2 className="t-h3 mt-1">{upcoming.dripName}</h2>
               <span className="t-data text-[13px] text-[var(--color-ink-2)] block mt-1">
-                {formatDate(upcoming.scheduledAt)} · {formatTime(upcoming.scheduledAt)} · {upcoming.bookingNo}
+                {formatDate(upcoming.scheduledAt)} · {formatTime(upcoming.scheduledAt, clockFmt)} · {upcoming.bookingNo}
               </span>
             </div>
             <StatusPill status={upcoming.status} dot />
           </div>
 
-          <Timeline items={timelineFor(upcoming)} />
+          <Timeline items={timelineFor(upcoming, clockFmt)} />
 
           {upcoming.status === "in_progress" && (
             <div className="mt-5">

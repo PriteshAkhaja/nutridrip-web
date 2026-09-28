@@ -14,11 +14,13 @@ import { VitalsCorrected } from "@/components/ui/VitalsCorrected";
 import type { VitalsCorrection } from "@/lib/clinical/checklist";
 import { readFeedback, type StoredFeedback } from "@/lib/clinical/feedback";
 import { LateCharges } from "@/components/ui/LateCharges";
+import { getClockFormat } from "@/lib/settings/clock";
 
 export const metadata: Metadata = { title: "Session report" };
 export const dynamic = "force-dynamic";
 
 export default async function ReportPage({ params }: { params: Promise<{ id: string }> }) {
+  const clockFmt = await getClockFormat();
   const session = await requireRole("patient", "superadmin");
   const { id } = await params;
 
@@ -94,8 +96,8 @@ export default async function ReportPage({ params }: { params: Promise<{ id: str
         <h2 className="t-h3">{booking.dripName}</h2>
         <div className="flex flex-col gap-2 mt-4">
           {[
-            ["Started", booking.startedAt ? formatTime(booking.startedAt) : "—"],
-            ["Finished", booking.completedAt ? formatTime(booking.completedAt) : "—"],
+            ["Started", booking.startedAt ? formatTime(booking.startedAt, clockFmt) : "—"],
+            ["Finished", booking.completedAt ? formatTime(booking.completedAt, clockFmt) : "—"],
             ["Session total", formatInr(booking.amount ?? 0)],
           ].map(([k, v]) => (
             <div key={k} className="flex justify-between gap-4 items-baseline">
@@ -182,7 +184,7 @@ export default async function ReportPage({ params }: { params: Promise<{ id: str
           <Timeline
             items={booking.observations.map((o) => ({
               label: o.text,
-              time: formatTime(o.at),
+              time: formatTime(o.at, clockFmt),
               state: "done" as const,
             }))}
           />
@@ -194,7 +196,7 @@ export default async function ReportPage({ params }: { params: Promise<{ id: str
           <span className="t-micro text-[var(--color-critical-text)] block mb-3">Adverse events</span>
           {booking.adverseEvents.map((e, i) => (
             <div key={i} className="flex flex-col gap-2">
-              <span className="t-data text-[13px]">{formatTime(e.at)}</span>
+              <span className="t-data text-[13px]">{formatTime(e.at, clockFmt)}</span>
               <div className="flex gap-2 flex-wrap">
                 {e.symptoms.map((s) => (
                   <Pill key={s} tone="critical">

@@ -526,3 +526,267 @@ Clicking any other entry works as before, and Ctrl-click or middle-click still o
 | 17.7 | Typecheck, lint, production build, unit tests | ✅ clean, 590 pass |
 
 The live test only opened editors and left them; nothing was saved.
+
+
+---
+
+# Summary · all client changes at a glance (24 Sept 2026)
+
+Every item was re-checked on 24 Sept on a fresh copy of the demo data (see "Checked end to end" below).
+
+## 1 · Quiz builder ✅ DONE
+- Added multiple-choice, number and follow-up questions, and drag to reorder.
+- Fixed number questions the patient couldn't answer, new questions landing at the end, and "Restore defaults" wiping edits without asking.
+
+## 2 · Screening answers reach the physician ✅ DONE
+- A red "Screening answer" box on the review page and a pill in Approvals.
+
+## 3 · The quiz is taken once ✅ DONE
+- "Take the quiz" follows the patient: book, see results, or retake. It no longer reopens a quiz already taken.
+
+## 4 · Retaking the quiz safely ✅ DONE
+- Fixed "Needs more information" counting as approved.
+- A retake replaces unread answers; a decline calls off booked sessions and tells the patient and the nurse.
+
+## 5 · Quiz categories the patient can tap ✅ DONE
+- Five category steps with ticks and "1/4" counts; finished ones reopen, later ones stay locked.
+
+## 6 · Admin permissions ✅ NO CHANGE NEEDED
+- "Admin" meant the Super admin, who already sees every role and user.
+
+## 7–8 · Quiz slider and swipe ✅ DONE
+- Questions slide like a real slider and can be swiped on a phone; "reduce motion" is respected.
+
+## 9 · Editable nurse steps and vitals corrections ✅ DONE
+- A completed step can be edited, with the reason recorded.
+- Vitals can be corrected; the history is kept, and an out-of-range correction blocks the infusion again.
+
+## 10 · The patient's code on Home, and a real consent code ✅ DONE
+- The patient sees the code to read to the nurse, and it opens the prescription.
+- Consent uses its own one-session code.
+
+## 11 · Feedback after a session ✅ DONE
+- The patient rates the nurse and the session; a rating of 2 or less goes straight to the physician.
+
+## 12 · Back buttons, and physicians see feedback ✅ DONE
+- Back goes where you came from; the physician's home shows patient feedback and low ratings.
+
+## 13 · Patient reschedule and last-moment fee ✅ DONE
+- Move or cancel from Home. Inside the window (4 h by default) it costs ₹500, editable in Billing.
+- Fees show "Unpaid" until payments are built.
+- Open question: when is a late fee collected?
+
+## 14 · Clinic pays before its order is confirmed ✅ DONE
+- The clinic records its payment; admin marks it received or not received; Confirm stays off until it is received.
+- "On credit" per clinic, payee details in Billing, refund due on cancel.
+
+## 15 · Service zones managed by the super admin ✅ DONE
+- Add, edit, pause or delete zones and pincodes; a zone a nurse covers can't be deleted.
+- Booking, nurse matching and the public site all follow the list.
+- The seed and an empty database both get the 14 defaults automatically.
+
+## 16 · Booking slots follow zone hours and free nurses ✅ DONE
+- Slots are hourly by default, with the step set per zone.
+- A time shows "taken" when no nurse is free (session plus 45 min travel).
+- The server refuses off-grid or taken times; a nurse is never given two sessions at once.
+
+## 17 · Sidebar returns to the page's main view ✅ DONE
+- Clicking the menu entry for the page you're on closes an open editor or form (quiz, drips, zones, People) and goes back to the top.
+
+## Found on the way ✅ FIXED
+- **Confirm & reserve failed** with "Transaction numbers are only allowed on a replica set". MongoDB on this PC was switched to a replica set (`rs0`), and `.env` now has `?directConnection=true`. The app now shows a clear message if a database without a replica set is used.
+- **The zones were written three times** (42 instead of 14) on the first page load. Fixed so it happens only once, with unique indexes.
+- **ND-4421 was seeded at an odd time** (e.g. 15:11). It is now seeded on the hour.
+
+## Checked end to end (24 Sept) ✅
+- Sign in, sign out and wrong password, all 6 roles: 6/6.
+- Smoke test: 249 pass. Three patient-code checks now report "skipped" in production mode instead of "failed"; the code flow passed its own check (19/19).
+- Typecheck, lint, 590 unit tests and the production build: clean.
+- Screen checks: every item except 1, 2 and 6 was re-run on a fresh copy of the demo data, which was deleted afterwards. Items 1, 2 and 6 are covered by the unit tests and the smoke test.
+
+## Still open
+- Payments (gateway), then late fees and clinic payments can be paid in the app.
+- When a late fee is collected (item 13).
+- Back buttons (item 12): two screen checks need patient feedback in the data; the demo seed has none.
+
+
+---
+
+## 18. The patient chooses a physician and a time for a call, before the drip
+
+**Asked:** "date for appointment selected by patient: select doctor, then a slot for the consultation, then a slot for the drip; admin and doctor assign the nurse."
+**Decided (25 Sept):**
+- the call is a phone call;
+- it is needed only when an approval is needed (first time, retake, or approval expired);
+- the doctor and the super admin set the doctor's hours;
+- the doctor picks the nurse on approval, with automatic assignment as the fallback;
+- all scenarios as listed in chat (#1–41), with the recommended answers.
+
+**Patient**
+- **Book a session**, while waiting for an approval, now has two steps:
+  - **Step 1, a call with a physician:** choose the doctor (their specialisation, call length, next free time), then a time from that doctor's free call times over the next 7 days. The app asks for a phone number if the account has none.
+  - **Step 2, the drip:** held from **2 hours after the call**. Earlier times show "before call".
+- **Home** shows the call ("Dr. Sarah Menon will call you on +91… at Sat 26 Sept, 10:30"), with **Move** and **Cancel**.
+  - Moving the call later than 2 hours before the held drip asks for a new drip time too, and saves both together.
+  - Cancelling keeps the held drip, which waits for a new call.
+  - With no call booked, Home shows **"Book your call with a physician"**, with the reason if the last one was missed or cancelled.
+- Already approved (within 90 days): no call. Drips are booked directly, as before.
+
+**Doctor**
+- **Availability** (new): working hours per weekday (several windows a day), call length (10 / 15 / 20 / 30 min) and days off.
+- **Calls** (new, with today's count in the menu):
+  - sections: Needs attention (overdue, or outside the hours now) · Today · Coming up · Marked in the last day;
+  - each call shows the time, the patient, their number (tap to call), the held drip, and a link to their answers;
+  - **Called** / **No answer** can be pressed from 15 minutes before the call.
+- **Approvals queue:** "Your patients" (booked a call with you) first, then "No call booked yet", then "With other physicians", each showing the call time.
+- The review deadline now starts when the call ends, not when the quiz was sent. A call booked for tomorrow no longer shows as "66h overdue".
+- **Review page:**
+  - a card shows "You call +91… at Fri 25 Sept, 17:45" and the held drip;
+  - approving a different drip than the one held offers **"Switch the held session to …"**.
+- Deciding closes the call, even if it was not marked.
+
+**Super admin / admin**
+- **Doctor calls** (new):
+  - every call, overdue first;
+  - the super admin can **Hand over** a call to another doctor (for leave), and the patient and both doctors are told;
+  - a table of every doctor's hours, with **Edit** for the super admin.
+- The ops admin sees the list, but cannot hand over or edit hours.
+- A doctor with booked calls cannot be deactivated until the calls are handed over.
+
+**Rules the server enforces**
+- No double booking: one booked call per doctor per time, and one open call per patient, enforced by the database too.
+- Calls only inside the doctor's hours, not on days off, and at least 1 hour ahead.
+- A held drip must be at least 2 hours after the call. A patient waiting for approval must book the call first.
+- Only the doctor on the call (or the super admin) marks it, and not before its time.
+- Two unanswered calls release the held drip, and the patient is told.
+- A held drip whose time passes without approval is released when a screen that shows it is opened, and the patient is told. The app has no background timer yet.
+- Approving after a held drip's time has passed releases it, and the patient picks a new time.
+- Moving a held drip keeps it at least 2 hours after the call.
+- Everything goes in the audit trail: `call.book`, `call.move`, `call.cancel`, `call.done`, `call.no_answer`, `call.handover`, `hours.update`, `booking.hold_lapsed`.
+
+**Also changed**
+- The wording that promised "usually within two hours": the approval message, the results page, the Home timeline, the FAQ ("Who reads my health quiz?"), and the Home figure "2 hr typical review time", which is now "15 min · phone call with your physician".
+- **Fixed on the way:** the time picker reloaded its times on every screen update when a page passed it a new function each time. It now reloads only when what it asks for changes.
+- **Demo seed:**
+  - Dr. Menon takes calls Mon–Sat 10:00–13:00 and 17:00–19:00 (15 min); Dr. Rao takes them Mon–Fri 09:00–12:00 and 16:00–18:00 (20 min);
+  - V. Iyer and Riya have calls with Dr. Menon on the next working day, and V. Iyer's held drip is that afternoon;
+  - A. Bhatt has no call, so the demo shows "Book your call".
+
+**Not built:** a consultation fee, video calls, and SMS or scheduled reminders. Bells are in-app only, and there is no background timer.
+
+| # | Test | Result |
+|---|---|---|
+| 18.1 | Unit tests: call times per window and length, days off, 7-day window, taken / too soon / day off, overlapping lengths, the server's refusals, drip 2 h after the call ("before call"), overdue, clashes with new hours, hours validation | ✅ 15 new, 605 pass |
+| 18.2 | Typecheck, lint, production build | ✅ clean |
+| 18.3 | Smoke test (fresh scratch data): the 7 new call checks (doctors offered, no second call, drip too close refused, not marked early, ops admin cannot hand over, a doctor cannot edit another's hours, hours shorter than a call refused) | ✅ 254 pass, 0 fail |
+| 18.4 | A. Bhatt: Home "Book your call" → Book step 1 lists both doctors with next free time → call booked (CL-5003) → step 2 unlocks → drip held 2 h+ after the call → Dr. Menon gets a bell → no sideways scroll at 390 px | ✅ |
+| 18.5 | Dr. Menon: Calls lists Iyer, Riya and Bhatt with "Mark from …"; Approvals shows "Your patients" with call times; a day off on the call day lists the calls "On your day off" without cancelling them; removing it clears the list | ✅ |
+| 18.6 | V. Iyer: Home call card; moving the call to 17:00 asks for a new drip time; both moved together (call 17:00, drip 2 h+ after) | ✅ |
+| 18.7 | Super admin: Doctor calls board, hand-over to Dr. Rao, Iyer told; Dr. Rao cannot be deactivated with a booked call | ✅ |
+| 18.8 | No answer: Riya's Home says "We could not reach you … Pick a new time"; two unanswered calls release Iyer's held drip, with the reason | ✅ |
+| 18.9 | Dr. Menon decides on Bhatt: call card on the review page; recommending another drip offers "Switch the held session to Hydrate Plus"; approved with changes, so the held session is switched and a nurse assigned; the call closed as "Decided: modified"; the patient told | ✅ |
+| 18.10 | Ops admin sees the board without hand-over or hours editing; a held drip whose time passed unapproved is released when Home opens, and the patient told | ✅ |
+| 18.11 | Approvals queue after the fix: "None breaching yet", deadlines from the call's end | ✅ |
+
+All testing ran on a separate copy of the demo data, which was deleted afterwards. Your database was not used.
+
+**To use it on your database:** run `npm run seed` for the demo doctors' hours and calls, or have each doctor set their hours on **Availability**. Until a doctor has hours, patients are not offered them, and a patient waiting for approval sees "No physician is taking calls this week".
+
+
+**18, follow-up (25 Sept): our own Time and Date pickers, not the browser's.** The doctor's hours, the days off, a zone's opening and closing times, and the clinic's "Date paid" were using the browser's built-in boxes, which ignore the theme and look different in every browser. Now:
+- **New TimePicker**, the companion to the existing DatePicker. It works the same way:
+  - the field shows **"5:00 PM"**, and the panel has **Hour · Minute · AM/PM** columns in our colours, with arrow-key control;
+  - typing works: "17:00", "5pm", "5:30 pm", "1730" and "9.15";
+  - earliest and latest limits, and a minute step (15 for doctors' hours, 30 for zones);
+  - the value is always stored 24-hour ("17:00");
+  - on phones, the phone's own time wheel under our field.
+- **DatePicker** is now used for "Add a day off" (no past days) and the clinic's "Date paid" (no future days). It gained a hidden label for screen readers, for fields with no visible label.
+- No built-in date or time boxes are left in the app.
+- On a phone, each "from–to" pair of hours stays on one line, with Remove underneath.
+
+| # | Test | Result |
+|---|---|---|
+| 18.12 | Unit tests: "5:00 PM" wording, typed times (5pm, 5:30 pm, 1730, 930, 12 am), refusing non-times (24:00, 13 pm, 10:75) | ✅ 4 new, 609 pass |
+| 18.13 | Doctor's hours: no built-in boxes on desktop; Monday reads 10:00 AM–1:00 PM; the panel shows 12 hours, minutes 00/15/30/45, AM chosen; choosing 9 then 30 gives 9:30 AM; "until" cannot go before "from"; typing "10:30 am", "1230" and "5:30pm" works; nonsense puts the last good time back | ✅ |
+| 18.14 | Saved as 24-hour: Mon 09:30–13:00, Tue 10:30–12:30 and 17:30–19:00. Overlapping hours still cannot be saved | ✅ |
+| 18.15 | Day off and "Date paid" open our calendar (future days greyed for Date paid); a zone's Closes offers minutes 00/30 | ✅ |
+| 18.16 | Phone (touch): the phone's time wheel under our field, showing "9:30 AM"; no sideways scroll at 390 px | ✅ |
+| 18.17 | Typecheck, lint, production build | ✅ clean |
+
+
+**18, follow-up (25 Sept): picker panels open where they fit.** Near the bottom of the window the calendar opened downward and was cut off (reported on Availability → Days off).
+- The Date and Time panels now open **above** the field when there isn't room below, open **below** otherwise, and shift left near the right edge. They are measured before they appear, so they never flash in the wrong place first.
+- The panel is placed against the field itself, not the whole block (label and error included).
+- **Fixed:** opening the time panel centred the chosen hour with `scrollIntoView`, which could scroll the whole page. It now scrolls only the column.
+- This applies everywhere these pickers are used: Availability, Service zones, the clinic's "Date paid", the audit filters, stock expiry, profile and treatment plans.
+
+| # | Test | Result |
+|---|---|---|
+| 18.18 | Day off at the bottom of the window: the calendar opens above the field, fully on screen, without scrolling the page | ✅ |
+| 18.19 | Saturday's last time field at the bottom: opens above; the chosen hour (7) is visible in its column; the page did not move | ✅ |
+| 18.20 | Monday's time field near the top: opens below | ✅ |
+| 18.21 | Typecheck, lint, production build, 609 unit tests | ✅ clean |
+
+
+**18, follow-up (25 Sept): the chosen time or date stays readable on hover.** Hovering the chosen hour, minute, AM/PM or day turned its background pale but left the text white, so it disappeared. This affected both pickers, and the calendar had it before this work too. The chosen option now keeps its dark fill and goes one shade darker on hover. Every other option is dark text on the pale hover.
+
+| # | Test | Result |
+|---|---|---|
+| 18.22 | Under a real mouse: the chosen hour, minute, AM and day all stay white on dark (contrast 6.4:1); another minute is dark on pale (17.6:1) | ✅ |
+
+
+**18, follow-up (25 Sept): the date picker, checked end to end.** Reported: in January, pressing "previous" showed "December" with the year still 2026. The calendar really was on December 2025, but the Year list for "Add a day off" only offered 2026 onwards, so it showed 2026. The whole month was greyed because it was in the past.
+
+Fixed, with six more problems found by checking the whole calendar:
+- **The Year list always contains the year on screen and the chosen year.** This fixes the report, and also a date of birth older than 100 years.
+- **Previous and Next are off when that month has no day that can be picked.** For example, no going back past today for a day off, and no going forward past today for "Date paid".
+- **Months with no day to pick are greyed in the Month list.** Choosing a year keeps the same month, or moves to the first month that has a day to pick.
+- **After changing month with the buttons or the lists, a day can still be reached with the Tab key.** Before, no day in the grid could be reached.
+- **Arrow keys and PageUp/PageDown stop at the first or last allowed day**, instead of wandering into greyed months.
+- **An empty field opens on today, kept inside the allowed dates**, so it never opens on a fully greyed month.
+- **Deleting the text of a field that must hold a date (like "Date paid") puts the date back**, instead of leaving it empty.
+
+| # | Test | Result |
+|---|---|---|
+| 18.23 | Unit tests: months with a day to pick, keeping a date inside the limits, the Year list (reported case, 1920, no duplicates), January back to December of the year before | ✅ 4 new, 613 pass |
+| 18.24 | "Add a day off" (from today): Previous off; Jan–Aug greyed; list starts 2026; Next goes to October and a day is reachable with Tab; picking 2027 keeps October; **January 2027 → Previous → December 2026**; arrow keys stop at today; PageUp stays in September | ✅ 11 checks |
+| 18.25 | "Date paid" (up to today): Next off; Oct–Dec greyed; **January 2026 → Previous → December 2025, the Year reading 2025**; a future date and 30-02-2026 refused; 15-08-2026 taken; emptying the box puts the date back | ✅ 8 checks |
+| 18.26 | Audit filter (no limits): 05-01-1920 taken; opens on January 1920; both buttons on; Previous → December 1919 | ✅ 4 checks |
+| 18.27 | Typecheck, lint, production build | ✅ clean |
+
+
+**18, follow-up (25 Sept): the pickers stay open while you work in them.** Reported: on this month or the next, pressing Previous closed the calendar. Previous now switches itself off at the first allowed month. When a focused button is switched off, the browser drops the focus, and the picker read that as "focus left", so it closed. Clicking an empty part of the panel, or a greyed time, closed it the same way.
+- A picker now closes only when the focus moves to something **outside** it; clicking outside still closes it.
+- A button that switches itself off hands the focus to the month list first, so the keyboard is never stranded.
+- **Escape** closes the panel from anywhere, including the month and year lists and after clicking an empty part of the panel.
+- Applies to both the date and the time picker, everywhere they are used.
+
+| # | Test | Result |
+|---|---|---|
+| 18.28 | Real mouse clicks on "Add a day off": Next to October, then Previous back to September, and **it stays open**; focus goes to the month list; clicking the switched-off Previous, the weekday row, or a greyed day: still open; Escape from the Year list closes it; a click outside closes it; tabbing out closes it | ✅ 10 checks |
+| 18.29 | Time panel: clicking a greyed option (AM) or a column heading keeps it open; Escape closes it | ✅ 4 checks |
+| 18.30 | The date picker checks from 18.24–18.26 again | ✅ 23 pass |
+
+
+**18, follow-up (25 Sept): clearing a date.** Any date that may be empty has **Clear** at the bottom left of the calendar, or you can delete the text and press Tab. "Add a day off" can now be cleared too; nothing is saved until **Add day off** is pressed. "Date paid" still cannot be cleared, because a payment needs a date; pick a different one to change it. A time is never cleared on its own; **Remove** deletes the whole window.
+
+
+## 19. Time format setting, and India time everywhere
+
+**Asked (25 Sept):** make the 12-hour clock the default, let the super admin switch the whole app to 24-hour, and use India time everywhere so a server deployed later (usually set to UTC) does not shift times.
+
+- **Admin → Settings (super admin only): Time format.** Choose **12-hour (default)**, e.g. "5:00 PM", or **24-hour**, e.g. "17:00". Both options show a preview. It changes every screen for every role: the site, the patient and nurse apps, every console, notifications, and the time pickers. The change is recorded in the audit trail. Ops admins and physicians do not see the page, and the API refuses them (403).
+- **Only how times are written changes.** Sessions, calls, doctor hours and zone hours are stored exactly as before, so switching the format never moves anything.
+- **In 24-hour mode the time picker shows hours 00–23 and has no AM/PM column.** Typing still accepts both styles: "9:30 am" becomes 09:30.
+- **India time (IST) everywhere.** Every date and time is written in India time, whatever the server or a patient's phone is set to. The server's own clock is also set to India time when it starts (`APP_TIME_ZONE`, default Asia/Kolkata). This keeps "today's sessions", "this month" and midnight on Bengaluru's day. Before, a UTC server would have shown every time 5½ hours early, and a 00:30 session would have counted as the previous day. The seed script uses India time too.
+- **Also fixed:** the doctor's Calls board showed only the weekday ("Fri") under each call. It now shows the date too ("Sat, 26 Sept").
+
+| # | Test | Result |
+|---|---|---|
+| 19.1 | Unit tests: 12- and 24-hour times, midnight and noon, stored "HH:MM" times, times inside a sentence (a booking number or a date is left alone), the India calendar day after 18:30 UTC, all run with the machine set to UTC | ✅ 8 new, 621 pass |
+| 19.2 | Live, with the server's clock forced to UTC: a session at 00:30 IST is on today's nurse route, and one at 00:30 IST tomorrow is not; the seed put the 10:00 session at 10:00 IST | ✅ |
+| 19.3 | 12-hour (default): nurse route "10:00 AM – 10:58 AM"; calls board "10:30 AM" and hours "10:00 AM–1:00 PM"; hours editor "10:00 AM"; time panel has Hour, Minute and AM/PM; patient's call "11:00 AM"; public Zones "7:00 AM – 8:00 PM" | ✅ 11 checks |
+| 19.4 | Ops admin: no Settings in the menu, the page redirects, the API returns 403; physician API 403 | ✅ 5 checks |
+| 19.5 | Super admin switches to 24-hour: saved, audit row 12h → 24h; nurse route "10:00 – 10:58"; calls "10:00–13:00"; time panel hours 00–23 with no AM/PM column; "9:30 am" typed becomes 09:30; patient "11:00"; Zones in 24-hour; switched back to 12-hour; "36h" refused (422) | ✅ 20 checks |
+| 19.6 | Settings page spacing, measured: card padding 24, 20 above the choices, 12 between them, 16 to the note, 24 to Save; at 390px the choices stack full width with no sideways scroll | ✅ |
+| 19.7 | Typecheck, lint, production build | ✅ clean |

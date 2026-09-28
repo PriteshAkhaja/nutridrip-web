@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/Button";
-import { Textarea, Select } from "@/components/ui/Field";
+import { Textarea, Select, Checkbox } from "@/components/ui/Field";
 import { Card } from "@/components/ui/Card";
 import { SelectMenu } from "@/components/ui/SelectMenu";
 import { StatusPill } from "@/components/ui/Pill";
@@ -48,8 +48,11 @@ export function ReviewDecision({
   allDrips = [],
   nurses,
   bookedSessions = [],
+  heldDrip = null,
 }: {
   quizId: string;
+  /** The drip the patient is holding for this decision. */
+  heldDrip?: { bookingNo: string; dripId: string; dripName: string } | null;
   /** Sessions already confirmed under an earlier approval; a decline calls them off. */
   bookedSessions?: Array<{ bookingNo: string; dripName: string | null; when: string }>;
   reviewStatus: string;
@@ -84,6 +87,10 @@ export function ReviewDecision({
   const [patientNote, setPatientNote] = useState("");
   const [asking, setAsking] = useState(false);
   const [infoRequest, setInfoRequest] = useState("");
+  // The patient held one drip; the physician may approve another. Offer to
+  // switch the held session, so what is booked is what was approved.
+  const [switchHeld, setSwitchHeld] = useState(true);
+  const [switchTo, setSwitchTo] = useState<string | null>(null);
 
   const toggleDrip = (id: string) =>
     setDripIds((ids) => (ids.includes(id) ? ids.filter((x) => x !== id) : [...ids, id]));
@@ -95,6 +102,8 @@ export function ReviewDecision({
   const changedDrips = [...dripIds].sort().join(",") !== suggestedIds;
 
   const decided = reviewStatus !== "pending";
+  const heldDiffers = Boolean(heldDrip && dripIds.length > 0 && !dripIds.includes(heldDrip.dripId));
+  const switchTarget = switchTo && dripIds.includes(switchTo) ? switchTo : (dripIds[0] ?? null);
 
   const submit = async (decision: Decision) => {
     setBusy(decision);
@@ -110,7 +119,12 @@ export function ReviewDecision({
           ...(decision === "rejected" ? { declineReason: reason } : {}),
           // A decline or a question dispatches nobody, and recommends nothing.
           ...(decision === "approved" || decision === "modified"
-            ? { dripIds, strength, nurseId: nurseId || undefined }
+            ? {
+                dripIds,
+                strength,
+                nurseId: nurseId || undefined,
+                ...(heldDiffers && switchHeld && switchTarget ? { switchHeldTo: switchTarget } : {}),
+              }
             : {}),
           ...(decision === "info_needed" ? { infoRequest: infoRequest.trim() } : {}),
         }),
@@ -191,6 +205,36 @@ export function ReviewDecision({
               <span className="t-small text-[var(--color-caution-text)]">
                 Nothing selected — the patient will be approved with no protocol to book.
               </span>
+            )}
+            {heldDiffers && heldDrip && (
+              <div className="rounded-[var(--radius-md)] border border-[var(--color-caution)] bg-[var(--color-caution-soft)] px-4 py-2 mt-1">
+                <span className="t-small text-[var(--color-ink-2)] block">
+                  The patient is holding {heldDrip.bookingNo} for {heldDrip.dripName}, which you are not recommending.
+                </span>
+                <Checkbox
+                  checked={switchHeld}
+                  onChange={setSwitchHeld}
+                  label={
+                    dripIds.length === 1 ? (
+                      <>
+                        Switch the held session to{" "}
+                        {allDrips.find((d) => d.id === switchTarget)?.name ?? "your recommendation"}
+                      </>
+                    ) : (
+                      <>Switch the held session to your first recommendation</>
+                    )
+                  }
+                />
+                {switchHeld && dripIds.length > 1 && (
+                  <Select label="Switch it to" value={switchTarget ?? ""} onChange={(e) => setSwitchTo(e.target.value)}>
+                    {dripIds.map((id) => (
+                      <option key={id} value={id}>
+                        {allDrips.find((d) => d.id === id)?.name ?? id}
+                      </option>
+                    ))}
+                  </Select>
+                )}
+              </div>
             )}
           </div>
         )}

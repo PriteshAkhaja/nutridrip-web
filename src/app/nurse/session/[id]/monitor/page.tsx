@@ -9,6 +9,7 @@ import { ButtonLink } from "@/components/ui/Button";
 import { ObservationLog } from "./ObservationLog";
 import { formatTime } from "@/lib/data/inventory";
 import { nurseOwns } from "@/lib/auth/ownership";
+import { getClockFormat } from "@/lib/settings/clock";
 
 export const metadata: Metadata = { title: "Infusion" };
 export const dynamic = "force-dynamic";
@@ -27,6 +28,7 @@ function elapsed(from: Date): string {
 }
 
 export default async function MonitorPage({ params }: { params: Promise<{ id: string }> }) {
+  const clockFmt = await getClockFormat();
   const session = await requireRole("nurse", "superadmin");
   const { id } = await params;
 
@@ -86,7 +88,9 @@ export default async function MonitorPage({ params }: { params: Promise<{ id: st
           {minutesLeft !== null && (
             <div className="flex flex-col">
               <span className="t-micro">Expected finish</span>
-              <span className="t-data text-[14.5px]">{formatTime(finishTime(remaining, booking.rateMlHr!))}</span>
+              <span className="t-data text-[14.5px]">
+                {formatTime(finishTime(remaining, booking.rateMlHr!), clockFmt)}
+              </span>
             </div>
           )}
         </div>
