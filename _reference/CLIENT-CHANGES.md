@@ -1131,3 +1131,13 @@ Changes:
 | 27.3 | Whole-page screenshot taken part-way down after a reload: every section and photo shown, no blank bands | ✅ |
 | 27.4 | Moving strips, floating cards and reviews still while the page loads, running afterwards; strips fade with no mask; behaviour, intro and layout suites; no console errors | ✅ 42 checks |
 | 27.5 | Typecheck, lint, Prettier, 630 unit tests, production build | ✅ clean |
+
+
+## 28. Drip filters keep your place
+
+**28 (29 Sept): changing a goal tab on Drips jumped to the top.** Reported: on the Drips page, choosing a goal tab (Energy, Immunity…) scrolled the page back up.
+- **Fixed:** the goal tabs and "Clear the search" now keep the page where it is and only re-sort the drips below, as the search box already did. Each filter still has its own address that can be shared.
+
+| # | Test | Result |
+|---|---|---|
+| 28.1 | Typecheck, lint, Prettier | ✅ clean (not browser-checked: a one-attribute change) |

@@ -78,7 +78,9 @@ export default async function CataloguePage({
       <section className="pb-4">
         <Container>
           {/* Goal filter. Links, not buttons: every filter is a URL someone
-              can share, and it works with JavaScript off. */}
+              can share, and it works with JavaScript off. scroll={false}: a
+              filter re-sorts the grid below, so the page stays where it is
+              instead of jumping back to the top like a new page would. */}
           <nav
             aria-label="Filter by goal"
             // The snap padding matches the side padding: a rail snaps its row
@@ -90,6 +92,7 @@ export default async function CataloguePage({
               <li>
                 <Link
                   href={q ? `/drips?q=${encodeURIComponent(q)}` : "/drips"}
+                  scroll={false}
                   aria-current={!goal ? "page" : undefined}
                   className={chip(!goal)}
                   style={{ font: "500 13.5px/1.2 var(--font-sans)" }}
@@ -104,6 +107,7 @@ export default async function CataloguePage({
                   <li key={g}>
                     <Link
                       href={`/drips?goal=${encodeURIComponent(g)}${q ? `&q=${encodeURIComponent(q)}` : ""}`}
+                      scroll={false}
                       aria-current={active ? "page" : undefined}
                       className={chip(active)}
                       style={{ font: "500 13.5px/1.2 var(--font-sans)" }}
@@ -131,7 +135,7 @@ export default async function CataloguePage({
             <div className="rounded-[var(--radius-xl)] border border-[var(--color-line)] bg-[var(--color-mist)] p-8 md:p-10">
               <p className="t-body-lg text-[var(--color-ink)]">{noMatchMessage(q ?? "")}</p>
               <div className="mt-5">
-                <ButtonLink href="/drips" variant="secondary">
+                <ButtonLink href="/drips" scroll={false} variant="secondary">
                   Clear the search
                 </ButtonLink>
               </div>

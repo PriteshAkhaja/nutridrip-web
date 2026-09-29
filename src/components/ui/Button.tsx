@@ -102,6 +102,8 @@ export type ButtonLinkProps = AnchorHTMLAttributes<HTMLAnchorElement> & {
   href: string;
   /** Passed to next/link. The public site turns it off for links to its dynamic pages. */
   prefetch?: LinkProps["prefetch"];
+  /** Passed to next/link: false keeps the scroll position, for a link that only filters the page it is on. */
+  scroll?: LinkProps["scroll"];
   variant?: ButtonVariant;
   size?: ButtonSize;
   block?: boolean;
@@ -111,6 +113,7 @@ export type ButtonLinkProps = AnchorHTMLAttributes<HTMLAnchorElement> & {
 export function ButtonLink({
   href,
   prefetch,
+  scroll,
   variant = "primary",
   size = "md",
   block = false,
@@ -122,6 +125,7 @@ export function ButtonLink({
     <Link
       href={href}
       prefetch={prefetch}
+      scroll={scroll}
       {...rest}
       className={`${hooks(variant, size)} ${BASE} ${SIZE[size]} ${VARIANT[variant]} no-underline hover:no-underline ${
         block ? "w-full" : ""
