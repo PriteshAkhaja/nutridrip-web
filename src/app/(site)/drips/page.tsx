@@ -1,43 +1,23 @@
 import Link from "next/link";
 import type { Metadata } from "next";
 import { listDrips } from "@/lib/data/drips";
-import { formatInr } from "@/lib/inventory/units";
 import { checkAvailability } from "@/lib/inventory/availability";
-import { Pill } from "@/components/ui/Pill";
-import { Stars, SectionHeading } from "@/components/ui/Marketing";
 import { SearchBox } from "@/components/ui/SearchBox";
 import { filterDrips, noMatchMessage } from "@/lib/data/drip-search";
 import { DRIP_CATEGORIES } from "@/lib/models/types";
+import { PageHero } from "@/components/site/PageHero";
+import { Container, delay } from "@/components/site/Layout";
+import { DripCard } from "@/components/site/DripCard";
+import { CtaPanel } from "@/components/site/CtaPanel";
+import { QuizButton } from "@/components/layout/QuizButton";
+import { ButtonLink } from "@/components/ui/Button";
+import { SITE_IMAGES } from "@/lib/site-images";
 
 export const metadata: Metadata = { title: "Drips" };
 export const dynamic = "force-dynamic";
 
 /** From the one list, so a category added there appears here without a code hunt. */
 const GOALS = DRIP_CATEGORIES;
-
-/**
- * Availability is a real number here, not a marketing badge: it comes from
- * in-date, unreserved stock through the same FEFO engine the pharmacist uses.
- */
-function availabilityPill(available: number) {
-  if (available === 0)
-    return (
-      <Pill tone="critical" dot>
-        Out of stock
-      </Pill>
-    );
-  if (available <= 3)
-    return (
-      <Pill tone="caution" dot>
-        {available} left today
-      </Pill>
-    );
-  return (
-    <Pill tone="safe" dot>
-      Available
-    </Pill>
-  );
-}
 
 export default async function CataloguePage({
   searchParams,
@@ -55,6 +35,8 @@ export default async function CataloguePage({
     q ?? ""
   );
 
+  // Availability is a real number here, not a marketing badge: it comes from
+  // in-date, unreserved stock through the same FEFO engine the pharmacist uses.
   const availability = await checkAvailability(
     drips.map((d) => ({ dripId: d.id, quantity: 1 })),
     true
@@ -64,147 +46,129 @@ export default async function CataloguePage({
   const counts = new Map<string, number>();
   for (const d of all) counts.set(d.category, (counts.get(d.category) ?? 0) + 1);
 
+  const chip = (active: boolean) =>
+    `inline-flex min-h-[40px] items-center gap-[9px] rounded-full px-4 border no-underline hover:no-underline transition-colors duration-200 ${
+      active
+        ? "border-[var(--color-ink)] bg-[var(--color-ink)] text-white"
+        : "border-[var(--color-line-2)] bg-[var(--color-surface)] text-[var(--color-ink)] hover:border-[var(--color-ink)]"
+    }`;
+
   return (
-    <div className="mx-auto max-w-[1280px] px-6 md:px-10 py-12">
-      <SectionHeading
+    <>
+      <PageHero
         eyebrow="Catalogue"
-        title={`${all.length} protocols, every dose published`}
-        sub="Each formula is a fixed recipe a physician can adjust for you. Availability is live — it counts only in-date stock that is not already promised to another session."
+        title={
+          <>
+            {all.length} protocols, <span className="tone-2">every dose published.</span>
+          </>
+        }
+        lede="Each formula is a fixed recipe a physician can adjust for you. Availability is live — it counts only in-date stock that is not already promised to another session."
+        below={
+          <SearchBox
+            basePath="/drips"
+            q={q}
+            keep={{ goal }}
+            placeholder="Search by name, goal or ingredient"
+            label="Search drips"
+            className="max-w-[460px]"
+          />
+        }
       />
 
-      <SearchBox
-        basePath="/drips"
-        q={q}
-        keep={{ goal }}
-        placeholder="Search by name, goal or ingredient"
-        label="Search drips"
-        className="max-w-[420px] mb-8"
-      />
-
-      {drips.length === 0 && <p className="t-body text-[var(--color-ink-2)] mb-8">{noMatchMessage(q ?? "")}</p>}
-
-      {/* Goal filter */}
-      <div className="flex flex-wrap gap-[10px] mb-8">
-        <Link
-          href={q ? `/drips?q=${encodeURIComponent(q)}` : "/drips"}
-          className={`inline-flex items-center gap-[9px] rounded-full px-[14px] py-[7px] border no-underline hover:no-underline ${
-            goal
-              ? "border-[var(--color-line-2)] bg-[var(--color-surface)] text-[var(--color-ink)]"
-              : "border-[var(--color-primary)] bg-[var(--color-primary)] text-white"
-          }`}
-          style={{ font: "500 13px/1.4 var(--font-sans)" }}
-        >
-          All
-          <span className="t-data text-[13px] opacity-70">{all.length}</span>
-        </Link>
-        {GOALS.map((g) => {
-          const active = goal === g;
-          return (
-            <Link
-              key={g}
-              href={`/drips?goal=${encodeURIComponent(g)}${q ? `&q=${encodeURIComponent(q)}` : ""}`}
-              className={`inline-flex items-center gap-[9px] rounded-full px-[14px] py-[7px] border no-underline hover:no-underline ${
-                active
-                  ? "border-[var(--color-primary)] bg-[var(--color-primary)] text-white"
-                  : "border-[var(--color-line-2)] bg-[var(--color-surface)] text-[var(--color-ink)]"
-              }`}
-              style={{ font: "500 13px/1.4 var(--font-sans)" }}
-            >
-              {g}
-              <span className="t-data text-[13px] opacity-70">{counts.get(g) ?? 0}</span>
-            </Link>
-          );
-        })}
-      </div>
-
-      <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-        {drips.map((d) => {
-          const available = availableByDrip.get(d.id) ?? 0;
-          return (
-            <Link
-              key={d.slug}
-              href={`/drips/${d.slug}`}
-              className="@container rounded-[var(--radius-lg)] border border-[var(--color-line)] bg-[var(--color-surface)] p-6 no-underline hover:no-underline hover:border-[var(--color-ink)] transition-colors duration-150 flex flex-col gap-4"
-            >
-              <div className="flex items-start justify-between gap-4">
-                {/* The icon sits ON the category line rather than beside the
-                    whole block. Beside it, a card with an icon indented its
-                    name and description while a card without one did not, so a
-                    grid of cards never lined up down the left edge.
-
-                    An emoji, not a colour: the palette keeps its clinical hues
-                    for genuine status, so a card earns identity without
-                    spending one. */}
-                <div className="min-w-0">
-                  <span className="t-micro flex items-center gap-[6px]">
-                    {d.icon && (
-                      <span aria-hidden="true" className="text-[15px] leading-none">
-                        {d.icon}
-                      </span>
-                    )}
-                    {d.category}
-                  </span>
-                  <h2 className="t-h3 mt-1">{d.name}</h2>
-                  <div className="mt-2">
-                    <Stars rating={5} size={12} />
-                  </div>
-                </div>
-                <div className="flex flex-col items-end gap-2 flex-none">
-                  {availabilityPill(available)}
-                  {d.isPopular && <Pill tone="primary">Most popular</Pill>}
-                </div>
-              </div>
-
-              <p className="t-body text-[var(--color-ink-2)]">{d.description}</p>
-
-              <ul className="flex flex-col gap-[6px] list-none p-0 m-0">
-                {d.headline.map((h) => (
-                  <li key={h} className="t-data text-[13px] text-[var(--color-ink-2)]">
-                    {h}
-                  </li>
-                ))}
-              </ul>
-
-              {d.tags.length > 0 && (
-                <div className="flex flex-wrap gap-[6px]">
-                  {d.tags.map((t) => (
-                    <span
-                      key={t}
-                      className="t-small rounded-full px-[10px] py-[3px] border border-[var(--color-line-2)] text-[var(--color-ink-2)]"
+      <section className="pb-4">
+        <Container>
+          {/* Goal filter. Links, not buttons: every filter is a URL someone
+              can share, and it works with JavaScript off. */}
+          <nav
+            aria-label="Filter by goal"
+            // The snap padding matches the side padding: a rail snaps its row
+            // to the snap edge, and without it the first chip sat flush
+            // against the side of a phone.
+            className="-mx-6 overflow-x-auto px-6 scroll-px-6 rail md:mx-0 md:overflow-visible md:px-0 md:scroll-px-0"
+          >
+            <ul className="flex w-max gap-2 list-none m-0 p-0 md:w-auto md:flex-wrap">
+              <li>
+                <Link
+                  href={q ? `/drips?q=${encodeURIComponent(q)}` : "/drips"}
+                  aria-current={!goal ? "page" : undefined}
+                  className={chip(!goal)}
+                  style={{ font: "500 13.5px/1.2 var(--font-sans)" }}
+                >
+                  All
+                  <span className="t-data text-[12.5px] opacity-70">{all.length}</span>
+                </Link>
+              </li>
+              {GOALS.map((g) => {
+                const active = goal === g;
+                return (
+                  <li key={g}>
+                    <Link
+                      href={`/drips?goal=${encodeURIComponent(g)}${q ? `&q=${encodeURIComponent(q)}` : ""}`}
+                      aria-current={active ? "page" : undefined}
+                      className={chip(active)}
+                      style={{ font: "500 13.5px/1.2 var(--font-sans)" }}
                     >
-                      {t}
-                    </span>
-                  ))}
-                </div>
-              )}
+                      {g}
+                      <span className="t-data text-[12.5px] opacity-70">{counts.get(g) ?? 0}</span>
+                    </Link>
+                  </li>
+                );
+              })}
+            </ul>
+          </nav>
 
-              {/* Two by two in a narrow card (a phone, or a tablet's two
-                  columns), one row once the card is 448px wide. A single row
-                  in a narrow card pushed "Ingredients" past its edge. */}
-              <div className="grid grid-cols-2 gap-x-6 gap-y-3 @md:flex @md:gap-6 pt-4 mt-auto border-t border-[var(--color-line)] [&>div]:whitespace-nowrap">
-                <div className="flex flex-col">
-                  <span className="t-micro">Price</span>
-                  <span className="t-data text-[16px] leading-[1.4]">{formatInr(d.priceInr)}</span>
-                </div>
-                <div className="flex flex-col">
-                  <span className="t-micro">Duration</span>
-                  <span className="t-data text-[16px] leading-[1.4]">{d.durationLabel}</span>
-                </div>
-                {d.volumeMl && (
-                  <div className="flex flex-col">
-                    <span className="t-micro">Volume</span>
-                    <span className="t-data text-[16px] leading-[1.4]">{d.volumeMl} ml</span>
-                  </div>
-                )}
-                <div className="flex flex-col">
-                  <span className="t-micro">Ingredients</span>
-                  <span className="t-data text-[16px] leading-[1.4]">{d.ingredientCount}</span>
-                </div>
+          <p className="t-small text-[var(--color-ink-3)] mt-6" aria-live="polite">
+            {drips.length === all.length
+              ? `Showing all ${all.length} drips`
+              : `Showing ${drips.length} of ${all.length} drips`}
+          </p>
+        </Container>
+      </section>
+
+      <section className="pb-[var(--section-y)] pt-6">
+        <Container>
+          {drips.length === 0 ? (
+            <div className="rounded-[var(--radius-xl)] border border-[var(--color-line)] bg-[var(--color-mist)] p-8 md:p-10">
+              <p className="t-body-lg text-[var(--color-ink)]">{noMatchMessage(q ?? "")}</p>
+              <div className="mt-5">
+                <ButtonLink href="/drips" variant="secondary">
+                  Clear the search
+                </ButtonLink>
               </div>
-            </Link>
-          );
-        })}
-      </div>
-    </div>
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 gap-x-6 gap-y-14 sm:grid-cols-2 lg:grid-cols-3">
+              {drips.map((d, i) => (
+                <div key={d.slug} data-reveal style={delay((i % 3) * 90)}>
+                  <DripCard
+                    drip={d}
+                    variant="catalogue"
+                    // The first photograph is the page's largest paint: fetch it first.
+                    preload={i === 0}
+                    available={availableByDrip.get(d.id) ?? 0}
+                    sizes="(min-width: 1280px) 390px, (min-width: 1024px) 31vw, (min-width: 640px) 46vw, 92vw"
+                  />
+                </div>
+              ))}
+            </div>
+          )}
+        </Container>
+      </section>
+
+      <CtaPanel
+        eyebrow="Not sure which?"
+        title="Let a physician choose with you."
+        lede="Take the health quiz. A registered physician reads it, then approves a protocol, changes the doses, or tells you what would suit you better."
+        actions={
+          <>
+            <QuizButton size="lg">Take the health quiz</QuizButton>
+            <ButtonLink href="/consult" size="lg" variant="secondary">
+              Ask a clinician
+            </ButtonLink>
+          </>
+        }
+        image={SITE_IMAGES.dripStand}
+      />
+    </>
   );
 }

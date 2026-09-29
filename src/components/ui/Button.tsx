@@ -1,5 +1,5 @@
 import type { ButtonHTMLAttributes, AnchorHTMLAttributes, ReactNode } from "react";
-import Link from "next/link";
+import Link, { type LinkProps } from "next/link";
 
 /**
  * What a button does decides how it looks.
@@ -39,6 +39,13 @@ const VARIANT: Record<ButtonVariant, string> = {
   danger:
     "border-[var(--color-critical)] bg-[var(--color-critical)] text-white hover:brightness-95 active:translate-y-px",
 };
+
+/**
+ * Hook classes, unstyled here. The public site gives its buttons their own
+ * shape and motion through them (`.site .btn…` in globals.css); everywhere
+ * else they do nothing, so the consoles keep these buttons exactly as below.
+ */
+const hooks = (variant: ButtonVariant, size: ButtonSize) => `btn btn-${variant} btn-${size}`;
 
 const BASE =
   "inline-flex items-center justify-center gap-[9px] rounded-[var(--radius-sm)] border font-semibold " +
@@ -83,7 +90,7 @@ export function Button({
       {...rest}
       disabled={disabled || loading}
       aria-busy={loading || undefined}
-      className={`${BASE} ${SIZE[size]} ${VARIANT[variant]} ${block ? "w-full" : ""} ${className}`}
+      className={`${hooks(variant, size)} ${BASE} ${SIZE[size]} ${VARIANT[variant]} ${block ? "w-full" : ""} ${className}`}
     >
       {loading && <Spinner light={light} />}
       {children}
@@ -93,6 +100,8 @@ export function Button({
 
 export type ButtonLinkProps = AnchorHTMLAttributes<HTMLAnchorElement> & {
   href: string;
+  /** Passed to next/link. The public site turns it off for links to its dynamic pages. */
+  prefetch?: LinkProps["prefetch"];
   variant?: ButtonVariant;
   size?: ButtonSize;
   block?: boolean;
@@ -101,6 +110,7 @@ export type ButtonLinkProps = AnchorHTMLAttributes<HTMLAnchorElement> & {
 
 export function ButtonLink({
   href,
+  prefetch,
   variant = "primary",
   size = "md",
   block = false,
@@ -111,8 +121,9 @@ export function ButtonLink({
   return (
     <Link
       href={href}
+      prefetch={prefetch}
       {...rest}
-      className={`${BASE} ${SIZE[size]} ${VARIANT[variant]} no-underline hover:no-underline ${
+      className={`${hooks(variant, size)} ${BASE} ${SIZE[size]} ${VARIANT[variant]} no-underline hover:no-underline ${
         block ? "w-full" : ""
       } ${className}`}
     >

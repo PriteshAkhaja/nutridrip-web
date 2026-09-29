@@ -16,6 +16,14 @@ const nextConfig: NextConfig = {
   // Private ranges only, as wildcards, so it survives the router handing out a
   // different address. Dev-only — `next start` does not consult this.
   allowedDevOrigins: ["192.168.*.*", "10.*.*.*"],
+  images: {
+    // The widths next/image cuts the public site's photographs to. The default
+    // list jumps from 1200 to 1920 and runs on to 3840, but no source here is
+    // wider than 1600 (public/images/README.md) and no layout shows a photo
+    // wider than ~640 CSS px. A 1440 step spares a 2x laptop or a 3x phone the
+    // 1920 file, and nothing asks for sizes the sources cannot fill.
+    deviceSizes: [640, 750, 828, 1080, 1200, 1440, 1920],
+  },
 };
 
 export default nextConfig;

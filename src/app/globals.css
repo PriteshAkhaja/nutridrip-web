@@ -106,12 +106,76 @@
   /* Elevation — only two. Cards never lift. */
   --shadow-pop: 0 4px 16px rgba(10, 12, 14, 0.08);
   --shadow-modal: 0 24px 64px rgba(10, 12, 14, 0.18);
+
+  /* --------------------------------------------------------------------------
+     Public site. Everything below extends the palette above rather than
+     adding to it: deep is the accent's own hue taken almost to black, for the
+     one or two dark bands a long page needs; mist is the same hue barely off
+     white. White on deep is 16:1, the lifted accent on it 11:1, and
+     --color-ink-on-dark still clears AA at 5.8:1.
+     -------------------------------------------------------------------------- */
+  --color-deep: #062530;
+  --color-deep-2: #0b3340;
+  --color-deep-line: #1d4653;
+  --color-mist: #f0f7f9;
+
+  /* Photography frames and large panels. Controls keep the small radii. */
+  --radius-xl: 24px;
+  --radius-2xl: 32px;
+
+  /* Floating layers laid over photography (the chips on a hero image). Cards
+     on the page still never lift. */
+  --shadow-float: 0 24px 48px -16px rgba(6, 37, 48, 0.3), 0 2px 8px rgba(6, 37, 48, 0.06);
 }
 
 :root {
   --ease: cubic-bezier(0.22, 0.61, 0.36, 1);
   --dur-fast: 150ms;
   --dur-panel: 240ms;
+
+  /* Site motion: one long, soft deceleration for everything that arrives. */
+  --ease-glide: cubic-bezier(0.16, 1, 0.3, 1);
+  --ease-drift: cubic-bezier(0.65, 0, 0.35, 1);
+  --dur-reveal: 560ms;
+
+  /* Site rhythm. One section padding, scaled with the viewport, so every band
+     on every page breathes the same.
+     The header is a capsule floating --capsule-gap below the top edge;
+     --site-header-h is the room it takes once stuck, which is what each
+     page's first section pads clear of and anchored sections scroll clear of. */
+  --section-y: clamp(72px, 8.5vw, 128px);
+  --capsule-h: 58px;
+  --capsule-gap: 10px;
+  --site-header-h: calc(var(--capsule-h) + var(--capsule-gap));
+}
+@media (min-width: 768px) {
+  :root {
+    --capsule-h: 62px;
+    --capsule-gap: 12px;
+  }
+}
+
+/* In-page anchors glide; route changes still jump, because the root layout
+   sets data-scroll-behavior="smooth", which Next 16 reads to switch smoothing
+   off around a navigation. Anchored sections land clear of the sticky header. */
+@layer base {
+  @media (prefers-reduced-motion: no-preference) {
+    html {
+      scroll-behavior: smooth;
+    }
+  }
+  html {
+    scroll-padding-top: calc(var(--site-header-h) + 16px);
+  }
+  /* While the intro loader covers the page, the page holds still under it,
+     so nobody scrolls somewhere they cannot see and lands there when it
+     lifts. The gutter stays reserved, so the scrollbar's return moves
+     nothing sideways. Only where the loader is actually in the page: the boot
+     script also runs in the consoles, which have none. */
+  html.intro-pending:has(.intro-gate) {
+    overflow: hidden;
+    scrollbar-gutter: stable;
+  }
 }
 
 /* --------------------------------------------------------------------------
@@ -253,6 +317,91 @@
     visibility: hidden;
   }
 }
+@keyframes ndLoaderIn {
+  from {
+    opacity: 0;
+  }
+}
+
+/* The intro loader (IntroLoader) is in the server HTML of every public page
+   but stays out of sight unless the root layout's boot script marked this
+   page load as the visitor's first of the day (html.intro-pending), before
+   first paint. So a first visit opens on the loader rather than a half-drawn
+   page, and a returning visitor, a crawler or anyone without JavaScript never
+   sees it.
+
+   It is all CSS from the first frame, so it plays the same whether the page's
+   JavaScript arrives in 200ms or in 5 seconds: the count runs to 100, the bag
+   drains and the wordmark fills over --intro-ms; when the count's animation
+   ends, the boot script swaps intro-pending for intro-leaving, which fades it
+   out, and takes that off when the fade ends. The number is a CSS counter
+   driven by an animated integer. A browser without @property shows 0% and
+   then 100% at the halfway point, and still finishes on time. */
+@property --nd-count {
+  syntax: "<integer>";
+  inherits: false;
+  initial-value: 0;
+}
+@keyframes ndIntroCount {
+  from {
+    --nd-count: 0;
+  }
+  to {
+    --nd-count: 100;
+  }
+}
+@keyframes ndIntroDrain {
+  to {
+    transform: translateY(120px);
+  }
+}
+@keyframes ndIntroLetter {
+  to {
+    clip-path: inset(0 0 0 0);
+  }
+}
+@keyframes ndIntroOut {
+  to {
+    opacity: 0;
+    visibility: hidden;
+  }
+}
+@layer components {
+  .intro-gate {
+    display: none;
+  }
+  .intro-pending .intro-gate,
+  .intro-leaving .intro-gate {
+    display: flex;
+  }
+  .intro-leaving .intro-gate {
+    pointer-events: none;
+    animation: ndIntroOut 0.3s ease-out forwards;
+  }
+  /* The curve the count follows, 1 - (1 - t)^2.2, near enough: quick to
+     start, easing into the last few percent. */
+  .intro-count {
+    display: inline-block;
+    min-width: 4ch;
+    text-align: right;
+    counter-reset: nd-count var(--nd-count);
+    animation: ndIntroCount var(--intro-ms, 800ms) cubic-bezier(0.3, 0.72, 0.62, 1) forwards;
+  }
+  .intro-count::after {
+    content: counter(nd-count) "%";
+  }
+  .intro-fluid {
+    animation: ndIntroDrain var(--intro-ms, 800ms) cubic-bezier(0.3, 0.72, 0.62, 1) forwards;
+  }
+  /* Each letter's delay and length are set inline, so the word fills in step
+     with the number. */
+  .intro-letter {
+    clip-path: inset(0 100% 0 0);
+    animation-name: ndIntroLetter;
+    animation-timing-function: linear;
+    animation-fill-mode: forwards;
+  }
+}
 @keyframes ndRise {
   from {
     opacity: 0;
@@ -351,6 +500,613 @@
   .no-native-clear::-webkit-search-cancel-button {
     -webkit-appearance: none;
     appearance: none;
+  }
+}
+
+/* ==========================================================================
+   Public site — type, motion and the few surfaces the marketing pages share.
+   The consoles do not use anything below.
+   ========================================================================== */
+@layer components {
+  /* Type. Display sizes are fluid; body sizes are not, because reading text
+     that changes size with the window reads as a bug. */
+  .t-display {
+    font: 600 clamp(2.5rem, 1.35rem + 3.9vw, 4.75rem) / 1 var(--font-display);
+    letter-spacing: -0.045em;
+    text-wrap: balance;
+    margin: 0;
+  }
+  /* Inner pages open a step below the home page. */
+  .t-display-sm {
+    font: 600 clamp(2.3rem, 1.4rem + 2.8vw, 4rem) / 1.02 var(--font-display);
+    letter-spacing: -0.042em;
+    text-wrap: balance;
+    margin: 0;
+  }
+  .t-section {
+    font: 600 clamp(2rem, 1.2rem + 2.6vw, 3.4rem) / 1.04 var(--font-display);
+    letter-spacing: -0.037em;
+    text-wrap: balance;
+    margin: 0;
+  }
+  .t-title {
+    font: 600 clamp(1.25rem, 1.05rem + 0.45vw, 1.5rem) / 1.2 var(--font-display);
+    letter-spacing: -0.025em;
+    margin: 0;
+  }
+  .t-lead {
+    font: 400 clamp(1.03rem, 0.96rem + 0.28vw, 1.19rem) / 1.6 var(--font-sans);
+    color: var(--color-ink-2);
+    text-wrap: pretty;
+    margin: 0;
+  }
+  /* The small label over a heading, with a short rule before it. */
+  .t-eyebrow {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    font: 600 12px/1.2 var(--font-sans);
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--color-primary-text);
+  }
+  .t-eyebrow::before {
+    content: "";
+    width: 18px;
+    height: 1.5px;
+    border-radius: 1px;
+    background: currentColor;
+    opacity: 0.55;
+  }
+  .on-dark .t-eyebrow {
+    color: var(--color-primary-on-dark);
+  }
+  /* The second voice in a two-tone heading. 4.9:1 on white, so large type
+     only; on the dark bands it is white at half strength (4.8:1 on deep). */
+  .tone-2 {
+    color: var(--color-ink-3);
+  }
+  .on-dark .tone-2 {
+    color: rgb(255 255 255 / 0.52);
+  }
+  .on-dark .t-lead {
+    color: rgb(255 255 255 / 0.74);
+  }
+
+  /* One section padding for every band on every page. */
+  .section-y {
+    padding-block: var(--section-y);
+  }
+
+  /* Hairline-to-accent link underline for nav rows. */
+  .link-sweep {
+    background-image: linear-gradient(currentColor, currentColor);
+    background-size: 0% 1.5px;
+    background-position: 0 100%;
+    background-repeat: no-repeat;
+    transition: background-size 300ms var(--ease-glide);
+  }
+  .link-sweep:hover,
+  .link-sweep[aria-current="page"] {
+    background-size: 100% 1.5px;
+  }
+}
+
+/* --------------------------------------------------------------------------
+   Entrances. Everything here moves only transform, which the GPU composites
+   without repainting: no clip-path, no filters, no opacity, nothing that makes
+   the browser redraw a photograph on every frame of a scroll.
+
+   The first screen (data-reveal="hero", and "settle" on the hero photograph)
+   is a CSS animation that starts at first paint, with no JavaScript in the
+   way. On a visitor's first page of the day the intro loader is up, so the
+   root layout's boot script also sets .intro-pending, which holds these at
+   their first frame until the loader starts to leave.
+
+   Once the page is running, RevealRoot sets whatever is still below the
+   screen a little low (.rv-hold) and lets each piece rise into place (.is-in)
+   just before it scrolls into view; someone flinging down the page gets
+   near-instant arrivals (.rv-fast). All of it only under .reveal-on, which
+   the boot script sets when motion is allowed.
+   -------------------------------------------------------------------------- */
+/* Nothing here is ever transparent. Every entrance is movement alone: text
+   rises a little into place, photographs settle from a slight zoom, and all
+   of it is readable the moment it is on screen, even mid-arrival. Content
+   that fades in reads as content still loading, and on a slow phone, or in a
+   screenshot, as a blank page. */
+@keyframes ndRiseIn {
+  from {
+    transform: translate3d(0, 14px, 0);
+  }
+  to {
+    transform: none;
+  }
+}
+@keyframes ndSettle {
+  from {
+    transform: scale(1.06);
+  }
+  to {
+    transform: none;
+  }
+}
+@layer components {
+  .reveal-on [data-reveal].rv-hold {
+    transform: translate3d(0, 24px, 0);
+  }
+  .reveal-on [data-reveal="image"].rv-hold {
+    transform: none;
+  }
+  /* Photography settles from a slight zoom. */
+  .reveal-on [data-reveal="image"].rv-hold img {
+    transform: scale(1.06);
+  }
+  /* The transition belongs to the arrival alone: being held happens off
+     screen and instantly, and only the entrance animates. */
+  .reveal-on [data-reveal].rv-hold.is-in {
+    transform: none;
+    transition: transform var(--dur-reveal) var(--ease-glide);
+    transition-delay: var(--reveal-delay, 0ms);
+  }
+  .reveal-on [data-reveal="image"].rv-hold.is-in img {
+    transform: none;
+    transition: transform 1s var(--ease-glide);
+    transition-delay: var(--reveal-delay, 0ms);
+  }
+  .reveal-on [data-reveal].rv-hold.is-in.rv-fast,
+  .reveal-on [data-reveal="image"].rv-hold.is-in.rv-fast img {
+    transition-duration: 220ms;
+    transition-delay: 0ms;
+  }
+
+  /* The first screen. */
+  .reveal-on [data-reveal="hero"] {
+    animation: ndRiseIn 620ms var(--ease-glide) both;
+    animation-delay: var(--reveal-delay, 0ms);
+  }
+  /* The hero photograph stays fully visible — it is the page's largest paint,
+     and hiding it would hold that back — and only settles from a slight zoom. */
+  .reveal-on [data-reveal="settle"] img {
+    animation: ndSettle 1100ms var(--ease-glide) both;
+  }
+  .intro-pending [data-reveal="hero"],
+  .intro-pending [data-reveal="settle"] img {
+    animation-play-state: paused;
+  }
+}
+
+/* A slow drift for the chips floating over photography. Each drifting chip
+   is its own GPU layer from the start (will-change), so the drift never
+   repaints it; off screen it pauses (RevealRoot sets .motion-paused), and the
+   global reduced-motion rule stills it altogether. */
+@keyframes ndFloat {
+  0%,
+  100% {
+    transform: translate3d(0, 0, 0);
+  }
+  50% {
+    transform: translate3d(0, -7px, 0);
+  }
+}
+@layer components {
+  .float-drift {
+    animation: ndFloat 7s var(--ease-drift) infinite;
+    will-change: transform;
+  }
+  .float-drift-late {
+    animation: ndFloat 8s var(--ease-drift) -3.5s infinite;
+    will-change: transform;
+  }
+  .motion-paused .float-drift,
+  .motion-paused .float-drift-late,
+  .motion-paused .marquee-track {
+    animation-play-state: paused;
+  }
+  /* Nothing endless starts until the page has finished loading (the boot
+     script adds .page-ready once the load event has passed and the browser
+     is idle). While a page loads, the only motion is the first screen's
+     entrance, so the loading work and the scrolling get the machine to
+     themselves; a slower computer felt the difference as lag. */
+  .reveal-on:not(.page-ready) .float-drift,
+  .reveal-on:not(.page-ready) .float-drift-late,
+  .reveal-on:not(.page-ready) .marquee-track,
+  .reveal-on:not(.page-ready) .rail-clock {
+    animation-play-state: paused;
+  }
+}
+
+/* --------------------------------------------------------------------------
+   Marquee — two identical tracks, the second hidden from assistive tech. It
+   pauses under the pointer and whenever it is off screen (RevealRoot sets
+   .motion-paused), and with reduced motion it stops and wraps so no item is
+   left cut off at the edge. The tracks are GPU layers, so the loop never
+   repaints them; `contain` keeps its layout and paint from reaching the page.
+
+   The edges fade under two still gradients in the ground's colour
+   (--marquee-fade), not a mask-image: a mask over moving content makes the
+   GPU draw an extra off-screen pass on every frame, which an integrated
+   graphics chip feels as a stutter while the page is still loading.
+   -------------------------------------------------------------------------- */
+@keyframes ndMarquee {
+  to {
+    transform: translate3d(-100%, 0, 0);
+  }
+}
+@layer components {
+  .marquee {
+    position: relative;
+    isolation: isolate;
+    display: flex;
+    overflow: hidden;
+    contain: layout paint;
+  }
+  .marquee::before,
+  .marquee::after {
+    content: "";
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    z-index: 1;
+    width: var(--marquee-fade-width, 7%);
+    pointer-events: none;
+  }
+  .marquee::before {
+    left: 0;
+    background: linear-gradient(90deg, var(--marquee-fade, var(--color-paper)), transparent);
+  }
+  .marquee::after {
+    right: 0;
+    background: linear-gradient(270deg, var(--marquee-fade, var(--color-paper)), transparent);
+  }
+  .marquee-track {
+    display: flex;
+    flex: none;
+    align-items: center;
+    gap: var(--marquee-gap, 48px);
+    padding-right: var(--marquee-gap, 48px);
+    min-width: 100%;
+    animation: ndMarquee var(--marquee-duration, 48s) linear infinite;
+    will-change: transform;
+  }
+  .marquee:hover .marquee-track {
+    animation-play-state: paused;
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .marquee::before,
+    .marquee::after {
+      display: none;
+    }
+    .marquee-track {
+      flex: 1;
+      flex-wrap: wrap;
+      justify-content: center;
+      row-gap: 14px;
+      padding-right: 0;
+    }
+    .marquee-track[aria-hidden="true"] {
+      display: none;
+    }
+  }
+}
+
+/* The card marquee (CardMarquee): room above and below for a card's hover
+   lift and focus ring, a softer edge fade, and a pause for a finger or a
+   keyboard as well as the pointer. With reduced motion, only the first copy
+   of each card stays, wrapped like any marquee. */
+@layer components {
+  .card-marquee {
+    padding-block: 10px;
+    --marquee-fade: var(--color-mist);
+    --marquee-fade-width: 5%;
+  }
+  .card-marquee-item {
+    flex: none;
+    width: clamp(240px, 70vw, 288px);
+  }
+  .card-marquee:focus-within .marquee-track,
+  .card-marquee:active .marquee-track {
+    animation-play-state: paused;
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .card-marquee-item[aria-hidden="true"] {
+      display: none;
+    }
+  }
+}
+
+/* --------------------------------------------------------------------------
+   Parallax, where the browser can tie an animation to scroll position, and
+   only on desktop widths, where there is room for it to read and power to
+   spare; a plain still photograph everywhere else. Moves `translate`, not
+   `transform`, so it composes with the reveal and the hover zoom instead of
+   fighting them, and runs on the compositor rather than the main thread.
+   -------------------------------------------------------------------------- */
+@keyframes ndParallax {
+  from {
+    translate: 0 -7%;
+  }
+  to {
+    translate: 0 7%;
+  }
+}
+@supports (animation-timeline: view()) {
+  @media (prefers-reduced-motion: no-preference) and (min-width: 1024px) {
+    .parallax-y {
+      animation: ndParallax linear both;
+      animation-timeline: view();
+      animation-range: cover;
+    }
+  }
+}
+
+/* --------------------------------------------------------------------------
+   The auto-advancing rail's clock (Rail): an invisible animation whose end
+   moves the row on. Held (hover, keyboard focus, the pause button) or off
+   screen, it stops where it is; reduced motion never starts it.
+   -------------------------------------------------------------------------- */
+@keyframes ndRailClock {
+  from {
+    transform: translateX(0);
+  }
+  to {
+    transform: translateX(1px);
+  }
+}
+@layer components {
+  .rail-clock {
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 1px;
+    height: 1px;
+    opacity: 0;
+    pointer-events: none;
+    animation: ndRailClock linear both;
+  }
+  .rail-auto[data-held] .rail-clock,
+  .rail-auto.motion-paused .rail-clock {
+    animation-play-state: paused;
+  }
+}
+
+/* --------------------------------------------------------------------------
+   The site header (HeaderShell). The capsule's resting shadow is a hairline;
+   the deeper one it gathers once the page moves under it is a pseudo-element
+   faded in, so scrolling past the top animates opacity, not a box-shadow.
+   The nav's hover highlight is one element slid with transform. It only
+   slides while shown, so it appears on an item rather than flying in.
+   -------------------------------------------------------------------------- */
+@keyframes ndMenuIn {
+  from {
+    opacity: 0;
+    transform: translate3d(0, -6px, 0) scale(0.985);
+  }
+}
+@layer components {
+  .site-capsule {
+    box-shadow: 0 1px 2px rgb(6 37 48 / 0.05);
+  }
+  .site-capsule::after {
+    content: "";
+    position: absolute;
+    inset: -1px;
+    border-radius: inherit;
+    box-shadow: 0 16px 36px -18px rgb(6 37 48 / 0.3);
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.35s var(--ease-glide);
+  }
+  .site-header[data-scrolled] .site-capsule::after {
+    opacity: 1;
+  }
+  .nav-glide {
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: var(--glide-w, 0px);
+    height: var(--glide-h, 0px);
+    transform: translate3d(var(--glide-x, 0px), var(--glide-y, 0px), 0);
+    border-radius: 999px;
+    background: var(--color-surface-2);
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.2s var(--ease-glide);
+  }
+  nav[data-glide] > .nav-glide {
+    opacity: 1;
+    transition:
+      opacity 0.2s var(--ease-glide),
+      transform 0.42s var(--ease-glide),
+      width 0.42s var(--ease-glide);
+  }
+  .drips-menu {
+    transform-origin: 20% 0;
+    animation: ndMenuIn 0.26s var(--ease-glide) both;
+  }
+
+  /* The footer's wordmark. Sized in container units, so the word spans the
+     content column exactly at every width; filled with a light that fades
+     towards the ground, so it reads as a signature rather than a heading. */
+  .footer-wordmark {
+    container-type: inline-size;
+  }
+  /* The negative margin sets the N's stem, not its side bearing, on the
+     column edge; the padding keeps the fill's box around the ink, since a
+     text-clipped fill stops at the box and the tight tracking lets the final
+     p's bowl and tail reach past it. */
+  .footer-wordmark > span {
+    display: block;
+    width: max-content;
+    margin-left: -0.05em;
+    padding: 0 0.08em 0.22em 0;
+    font: 600 25.6cqi/0.95 var(--font-display);
+    letter-spacing: -0.055em;
+    white-space: nowrap;
+    background: linear-gradient(180deg, rgb(255 255 255 / 0.22) 0%, rgb(255 255 255 / 0.03) 90%);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+  }
+}
+
+/* --------------------------------------------------------------------------
+   Buttons on the public site. The shared Button carries hook classes only
+   (btn, btn-<variant>, btn-<size>); these rules give the site's buttons their
+   pill shape and their motion, scoped to .site so the consoles keep the
+   squarer, quieter button their dense screens were designed around.
+
+   Unlayered on purpose, so they win over the Button's own utility classes.
+   Everything that moves is a transform on the button or a pseudo-element
+   inside it: hovering repaints nothing beyond the button.
+   - primary: a sheen crosses it, it lifts a pixel and casts its own colour;
+     the large ones end in an arrow that slides through its circle.
+   - secondary: a fill rises from the bottom (ink; light teal on dark panels).
+   - every button gives slightly when pressed.
+   -------------------------------------------------------------------------- */
+.site .btn {
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+  border-radius: 999px;
+  transition:
+    background-color 0.3s var(--ease-glide),
+    border-color 0.3s var(--ease-glide),
+    color 0.3s var(--ease-glide),
+    box-shadow 0.4s var(--ease-glide),
+    translate 0.4s var(--ease-glide),
+    scale 0.2s var(--ease-glide);
+}
+.site .btn:active:not(:disabled) {
+  scale: 0.97;
+}
+
+.site .btn-primary::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  background: linear-gradient(105deg, transparent 25%, rgb(255 255 255 / 0.3) 47%, transparent 64%);
+  translate: -110% 0;
+  transition: translate 0.85s var(--ease-glide);
+}
+.site .btn-primary.btn-lg {
+  gap: 14px;
+  padding-right: 6px;
+}
+.site .btn-primary.btn-lg::after {
+  content: "";
+  flex: none;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background-color: rgb(255 255 255 / 0.16);
+  background-image:
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20' fill='none' stroke='white' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M3 10h14M12 5l5 5-5 5'/%3E%3C/svg%3E"),
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20' fill='none' stroke='white' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M3 10h14M12 5l5 5-5 5'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-size: 16px 16px;
+  background-position:
+    center,
+    -20px 50%;
+  transition:
+    background-position 0.5s var(--ease-glide),
+    background-color 0.3s var(--ease-glide);
+}
+
+.site .btn-primary.btn-lg:disabled {
+  gap: 9px;
+  padding-right: 20px;
+}
+.site .btn-primary.btn-lg:disabled::after {
+  display: none;
+}
+
+.site .btn-secondary::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  border-radius: inherit;
+  background: var(--color-ink);
+  scale: 1 0;
+  transform-origin: 50% 100%;
+  transition: scale 0.45s var(--ease-glide);
+}
+.site .on-dark .btn-secondary::before {
+  background: var(--color-primary-soft);
+}
+
+@media (hover: hover) {
+  .site .btn-primary:hover:not(:disabled) {
+    translate: 0 -1px;
+    box-shadow: 0 14px 28px -14px color-mix(in srgb, var(--color-primary) 70%, transparent);
+  }
+  .site .btn-primary:hover:not(:disabled)::before {
+    translate: 110% 0;
+  }
+  .site .btn-primary.btn-lg:hover:not(:disabled)::after {
+    background-color: rgb(255 255 255 / 0.26);
+    background-position:
+      calc(100% + 20px) 50%,
+      center;
+  }
+  /* Once the fill has risen, the button's own ground takes its colour too
+     (the delayed step below). Otherwise the white under it shows as a hairline
+     ring through the anti-aliased edge where the clipped fill meets the border. */
+  .site .btn-secondary:hover:not(:disabled) {
+    color: #fff;
+    border-color: var(--color-ink);
+    background-color: var(--color-ink);
+    transition:
+      color 0.3s var(--ease-glide),
+      border-color 0.3s var(--ease-glide),
+      box-shadow 0.4s var(--ease-glide),
+      translate 0.4s var(--ease-glide),
+      scale 0.2s var(--ease-glide),
+      background-color 0s linear 0.42s;
+  }
+  .site .btn-secondary:hover:not(:disabled)::before {
+    scale: 1 1;
+  }
+  .site .on-dark .btn-secondary:hover:not(:disabled) {
+    color: var(--color-ink);
+    border-color: var(--color-primary-soft);
+    background-color: var(--color-primary-soft);
+  }
+}
+
+/* --------------------------------------------------------------------------
+   Accordions open with a height transition where the browser can animate to
+   `auto`; everywhere else they simply open, as <details> always has.
+   -------------------------------------------------------------------------- */
+@supports (interpolate-size: allow-keywords) {
+  .faq {
+    interpolate-size: allow-keywords;
+  }
+  .faq details::details-content {
+    block-size: 0;
+    overflow: clip;
+    transition:
+      block-size 380ms var(--ease-glide),
+      content-visibility 380ms allow-discrete;
+  }
+  .faq details[open]::details-content {
+    block-size: auto;
+  }
+}
+
+/* Horizontal rails (drip cards, goals, reviews on a phone): snap, no bar. */
+@layer components {
+  .rail {
+    scroll-snap-type: x mandatory;
+    scrollbar-width: none;
+    overscroll-behavior-x: contain;
+  }
+  .rail::-webkit-scrollbar {
+    display: none;
+  }
+  .rail > * {
+    scroll-snap-align: start;
   }
 }
 

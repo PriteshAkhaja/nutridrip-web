@@ -1,3 +1,4 @@
+import { cache } from "react";
 import { connectDB } from "@/lib/db/mongoose";
 import { Drip } from "@/lib/models";
 
@@ -130,13 +131,15 @@ export const POPULAR_ON_HOME = 4;
 
 /**
  * The public catalogue: Live and "Show on the public catalogue" ticked. Only
- * the website reads this: Home, Drips, Pricing, About, For clinics.
+ * the website reads this: the header's Drips menu, Home, Drips, Pricing,
+ * About, For clinics. Cached for one render, since the header asks on every
+ * page and most pages ask again.
  */
-export async function listDrips(): Promise<DripCard[]> {
+export const listDrips = cache(async (): Promise<DripCard[]> => {
   await connectDB();
   const drips = await Drip.find({ isActive: true, isPublic: true }).sort({ priceInr: 1 }).lean<LeanDrip[]>();
   return drips.map(toCard);
-}
+});
 
 /**
  * Every Live drip, on the website or not: what a clinic orders, a physician
@@ -164,7 +167,8 @@ export async function listBookableDrips(recommendedIds: string[]): Promise<DripC
   return drips.map(toCard);
 }
 
-export async function getDrip(slug: string): Promise<DripDetail | null> {
+/** Cached for one render: the page's metadata and the page itself both ask. */
+export const getDrip = cache(async (slug: string): Promise<DripDetail | null> => {
   await connectDB();
   // A drip kept off the website has no public page either.
   const d = await Drip.findOne({ slug, isActive: true, isPublic: true }).lean<LeanDrip | null>();
@@ -189,7 +193,7 @@ export async function getDrip(slug: string): Promise<DripDetail | null> {
       pct: Math.round((i.dose / max) * 100),
     })),
   };
-}
+});
 
 export function formatDose(dose: number, unit: string): string {
   return `${dose.toLocaleString("en-IN")} ${unit}`;

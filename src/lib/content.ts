@@ -1,3 +1,4 @@
+import { cache } from "react";
 import { connectDB } from "@/lib/db/mongoose";
 import { ContentBlock } from "@/lib/models";
 
@@ -59,8 +60,11 @@ export const CONTENT_GROUPS: Record<string, ContentKey[]> = {
 /**
  * Reads every override in one query and merges it over the defaults. A failure
  * returns the defaults rather than an empty page.
+ *
+ * Cached for one render: the site header and footer read it as well as the
+ * page, and a public page load should query once, not twice.
  */
-export async function getContent(): Promise<Record<ContentKey, string>> {
+export const getContent = cache(async (): Promise<Record<ContentKey, string>> => {
   try {
     await connectDB();
     const rows = await ContentBlock.find({}).lean<Array<{ key: string; value: string }>>();
@@ -70,4 +74,4 @@ export async function getContent(): Promise<Record<ContentKey, string>> {
     console.error("getContent() fell back to defaults:", err);
     return { ...CONTENT_DEFAULTS };
   }
-}
+});

@@ -1,13 +1,19 @@
 import type { Metadata } from "next";
-import { Card } from "@/components/ui/Card";
 import { Pill } from "@/components/ui/Pill";
-
 import { servedZones } from "@/lib/zones";
 import { stepLabel } from "@/lib/clinical/slots";
 import { getZones } from "@/lib/zones-store";
 import { QuizButton } from "@/components/layout/QuizButton";
 import { getClockFormat } from "@/lib/settings/clock";
 import { clockText } from "@/lib/time";
+import { Section } from "@/components/ui/Marketing";
+import { SITE_IMAGES } from "@/lib/site-images";
+import { PageHero } from "@/components/site/PageHero";
+import { SectionHeader, delay } from "@/components/site/Layout";
+import { CountUp } from "@/components/site/CountUp";
+import { CtaPanel } from "@/components/site/CtaPanel";
+import { IconClock, IconMapPin } from "@/components/site/Icons";
+import { ButtonLink } from "@/components/ui/Button";
 
 // The zones are edited by the super admin (Service zones), so this is read per request.
 export const dynamic = "force-dynamic";
@@ -26,77 +32,114 @@ export default async function ZonesPage() {
   const zones = servedZones(await getZones());
   const open = zones.filter((z) => z.status === "open").length;
 
+  const figures = [
+    { value: String(zones.length), label: "zones served" },
+    { value: String(open), label: "with full-day cover" },
+    { value: "45 min", label: "typical nurse travel" },
+  ];
+
   return (
-    <div className="mx-auto max-w-[1280px] px-6 md:px-10 py-12">
-      <div className="max-w-[64ch] mb-10">
-        <span className="t-micro">Coverage</span>
-        <h1 className="t-h1 mt-2 mb-4">Where a nurse can actually come.</h1>
-        <p className="t-body-lg text-[var(--color-ink-2)]" style={{ textWrap: "pretty" }}>
-          {zones.length} {zones.length === 1 ? "zone" : "zones"} across Bengaluru. Enter your pincode when you book and
-          you get a straight yes or no, not a waitlist — a zone we cannot staff reliably is marked limited here rather
-          than quietly dropped from your options.
-        </p>
-      </div>
-
-      <div className="flex gap-10 flex-wrap mb-10 pb-6 border-b border-[var(--color-line)]">
-        {[
-          [String(zones.length), "zones served"],
-          [String(open), "with full-day cover"],
-          ["45 min", "typical nurse travel"],
-        ].map(([v, l]) => (
-          <div key={l} className="flex flex-col gap-1">
-            <span className="t-data text-[26px] leading-[1.2]">{v}</span>
-            <span className="t-small text-[var(--color-ink-3)]">{l}</span>
-          </div>
-        ))}
-      </div>
-
-      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 mb-12">
-        {zones.map((z) => (
-          <Card key={z.name} padding="p-5">
-            <div className="flex items-start justify-between gap-3 mb-3">
-              <h2 className="t-h3 text-[18px]">{z.name}</h2>
-              {z.status === "open" ? (
-                <Pill tone="safe" dot>
-                  Full cover
-                </Pill>
-              ) : (
-                <Pill tone="caution" dot>
-                  Limited
-                </Pill>
-              )}
-            </div>
-            <div className="flex flex-col gap-2">
-              <div className="flex justify-between gap-3 items-baseline">
-                <span className="t-small text-[var(--color-ink-3)]">Pincodes</span>
-                <span className="t-data text-[13px]">{z.pincodes.join(", ")}</span>
+    <>
+      <PageHero
+        eyebrow="Coverage"
+        title={
+          <>
+            Where a nurse <span className="tone-2">can actually come.</span>
+          </>
+        }
+        lede={`${zones.length} ${zones.length === 1 ? "zone" : "zones"} across Bengaluru. Enter your pincode when you book and you get a straight yes or no, not a waitlist — a zone we cannot staff reliably is marked limited here rather than quietly dropped from your options.`}
+        image={SITE_IMAGES.bengaluruDusk}
+        below={
+          <dl className="grid max-w-[520px] grid-cols-3 gap-5 border-t border-[var(--color-line)] pt-7">
+            {figures.map((f) => (
+              <div key={f.label} className="flex flex-col-reverse justify-end gap-1">
+                <dt className="t-small text-[var(--color-ink-3)]">{f.label}</dt>
+                <dd className="m-0 t-data text-[clamp(22px,2.4vw,30px)] leading-[1.1] text-[var(--color-ink)]">
+                  <CountUp value={f.value} />
+                </dd>
               </div>
-              <div className="flex justify-between gap-3 items-baseline">
-                <span className="t-small text-[var(--color-ink-3)]">Hours</span>
-                <span className="t-data text-[13px]">
-                  {clockText(z.window, clockFmt)} · {stepLabel(z.slotMinutes)}
-                </span>
-              </div>
-            </div>
-          </Card>
-        ))}
-      </div>
+            ))}
+          </dl>
+        }
+      />
 
-      <Card tone="muted" padding="p-8">
-        <div className="grid grid-cols-1 gap-6 lg:grid-cols-[1.5fr_1fr] items-center">
-          <div>
-            <h2 className="t-h2 mb-3">Not on the list?</h2>
-            <p className="t-body-lg text-[var(--color-ink-2)] max-w-[54ch]" style={{ textWrap: "pretty" }}>
-              We add a zone when there are enough nurses living near it to staff it properly, not when there is enough
-              demand. Take the quiz anyway — if a physician approves you, we will tell you honestly when we expect to
-              reach you.
-            </p>
-          </div>
-          <QuizButton size="lg" block>
-            Take the health quiz
-          </QuizButton>
+      <Section labelledBy="zones-list">
+        <SectionHeader
+          id="zones-list"
+          eyebrow="The zones"
+          title={
+            <>
+              Every pincode, <span className="tone-2">and when we come.</span>
+            </>
+          }
+          action={
+            <span className="inline-flex items-center gap-4 t-small text-[var(--color-ink-2)]">
+              <Pill tone="safe" dot>
+                Full cover
+              </Pill>
+              <Pill tone="caution" dot>
+                Limited
+              </Pill>
+            </span>
+          }
+        />
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+          {zones.map((z, i) => (
+            <article
+              key={z.name}
+              className="flex flex-col rounded-[var(--radius-xl)] border border-[var(--color-line)] bg-[var(--color-surface)] p-6 transition-colors duration-200 hover:border-[var(--color-line-2)]"
+              data-reveal
+              style={delay((i % 3) * 70)}
+            >
+              <div className="flex items-start justify-between gap-3">
+                <h3 className="t-title text-[19px] min-w-0">{z.name}</h3>
+                {z.status === "open" ? (
+                  <Pill tone="safe" dot>
+                    Full cover
+                  </Pill>
+                ) : (
+                  <Pill tone="caution" dot>
+                    Limited
+                  </Pill>
+                )}
+              </div>
+              <dl className="mt-5 flex flex-col gap-3 border-t border-[var(--color-line)] pt-4">
+                <div className="flex items-start gap-3">
+                  <dt className="flex-none text-[var(--color-ink-3)] mt-[2px]">
+                    <IconMapPin size={16} />
+                    <span className="sr-only">Pincodes</span>
+                  </dt>
+                  <dd className="m-0 t-data text-[13px] text-[var(--color-ink-2)]">{z.pincodes.join(", ")}</dd>
+                </div>
+                <div className="flex items-start gap-3">
+                  <dt className="flex-none text-[var(--color-ink-3)] mt-[2px]">
+                    <IconClock size={16} />
+                    <span className="sr-only">Hours</span>
+                  </dt>
+                  <dd className="m-0 t-data text-[13px] text-[var(--color-ink-2)]">
+                    {clockText(z.window, clockFmt)} · {stepLabel(z.slotMinutes)}
+                  </dd>
+                </div>
+              </dl>
+            </article>
+          ))}
         </div>
-      </Card>
-    </div>
+      </Section>
+
+      <CtaPanel
+        eyebrow="Not on the list?"
+        title="Take the quiz anyway."
+        lede="We add a zone when there are enough nurses living near it to staff it properly, not when there is enough demand. If a physician approves you, we will tell you honestly when we expect to reach you."
+        actions={
+          <>
+            <QuizButton size="lg">Take the health quiz</QuizButton>
+            <ButtonLink href="/consult" size="lg" variant="secondary">
+              Ask about your area
+            </ButtonLink>
+          </>
+        }
+        image={SITE_IMAGES.cityStreet}
+      />
+    </>
   );
 }

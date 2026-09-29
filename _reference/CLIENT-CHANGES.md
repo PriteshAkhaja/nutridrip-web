@@ -1024,3 +1024,110 @@ Changes:
 |---|---|---|
 | 22.1 | At 390, 768, 1440: ✕ is 44 × 44 and does not make the header taller; nothing answered → Home at once; one answer → the question appears with Keep answering focused; Escape and Keep answering stay with the answer kept; Leave the quiz → Home; retake and first-time wording | ✅ 30 checks |
 | 22.2 | Typecheck, lint, Prettier, 630 unit tests, production build | ✅ clean |
+
+
+## 23. The public website, redesigned
+
+**23 (29 Sept): a modern, photographic public site.** Asked: the website worked but looked basic; make it feel premium and professional, keeping the brand colours, the content and everything that works.
+- **Every public page** has the new look: Home, Drips, each drip, How it works, Pricing, Safety, Zones, For clinics, About, FAQs, Ask a clinician and the three legal pages. Same teal, same fonts, same copy. Nothing was removed.
+- **Photography:** 24 licensed photographs (Unsplash, free for commercial use) beside our own hero photo: drips, nurses, physicians, a pharmacist, vitals at home, Bengaluru. Each of the nine drips has its own picture, and a drip added later gets its category's. Credits are in public/images/README.md; a file can be swapped for the company's own photography without code changes.
+- **Home:** a larger hero with the photo and the three promises floating on it; a slow credentials strip; How it works as a four-step scroll story with the quiz and the report drawn as screens; drip and goal cards with photographs; reviews as a carousel; a closing panel with a photograph.
+- **Drip pages:** the photograph with the actives listed on it, then the price card, formula, session, reviews and FAQs. On a phone a small booking bar appears once the price card has scrolled away.
+- **Header and footer:** the header stays at the top with a soft blur. Below 1280px the menu opens as a full-screen sheet. New footer.
+- **Motion:** sections rise in as they arrive, figures count up, cards ease on hover. All of it is off for anyone whose device asks for reduced motion.
+- **Fixed on the way:** a drip page's "Free cancellation up to 4 hrs" now reads the hours set on the Billing page. A drip with too few reviews of its own now says "What people say after a session" instead of implying the reviews are about it, and the "3 reviews for this drip" line is the site-wide rating instead. The five stars shown under every drip card were removed: they were the same for every drip, whatever the reviews said. Doses no longer break across two lines. The hero photo's description now matches the photo.
+- **Unchanged:** booking, the quiz, sign-in, the forms, live availability, the late-change rule and every figure shown.
+
+| # | Test | Result |
+|---|---|---|
+| 23.1 | 12 public pages at 390, 768, 1024, 1440 and 1920 (Home also at 2560): no sideways scroll, nothing outside its card, every photograph loads | ✅ |
+| 23.2 | Sections reveal as they scroll in and none stays hidden; figures count up; carousel arrows move the reviews; an FAQ opens; the header takes its hairline after scrolling; a drip card eases and turns its arrow on hover | ✅ |
+| 23.3 | Phone menu: opens full screen, focus moves into it, Escape closes it and returns focus, tapping a link goes there and closes it | ✅ |
+| 23.4 | Drip page booking bar at 390 and 768: hidden at the top, shown past the price card (also after jumping to the formula), hidden at the closing panel and again back at the top | ✅ |
+| 23.5 | Reduced motion: nothing hidden, figures shown as they are, the strip still | ✅ |
+| 23.6 | Header with the longest labels (a long patient name and "Answer your physician") at 1024, 1280 and 1440: fits, no sideways scroll | ✅ |
+| 23.7 | Typecheck, lint, Prettier, 630 unit tests, production build | ✅ clean |
+
+
+## 24. The public website, faster
+
+**24 (29 Sept): pages open faster and scroll smoothly.** Reported: because of the images and animations, pages took a long time to load and scrolling felt laggy. Asked: fix it without removing the images or the animations.
+- **Nothing was removed.** Every photograph and every animation is still there. They are now built so that none of them makes anyone wait, and none of them costs frames while scrolling.
+- **The first screen appears at once.** The headline, the text and the photograph start their entrance the moment the page is drawn, instead of waiting for the page's scripts and then for the loader.
+- **Opening loader:** still once per visit, now 0.8 s instead of 1.5 s, and on screen from the very first moment. Before, the page showed half-drawn and then the loader covered it.
+- **Drip pages:** the loader used to play after every drip click for about a second, even when the page was already there. It now appears only if a drip page is genuinely slow to arrive, and leaves the moment it does. On a normal connection it does not appear.
+- **Smooth scrolling:** the frosted-glass blur behind the header, the floating cards, the labels on drip photos and the phone booking bar was being redrawn on every frame of a scroll. These are now solid white, which looks the same on our white pages. Photographs fade in instead of opening with a clipping effect. The credentials strip and the floating cards pause while they are off screen. The slow photo drift (parallax) runs on computers only.
+- **Lighter images:** our own hero photograph was a 2 MB file; the site now uses a 184 KB copy of the same picture. Photographs are stored no larger than any page shows them, so each size a screen asks for is prepared faster, and high-resolution laptops and phones get a smaller file than before.
+- **Fewer database reads:** a page reads the site's editable text once instead of twice, and a drip page fetches its data in two steps instead of three.
+- **Fixed on the way:** the figures under the Home, Zones and For clinics headlines now line up along the top, whatever their labels wrap to.
+
+| # | Test | Result |
+|---|---|---|
+| 24.1 | Time until the headline is readable, first visit, development build, before → after: Home 4.6 s → 2.8 s on a computer and 5.2 s → 4.4 s on a slow phone; a drip page 7.2 s → 4.7 s and 4.8 s → 4.4 s. Production build: 1.5 s on a computer and 2.5 s on a slow phone for a returning visitor | ✅ |
+| 24.2 | Scrolling Home on a slowed-down phone: graphics work while scrolling 70 → 7 ms, longest graphics stall 17 → 1 ms; production build scrolls at 60 frames a second with no dropped frames | ✅ |
+| 24.3 | Opening loader: on screen from the first frame of a first visit and gone within about a second (production); never shown to a returning visitor, a search engine or anyone without JavaScript; reduced motion gets the short version | ✅ |
+| 24.4 | Drip click: a page that arrives quickly (143 ms, production) shows no loader; a slow one (1.9 s, development) shows it until the page arrives, then it leaves | ✅ |
+| 24.5 | 12 public pages at 390, 768, 1024, 1440 and 1920: no sideways scroll, checked by eye | ✅ |
+| 24.6 | Header hairline after scrolling; strip and floating cards pause off screen and resume; everything on screen arrives while reading down the page; phone booking bar, also after a jump; figures count up only when nobody has seen them yet; no console errors | ✅ 20 checks |
+| 24.7 | Typecheck, lint, Prettier, 630 unit tests, production build | ✅ clean |
+
+
+## 25. Smoother loading, a new header and footer, livelier buttons
+
+**25 (29 Sept): the website, second pass.** Reported: scrolling while a page was still loading looked laggy; the header and footer looked the same as before (and the big word at the bottom of the footer looked cut off); buttons and their hover effects were plain; reviews should move by themselves and stop on hover; the "4.9" figure on Home sat lower than the other two; the drip filter chips on a phone had no left margin; the black hover fill left a white edge; and the big moving text band was not wanted. Asked for more auto-moving rows where they suit, such as Most booked, and better photos only where they are clearly better.
+- **Loading and scrolling:** nothing is hidden while a page loads any more. Sections still rise in, but just before they reach the screen, and almost at once when someone scrolls fast, so no blank space trails the scroll. Photos show a lighter placeholder while they load.
+- **Opening animation:** shows on a visitor's first page of the day, not on every new tab or reload. The page holds still while it plays.
+- **Header:** a floating white bar with rounded ends. A soft highlight follows the pointer across the menu, and the current page sits in a teal pill. **Drips** opens a menu: the goals, with how many drips each has, and the most booked drips with photo, price and time. It opens on hover, or with the arrow beside it for keyboard and touch. Large screens show a Bengaluru label, and a signed-in visitor sees their initial. On a small phone, a signed-in patient's long button labels stay on one line.
+- **Footer:** a "Now serving" strip of the zones, moving slowly. The large NutriDrip word is now whole and as wide as the page, with the legal line underneath, so it no longer looks cut off.
+- **Buttons (website only):** rounded. Main buttons get a sheen, lift slightly and slide an arrow on hover. The others fill with colour from the bottom, now edge to edge. Every button gives slightly when pressed. The staff apps keep their buttons as they were.
+- **Reviews:** move on by themselves every 5.5 seconds and stop while the pointer is over them or a keyboard is in them. There is a pause button. They never move for anyone whose device asks for reduced motion.
+- **Most booked (Home):** now a slow, endless row of the drip cards that stops under the pointer or a finger. The large moving text band was removed.
+- **Photos:** the Zones page opens on Bengaluru at dusk from above, with the metro line running through the neighbourhoods (Unsplash, Priyansh Patidar). A new Energy photo was tried and the original kept, by preference. The For clinics photo stayed, as no free photo was clearly better.
+- **Fixed:** the drip filter chips on a phone line up with the page again. The Home figures line up along the top (a build made before item 24 still showed "4.9" lower). Reviewers' names on phone review cards are no longer cut short. The review row on a computer no longer shows a sliver of the previous card. On Drips, the first photo loads first.
+
+| # | Test | Result |
+|---|---|---|
+| 25.1 | Reload a page and scroll at once (production build, slowed-down phone and computer): time with something still invisible on screen, before → after: Home 0.9 s → 0 on a computer and 0.5 s → 0 on a phone; a drip page 2.2 s → 0.2 s and 1.3 s → 0; worst hidden area a full screen → a 165 px strip | ✅ |
+| 25.2 | Header with the longest labels (a long first name and "Answer your physician") at 360, 390, 768, 1024, 1280, 1440 and 1536: nothing overlaps or spills out, no sideways scroll | ✅ |
+| 25.3 | Drips menu: opens on hover and with Enter, Tab moves into it, Escape closes it and returns focus, it closes when focus leaves, after choosing a goal, and stays closed after Back | ✅ |
+| 25.4 | Reviews: move on their own, hold under the pointer, resume after; Most booked row moves, holds under the pointer, each drip reachable and read once; reduced motion: nothing moves, each card shown once | ✅ |
+| 25.5 | Opening animation: page held still under it, marked as seen when it starts, not replayed on reload or in a new tab the same day, shown again the next day; pages without it are never held | ✅ 8 checks |
+| 25.6 | Drip chips at 360, 390 and 430 start at the page margin and still scroll sideways; hovered black button solid to the edge | ✅ |
+| 25.7 | 12 public pages at 390, 768, 1024, 1440 and 1920: no sideways scroll, checked by eye; behaviour suite; no console errors | ✅ 21 checks |
+| 25.8 | Typecheck, lint, Prettier, 630 unit tests, production build | ✅ clean |
+
+
+## 26. The opening animation plays on every device
+
+**26 (29 Sept): the opening animation froze at 0%.** Reported: opened by the computer's network address (http://192.168.1.7:3000, as a phone or another computer would), the opening animation showed "Preparing 0%" and did not move.
+- **Cause:** the count only started once the page's code had downloaded and started. On a slower device or connection that took longer than the 3-second safety limit, so the animation was taken away before it ever moved. The same happened on a device set to reduce motion.
+- **Now:** the count, the bag emptying and the name filling all run from the very first moment the page appears, and finish on time however slowly the rest of the page loads. It still shows once a day, holds the page still while it plays, and is never replayed by a reload.
+- **Reduced motion:** a device set to reduce motion skips the opening animation and shows the page straight away.
+
+| # | Test | Result |
+|---|---|---|
+| 26.1 | Opened at http://192.168.1.7:3000 and at localhost: counts 0 to 100, fades, page appears (development and production builds) | ✅ |
+| 26.2 | With all of the page's code blocked (the slowest possible device): still counts 0 to 100, fades, page appears and scrolls; marked as seen | ✅ |
+| 26.3 | Held still while it plays, not replayed on reload or in a new tab the same day, shown again the next day, never on pages without it | ✅ 8 checks |
+| 26.4 | Reduced motion: no opening animation, the page from the first frame | ✅ |
+| 26.5 | Behaviour suite, typecheck, lint, Prettier, 630 unit tests, production build | ✅ clean |
+
+
+## 27. No lag while a page loads on a computer
+
+**27 (29 Sept): scrolling lagged until the page had fully loaded.** Reported: on a computer, in the production build too, a page felt laggy and "still loading" after a reload, with sections still filling in while scrolling; screenshots of the whole page showed large empty bands.
+- **Cause, found on this office computer's own graphics chip (Intel HD 530):** the fading edges of the moving strips made the graphics chip draw an extra layer on nearly every frame. The moving strips and floating cards ran while the page was still loading, competing with it. Sections also stayed invisible until they faded in, which looked like missing content and showed as blank bands in whole-page screenshots.
+- **Now:**
+  - **No fading:** nothing on the page ever fades in from invisible. Sections still rise gently into place and photos still settle from a slight zoom, but everything is readable the moment it is on screen.
+  - **Moving strips:** they fade at their edges in a way that costs the graphics chip nothing extra. They, the floating cards and the reviews' autoplay wait until the page has finished loading.
+  - **Photos:** once a page has loaded, a computer fetches its remaining photos quietly in the background, so scrolled-to photos are already sharp. Phones still load them as they come near.
+  - **Fewer requests:** the links in the header, menu, footer and cards no longer ask the server for pages in advance that it could not prepare anyway (96 requests per home-page visit → 61).
+- **Unchanged:** every animation, every photo and every page.
+
+| # | Test | Result |
+|---|---|---|
+| 27.1 | Production build on this computer's graphics chip, reload and scroll straight away at 100% and 150% display scaling: graphics work 1.6 s → 0.8–0.9 s, main thread 2.9 s → 2.0 s; after loading, no frame over 34 ms (worst 21–24 ms); at 150% not one slow frame even while loading | ✅ |
+| 27.2 | While scrolling during and after load: time with anything invisible on screen 0.55 s → 0; time with a photo on screen still loading → 0 | ✅ |
+| 27.3 | Whole-page screenshot taken part-way down after a reload: every section and photo shown, no blank bands | ✅ |
+| 27.4 | Moving strips, floating cards and reviews still while the page loads, running afterwards; strips fade with no mask; behaviour, intro and layout suites; no console errors | ✅ 42 checks |
+| 27.5 | Typecheck, lint, Prettier, 630 unit tests, production build | ✅ clean |

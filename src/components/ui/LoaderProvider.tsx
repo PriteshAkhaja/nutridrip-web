@@ -1,97 +1,68 @@
 "use client";
 
-import { useCallback, useEffect, useRef, useState, useSyncExternalStore } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { usePathname } from "next/navigation";
-import { DripLoader } from "./DripLoader";
+import { IntroLoader, RouteLoader } from "./DripLoader";
 
-const FIRST_VISIT_KEY = "nd_seen_intro";
-
-/** Long enough to cover the fetch, short enough to sit through four times. */
-const ROUTE_LOADER_MS = 520;
-const INTRO_LOADER_MS = 1500;
-
-/*
- * "Has this browser session seen the intro" is an external fact, so it is read
- * through a tiny store rather than copied into state inside an effect. The
- * server snapshot says "seen", so the HTML never carries a loader and search
- * engines and anyone without JavaScript get the page itself, and the content
- * is painted before the overlay arrives. That ordering is deliberate — an
- * overlay a frame late beats markup that hides the page from a crawler — and it
- * is why the intro is kept short and shown once per browser session.
- */
-let seenInMemory = false;
-const listeners = new Set<() => void>();
-
-function readSeen(): boolean {
-  if (seenInMemory) return true;
-  try {
-    return sessionStorage.getItem(FIRST_VISIT_KEY) === "1";
-  } catch {
-    // Private mode or blocked storage — show it, it is only 1.5 seconds.
-    return false;
-  }
-}
-
-function markSeen() {
-  seenInMemory = true;
-  try {
-    sessionStorage.setItem(FIRST_VISIT_KEY, "1");
-  } catch {
-    // The in-memory flag covers this tab until it is closed.
-  }
-  listeners.forEach((l) => l());
-}
-
-function subscribe(cb: () => void) {
-  listeners.add(cb);
-  return () => {
-    listeners.delete(cb);
-  };
-}
-
-const serverSnapshot = () => true;
+/** A drip page, which is where the route loader may cover the wait. */
+const DRIP_PAGE = /^\/drips\/[^/]+\/?$/;
 
 /**
- * Two different loads, two different lengths.
+ * Two loaders, and neither one adds a wait of its own.
  *
- * The full sequence runs once per browser session, on the first page anyone
- * lands on. After that, moving to a drip gets a short one — long enough to
- * cover the fetch, short enough that nobody who is comparing four drips has to
- * sit through it four times.
+ * The intro runs on a visitor's first page of the day — a reload, a new tab
+ * or the next page do not repeat it. It needs nothing from here: it is in the
+ * server HTML, plays in CSS from first paint, and the root layout's boot
+ * script starts and ends it (so it plays in full even while this code is
+ * still downloading). This only takes its markup away once it has ended, or
+ * straight away when there is none to play.
+ *
+ * After that, a click through to a drip page can bring up the route loader,
+ * but only while that page is genuinely still loading.
  */
 export function LoaderProvider({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
-  const seen = useSyncExternalStore(subscribe, readSeen, serverSnapshot);
-  const [routeLoad, setRouteLoad] = useState(false);
-  const previous = useRef(pathname);
-  const stopRouteLoad = useCallback(() => setRouteLoad(false), []);
+  const [introDone, setIntroDone] = useState(false);
+  // A click through to a drip: the page it left from (the trip is over once
+  // the address has moved on) and a number, so each trip gets a fresh loader.
+  const [trip, setTrip] = useState<{ from: string; id: number } | null>(null);
 
-  // A drip page is the one route worth covering, because it is the page people
-  // arrive at from an ad and the one whose stock figure is computed live.
+  const finishTrip = useCallback(() => setTrip(null), []);
+
   useEffect(() => {
-    if (pathname === previous.current) return;
-    previous.current = pathname;
-    const toProduct = pathname.startsWith("/drips/") && pathname !== "/drips";
-    if (!toProduct || !seen) return;
+    const root = document.documentElement;
+    const done = () => setIntroDone(true);
+    if (!root.classList.contains("intro-pending") && !root.classList.contains("intro-leaving")) {
+      const frame = requestAnimationFrame(done);
+      return () => cancelAnimationFrame(frame);
+    }
+    window.addEventListener("nd:intro-end", done, { once: true });
+    return () => window.removeEventListener("nd:intro-end", done);
+  }, []);
 
-    // Deferred a tick so the state change happens in a callback, not the effect body.
-    const show = window.setTimeout(() => setRouteLoad(true), 0);
-    // The loader dismisses itself through onDone once its fade has finished
-    // (ROUTE_LOADER_MS, then a 420ms fade). This is only the safety net for a
-    // loader whose animation frames never ran — a backgrounded tab, say — so it
-    // must sit *after* the fade, or it would cut the loader off mid-dissolve.
-    const failsafe = window.setTimeout(() => setRouteLoad(false), ROUTE_LOADER_MS + 1200);
-    return () => {
-      window.clearTimeout(show);
-      window.clearTimeout(failsafe);
+  useEffect(() => {
+    const onClick = (e: MouseEvent) => {
+      // A new tab, a download or a modified click is not a trip from here.
+      if (e.button !== 0 || e.metaKey || e.ctrlKey || e.shiftKey || e.altKey) return;
+      const link = e.target instanceof Element ? e.target.closest("a[href]") : null;
+      if (!(link instanceof HTMLAnchorElement)) return;
+      if ((link.target && link.target !== "_self") || link.hasAttribute("download")) return;
+      if (link.origin !== window.location.origin || !DRIP_PAGE.test(link.pathname)) return;
+      if (link.pathname === window.location.pathname) return;
+      const from = window.location.pathname;
+      setTrip((t) => ({ from, id: (t?.id ?? 0) + 1 }));
     };
-  }, [pathname, seen]);
+    document.addEventListener("click", onClick);
+    return () => document.removeEventListener("click", onClick);
+  }, []);
 
   return (
     <>
+      {/* Ahead of the page in the markup, so the first paint that can show
+          anything already includes it. */}
+      {!introDone && <IntroLoader />}
+      {trip && <RouteLoader key={trip.id} arrived={pathname !== trip.from} onDone={finishTrip} />}
       {children}
-      {!seen && <DripLoader durationMs={INTRO_LOADER_MS} label="Preparing" onDone={markSeen} />}
-      {routeLoad && <DripLoader durationMs={ROUTE_LOADER_MS} label="Drawing up" onDone={stopRouteLoad} />}
     </>
   );
 }

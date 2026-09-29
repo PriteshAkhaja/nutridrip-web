@@ -36,8 +36,10 @@ export function FillBar({
   return (
     <div>
       <div className="flex items-baseline justify-between gap-4 mb-[7px]">
-        <span className="t-body text-[var(--color-ink-2)]">{label}</span>
-        <span className="t-data text-[14.5px] leading-[1.55]">{value}</span>
+        <span className="t-body text-[var(--color-ink-2)] min-w-0">{label}</span>
+        {/* A dose never breaks across lines: "500 / ml" in a narrow row read
+            as two figures. The label wraps instead. */}
+        <span className="t-data text-[14.5px] leading-[1.55] whitespace-nowrap flex-none">{value}</span>
       </div>
       <div
         className="relative rounded-full overflow-hidden"

@@ -1,8 +1,10 @@
+import Link from "next/link";
 import { notFound } from "next/navigation";
 import type { Metadata } from "next";
-import { Card } from "@/components/ui/Card";
 import { getLatePolicy } from "@/lib/billing/settings";
 import { LATE_POLICY_TOKEN, fillLatePolicy } from "@/lib/billing/late-policy";
+import { PageHero } from "@/components/site/PageHero";
+import { Container, delay } from "@/components/site/Layout";
 
 /**
  * Drawn on each visit, like the rest of the site. It was built once, at build
@@ -129,35 +131,102 @@ export default async function LegalPage({ params }: { params: Promise<{ doc: str
   const entry = DOCS[doc as DocKey];
   if (!entry) notFound();
 
+  const slug = (heading: string) =>
+    heading
+      .toLowerCase()
+      .replace(/[^a-z0-9]+/g, "-")
+      .replace(/(^-|-$)/g, "");
+  const tabs: Array<[DocKey, string]> = [
+    ["terms", "Terms"],
+    ["privacy", "Privacy"],
+    ["grievance", "Grievance officer"],
+  ];
+
   return (
-    <div className="mx-auto max-w-[1280px] px-6 md:px-10 py-12">
-      <div className="max-w-[68ch]">
-        <span className="t-micro">Legal</span>
-        <h1 className="t-h1 mt-2 mb-4">{entry.title}</h1>
-        <p className="t-body-lg text-[var(--color-ink-2)] mb-10" style={{ textWrap: "pretty" }}>
-          {entry.lede}
-        </p>
+    <>
+      <PageHero
+        eyebrow="Legal"
+        title={entry.title}
+        lede={entry.lede}
+        below={
+          <nav aria-label="Legal documents">
+            <ul className="flex flex-wrap gap-2 list-none m-0 p-0">
+              {tabs.map(([key, label]) => {
+                const active = key === doc;
+                return (
+                  <li key={key}>
+                    <Link
+                      href={"/legal/" + key}
+                      aria-current={active ? "page" : undefined}
+                      className={
+                        "inline-flex min-h-[40px] items-center rounded-full border px-4 text-[13.5px] font-medium no-underline hover:no-underline transition-colors duration-200 " +
+                        (active
+                          ? "border-[var(--color-ink)] bg-[var(--color-ink)] text-white"
+                          : "border-[var(--color-line-2)] bg-[var(--color-surface)] text-[var(--color-ink)] hover:border-[var(--color-ink)]")
+                      }
+                    >
+                      {label}
+                    </Link>
+                  </li>
+                );
+              })}
+            </ul>
+          </nav>
+        }
+      />
 
-        <div className="flex flex-col gap-4">
-          {entry.sections.map((s) => (
-            <Card key={s.heading} padding="p-6">
-              <h2 className="t-h3 mb-3">{s.heading}</h2>
-              <div className="flex flex-col gap-3">
-                {s.body.map((p, i) => (
-                  <p key={i} className="t-body text-[var(--color-ink-2)]" style={{ textWrap: "pretty" }}>
-                    {fillLatePolicy(p, latePolicy)}
-                  </p>
-                ))}
-              </div>
-            </Card>
-          ))}
-        </div>
+      <section className="pb-[var(--section-y)]">
+        <Container className="grid grid-cols-1 items-start gap-10 lg:grid-cols-[220px_minmax(0,1fr)] lg:gap-16">
+          {/* The contents, held beside the text on a wide screen. */}
+          <nav aria-label="On this page" className="hidden lg:block lg:sticky lg:top-[calc(var(--site-header-h)+32px)]">
+            <span className="t-micro">On this page</span>
+            <ol className="list-none m-0 p-0 mt-4 flex flex-col border-l border-[var(--color-line)]">
+              {entry.sections.map((s) => (
+                <li key={s.heading}>
+                  <a
+                    href={"#" + slug(s.heading)}
+                    className="-ml-px block border-l border-transparent py-2 pl-4 t-small text-[var(--color-ink-2)] no-underline hover:no-underline hover:border-[var(--color-ink)] hover:text-[var(--color-ink)]"
+                  >
+                    {s.heading}
+                  </a>
+                </li>
+              ))}
+            </ol>
+          </nav>
 
-        <p className="t-small text-[var(--color-ink-3)] mt-8">
-          Last reviewed 1 September 2026. NutriDrip Health Pvt. Ltd., clinical establishment registration{" "}
-          <span className="t-data text-[13px]">KA/CEA/2024/11872</span>.
-        </p>
-      </div>
-    </div>
+          <article className="max-w-[74ch] flex flex-col gap-4">
+            {entry.sections.map((s, i) => (
+              <section
+                key={s.heading}
+                id={slug(s.heading)}
+                aria-labelledby={slug(s.heading) + "-title"}
+                className="scroll-mt-28 rounded-[var(--radius-xl)] border border-[var(--color-line)] bg-[var(--color-surface)] p-7 md:p-9"
+                data-reveal
+                style={delay(Math.min(i, 3) * 70)}
+              >
+                <span className="t-data text-[12.5px] text-[var(--color-primary-text)]">
+                  {String(i + 1).padStart(2, "0")}
+                </span>
+                <h2 id={slug(s.heading) + "-title"} className="t-title mt-2">
+                  {s.heading}
+                </h2>
+                <div className="flex flex-col gap-3 mt-4">
+                  {s.body.map((p, j) => (
+                    <p key={j} className="t-body-lg text-[var(--color-ink-2)]" style={{ textWrap: "pretty" }}>
+                      {fillLatePolicy(p, latePolicy)}
+                    </p>
+                  ))}
+                </div>
+              </section>
+            ))}
+
+            <p className="t-small text-[var(--color-ink-3)] mt-6">
+              Last reviewed 1 September 2026. NutriDrip Health Pvt. Ltd., clinical establishment registration{" "}
+              <span className="t-data text-[13px]">KA/CEA/2024/11872</span>.
+            </p>
+          </article>
+        </Container>
+      </section>
+    </>
   );
 }

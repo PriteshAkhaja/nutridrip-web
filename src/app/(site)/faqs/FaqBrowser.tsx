@@ -24,16 +24,16 @@ export function FaqBrowser({ categories }: { categories: FaqCategory[] }) {
   const searching = query.trim().length > 0;
 
   const chip = (on: boolean) =>
-    `t-small rounded-full px-[14px] py-[8px] border min-h-[44px] sm:min-h-[36px] cursor-pointer transition-colors ${
+    `t-small font-medium rounded-full px-4 border min-h-[44px] sm:min-h-[40px] cursor-pointer transition-colors ${
       on
         ? "border-[var(--color-ink)] bg-[var(--color-ink)] text-white"
-        : "border-[var(--color-line-2)] bg-[var(--color-surface)] text-[var(--color-ink)] hover:border-[var(--color-ink-3)]"
+        : "border-[var(--color-line-2)] bg-[var(--color-surface)] text-[var(--color-ink)] hover:border-[var(--color-ink)]"
     }`;
 
   return (
-    <div className="flex flex-col gap-8">
-      <div className="flex flex-col gap-4">
-        <div className="max-w-[520px]">
+    <div className="flex flex-col gap-12">
+      <div className="flex flex-col gap-5 rounded-[var(--radius-xl)] border border-[var(--color-line)] bg-[var(--color-mist)] p-6 md:p-8">
+        <div className="max-w-[560px]">
           <Input
             label="Search the questions"
             type="search"
@@ -85,14 +85,24 @@ export function FaqBrowser({ categories }: { categories: FaqCategory[] }) {
           </Button>
         </Card>
       ) : (
-        <div className="flex flex-col gap-10">
+        <div className="flex flex-col gap-14">
           {shown.map((c) => (
-            <section key={c.id} aria-labelledby={`faq-${c.id}`}>
-              <div className="mb-4">
-                <h2 id={`faq-${c.id}`} className="t-h2">
+            <section
+              key={c.id}
+              aria-labelledby={`faq-${c.id}`}
+              className="grid grid-cols-1 items-start gap-6 lg:grid-cols-[minmax(0,0.75fr)_minmax(0,1.25fr)] lg:gap-14"
+            >
+              <div className="lg:sticky lg:top-[calc(var(--site-header-h)+32px)]">
+                <h2
+                  id={`faq-${c.id}`}
+                  style={{ font: "600 clamp(24px, 2.2vw, 30px)/1.15 var(--font-display)", letterSpacing: "-0.03em" }}
+                >
                   {c.label}
                 </h2>
-                <p className="t-body text-[var(--color-ink-2)] mt-1">{c.blurb}</p>
+                <p className="t-body text-[var(--color-ink-2)] mt-2 max-w-[40ch]">{c.blurb}</p>
+                <span className="t-data text-[12.5px] text-[var(--color-ink-3)] mt-3 inline-block">
+                  {c.items.length} {c.items.length === 1 ? "answer" : "answers"}
+                </span>
               </div>
               <FaqList items={c.items} open={searching ? "all" : "first"} />
             </section>

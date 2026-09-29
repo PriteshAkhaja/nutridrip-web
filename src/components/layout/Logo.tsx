@@ -30,12 +30,29 @@ export function LogoMark({ size = 24 }: { size?: number }) {
   );
 }
 
-export function Logo({ size = 24, href = "/" }: { size?: number; href?: string }) {
+export function Logo({
+  size = 24,
+  href = "/",
+  tone = "ink",
+  wordmarkClassName = "",
+}: {
+  size?: number;
+  href?: string;
+  /** `light` for the wordmark on a dark ground (the site footer). */
+  tone?: "ink" | "light";
+  /** Classes for the word beside the mark, e.g. to drop it where room is short. The link keeps its name. */
+  wordmarkClassName?: string;
+}) {
   return (
-    <Link href={href} className="flex items-center gap-[10px] no-underline hover:no-underline">
+    <Link
+      href={href}
+      prefetch={false}
+      className="flex items-center gap-[10px] no-underline hover:no-underline"
+      aria-label="NutriDrip home"
+    >
       <LogoMark size={size} />
       <span
-        className="text-[var(--color-ink)]"
+        className={`${tone === "light" ? "text-white" : "text-[var(--color-ink)]"} ${wordmarkClassName}`}
         style={{ font: `600 ${Math.round(size * 0.67)}px/1 var(--font-display)`, letterSpacing: "-0.01em" }}
       >
         NutriDrip
