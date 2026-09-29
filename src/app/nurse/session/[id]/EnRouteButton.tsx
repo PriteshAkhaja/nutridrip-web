@@ -55,7 +55,9 @@ export function EnRouteButton({
 
   return (
     <div className="mb-5">
-      <Button block loading={busy} onClick={go}>
+      {/* A button's width in a single wide column; the full width of the
+          side column once the checklist sits beside it. */}
+      <Button block loading={busy} onClick={go} className="@2xl:w-auto @2xl:min-w-[240px] @4xl:w-full">
         On my way
       </Button>
       <p className="t-small text-[var(--color-ink-3)] mt-2">

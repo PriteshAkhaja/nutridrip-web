@@ -113,13 +113,18 @@ export function AdverseForm({ bookingId }: { bookingId: string }) {
 
   if (done) {
     return (
-      <div className="rounded-[var(--radius-lg)] border border-[var(--color-safe)] bg-[var(--color-safe-soft)] p-6 flex flex-col gap-3">
+      <div className="max-w-[640px] rounded-[var(--radius-lg)] border border-[var(--color-safe)] bg-[var(--color-safe-soft)] p-6 flex flex-col gap-3">
         <span className="t-h3">Reported and escalated</span>
         <p className="t-body text-[var(--color-ink-2)]">
           The reviewing physician has it. Stay with the patient until they respond, and add observations as things
           change.
         </p>
-        <Button variant="secondary" block onClick={() => router.push(`/nurse/session/${bookingId}`)}>
+        <Button
+          variant="secondary"
+          block
+          className="@2xl:w-auto @2xl:min-w-[240px] @2xl:self-start"
+          onClick={() => router.push(`/nurse/session/${bookingId}`)}
+        >
           Back to the session
         </Button>
       </div>
@@ -127,52 +132,68 @@ export function AdverseForm({ bookingId }: { bookingId: string }) {
   }
 
   return (
-    <div className="flex flex-col gap-6">
-      <div>
-        <span className="t-micro block mb-3">What is the patient reporting</span>
-        <Chips options={SYMPTOMS} selected={symptoms} onToggle={toggle(symptoms, setSymptoms)} />
-      </div>
+    // One column on a phone. Once there is room: what they report, then what
+    // you did, on the left; how bad it is, then anything else, on the right.
+    // The wrappers vanish on a phone (contents), so order-N keeps the reading order.
+    <div className="flex flex-col gap-6 @4xl:grid @4xl:grid-cols-2 @4xl:gap-x-8 @4xl:items-start">
+      <div className="contents @4xl:flex @4xl:flex-col @4xl:gap-6 @4xl:min-w-0">
+        <div className="min-w-0 order-1 @4xl:order-none">
+          <span className="t-micro block mb-3">What is the patient reporting</span>
+          <Chips options={SYMPTOMS} selected={symptoms} onToggle={toggle(symptoms, setSymptoms)} />
+        </div>
 
-      <div>
-        <span className="t-micro block mb-3">Severity</span>
-        <div className="flex flex-col gap-2">
-          {SEVERITIES.map((s) => {
-            const on = severity === s.key;
-            return (
-              <button
-                key={s.key}
-                type="button"
-                aria-pressed={on}
-                onClick={() => setSeverity(s.key)}
-                className="text-left min-h-[44px] px-4 py-3 rounded-[var(--radius-sm)] border cursor-pointer flex flex-col gap-1"
-                style={{
-                  borderColor: on ? "var(--color-critical)" : "var(--color-line-2)",
-                  background: on ? "var(--color-critical-soft)" : "var(--color-surface)",
-                }}
-              >
-                <span className="t-body font-semibold">{s.label}</span>
-                <span className="t-small text-[var(--color-ink-2)]">{s.note}</span>
-              </button>
-            );
-          })}
+        <div className="min-w-0 order-3 @4xl:order-none">
+          <span className="t-micro block mb-3">What you did</span>
+          <Chips options={ACTIONS} selected={actions} onToggle={toggle(actions, setActions)} />
+        </div>
+      </div>
+      <div className="contents @4xl:flex @4xl:flex-col @4xl:gap-6 @4xl:min-w-0">
+        <div className="min-w-0 order-2 @4xl:order-none">
+          <span className="t-micro block mb-3">Severity</span>
+          <div className="grid gap-2 @2xl:grid-cols-3 @4xl:grid-cols-1">
+            {SEVERITIES.map((s) => {
+              const on = severity === s.key;
+              return (
+                <button
+                  key={s.key}
+                  type="button"
+                  aria-pressed={on}
+                  onClick={() => setSeverity(s.key)}
+                  className="text-left min-h-[44px] px-4 py-3 rounded-[var(--radius-sm)] border cursor-pointer flex flex-col gap-1"
+                  style={{
+                    borderColor: on ? "var(--color-critical)" : "var(--color-line-2)",
+                    background: on ? "var(--color-critical-soft)" : "var(--color-surface)",
+                  }}
+                >
+                  <span className="t-body font-semibold">{s.label}</span>
+                  <span className="t-small text-[var(--color-ink-2)]">{s.note}</span>
+                </button>
+              );
+            })}
+          </div>
+        </div>
+
+        <div className="min-w-0 order-4 @4xl:order-none">
+          <Textarea
+            label="Anything else"
+            placeholder="Timing, how quickly it settled, what the patient said."
+            value={notes}
+            onChange={(e) => setNotes(e.target.value)}
+          />
         </div>
       </div>
 
-      <div>
-        <span className="t-micro block mb-3">What you did</span>
-        <Chips options={ACTIONS} selected={actions} onToggle={toggle(actions, setActions)} />
-      </div>
+      {error && <span className="t-small text-[var(--color-caution-text)] order-5 @4xl:col-span-2">{error}</span>}
 
-      <Textarea
-        label="Anything else"
-        placeholder="Timing, how quickly it settled, what the patient said."
-        value={notes}
-        onChange={(e) => setNotes(e.target.value)}
-      />
-
-      {error && <span className="t-small text-[var(--color-caution-text)]">{error}</span>}
-
-      <Button variant="danger" size="lg" block loading={busy} disabled={symptoms.length === 0} onClick={submit}>
+      <Button
+        variant="danger"
+        size="lg"
+        block
+        className="order-6 @2xl:w-auto @2xl:min-w-[280px] @2xl:self-start @4xl:col-span-2 @4xl:justify-self-start"
+        loading={busy}
+        disabled={symptoms.length === 0}
+        onClick={submit}
+      >
         File and escalate
       </Button>
     </div>

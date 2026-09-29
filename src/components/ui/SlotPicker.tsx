@@ -134,7 +134,7 @@ export function SlotPicker({
   const radius = compact ? "rounded-[var(--radius-sm)]" : "rounded-[var(--radius-md)]";
 
   return (
-    <div className="flex flex-col gap-5" style={{ opacity: loading ? 0.55 : 1 }} aria-busy={loading}>
+    <div className="@container flex flex-col gap-5" style={{ opacity: loading ? 0.55 : 1 }} aria-busy={loading}>
       <div>
         <span className="t-micro block mb-3">Which day</span>
         {days.length === 0 ? (
@@ -144,7 +144,19 @@ export function SlotPicker({
               : "No times this week."}
           </p>
         ) : (
-          <div className="grid grid-cols-5 gap-2">
+          // Up to five days share one row. A longer run (a week of calls)
+          // takes one row when the picker is 448px wide or more, and on a
+          // phone wraps into rows of four (four and three), so each day keeps
+          // a readable width instead of seven narrow slivers -- or five and
+          // two, as it once did.
+          <div
+            className={`grid gap-2 ${days.length > 5 ? "grid-cols-4 @md:[grid-template-columns:repeat(var(--days),minmax(0,1fr))]" : ""}`}
+            style={
+              days.length > 5
+                ? ({ "--days": days.length } as React.CSSProperties)
+                : { gridTemplateColumns: `repeat(${days.length}, minmax(0, 1fr))` }
+            }
+          >
             {days.map((d) => {
               const selected = d.date === chosenDay?.date;
               return (
@@ -171,7 +183,7 @@ export function SlotPicker({
                   >
                     {d.day}
                   </span>
-                  <span className="text-[11px] leading-[1.3] text-[var(--color-ink-3)]">
+                  <span className="text-[11px] leading-[1.25] text-center text-[var(--color-ink-3)] px-[2px]">
                     {d.note ? d.note.toLowerCase() : d.freeCount === 0 ? "full" : `${d.freeCount} free`}
                   </span>
                 </button>

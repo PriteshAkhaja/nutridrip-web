@@ -112,6 +112,7 @@ export default async function ConsentPage({ params }: { params: Promise<{ id: st
       title="Consent"
       subtitle={<span className="t-data text-[13px]">{patient?.name}</span>}
       back={{ href: `/nurse/session/${id}`, label: "Back to checklist" }}
+      width="wide"
     >
       <p className="t-body text-[var(--color-ink-2)] mb-5">
         {given
@@ -129,55 +130,62 @@ export default async function ConsentPage({ params }: { params: Promise<{ id: st
         </div>
       ) : null}
 
-      <div className="rounded-[var(--radius-lg)] border border-[var(--color-line)] bg-[var(--color-surface)] p-5 mb-4">
-        <span className="t-micro">
-          {given ? "They consented to" : "You are consenting to"} · {booking.dripName ?? "this drip"}
-        </span>
-        {components.length > 0 ? (
-          <div className="flex flex-col gap-2 mt-3">
-            {components.map((c, n) => (
-              <div key={n} className="flex justify-between gap-4 items-baseline">
-                <span className="t-body text-[var(--color-ink-2)]">{c.name}</span>
-                <span className="t-data text-[14.5px]">
-                  {c.dose?.toLocaleString("en-IN") ?? "—"} {c.unit}
-                </span>
+      {/* Once the page has room: what the drip is and its risks on the left;
+          what they agree to and the capture beside it, kept in view. */}
+      <div className="@4xl:grid @4xl:grid-cols-2 @4xl:gap-6 @4xl:items-start">
+        <div className="min-w-0">
+          <div className="rounded-[var(--radius-lg)] border border-[var(--color-line)] bg-[var(--color-surface)] p-5 mb-4">
+            <span className="t-micro">
+              {given ? "They consented to" : "You are consenting to"} · {booking.dripName ?? "this drip"}
+            </span>
+            {components.length > 0 ? (
+              <div className="flex flex-col gap-2 mt-3">
+                {components.map((c, n) => (
+                  <div key={n} className="flex justify-between gap-4 items-baseline">
+                    <span className="t-body text-[var(--color-ink-2)]">{c.name}</span>
+                    <span className="t-data text-[14.5px]">
+                      {c.dose?.toLocaleString("en-IN") ?? "—"} {c.unit}
+                    </span>
+                  </div>
+                ))}
               </div>
-            ))}
+            ) : (
+              <p className="t-small text-[var(--color-ink-3)] mt-3">No doses were recorded against this consent.</p>
+            )}
           </div>
-        ) : (
-          <p className="t-small text-[var(--color-ink-3)] mt-3">No doses were recorded against this consent.</p>
-        )}
-      </div>
 
-      <div className="rounded-[var(--radius-lg)] border border-[var(--color-line)] bg-[var(--color-surface)] p-5 mb-4">
-        <span className="t-micro">Known risks</span>
-        {risks.length > 0 ? (
-          <ul className="flex flex-col gap-3 mt-3 list-none p-0 m-0">
-            {risks.map((r) => (
-              <li key={r} className="flex gap-[10px] items-start">
-                <span className="w-[6px] h-[6px] rounded-full bg-[var(--color-ink-3)] flex-none mt-[7px]" />
-                <span className="t-body text-[var(--color-ink-2)]">{r}</span>
-              </li>
-            ))}
-          </ul>
-        ) : (
-          <p className="t-small text-[var(--color-ink-3)] mt-3">
-            The risk wording for version {booking.consent?.version ?? "—"} is not on this record.
-          </p>
-        )}
-      </div>
+          <div className="rounded-[var(--radius-lg)] border border-[var(--color-line)] bg-[var(--color-surface)] p-5 mb-4">
+            <span className="t-micro">Known risks</span>
+            {risks.length > 0 ? (
+              <ul className="flex flex-col gap-3 mt-3 list-none p-0 m-0">
+                {risks.map((r) => (
+                  <li key={r} className="flex gap-[10px] items-start">
+                    <span className="w-[6px] h-[6px] rounded-full bg-[var(--color-ink-3)] flex-none mt-[7px]" />
+                    <span className="t-body text-[var(--color-ink-2)]">{r}</span>
+                  </li>
+                ))}
+              </ul>
+            ) : (
+              <p className="t-small text-[var(--color-ink-3)] mt-3">
+                The risk wording for version {booking.consent?.version ?? "—"} is not on this record.
+              </p>
+            )}
+          </div>
+        </div>
+        <div className="min-w-0 @4xl:sticky @4xl:top-24">
+          <div className="rounded-[var(--radius-lg)] border border-[var(--color-line)] bg-[var(--color-surface-2)] p-5 mb-5">
+            <span className="t-micro">What they agree to</span>
+            <p className="t-body text-[var(--color-ink-2)] mt-2">
+              {affirmation ?? "The wording for this version is not on this record."}
+            </p>
+          </div>
 
-      <div className="rounded-[var(--radius-lg)] border border-[var(--color-line)] bg-[var(--color-surface-2)] p-5 mb-5">
-        <span className="t-micro">What they agree to</span>
-        <p className="t-body text-[var(--color-ink-2)] mt-2">
-          {affirmation ?? "The wording for this version is not on this record."}
-        </p>
+          <ConsentCapture
+            bookingId={id}
+            alreadyGivenAt={booking.consent?.givenAt ? booking.consent.givenAt.toISOString() : null}
+          />
+        </div>
       </div>
-
-      <ConsentCapture
-        bookingId={id}
-        alreadyGivenAt={booking.consent?.givenAt ? booking.consent.givenAt.toISOString() : null}
-      />
     </MobileShell>
   );
 }

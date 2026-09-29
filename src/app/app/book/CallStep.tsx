@@ -103,94 +103,105 @@ export function CallStep({
         </p>
       </div>
 
-      {doctors.length === 0 ? (
-        <p className="t-body text-[var(--color-ink-2)]">
-          No physician is taking calls this week. Contact us from the Contact page and we will arrange one.
-        </p>
-      ) : (
-        <div role="radiogroup" aria-label="Physician" className="flex flex-col gap-2">
-          {doctors.map((d) => {
-            const on = d.id === doctorId;
-            return (
-              <button
-                key={d.id}
-                type="button"
-                role="radio"
-                aria-checked={on}
-                onClick={() => {
-                  setDoctorId(d.id);
-                  setAt(null);
-                }}
-                className="text-left p-4 rounded-[var(--radius-md)] border flex items-start justify-between gap-3 cursor-pointer"
-                style={{
-                  borderColor: on ? "var(--color-primary)" : "var(--color-line)",
-                  background: on ? "var(--color-primary-soft)" : "var(--color-surface)",
-                }}
-              >
-                <span className="min-w-0 flex flex-col gap-[3px]">
-                  <span style={{ font: `${on ? 600 : 500} 16px/1.4 var(--font-sans)` }}>{d.name}</span>
-                  {d.specialization && <span className="t-small text-[var(--color-ink-2)]">{d.specialization}</span>}
-                  <span className="t-small text-[var(--color-ink-3)]">{d.callMinutes}-min phone call</span>
-                </span>
-                <span
-                  className="t-small text-right flex-none"
-                  style={{ color: d.nextFree ? "var(--color-safe-text)" : "var(--color-ink-3)" }}
+      {/* From a tablet up the physicians sit beside their times, which keeps
+          the time grid at the width it was designed for. */}
+      <div className="flex flex-col gap-5 @3xl:grid @3xl:grid-cols-2 @3xl:gap-6 @3xl:items-start">
+        {doctors.length === 0 ? (
+          <p className="t-body text-[var(--color-ink-2)]">
+            No physician is taking calls this week. Contact us from the Contact page and we will arrange one.
+          </p>
+        ) : (
+          <div role="radiogroup" aria-label="Physician" className="flex flex-col gap-2">
+            {doctors.map((d) => {
+              const on = d.id === doctorId;
+              return (
+                <button
+                  key={d.id}
+                  type="button"
+                  role="radio"
+                  aria-checked={on}
+                  onClick={() => {
+                    setDoctorId(d.id);
+                    setAt(null);
+                  }}
+                  className="text-left p-4 rounded-[var(--radius-md)] border flex items-start justify-between gap-3 cursor-pointer"
+                  style={{
+                    borderColor: on ? "var(--color-primary)" : "var(--color-line)",
+                    background: on ? "var(--color-primary-soft)" : "var(--color-surface)",
+                  }}
                 >
-                  {d.nextFree ? (
-                    <>
-                      Next free
-                      <br />
-                      <span className="t-data text-[13px]">{slotLabel(d.nextFree, clockFmt)}</span>
-                    </>
-                  ) : (
-                    "Full this week"
-                  )}
-                </span>
-              </button>
-            );
-          })}
+                  <span className="min-w-0 flex flex-col gap-[3px]">
+                    <span style={{ font: `${on ? 600 : 500} 16px/1.4 var(--font-sans)` }}>{d.name}</span>
+                    {d.specialization && <span className="t-small text-[var(--color-ink-2)]">{d.specialization}</span>}
+                    <span className="t-small text-[var(--color-ink-3)]">{d.callMinutes}-min phone call</span>
+                  </span>
+                  <span
+                    className="t-small text-right flex-none"
+                    style={{ color: d.nextFree ? "var(--color-safe-text)" : "var(--color-ink-3)" }}
+                  >
+                    {d.nextFree ? (
+                      <>
+                        Next free
+                        <br />
+                        <span className="t-data text-[13px]">{slotLabel(d.nextFree, clockFmt)}</span>
+                      </>
+                    ) : (
+                      "Full this week"
+                    )}
+                  </span>
+                </button>
+              );
+            })}
+          </div>
+        )}
+
+        <div className="flex flex-col gap-5 min-w-0">
+          {!doctor && doctors.length > 0 && (
+            <p className="hidden @3xl:block t-body text-[var(--color-ink-3)] @3xl:pt-4">
+              Choose a physician to see the times they are free.
+            </p>
+          )}
+          {doctor && (
+            <SlotPicker
+              endpoint="/api/calls/slots"
+              who="physician"
+              query={new URLSearchParams({ doctorId: doctor.id }).toString()}
+              value={at}
+              onChange={setAt}
+              reloadKey={reload}
+            />
+          )}
+
+          {!hasPhone && doctor && (
+            <Input
+              label="Your phone number"
+              hint="the physician calls this"
+              inputMode="tel"
+              placeholder="98450 00000"
+              value={phone}
+              onChange={(e) => setPhone(e.target.value)}
+            />
+          )}
+
+          {error && (
+            <div className="rounded-[var(--radius-md)] border border-[var(--color-critical)] bg-[var(--color-critical-soft)] px-4 py-3">
+              <span className="t-body text-[var(--color-ink-2)]">{error}</span>
+            </div>
+          )}
+
+          {doctor && (
+            <Button
+              size="lg"
+              block
+              loading={busy}
+              disabled={!at || (!hasPhone && phone.replace(/\D/g, "").length < 10)}
+              onClick={book}
+            >
+              {at ? `Book the call · ${slotLabel(at, clockFmt)}` : "Pick a time for the call"}
+            </Button>
+          )}
         </div>
-      )}
-
-      {doctor && (
-        <SlotPicker
-          endpoint="/api/calls/slots"
-          who="physician"
-          query={new URLSearchParams({ doctorId: doctor.id }).toString()}
-          value={at}
-          onChange={setAt}
-          reloadKey={reload}
-        />
-      )}
-
-      {!hasPhone && doctor && (
-        <Input
-          label="Your phone number"
-          hint="the physician calls this"
-          inputMode="tel"
-          placeholder="98450 00000"
-          value={phone}
-          onChange={(e) => setPhone(e.target.value)}
-        />
-      )}
-
-      {error && (
-        <div className="rounded-[var(--radius-md)] border border-[var(--color-critical)] bg-[var(--color-critical-soft)] px-4 py-3">
-          <span className="t-body text-[var(--color-ink-2)]">{error}</span>
-        </div>
-      )}
-
-      {doctor && (
-        <Button
-          size="lg"
-          block
-          loading={busy}
-          disabled={!at || (!hasPhone && phone.replace(/\D/g, "").length < 10)}
-          onClick={book}
-        >
-          {at ? `Book the call · ${slotLabel(at, clockFmt)}` : "Pick a time for the call"}
-        </Button>
-      )}
+      </div>
     </section>
   );
 }

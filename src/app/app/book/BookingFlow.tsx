@@ -171,172 +171,180 @@ export function BookingFlow({
     (atClinic ? Boolean(clinicId) : Boolean(address) && pincode.length === 6 && served);
 
   return (
-    <div className="flex flex-col gap-6">
-      {pendingReview && (
-        <div className="rounded-[var(--radius-md)] border border-[var(--color-info)] bg-[var(--color-info-soft)] px-4 py-3">
-          <span className="t-body text-[var(--color-ink-2)]">
-            You can hold a slot now. It is confirmed only once a physician approves your quiz, and nothing is charged
-            before then.
-          </span>
+    // On a desktop, two panes: what and where on the left; when, the summary
+    // and the button on the right. A phone or a tablet keeps one column.
+    <div className="flex flex-col gap-6 @4xl:grid @4xl:grid-cols-2 @4xl:gap-8 @4xl:items-start">
+      <div className="flex flex-col gap-6 min-w-0">
+        {pendingReview && (
+          <div className="rounded-[var(--radius-md)] border border-[var(--color-info)] bg-[var(--color-info-soft)] px-4 py-3">
+            <span className="t-body text-[var(--color-ink-2)]">
+              You can hold a slot now. It is confirmed only once a physician approves your quiz, and nothing is charged
+              before then.
+            </span>
+          </div>
+        )}
+
+        {/* ---------------- Drip ---------------- */}
+        <div>
+          <div className="flex items-baseline justify-between gap-3 mb-3">
+            <span className="t-micro">Which drip{recommendedIds.length > 1 ? " · one per session" : ""}</span>
+            <span className="t-small text-[var(--color-ink-3)]">
+              {visible.length} of {drips.length}
+            </span>
+          </div>
+
+          <input
+            type="search"
+            value={query}
+            onChange={(e) => setQuery(e.target.value)}
+            placeholder="Search by name or what is in it"
+            aria-label="Search drips"
+            className="min-h-[44px] w-full px-[14px] mb-3 rounded-[var(--radius-sm)] border border-[var(--color-line-2)] bg-[var(--color-surface)] text-[14.5px] placeholder:text-[var(--color-ink-3)] focus:border-[var(--color-primary)]"
+          />
+
+          <div className="grid gap-2 [grid-template-columns:repeat(auto-fit,minmax(min(100%,240px),1fr))]">
+            {visible.length === 0 && (
+              <p className="t-small text-[var(--color-ink-3)] py-3 col-span-full">{noMatchMessage(query)}</p>
+            )}
+            {visible.map((d) => {
+              const selected = d.id === dripId;
+              const out = d.available === 0;
+              return (
+                <button
+                  key={d.id}
+                  type="button"
+                  disabled={out}
+                  aria-pressed={selected}
+                  onClick={() => setDripId(d.id)}
+                  className="text-left p-4 rounded-[var(--radius-md)] border flex flex-col gap-2 disabled:cursor-not-allowed"
+                  style={{
+                    borderColor: selected ? "var(--color-primary)" : "var(--color-line)",
+                    background: selected
+                      ? "var(--color-primary-soft)"
+                      : out
+                        ? "var(--color-surface-2)"
+                        : "var(--color-surface)",
+                    opacity: out ? 0.6 : 1,
+                    cursor: out ? "not-allowed" : "pointer",
+                  }}
+                >
+                  <div className="flex items-start justify-between gap-3">
+                    <span className="min-w-0 flex flex-col gap-[3px]">
+                      <span style={{ font: `${selected ? 600 : 500} 16px/1.4 var(--font-sans)` }}>{d.name}</span>
+                      {recommended.has(d.id) && (
+                        <span className="t-small text-[var(--color-primary-text)]">Recommended for you</span>
+                      )}
+                    </span>
+                    {out ? (
+                      <Pill tone="critical">Out of stock</Pill>
+                    ) : d.available <= 3 ? (
+                      <Pill tone="caution">{d.available} left</Pill>
+                    ) : null}
+                  </div>
+                  <div className="flex gap-4">
+                    <span className="t-data text-[13px]">{formatInr(d.priceInr)}</span>
+                    <span className="t-data text-[13px] text-[var(--color-ink-3)]">{d.durationMin} min</span>
+                  </div>
+                </button>
+              );
+            })}
+          </div>
         </div>
-      )}
 
-      {/* ---------------- Drip ---------------- */}
-      <div>
-        <div className="flex items-baseline justify-between gap-3 mb-3">
-          <span className="t-micro">Which drip{recommendedIds.length > 1 ? " · one per session" : ""}</span>
-          <span className="t-small text-[var(--color-ink-3)]">
-            {visible.length} of {drips.length}
-          </span>
-        </div>
-
-        <input
-          type="search"
-          value={query}
-          onChange={(e) => setQuery(e.target.value)}
-          placeholder="Search by name or what is in it"
-          aria-label="Search drips"
-          className="min-h-[44px] w-full px-[14px] mb-3 rounded-[var(--radius-sm)] border border-[var(--color-line-2)] bg-[var(--color-surface)] text-[14.5px] placeholder:text-[var(--color-ink-3)] focus:border-[var(--color-primary)]"
-        />
-
-        <div className="flex flex-col gap-2">
-          {visible.length === 0 && <p className="t-small text-[var(--color-ink-3)] py-3">{noMatchMessage(query)}</p>}
-          {visible.map((d) => {
-            const selected = d.id === dripId;
-            const out = d.available === 0;
-            return (
-              <button
-                key={d.id}
-                type="button"
-                disabled={out}
-                aria-pressed={selected}
-                onClick={() => setDripId(d.id)}
-                className="text-left p-4 rounded-[var(--radius-md)] border flex flex-col gap-2 disabled:cursor-not-allowed"
-                style={{
-                  borderColor: selected ? "var(--color-primary)" : "var(--color-line)",
-                  background: selected
-                    ? "var(--color-primary-soft)"
-                    : out
-                      ? "var(--color-surface-2)"
-                      : "var(--color-surface)",
-                  opacity: out ? 0.6 : 1,
-                  cursor: out ? "not-allowed" : "pointer",
-                }}
-              >
-                <div className="flex items-start justify-between gap-3">
-                  <span className="min-w-0 flex flex-col gap-[3px]">
-                    <span style={{ font: `${selected ? 600 : 500} 16px/1.4 var(--font-sans)` }}>{d.name}</span>
-                    {recommended.has(d.id) && (
-                      <span className="t-small text-[var(--color-primary-text)]">Recommended for you</span>
-                    )}
-                  </span>
-                  {out ? (
-                    <Pill tone="critical">Out of stock</Pill>
-                  ) : d.available <= 3 ? (
-                    <Pill tone="caution">{d.available} left</Pill>
-                  ) : null}
-                </div>
-                <div className="flex gap-4">
-                  <span className="t-data text-[13px]">{formatInr(d.priceInr)}</span>
-                  <span className="t-data text-[13px] text-[var(--color-ink-3)]">{d.durationMin} min</span>
-                </div>
-              </button>
-            );
-          })}
-        </div>
-      </div>
-
-      {/* ---------------- Where ---------------- */}
-      <div className="flex flex-col gap-4">
-        <Select label="Where" value={location} onChange={(e) => setLocation(e.target.value as typeof location)}>
-          {LOCATIONS.map((l) => (
-            <option key={l.value} value={l.value} disabled={l.value === "clinic" && clinics.length === 0}>
-              {l.label}
-              {l.value === "clinic" && clinics.length === 0 ? " — none taking bookings" : ""}
-            </option>
-          ))}
-        </Select>
-
-        {atClinic ? (
-          <Select label="Which clinic" value={clinicId} onChange={(e) => setClinicId(e.target.value)}>
-            {clinics.map((c) => (
-              <option key={c.id} value={c.id}>
-                {c.name}
-                {c.city ? ` — ${c.city}` : ""}
+        {/* ---------------- Where ---------------- */}
+        <div className="flex flex-col gap-4">
+          <Select label="Where" value={location} onChange={(e) => setLocation(e.target.value as typeof location)}>
+            {LOCATIONS.map((l) => (
+              <option key={l.value} value={l.value} disabled={l.value === "clinic" && clinics.length === 0}>
+                {l.label}
+                {l.value === "clinic" && clinics.length === 0 ? " — none taking bookings" : ""}
               </option>
             ))}
           </Select>
-        ) : (
-          <>
-            <Input
-              label="Address"
-              placeholder="Flat, building, street"
-              value={address}
-              onChange={(e) => setAddress(e.target.value)}
-            />
-            <div className="flex flex-col gap-[7px]">
+
+          {atClinic ? (
+            <Select label="Which clinic" value={clinicId} onChange={(e) => setClinicId(e.target.value)}>
+              {clinics.map((c) => (
+                <option key={c.id} value={c.id}>
+                  {c.name}
+                  {c.city ? ` — ${c.city}` : ""}
+                </option>
+              ))}
+            </Select>
+          ) : (
+            <>
               <Input
-                label="Pincode"
-                hint={`${zones.length} ${zones.length === 1 ? "zone" : "zones"} served`}
-                mono
-                inputMode="numeric"
-                maxLength={6}
-                value={pincode}
-                onChange={(e) => setPincode(e.target.value.replace(/\D/g, ""))}
+                label="Address"
+                placeholder="Flat, building, street"
+                value={address}
+                onChange={(e) => setAddress(e.target.value)}
               />
-              <CoverageNote pincode={pincode} zones={zones} />
-            </div>
-          </>
-        )}
+              <div className="flex flex-col gap-[7px]">
+                <Input
+                  label="Pincode"
+                  hint={`${zones.length} ${zones.length === 1 ? "zone" : "zones"} served`}
+                  mono
+                  inputMode="numeric"
+                  maxLength={6}
+                  value={pincode}
+                  onChange={(e) => setPincode(e.target.value.replace(/\D/g, ""))}
+                />
+                <CoverageNote pincode={pincode} zones={zones} />
+              </div>
+            </>
+          )}
+        </div>
       </div>
 
-      {/* ---------------- When ---------------- */}
-      <SlotPicker
-        query={slotQuery}
-        value={slotAt}
-        onChange={setSlotAt}
-        reloadKey={slotReload}
-        idleMessage={
-          atClinic ? "Choose the clinic to see the times." : "Enter your pincode to see the times a nurse can come."
-        }
-      />
+      <div className="flex flex-col gap-6 min-w-0">
+        {/* ---------------- When ---------------- */}
+        <SlotPicker
+          query={slotQuery}
+          value={slotAt}
+          onChange={setSlotAt}
+          reloadKey={slotReload}
+          idleMessage={
+            atClinic ? "Choose the clinic to see the times." : "Enter your pincode to see the times a nurse can come."
+          }
+        />
 
-      {/* ---------------- Summary ---------------- */}
-      {drip && (
-        <div className="rounded-[var(--radius-lg)] border border-[var(--color-line)] bg-[var(--color-surface-2)] p-5">
-          <span className="t-micro">Summary</span>
-          <div className="flex flex-col gap-2 mt-3">
-            {[
-              ["Drip", drip.name],
-              ["When", slotAt ? slotLabel(slotAt, clockFmt) : "Pick a time"],
-              [
-                "Where",
-                atClinic
-                  ? (clinics.find((c) => c.id === clinicId)?.name ?? "Clinic")
-                  : (LOCATIONS.find((l) => l.value === location)?.label ?? ""),
-              ],
-              ["Duration", `${drip.durationMin} min`],
-              ["Session total", formatInr(drip.priceInr)],
-            ].map(([k, v]) => (
-              <div key={k} className="flex justify-between gap-4 items-baseline">
-                <span className="t-body text-[var(--color-ink-2)]">{k}</span>
-                <span className="t-data text-[14.5px]">{v}</span>
-              </div>
-            ))}
+        {/* ---------------- Summary ---------------- */}
+        {drip && (
+          <div className="rounded-[var(--radius-lg)] border border-[var(--color-line)] bg-[var(--color-surface-2)] p-5">
+            <span className="t-micro">Summary</span>
+            <div className="flex flex-col gap-2 mt-3">
+              {[
+                ["Drip", drip.name],
+                ["When", slotAt ? slotLabel(slotAt, clockFmt) : "Pick a time"],
+                [
+                  "Where",
+                  atClinic
+                    ? (clinics.find((c) => c.id === clinicId)?.name ?? "Clinic")
+                    : (LOCATIONS.find((l) => l.value === location)?.label ?? ""),
+                ],
+                ["Duration", `${drip.durationMin} min`],
+                ["Session total", formatInr(drip.priceInr)],
+              ].map(([k, v]) => (
+                <div key={k} className="flex justify-between gap-4 items-baseline">
+                  <span className="t-body text-[var(--color-ink-2)]">{k}</span>
+                  <span className="t-data text-[14.5px]">{v}</span>
+                </div>
+              ))}
+            </div>
+            <p className="t-small text-[var(--color-ink-3)] mt-4">{latePolicySentence(latePolicy)}</p>
           </div>
-          <p className="t-small text-[var(--color-ink-3)] mt-4">{latePolicySentence(latePolicy)}</p>
-        </div>
-      )}
+        )}
 
-      {error && (
-        <div className="rounded-[var(--radius-md)] border border-[var(--color-critical)] bg-[var(--color-critical-soft)] px-4 py-3">
-          <span className="t-body text-[var(--color-ink-2)]">{error}</span>
-        </div>
-      )}
+        {error && (
+          <div className="rounded-[var(--radius-md)] border border-[var(--color-critical)] bg-[var(--color-critical-soft)] px-4 py-3">
+            <span className="t-body text-[var(--color-ink-2)]">{error}</span>
+          </div>
+        )}
 
-      <Button size="lg" block loading={busy} disabled={!canSubmit} onClick={submit}>
-        {pendingReview ? "Hold this slot" : "Confirm booking"}
-      </Button>
+        <Button size="lg" block loading={busy} disabled={!canSubmit} onClick={submit}>
+          {pendingReview ? "Hold this slot" : "Confirm booking"}
+        </Button>
+      </div>
     </div>
   );
 }

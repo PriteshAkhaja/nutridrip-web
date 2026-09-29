@@ -1,6 +1,14 @@
 "use client";
 
-import { useEffect, useLayoutEffect, useMemo, useRef, useState, type TouchEvent as ReactTouchEvent } from "react";
+import {
+  useEffect,
+  useId,
+  useLayoutEffect,
+  useMemo,
+  useRef,
+  useState,
+  type TouchEvent as ReactTouchEvent,
+} from "react";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/Button";
 import { Textarea } from "@/components/ui/Field";
@@ -38,10 +46,13 @@ import {
 export function QuizFlow({
   questions,
   preferredDrip,
+  retake = false,
   retakeNote = null,
 }: {
   questions: QuizQuestion[];
   preferredDrip: string | null;
+  /** Answering again: leaving part-way keeps the answers already on record. */
+  retake?: boolean;
   /** On a retake, what the new answers will do -- said before the first question. */
   retakeNote?: string | null;
 }) {
@@ -67,6 +78,8 @@ export function QuizFlow({
   // The finger, from touch-down to lift-off.
   const drag = useRef<DragState | null>(null);
   const byId = useMemo(() => new Map(questions.map((x) => [x.id, x])), [questions]);
+  // Leaving part-way. Answers are held on this screen only, so leaving asks first.
+  const [leavingQuiz, setLeavingQuiz] = useState(false);
 
   const visible = useMemo(() => visibleQuestions(questions, answers), [questions, answers]);
   // The current question is always on the list: only answers BEFORE it decide
@@ -313,6 +326,11 @@ export function QuizFlow({
     }
   };
 
+  // Home, replacing the quiz in history so Back does not land on an empty quiz.
+  const exit = () => router.replace("/app");
+  // Nothing answered yet means nothing to lose, so no question is asked.
+  const close = () => (answered > 0 ? setLeavingQuiz(true) : exit());
+
   const submit = async () => {
     setBusy(true);
     setError(null);
@@ -341,7 +359,7 @@ export function QuizFlow({
     <div className="min-h-dvh bg-[var(--color-paper)] flex flex-col">
       {/* ---------------- Progress ---------------- */}
       <header className="sticky top-0 bg-[var(--color-paper)] border-b border-[var(--color-line)] z-20">
-        <div className="mx-auto w-full max-w-[560px] px-5 py-4">
+        <div className="mx-auto w-full max-w-[560px] md:max-w-[720px] px-5 py-4">
           <div className="flex items-center justify-between gap-3 mb-3">
             <div className="flex items-center gap-[10px]">
               <LogoMark size={22} />
@@ -349,9 +367,24 @@ export function QuizFlow({
                 Section {stepIndex + 1} of {steps.length}
               </span>
             </div>
-            <span className="t-data text-[13px] text-[var(--color-ink-2)]">
-              {index + 1} / {visible.length}
-            </span>
+            <div className="flex items-center gap-2">
+              <span className="t-data text-[13px] text-[var(--color-ink-2)]">
+                {index + 1} / {visible.length}
+              </span>
+              {/* A way out on every question. The negative margin keeps the
+                  44px target from making the header row taller. */}
+              <button
+                type="button"
+                onClick={close}
+                aria-label="Close the quiz"
+                title="Close the quiz"
+                className="-my-[12px] -mr-[10px] w-11 h-11 inline-flex items-center justify-center rounded-[var(--radius-sm)] border border-transparent text-[var(--color-ink-2)] cursor-pointer transition-colors duration-150 hover:bg-[var(--color-surface-2)] hover:border-[var(--color-line)] hover:text-[var(--color-ink)] focus-visible:outline-2 focus-visible:outline-offset-[-2px] focus-visible:outline-[var(--color-primary)]"
+              >
+                <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden>
+                  <path d="M3.5 3.5l9 9M12.5 3.5l-9 9" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" />
+                </svg>
+              </button>
+            </div>
           </div>
           <div className="h-[6px] rounded-full bg-[var(--color-surface-2)] overflow-hidden">
             <div
@@ -415,11 +448,15 @@ export function QuizFlow({
         </div>
       </header>
 
+      {leavingQuiz && (
+        <LeaveQuiz retake={retake} answered={answered} onStay={() => setLeavingQuiz(false)} onLeave={exit} />
+      )}
+
       {/* touch-pan-y: sideways finger movements belong to the quiz, not the
           browser. Without it a swipe right was also the browser's "back a
           page" gesture, and the patient left the quiz with their answers. */}
       <main
-        className="flex-1 mx-auto w-full max-w-[560px] px-5 py-8 flex flex-col overflow-x-clip touch-pan-y"
+        className="flex-1 mx-auto w-full max-w-[560px] md:max-w-[720px] px-5 py-8 flex flex-col overflow-x-clip touch-pan-y"
         onTouchStart={onTouchStart}
         onTouchMove={onTouchMove}
         onTouchEnd={onTouchEnd}
@@ -522,6 +559,76 @@ const SLIDE_EASE = "cubic-bezier(0.22, 1, 0.36, 1)";
  * sliding out, or peeking in at the edge during a drag, shows the same thing
  * but cannot be used.
  */
+/**
+ * Leaving part-way. The answers live on this screen only, so the patient is told
+ * plainly that they go, and staying is the first and focused choice. A sheet
+ * from the bottom on a phone, where the thumb is; a centred card on a wider
+ * screen. Escape or a tap outside stays.
+ */
+function LeaveQuiz({
+  retake,
+  answered,
+  onStay,
+  onLeave,
+}: {
+  retake: boolean;
+  answered: number;
+  onStay: () => void;
+  onLeave: () => void;
+}) {
+  const id = useId();
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape") onStay();
+    };
+    document.addEventListener("keydown", onKey);
+    // The quiz behind must not scroll under the sheet.
+    const overflow = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    return () => {
+      document.removeEventListener("keydown", onKey);
+      document.body.style.overflow = overflow;
+    };
+  }, [onStay]);
+
+  return (
+    <div
+      className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-4 bg-[rgb(15_23_42/0.45)]"
+      onClick={(e) => {
+        if (e.target === e.currentTarget) onStay();
+      }}
+    >
+      <div
+        role="alertdialog"
+        aria-modal="true"
+        aria-labelledby={`${id}-title`}
+        aria-describedby={`${id}-body`}
+        className="w-full max-w-[420px] rounded-[var(--radius-lg)] border border-[var(--color-line)] bg-[var(--color-surface)] p-5 flex flex-col gap-4 shadow-[0_12px_40px_rgb(15_23_42/0.18)]"
+      >
+        <div className="flex flex-col gap-2">
+          <span id={`${id}-title`} className="t-h3">
+            Leave the quiz?
+          </span>
+          <p id={`${id}-body`} className="t-body text-[var(--color-ink-2)]">
+            The {answered === 1 ? "answer" : `${answered} answers`} you have given so far will not be kept.{" "}
+            {retake
+              ? "Your earlier answers stay as they are."
+              : "You can take the quiz from Home whenever you are ready."}
+          </p>
+        </div>
+        <div className="flex flex-col gap-2">
+          <Button block autoFocus onClick={onStay}>
+            Keep answering
+          </Button>
+          <Button variant="secondary" block onClick={onLeave}>
+            Leave the quiz
+          </Button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 function QuestionCard({
   q,
   answer,

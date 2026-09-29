@@ -118,7 +118,13 @@ export function ObservationLog({
 
         {error && <span className="t-small text-[var(--color-caution-text)]">{error}</span>}
 
-        <Button block loading={busy} disabled={!text.trim()} onClick={submit}>
+        <Button
+          block
+          className="@2xl:w-auto @2xl:min-w-[200px] @2xl:self-start"
+          loading={busy}
+          disabled={!text.trim()}
+          onClick={submit}
+        >
           Log it
         </Button>
       </div>

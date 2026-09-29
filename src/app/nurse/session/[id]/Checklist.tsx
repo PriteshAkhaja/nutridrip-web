@@ -205,7 +205,9 @@ export function Checklist({
                         href={`/nurse/session/${bookingId}/rx`}
                         className="no-underline hover:no-underline block mt-4"
                       >
-                        <Button block>Open the prescription</Button>
+                        <Button block className="@2xl:w-auto @2xl:min-w-[240px]">
+                          Open the prescription
+                        </Button>
                       </Link>
                     </>
                   ) : (
@@ -223,6 +225,7 @@ export function Checklist({
                         loading={busy === step.key}
                         disabled={gated}
                         block={!sub}
+                        className="@2xl:w-auto @2xl:min-w-[200px]"
                       >
                         Mark complete
                       </Button>

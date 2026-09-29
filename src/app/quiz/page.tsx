@@ -56,5 +56,7 @@ export default async function QuizPage({
   const questions = await loadQuestions();
   const retakeNote = retake === "1" ? await retakeNoteFor(session.sub) : null;
 
-  return <QuizFlow questions={questions} preferredDrip={drip ?? null} retakeNote={retakeNote} />;
+  return (
+    <QuizFlow questions={questions} preferredDrip={drip ?? null} retake={retake === "1"} retakeNote={retakeNote} />
+  );
 }

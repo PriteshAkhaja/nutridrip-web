@@ -65,6 +65,7 @@ export default async function VitalsPage({
         </span>
       }
       back={{ href: `/nurse/session/${id}`, label: "Back to checklist" }}
+      width="wide"
     >
       <p className="t-body text-[var(--color-ink-2)] mb-5">
         {reading

@@ -46,42 +46,55 @@ export default async function LabReportsPage({
   );
 
   return (
-    <MobileShell title="Lab reports" subtitle={`${meta.total} on file`} tabs={PATIENT_TABS} activeHref="/app/reports">
-      <p className="t-body text-[var(--color-ink-2)] mb-5">
-        Some protocols need recent bloods before a physician will approve them — Iron Restore always does. Anything you
-        upload here is visible to the reviewing physician.
-      </p>
+    <MobileShell
+      title="Lab reports"
+      subtitle={`${meta.total} on file`}
+      tabs={PATIENT_TABS}
+      activeHref="/app/reports"
+      width="wide"
+    >
+      {/* Uploading takes the whole row at every width; the reports sit
+          below it, as many across as fit. */}
+      <div>
+        <div>
+          <p className="t-body text-[var(--color-ink-2)] mb-5">
+            Some protocols need recent bloods before a physician will approve them — Iron Restore always does. Anything
+            you upload here is visible to the reviewing physician.
+          </p>
 
-      <div className="mb-5">
-        <UploadReport />
+          <div className="mb-5">
+            <UploadReport />
+          </div>
+        </div>
+        <div className="min-w-0">
+          {meta.total === 0 ? (
+            <EmptyState
+              kind="first-run"
+              title="Nothing uploaded yet"
+              body="Upload a recent blood panel and the physician reviewing your quiz will see it alongside your answers."
+            />
+          ) : (
+            <PagedView>
+              <PagedResults>
+                <div className="grid gap-3 [grid-template-columns:repeat(auto-fit,minmax(min(100%,320px),1fr))]">
+                  {reports.map((r) => (
+                    <ReportRow
+                      key={String(r._id)}
+                      id={String(r._id)}
+                      fileName={r.fileName}
+                      category={r.category ?? "Uncategorised"}
+                      sizeLabel={kb(r.sizeBytes)}
+                      dateLabel={formatDate(r.uploadedAt)}
+                      notes={r.notes}
+                    />
+                  ))}
+                </div>
+              </PagedResults>
+              <Pagination meta={meta} basePath="/app/reports" params={{ pageSize }} nouns={["report", "reports"]} />
+            </PagedView>
+          )}
+        </div>
       </div>
-
-      {meta.total === 0 ? (
-        <EmptyState
-          kind="first-run"
-          title="Nothing uploaded yet"
-          body="Upload a recent blood panel and the physician reviewing your quiz will see it alongside your answers."
-        />
-      ) : (
-        <PagedView>
-          <PagedResults>
-            <div className="flex flex-col gap-3">
-              {reports.map((r) => (
-                <ReportRow
-                  key={String(r._id)}
-                  id={String(r._id)}
-                  fileName={r.fileName}
-                  category={r.category ?? "Uncategorised"}
-                  sizeLabel={kb(r.sizeBytes)}
-                  dateLabel={formatDate(r.uploadedAt)}
-                  notes={r.notes}
-                />
-              ))}
-            </div>
-          </PagedResults>
-          <Pagination meta={meta} basePath="/app/reports" params={{ pageSize }} nouns={["report", "reports"]} />
-        </PagedView>
-      )}
 
       <p className="t-small text-[var(--color-ink-3)] mt-6">
         Anything you upload is visible to you and to the physician reviewing your protocol. Nobody else.

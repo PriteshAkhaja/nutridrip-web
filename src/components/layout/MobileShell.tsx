@@ -1,23 +1,32 @@
 import type { ReactNode } from "react";
-import { LogoMark } from "./Logo";
-import { NotificationBell } from "./NotificationBell";
-import { BackLink } from "./NavTrail";
-import { NavLink, PageReset } from "./PageReset";
+import { getSession } from "@/lib/auth/session";
+import { AppFrame } from "./AppFrame";
 
 export type Tab = { label: string; href: string; badge?: number };
 
+const ROLE_LABEL: Record<string, string> = {
+  patient: "Patient",
+  nurse: "Nurse",
+  superadmin: "Super admin",
+};
+
 /**
- * The 390 × 844 frame the patient and nurse apps are designed against. On a
- * larger screen the column simply centres rather than stretching, so the
- * layout the nurse rehearsed on a phone is the layout on a clinic tablet.
+ * The patient and nurse apps' frame. Designed against a 390 × 844 phone, and
+ * at every other width laid out by AppFrame: bottom tabs on a phone, a drawer
+ * on a tablet, a sidebar on a desktop.
+ *
+ * `width`: "narrow" keeps a reading column on a wide screen, for a page that
+ * is one list or one form; "wide" gives the page the full width, for a page
+ * laid out in columns of its own.
  */
-export function MobileShell({
+export async function MobileShell({
   title,
   subtitle,
   back,
   tabs,
   activeHref,
   action,
+  width = "narrow",
   children,
 }: {
   title: string;
@@ -26,73 +35,24 @@ export function MobileShell({
   tabs?: Tab[];
   activeHref?: string;
   action?: ReactNode;
+  width?: "narrow" | "wide";
   children: ReactNode;
 }) {
+  // The sidebar says who is signed in, as the consoles do. The layout has
+  // already refused anyone without a session.
+  const session = await getSession();
   return (
-    <div className="min-h-dvh bg-[var(--color-paper)] flex flex-col">
-      <header className="sticky top-0 z-30 bg-[var(--color-paper)] border-b border-[var(--color-line)]">
-        <div className="mx-auto w-full max-w-[560px] px-5 py-3 flex items-center gap-3">
-          {/* `back` is the page's usual parent; the arrow goes where the page was
-              actually entered from when that is known (see NavTrail). */}
-          {back ? <BackLink fallback={back} /> : <LogoMark size={22} />}
-          <div className="min-w-0 flex-1">
-            <h1 style={{ font: "600 18px/1.3 var(--font-display)", letterSpacing: "-0.02em" }} className="truncate">
-              {title}
-            </h1>
-            {subtitle && <div className="t-small text-[var(--color-ink-3)] truncate">{subtitle}</div>}
-          </div>
-          {action ?? <NotificationBell />}
-        </div>
-      </header>
-
-      <main className="flex-1 mx-auto w-full max-w-[560px] px-5 py-5 pb-28">
-        <PageReset>{children}</PageReset>
-      </main>
-
-      {tabs && (
-        <nav
-          className="fixed bottom-0 inset-x-0 z-30 bg-[var(--color-surface)] border-t border-[var(--color-line)]"
-          aria-label="Sections"
-        >
-          <div
-            className="mx-auto w-full max-w-[560px] grid"
-            style={{ gridTemplateColumns: `repeat(${tabs.length}, 1fr)` }}
-          >
-            {tabs.map((t) => {
-              const active = activeHref === t.href;
-              return (
-                <NavLink
-                  key={t.href}
-                  href={t.href}
-                  aria-current={active ? "page" : undefined}
-                  className="flex flex-col items-center gap-[6px] pt-[10px] pb-[14px] no-underline hover:no-underline"
-                  style={{
-                    borderTop: `2px solid ${active ? "var(--color-primary)" : "transparent"}`,
-                    marginTop: -1,
-                  }}
-                >
-                  <span
-                    className="w-[6px] h-[6px] rounded-full"
-                    style={{ background: active ? "var(--color-primary)" : "var(--color-line-2)" }}
-                  />
-                  <span
-                    className="t-micro"
-                    style={{
-                      color: active ? "var(--color-ink)" : "var(--color-ink-2)",
-                      fontWeight: active ? 600 : 500,
-                    }}
-                  >
-                    {t.label}
-                  </span>
-                  {t.badge !== undefined && t.badge > 0 && (
-                    <span className="t-data text-[11px] text-[var(--color-ink-3)] leading-none">{t.badge}</span>
-                  )}
-                </NavLink>
-              );
-            })}
-          </div>
-        </nav>
-      )}
-    </div>
+    <AppFrame
+      title={title}
+      subtitle={subtitle}
+      back={back}
+      tabs={tabs}
+      activeHref={activeHref}
+      action={action}
+      width={width}
+      user={session ? { name: session.name, roleLabel: ROLE_LABEL[session.role] ?? session.role } : null}
+    >
+      {children}
+    </AppFrame>
   );
 }

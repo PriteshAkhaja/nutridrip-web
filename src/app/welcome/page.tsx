@@ -43,7 +43,7 @@ export default async function WelcomePage() {
   return (
     <div className="min-h-dvh bg-[var(--color-paper)] flex flex-col">
       <header className="border-b border-[var(--color-line)]">
-        <div className="mx-auto w-full max-w-[560px] px-5 py-3 flex items-center gap-3">
+        <div className="mx-auto w-full max-w-[560px] md:max-w-[720px] px-5 py-3 flex items-center gap-3">
           <LogoMark size={22} />
           <span style={{ font: "600 14.5px/1 var(--font-display)" }}>NutriDrip</span>
           <div className="ml-auto">
@@ -52,7 +52,7 @@ export default async function WelcomePage() {
         </div>
       </header>
 
-      <main className="flex-1 mx-auto w-full max-w-[560px] px-5 py-8">
+      <main className="flex-1 mx-auto w-full max-w-[560px] md:max-w-[720px] px-5 py-8">
         <span className="t-micro">Step 1 of 1</span>
         <h1
           className="mt-2 mb-2"

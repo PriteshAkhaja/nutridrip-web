@@ -81,7 +81,7 @@ export function SyncStatus() {
 
   if (!online) {
     return (
-      <div className="mx-auto w-full max-w-[560px] px-5 pt-4">
+      <div className="mb-4">
         <OfflineBanner since={offlineSince ? clock(offlineSince, clockFmt) : "just now"} queued={queue.length} />
       </div>
     );
@@ -102,7 +102,7 @@ export function SyncStatus() {
 
   if (queue.length > 0) {
     return (
-      <div className="mx-auto w-full max-w-[560px] px-5 pt-4 flex flex-col gap-2">
+      <div className="mb-4 flex flex-col gap-2">
         {rejections}
         <div className="flex items-center justify-between gap-4 flex-wrap rounded-[var(--radius-md)] border border-[var(--color-caution)] bg-[var(--color-caution-soft)] px-4 py-3">
           <div className="flex flex-col gap-1">
@@ -134,7 +134,7 @@ export function SyncStatus() {
 
   if (outcome && (outcome.sent > 0 || outcome.rejected.length > 0)) {
     return (
-      <div className="mx-auto w-full max-w-[560px] px-5 pt-4 flex flex-col gap-2">
+      <div className="mb-4 flex flex-col gap-2">
         {outcome.sent > 0 && (
           <div className="rounded-[var(--radius-md)] border border-[var(--color-safe)] bg-[var(--color-safe-soft)] px-4 py-3 flex items-center justify-between gap-3">
             <span className="t-body">

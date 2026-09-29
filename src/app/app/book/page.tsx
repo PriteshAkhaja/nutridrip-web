@@ -133,6 +133,7 @@ export default async function BookPage({ searchParams }: { searchParams: Promise
       }
       tabs={PATIENT_TABS}
       activeHref="/app"
+      width="wide"
     >
       {needsCall && gate && (
         <CallStep

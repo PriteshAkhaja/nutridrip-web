@@ -38,25 +38,31 @@ export default async function NursePlanPage({ params }: { params: Promise<{ id: 
       title={plan.patientName}
       subtitle={`${plan.totalWeeks} week${plan.totalWeeks === 1 ? "" : "s"} · ${plan.sessions.length} session${plan.sessions.length === 1 ? "" : "s"}`}
       back={{ href: "/nurse/schedule", label: "Back to the schedule" }}
+      width="wide"
     >
-      <div className="rounded-[var(--radius-lg)] border border-[var(--color-line)] bg-[var(--color-surface)] p-5 mb-5">
-        <span className="t-micro">Diagnosis or primary concern</span>
-        <p className="t-body mt-1">{plan.diagnosis ?? "Not recorded"}</p>
-        <div className="flex flex-col gap-2 mt-4 pt-4 border-t border-[var(--color-line)]">
-          {[
-            ["Prescribed by", plan.doctorName],
-            ["Starts", plan.startDate ?? "—"],
-            ["Written", plan.writtenOn],
-          ].map(([k, v]) => (
-            <div key={k} className="flex justify-between gap-4 items-baseline">
-              <span className="t-small text-[var(--color-ink-2)]">{k}</span>
-              <span className="t-data text-[13px] text-right">{v}</span>
-            </div>
-          ))}
+      {/* The summary stays in view beside the weeks once the page has room. */}
+      <div className="@3xl:grid @3xl:grid-cols-[360px_minmax(0,1fr)] @3xl:gap-6 @3xl:items-start">
+        <div className="rounded-[var(--radius-lg)] border border-[var(--color-line)] bg-[var(--color-surface)] p-5 mb-5 @3xl:mb-0 @3xl:sticky @3xl:top-24">
+          <span className="t-micro">Diagnosis or primary concern</span>
+          <p className="t-body mt-1">{plan.diagnosis ?? "Not recorded"}</p>
+          <div className="flex flex-col gap-2 mt-4 pt-4 border-t border-[var(--color-line)]">
+            {[
+              ["Prescribed by", plan.doctorName],
+              ["Starts", plan.startDate ?? "—"],
+              ["Written", plan.writtenOn],
+            ].map(([k, v]) => (
+              <div key={k} className="flex justify-between gap-4 items-baseline">
+                <span className="t-small text-[var(--color-ink-2)]">{k}</span>
+                <span className="t-data text-[13px] text-right">{v}</span>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        <div className="min-w-0">
+          <PlanSchedule sessions={plan.sessions} />
         </div>
       </div>
-
-      <PlanSchedule sessions={plan.sessions} />
 
       <p className="t-small text-[var(--color-ink-3)] mt-6" style={{ textWrap: "pretty" }}>
         This is the physician&rsquo;s prescription. Record what you actually gave on the session report — if it has to

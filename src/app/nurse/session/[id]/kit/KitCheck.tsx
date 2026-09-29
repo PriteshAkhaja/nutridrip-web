@@ -82,12 +82,17 @@ export function KitCheck({
 
   if (alreadyDone) {
     return (
-      <div className="rounded-[var(--radius-lg)] border border-[var(--color-safe)] bg-[var(--color-safe-soft)] p-5 flex flex-col gap-3">
+      <div className="max-w-[640px] rounded-[var(--radius-lg)] border border-[var(--color-safe)] bg-[var(--color-safe-soft)] p-5 flex flex-col gap-3">
         <span className="t-body font-semibold">Kit already checked for this session</span>
         <p className="t-body text-[var(--color-ink-2)]">
           The seals were confirmed and the step is closed. Re-checking is fine, but it is already recorded.
         </p>
-        <Button variant="secondary" block onClick={() => router.push(`/nurse/session/${bookingId}`)}>
+        <Button
+          variant="secondary"
+          block
+          className="@2xl:w-auto @2xl:min-w-[240px] @2xl:self-start"
+          onClick={() => router.push(`/nurse/session/${bookingId}`)}
+        >
           Back to checklist
         </Button>
       </div>
@@ -107,7 +112,8 @@ export function KitCheck({
         </div>
       )}
 
-      <div className="flex flex-col gap-2">
+      {/* As many across as fit (about 320px each); one on a phone. */}
+      <div className="grid gap-2 [grid-template-columns:repeat(auto-fit,minmax(min(100%,320px),1fr))]">
         {rows.map((r) => {
           const on = checked.has(r.key);
           const short = !r.batchNo || r.available <= 0;
@@ -171,11 +177,18 @@ export function KitCheck({
 
       {error && <span className="t-small text-[var(--color-caution-text)]">{error}</span>}
 
-      <Button size="lg" block loading={busy} disabled={!allChecked || missing.length > 0} onClick={confirm}>
+      <Button
+        size="lg"
+        block
+        className="@2xl:w-auto @2xl:min-w-[280px] @2xl:self-start"
+        loading={busy}
+        disabled={!allChecked || missing.length > 0}
+        onClick={confirm}
+      >
         {allChecked ? "All seals confirmed" : `${checked.size} of ${rows.length} checked`}
       </Button>
 
-      <p className="t-small text-[var(--color-ink-3)] text-center">
+      <p className="t-small text-[var(--color-ink-3)] text-center @2xl:text-left">
         Tick each item as you physically inspect it. The step will not close until every one is ticked.
       </p>
     </div>

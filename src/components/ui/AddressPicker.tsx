@@ -23,34 +23,52 @@ type Suggestion = { id: string; label: string; detail: string };
 type LatLngLiteral = { lat: number; lng: number };
 type GLatLng = { lat(): number; lng(): number };
 type GMap = { setCenter(p: LatLngLiteral): void; setZoom(z: number): void };
+/** google.maps.marker.AdvancedMarkerElement, which replaced google.maps.Marker (deprecated Feb 2024). */
 type GMarker = {
-  setPosition(p: LatLngLiteral): void;
+  position: LatLngLiteral | GLatLng | null;
   addListener(event: string, cb: () => void): void;
-  getPosition(): GLatLng | undefined;
 };
 type GMapsApi = {
   Map: new (el: HTMLElement, opts: Record<string, unknown>) => GMap;
-  Marker: new (opts: Record<string, unknown>) => GMarker;
+  marker?: { AdvancedMarkerElement: new (opts: Record<string, unknown>) => GMarker };
 };
+
+/**
+ * An advanced marker only draws on a map that has a Map ID. Google's own
+ * DEMO_MAP_ID works at once; a real one (Google Cloud → Map Management, free)
+ * belongs in NEXT_PUBLIC_GOOGLE_MAPS_MAP_ID before going live.
+ */
+const MAP_ID = process.env.NEXT_PUBLIC_GOOGLE_MAPS_MAP_ID || "DEMO_MAP_ID";
+
+/** A marker's position arrives as a LatLng or a plain {lat, lng}, depending on how it was set. */
+function latLngOf(p: LatLngLiteral | GLatLng | null): LatLngLiteral | null {
+  if (!p) return null;
+  return typeof p.lat === "function" ? { lat: (p as GLatLng).lat(), lng: (p as GLatLng).lng() } : (p as LatLngLiteral);
+}
 
 declare global {
   interface Window {
     google?: { maps?: GMapsApi };
     __ndMapsPromise?: Promise<GMapsApi | null>;
+    __ndMapsReady?: () => void;
   }
 }
 
 /** Load the Maps script once per page, however many pickers mount. */
 function loadMaps(key: string): Promise<GMapsApi | null> {
   if (typeof window === "undefined") return Promise.resolve(null);
-  if (window.google?.maps) return Promise.resolve(window.google.maps);
+  // Map as well as maps: with loading=async the namespace exists before the classes do.
+  if (window.google?.maps?.Map) return Promise.resolve(window.google.maps);
   if (window.__ndMapsPromise) return window.__ndMapsPromise;
 
   window.__ndMapsPromise = new Promise<GMapsApi | null>((resolve) => {
     const script = document.createElement("script");
-    script.src = `https://maps.googleapis.com/maps/api/js?key=${encodeURIComponent(key)}&region=IN`;
+    // `marker` brings AdvancedMarkerElement, the draggable pin. `loading=async`
+    // is Google's recommended way in (without it the console warns of slower
+    // loading); the classes are ready when the callback runs, not at onload.
+    window.__ndMapsReady = () => resolve(window.google?.maps ?? null);
+    script.src = `https://maps.googleapis.com/maps/api/js?key=${encodeURIComponent(key)}&region=IN&libraries=marker&loading=async&callback=__ndMapsReady`;
     script.async = true;
-    script.onload = () => resolve(window.google?.maps ?? null);
     // A blocked or misconfigured key must not take the whole form down with it.
     script.onerror = () => resolve(null);
     document.head.appendChild(script);
@@ -171,16 +189,27 @@ export function AddressPicker({
           ? { lat: start.latitude, lng: start.longitude }
           : DEFAULT_CENTRE;
 
+      if (!maps.marker) {
+        setNote("The map could not load, but you can still search or type your address.");
+        return;
+      }
       const map = new maps.Map(mapEl.current, {
         center: centre,
         zoom: start.latitude !== null ? 17 : 12,
         disableDefaultUI: true,
         zoomControl: true,
+        mapId: MAP_ID,
       });
-      const marker = new maps.Marker({ map, position: centre, draggable: true });
+      // Draggable with a mouse or a finger, and with the keyboard too.
+      const marker = new maps.marker.AdvancedMarkerElement({
+        map,
+        position: centre,
+        gmpDraggable: true,
+        title: "Your door",
+      });
       marker.addListener("dragend", () => {
-        const p = marker.getPosition();
-        if (p) applyPoint(p.lat(), p.lng());
+        const p = latLngOf(marker.position);
+        if (p) applyPoint(p.lat, p.lng);
       });
 
       mapRef.current = map;
@@ -197,7 +226,7 @@ export function AddressPicker({
   useEffect(() => {
     if (value.latitude === null || value.longitude === null) return;
     const p = { lat: value.latitude, lng: value.longitude };
-    markerRef.current?.setPosition(p);
+    if (markerRef.current) markerRef.current.position = p;
     mapRef.current?.setCenter(p);
     mapRef.current?.setZoom(17);
   }, [value.latitude, value.longitude]);

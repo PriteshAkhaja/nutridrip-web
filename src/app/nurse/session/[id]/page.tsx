@@ -106,56 +106,64 @@ export default async function ChecklistPage({ params }: { params: Promise<{ id: 
         </span>
       }
       back={{ href: "/nurse", label: "Back to today" }}
+      width="wide"
     >
-      {/* ---------------- On my way ----------------
+      {/* Once the page has room: setting off, progress and the prescription
+          in a column that stays in view, the checklist beside it. */}
+      <div className="@4xl:grid @4xl:grid-cols-[360px_minmax(0,1fr)] @4xl:gap-6 @4xl:items-start">
+        <div className="@4xl:sticky @4xl:top-24">
+          {/* ---------------- On my way ----------------
            Above the checklist because it is not a clinical step: it happens
            before any of them, and it is the one thing here the patient sees. */}
-      {["approved", "nurse_assigned", "en_route"].includes(booking.status) ? (
-        <EnRouteButton
-          bookingId={id}
-          enRouteAt={booking.enRouteAt ? booking.enRouteAt.toISOString() : null}
-          etaMinutes={booking.etaMinutes ?? null}
-        />
-      ) : null}
+          {["approved", "nurse_assigned", "en_route"].includes(booking.status) ? (
+            <EnRouteButton
+              bookingId={id}
+              enRouteAt={booking.enRouteAt ? booking.enRouteAt.toISOString() : null}
+              etaMinutes={booking.etaMinutes ?? null}
+            />
+          ) : null}
 
-      {/* ---------------- Phase progress ---------------- */}
-      <div className="rounded-[var(--radius-lg)] border border-[var(--color-line)] bg-[var(--color-surface)] p-5 flex flex-col gap-[14px] mb-5">
-        {PHASE_ORDER.map((phase) => {
-          const p = progress.find((x) => x.phase === phase)!;
-          return <FillSegments key={phase} name={phase} done={p.done} total={p.total} />;
-        })}
-      </div>
+          {/* ---------------- Phase progress ---------------- */}
+          <div className="rounded-[var(--radius-lg)] border border-[var(--color-line)] bg-[var(--color-surface)] p-5 flex flex-col gap-[14px] mb-5">
+            {PHASE_ORDER.map((phase) => {
+              const p = progress.find((x) => x.phase === phase)!;
+              return <FillSegments key={phase} name={phase} done={p.done} total={p.total} />;
+            })}
+          </div>
 
-      {/* ---------------- Prescription ---------------- */}
-      <Link
-        href={`/nurse/session/${id}/rx`}
-        className="no-underline hover:no-underline mb-5 rounded-[var(--radius-lg)] border p-4 flex items-center gap-3"
-        style={{
-          borderColor: rxLock.unlocked ? "var(--color-line)" : "var(--color-primary)",
-          background: rxLock.unlocked ? "var(--color-surface)" : "var(--color-primary-soft)",
-        }}
-      >
-        <div className="min-w-0 flex-1">
-          <span className="t-micro block">Prescription</span>
-          <span className="t-body block mt-[2px]">
-            {rxLock.unlocked
-              ? "Open — drugs, doses and the physician's note"
-              : `Locked — ask ${patient?.name ?? "the patient"} for their code`}
-          </span>
+          {/* ---------------- Prescription ---------------- */}
+          <Link
+            href={`/nurse/session/${id}/rx`}
+            className="no-underline hover:no-underline mb-5 rounded-[var(--radius-lg)] border p-4 flex items-center gap-3"
+            style={{
+              borderColor: rxLock.unlocked ? "var(--color-line)" : "var(--color-primary)",
+              background: rxLock.unlocked ? "var(--color-surface)" : "var(--color-primary-soft)",
+            }}
+          >
+            <div className="min-w-0 flex-1">
+              <span className="t-micro block">Prescription</span>
+              <span className="t-body block mt-[2px]">
+                {rxLock.unlocked
+                  ? "Open — drugs, doses and the physician's note"
+                  : `Locked — ask ${patient?.name ?? "the patient"} for their code`}
+              </span>
+            </div>
+            <Pill tone={rxLock.unlocked ? "safe" : "primary"} dot>
+              {rxLock.unlocked ? "Open" : "Locked"}
+            </Pill>
+          </Link>
         </div>
-        <Pill tone={rxLock.unlocked ? "safe" : "primary"} dot>
-          {rxLock.unlocked ? "Open" : "Locked"}
-        </Pill>
-      </Link>
-
-      <Checklist
-        bookingId={id}
-        steps={steps}
-        currentIndex={currentIndex}
-        vitalsBlocked={blocked}
-        rxLocked={!rxLock.unlocked}
-        clearance={flagged ? clearance : null}
-      />
+        <div className="min-w-0">
+          <Checklist
+            bookingId={id}
+            steps={steps}
+            currentIndex={currentIndex}
+            vitalsBlocked={blocked}
+            rxLocked={!rxLock.unlocked}
+            clearance={flagged ? clearance : null}
+          />
+        </div>
+      </div>
     </MobileShell>
   );
 }

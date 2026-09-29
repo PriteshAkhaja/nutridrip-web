@@ -118,6 +118,7 @@ export default async function PatientProfilePage() {
       subtitle={p.vitalityScore ? `Vitality ${p.vitalityScore}` : undefined}
       tabs={PATIENT_TABS}
       activeHref="/app/profile"
+      width="wide"
     >
       <div className="mb-4">
         <ProfileForm
@@ -128,7 +129,10 @@ export default async function PatientProfilePage() {
         />
       </div>
 
-      <div className="flex flex-col gap-4">
+      {/* Whole rows: six cards go one, two or three across as the page
+          widens, so no row is left half empty. The edit form keeps a reading
+          width of its own. */}
+      <div className="grid gap-4 @2xl:grid-cols-2 @6xl:grid-cols-3">
         {sections.map(([title, rows]) => (
           <div
             key={title}
@@ -145,24 +149,25 @@ export default async function PatientProfilePage() {
             </div>
           </div>
         ))}
+        <div className="rounded-[var(--radius-lg)] border border-[var(--color-line)] bg-[var(--color-surface-2)] p-5">
+          <span className="t-micro">Your data</span>
+          <p className="t-body text-[var(--color-ink-2)] mt-2">
+            Your record is visible to you, the reviewing physician and the attending nurse. Nobody else. Access attempts
+            are logged.
+          </p>
+        </div>
       </div>
 
-      <div className="rounded-[var(--radius-lg)] border border-[var(--color-line)] bg-[var(--color-surface-2)] p-5 mt-4">
-        <span className="t-micro">Your data</span>
-        <p className="t-body text-[var(--color-ink-2)] mt-2">
-          Your record is visible to you, the reviewing physician and the attending nurse. Nobody else. Access attempts
-          are logged.
-        </p>
-      </div>
-
-      <div className="mt-6 flex flex-col gap-3">
+      {/* Stacked on a phone, sign-out set apart; from a tablet up, one row of
+          three as wide as the cards above. */}
+      <div className="mt-6 flex flex-col gap-3 @2xl:mt-4 @2xl:grid @2xl:grid-cols-3 @2xl:items-start">
         <ButtonLink href="/quiz?retake=1" variant="secondary" block>
           Retake the health quiz
         </ButtonLink>
-        <ButtonLink href="/app/reports" variant="ghost" block>
+        <ButtonLink href="/app/reports" variant="secondary" block>
           Lab reports
         </ButtonLink>
-        <div className="mt-3 pt-5 border-t border-[var(--color-line)]">
+        <div className="mt-3 pt-5 border-t border-[var(--color-line)] @2xl:mt-0 @2xl:pt-0 @2xl:border-t-0">
           <SignOutButton />
         </div>
       </div>

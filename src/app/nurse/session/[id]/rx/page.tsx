@@ -123,6 +123,7 @@ export default async function PrescriptionPage({ params }: { params: Promise<{ i
       title="Prescription"
       subtitle={`${booking.bookingNo} · ${patientName}`}
       back={{ href: `/nurse/session/${id}`, label: "Back to the checklist" }}
+      width="wide"
     >
       <div className="flex flex-col gap-5">
         {/* How it was opened, said plainly — a prescription opened without the
@@ -159,63 +160,73 @@ export default async function PrescriptionPage({ params }: { params: Promise<{ i
           )}
         </div>
 
-        <div>
-          <span className="t-micro">Prescribed</span>
-          <h2 className="t-h3 mt-1">{drip?.name ?? booking.dripName ?? "—"}</h2>
-          {drip?.tagline && <p className="t-body text-[var(--color-ink-2)] mt-1">{drip.tagline}</p>}
-          <div className="flex gap-4 mt-3">
-            <span className="t-data text-[13px] text-[var(--color-ink-3)]">{drip?.durationMin ?? 45} min</span>
-            <span className="t-data text-[13px] text-[var(--color-ink-3)]">
-              {ingredients.length} component{ingredients.length === 1 ? "" : "s"}
-            </span>
+        {/* Once the page has room: the drip and every component on the left,
+            how it must run and who approved it in a column beside them. */}
+        <div className="flex flex-col gap-5 @4xl:grid @4xl:grid-cols-[minmax(0,1fr)_340px] @4xl:gap-6 @4xl:items-start">
+          <div className="flex flex-col gap-5 min-w-0">
+            <div>
+              <span className="t-micro">Prescribed</span>
+              <h2 className="t-h3 mt-1">{drip?.name ?? booking.dripName ?? "—"}</h2>
+              {drip?.tagline && <p className="t-body text-[var(--color-ink-2)] mt-1">{drip.tagline}</p>}
+              <div className="flex gap-4 mt-3">
+                <span className="t-data text-[13px] text-[var(--color-ink-3)]">{drip?.durationMin ?? 45} min</span>
+                <span className="t-data text-[13px] text-[var(--color-ink-3)]">
+                  {ingredients.length} component{ingredients.length === 1 ? "" : "s"}
+                </span>
+              </div>
+            </div>
+
+            <section className="flex flex-col gap-4">
+              <span className="t-micro">Every component, in order</span>
+              <div className="grid gap-3 [grid-template-columns:repeat(auto-fit,minmax(min(100%,340px),1fr))]">
+                {ingredients.map((i, n) => (
+                  <div
+                    key={`${i.name}-${n}`}
+                    className="rounded-[var(--radius-md)] border border-[var(--color-line)] p-4 flex flex-col gap-2"
+                  >
+                    <div className="flex items-start justify-between gap-3">
+                      <span style={{ font: "600 16px/1.35 var(--font-sans)" }}>{i.name}</span>
+                      <Pill tone={ROLE_TONE[i.role as keyof typeof ROLE_TONE] ?? "neutral"}>{i.role}</Pill>
+                    </div>
+                    <FillBar
+                      label={ROLE_MEANING[i.role] ?? "Component"}
+                      value={`${i.dose.toLocaleString("en-IN")} ${i.unit}`}
+                      pct={Math.round((i.dose / (maxByUnit.get(i.unit) || i.dose || 1)) * 100)}
+                    />
+                    {i.notes && <span className="t-small text-[var(--color-ink-2)]">{i.notes}</span>}
+                  </div>
+                ))}
+              </div>
+            </section>
+          </div>
+
+          <div className="flex flex-col gap-5 min-w-0 @4xl:sticky @4xl:top-24">
+            {drip?.infusionNotes && (
+              <section className="rounded-[var(--radius-md)] border border-[var(--color-caution)] bg-[var(--color-caution-soft)] p-4">
+                <span className="t-micro text-[var(--color-caution-text)]">How it must run</span>
+                <p className="t-body text-[var(--color-ink-2)] mt-2">{drip.infusionNotes}</p>
+              </section>
+            )}
+
+            {booking.approvalNotes && (
+              <section className="rounded-[var(--radius-md)] border border-[var(--color-line)] p-4">
+                <span className="t-micro">The physician&rsquo;s note</span>
+                <p className="t-body text-[var(--color-ink-2)] mt-2">{booking.approvalNotes}</p>
+              </section>
+            )}
+
+            <section className="rounded-[var(--radius-md)] bg-[var(--color-surface-2)] p-4 flex flex-col gap-1">
+              <span className="t-micro">Approved by</span>
+              <span className="t-body">{doctor?.name ?? "—"}</span>
+              {doctor?.doctor?.licenseNo && (
+                <span className="t-data text-[13px] text-[var(--color-ink-3)]">
+                  {doctor.doctor.registrationCouncil ? `${doctor.doctor.registrationCouncil} · ` : ""}
+                  {doctor.doctor.licenseNo}
+                </span>
+              )}
+            </section>
           </div>
         </div>
-
-        <section className="flex flex-col gap-4">
-          <span className="t-micro">Every component, in order</span>
-          {ingredients.map((i, n) => (
-            <div
-              key={`${i.name}-${n}`}
-              className="rounded-[var(--radius-md)] border border-[var(--color-line)] p-4 flex flex-col gap-2"
-            >
-              <div className="flex items-start justify-between gap-3">
-                <span style={{ font: "600 16px/1.35 var(--font-sans)" }}>{i.name}</span>
-                <Pill tone={ROLE_TONE[i.role as keyof typeof ROLE_TONE] ?? "neutral"}>{i.role}</Pill>
-              </div>
-              <FillBar
-                label={ROLE_MEANING[i.role] ?? "Component"}
-                value={`${i.dose.toLocaleString("en-IN")} ${i.unit}`}
-                pct={Math.round((i.dose / (maxByUnit.get(i.unit) || i.dose || 1)) * 100)}
-              />
-              {i.notes && <span className="t-small text-[var(--color-ink-2)]">{i.notes}</span>}
-            </div>
-          ))}
-        </section>
-
-        {drip?.infusionNotes && (
-          <section className="rounded-[var(--radius-md)] border border-[var(--color-caution)] bg-[var(--color-caution-soft)] p-4">
-            <span className="t-micro text-[var(--color-caution-text)]">How it must run</span>
-            <p className="t-body text-[var(--color-ink-2)] mt-2">{drip.infusionNotes}</p>
-          </section>
-        )}
-
-        {booking.approvalNotes && (
-          <section className="rounded-[var(--radius-md)] border border-[var(--color-line)] p-4">
-            <span className="t-micro">The physician&rsquo;s note</span>
-            <p className="t-body text-[var(--color-ink-2)] mt-2">{booking.approvalNotes}</p>
-          </section>
-        )}
-
-        <section className="rounded-[var(--radius-md)] bg-[var(--color-surface-2)] p-4 flex flex-col gap-1">
-          <span className="t-micro">Approved by</span>
-          <span className="t-body">{doctor?.name ?? "—"}</span>
-          {doctor?.doctor?.licenseNo && (
-            <span className="t-data text-[13px] text-[var(--color-ink-3)]">
-              {doctor.doctor.registrationCouncil ? `${doctor.doctor.registrationCouncil} · ` : ""}
-              {doctor.doctor.licenseNo}
-            </span>
-          )}
-        </section>
       </div>
     </MobileShell>
   );

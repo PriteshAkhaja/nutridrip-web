@@ -68,20 +68,24 @@ export function ReportRow({
   };
 
   return (
-    <div className="rounded-[var(--radius-lg)] border border-[var(--color-line)] bg-[var(--color-surface)] p-5">
-      <div className="flex items-start justify-between gap-3">
-        <div className="min-w-0">
-          <span className="t-body font-medium block truncate">{fileName}</span>
-          <span className="t-small text-[var(--color-ink-3)] block mt-1">
-            {category} · {sizeLabel}
-          </span>
+    // A column: in a row of cards the middle takes the spare height, so every
+    // card's Open and Remove sit on the same line at the bottom.
+    <div className="rounded-[var(--radius-lg)] border border-[var(--color-line)] bg-[var(--color-surface)] p-5 flex flex-col">
+      <div className="flex-1 min-w-0">
+        <div className="flex items-start justify-between gap-3">
+          <div className="min-w-0">
+            <span className="t-body font-medium block truncate">{fileName}</span>
+            <span className="t-small text-[var(--color-ink-3)] block mt-1">
+              {category} · {sizeLabel}
+            </span>
+          </div>
+          <span className="t-data text-[13px] text-[var(--color-ink-3)] flex-none">{dateLabel}</span>
         </div>
-        <span className="t-data text-[13px] text-[var(--color-ink-3)] flex-none">{dateLabel}</span>
+
+        {notes && <p className="t-body text-[var(--color-ink-2)] mt-3">{notes}</p>}
+
+        {error && <p className="t-small text-[var(--color-critical-text)] mt-3">{error}</p>}
       </div>
-
-      {notes && <p className="t-body text-[var(--color-ink-2)] mt-3">{notes}</p>}
-
-      {error && <p className="t-small text-[var(--color-critical-text)] mt-3">{error}</p>}
 
       {confirming ? (
         <div className="mt-4 rounded-[var(--radius-sm)] border border-[var(--color-critical)] bg-[var(--color-critical-soft)] p-3">

@@ -28,6 +28,7 @@ import { callGate, expireStaleHolds, lastCallFor } from "@/lib/data/calls";
 import { callWhen } from "@/lib/clinical/calls";
 import { getClockFormat } from "@/lib/settings/clock";
 import { shortDateClock, type ClockFormat } from "@/lib/time";
+import { AREA, COLUMNS } from "@/components/layout/columns";
 
 export const metadata: Metadata = { title: "Home" };
 export const dynamic = "force-dynamic";
@@ -209,228 +210,250 @@ export default async function PatientHomePage() {
       subtitle={quiz ? "Your latest assessment" : "Start with the quiz"}
       tabs={PATIENT_TABS}
       activeHref="/app"
+      width="wide"
     >
       {/* ---------------- A code the nurse is waiting on ---------------- */}
       <NurseCodes initial={codes} active={Boolean(sessionOn)} />
 
-      {/* ---------------- The call with a physician ---------------- */}
-      <CallCard
-        call={
-          gate?.ok && gate.call
-            ? {
-                id: gate.call.id,
-                callNo: gate.call.callNo,
-                doctorName: gate.call.doctorName,
-                startAt: gate.call.startAt,
-                minutes: gate.call.minutes,
-                phone: gate.call.phone,
-                overdue: gate.call.overdue,
+      {/* Columns once the page has room for them (see columns.ts): what
+          happens next (the call, a session to rate; then the next session and
+          the approval), and the patient's health (score and plan). A phone
+          keeps the order it was designed in: the area wrappers are
+          `contents` there, and `order` puts the cards back in sequence. */}
+      <div className={`flex flex-col ${COLUMNS}`}>
+        <div className={`contents @4xl:block ${AREA.a}`}>
+          <div className="order-1 @4xl:order-none">
+            {/* ---------------- The call with a physician ---------------- */}
+            <CallCard
+              call={
+                gate?.ok && gate.call
+                  ? {
+                      id: gate.call.id,
+                      callNo: gate.call.callNo,
+                      doctorName: gate.call.doctorName,
+                      startAt: gate.call.startAt,
+                      minutes: gate.call.minutes,
+                      phone: gate.call.phone,
+                      overdue: gate.call.overdue,
+                    }
+                  : null
               }
-            : null
-        }
-        needed={needsCall}
-        lastNote={lastNote}
-        heldDrip={
-          heldDrip
-            ? {
-                id: String(heldDrip._id),
-                bookingNo: heldDrip.bookingNo,
-                scheduledAt: heldDrip.scheduledAt.toISOString(),
+              needed={needsCall}
+              lastNote={lastNote}
+              heldDrip={
+                heldDrip
+                  ? {
+                      id: String(heldDrip._id),
+                      bookingNo: heldDrip.bookingNo,
+                      scheduledAt: heldDrip.scheduledAt.toISOString(),
+                    }
+                  : null
               }
-            : null
-        }
-      />
-
-      {/* ---------------- How was it? ---------------- */}
-      {toRate && <FeedbackPrompt session={toRate} />}
-
-      {/* ---------------- Vitality ---------------- */}
-      {quiz ? (
-        <div className="rounded-[var(--radius-lg)] border border-[var(--color-line)] bg-[var(--color-surface)] p-6 mb-4">
-          <div className="flex flex-col items-center gap-2">
-            <FillRing score={quiz.vitalityScore} size={150} stroke={13} caption="of 100" />
-            <Link href={`/app/results/${String(quiz._id)}`} className="t-body font-medium mt-2">
-              See all 16 markers&nbsp;
-              <Arrow />
-            </Link>
+            />
           </div>
-
-          {lowest.length > 0 && (
-            <div className="flex flex-col gap-[14px] mt-6 pt-6 border-t border-[var(--color-line)]">
-              <span className="t-micro">Three lowest markers</span>
-              {lowest.map((m) => (
-                <FillBar
-                  key={m.name}
-                  label={
-                    <span className="flex items-center gap-2">
-                      {m.name}
-                      <span className="t-small" style={{ color: riskColor(m.pct) }}>
-                        {riskBand(m.pct)}
-                      </span>
+          <div className="order-2 @4xl:order-none">
+            {/* ---------------- How was it? ---------------- */}
+            {toRate && <FeedbackPrompt session={toRate} />}
+          </div>
+        </div>
+        <div className={`contents @4xl:block ${AREA.b}`}>
+          <div className="order-5 @4xl:order-none">
+            {/* ---------------- Next session ---------------- */}
+            {upcoming ? (
+              <div className="rounded-[var(--radius-lg)] border border-[var(--color-line)] bg-[var(--color-surface)] p-6">
+                <div className="flex items-start justify-between gap-3 mb-4">
+                  <div className="min-w-0">
+                    <span className="t-micro">Next session</span>
+                    <h2 className="t-h3 mt-1">{upcoming.dripName}</h2>
+                    <span className="t-data text-[13px] text-[var(--color-ink-2)] block mt-1">
+                      {formatDate(upcoming.scheduledAt)} · {formatTime(upcoming.scheduledAt, clockFmt)} ·{" "}
+                      {upcoming.bookingNo}
                     </span>
-                  }
-                  value={`${m.pct}%`}
-                  pct={m.pct}
-                  color={riskColor(m.pct)}
+                  </div>
+                  <StatusPill status={upcoming.status} dot />
+                </div>
+
+                <Timeline items={timelineFor(upcoming, clockFmt)} />
+
+                {upcoming.status === "in_progress" && (
+                  <div className="mt-5">
+                    <ButtonLink href={`/app/session/${String(upcoming._id)}`} block size="lg">
+                      Watch it run
+                    </ButtonLink>
+                  </div>
+                )}
+
+                {upcoming.status === "awaiting_review" && (
+                  <p className="t-small text-[var(--color-ink-2)] mt-5">
+                    A registered physician is reading your submission now. You will get a notification either way —
+                    approval, an adjusted protocol, or a decline with the reason.
+                  </p>
+                )}
+
+                <LateCharges
+                  charges={(upcoming.charges ?? []).map((c) => ({
+                    kind: c.kind,
+                    amount: c.amount,
+                    at: new Date(c.at).toISOString(),
+                    note: c.note ?? null,
+                    settledAs: c.settledAs ?? null,
+                  }))}
                 />
-              ))}
-            </div>
-          )}
-        </div>
-      ) : (
-        <div className="mb-4">
-          <EmptyState
-            kind="first-run"
-            title="No assessment yet"
-            body="Sixteen markers, your history, medication and allergies. Three minutes, and a physician reads every word of it."
-            actionLabel="Take the health quiz"
-            actionHref="/quiz"
-          />
-        </div>
-      )}
 
-      {/* ---------------- Treatment plan ---------------- */}
-      {plan ? (
-        <Link
-          href={`/app/plan/${plan.id}`}
-          className="rounded-[var(--radius-lg)] border border-[var(--color-line)] bg-[var(--color-surface)] p-6 mb-4 flex items-start justify-between gap-4 no-underline hover:no-underline hover:border-[var(--color-primary-line)] transition-colors duration-150"
-        >
-          <div className="min-w-0">
-            <span className="t-micro">Your treatment plan</span>
-            <h2 className="t-h3 mt-1">
-              {plan.totalWeeks} week{plan.totalWeeks === 1 ? "" : "s"} · {plan.sessions.length} session
-              {plan.sessions.length === 1 ? "" : "s"}
-            </h2>
-            <span className="t-small text-[var(--color-ink-2)] block mt-1">
-              {plan.diagnosis ?? `Written by ${plan.doctorName}`}
-            </span>
-            <span className="t-small text-[var(--color-ink-3)] block mt-2">
-              See every drip and dose&nbsp;
-              <Arrow />
-            </span>
-          </div>
-          <div className="flex flex-col items-end flex-none">
-            <span className="t-data text-[18px]">
-              {plan.sessionsPast}/{plan.sessions.length}
-            </span>
-            <span className="t-small text-[var(--color-ink-3)]">so far</span>
-          </div>
-        </Link>
-      ) : null}
-
-      {/* ---------------- Next session ---------------- */}
-      {upcoming ? (
-        <div className="rounded-[var(--radius-lg)] border border-[var(--color-line)] bg-[var(--color-surface)] p-6">
-          <div className="flex items-start justify-between gap-3 mb-4">
-            <div className="min-w-0">
-              <span className="t-micro">Next session</span>
-              <h2 className="t-h3 mt-1">{upcoming.dripName}</h2>
-              <span className="t-data text-[13px] text-[var(--color-ink-2)] block mt-1">
-                {formatDate(upcoming.scheduledAt)} · {formatTime(upcoming.scheduledAt, clockFmt)} · {upcoming.bookingNo}
-              </span>
-            </div>
-            <StatusPill status={upcoming.status} dot />
-          </div>
-
-          <Timeline items={timelineFor(upcoming, clockFmt)} />
-
-          {upcoming.status === "in_progress" && (
-            <div className="mt-5">
-              <ButtonLink href={`/app/session/${String(upcoming._id)}`} block size="lg">
-                Watch it run
-              </ButtonLink>
-            </div>
-          )}
-
-          {upcoming.status === "awaiting_review" && (
-            <p className="t-small text-[var(--color-ink-2)] mt-5">
-              A registered physician is reading your submission now. You will get a notification either way — approval,
-              an adjusted protocol, or a decline with the reason.
-            </p>
-          )}
-
-          <LateCharges
-            charges={(upcoming.charges ?? []).map((c) => ({
-              kind: c.kind,
-              amount: c.amount,
-              at: new Date(c.at).toISOString(),
-              note: c.note ?? null,
-              settledAs: c.settledAs ?? null,
-            }))}
-          />
-
-          {/* Moving or cancelling it, from where the patient first sees it --
+                {/* Moving or cancelling it, from where the patient first sees it --
               not only from the Sessions tab. Not once it has started. */}
-          {upcoming.status !== "in_progress" && (
-            <div className="mt-4 pt-3 border-t border-[var(--color-line)] flex justify-end gap-2 flex-wrap">
-              <RescheduleSession
-                bookingId={String(upcoming._id)}
-                bookingNo={upcoming.bookingNo}
-                scheduledAt={upcoming.scheduledAt.toISOString()}
-                policy={policy}
-              />
-              <CancelSession
-                bookingId={String(upcoming._id)}
-                bookingNo={upcoming.bookingNo}
-                scheduledAt={upcoming.scheduledAt.toISOString()}
-                policy={policy}
-              />
-            </div>
-          )}
-        </div>
-      ) : null}
-
-      {/* ---------------- Your physician approval ----------------
+                {upcoming.status !== "in_progress" && (
+                  <div className="mt-4 pt-3 border-t border-[var(--color-line)] flex justify-end gap-2 flex-wrap">
+                    <RescheduleSession
+                      bookingId={String(upcoming._id)}
+                      bookingNo={upcoming.bookingNo}
+                      scheduledAt={upcoming.scheduledAt.toISOString()}
+                      policy={policy}
+                    />
+                    <CancelSession
+                      bookingId={String(upcoming._id)}
+                      bookingNo={upcoming.bookingNo}
+                      scheduledAt={upcoming.scheduledAt.toISOString()}
+                      policy={policy}
+                    />
+                  </div>
+                )}
+              </div>
+            ) : null}
+          </div>
+          <div className="order-6 @4xl:order-none">
+            {/* ---------------- Your physician approval ----------------
           One card says where the patient stands and what to do next. With no
           session booked it carries the next step; with one booked it sits under
           it. It used to be two cards -- "Nothing booked yet" and this box --
           printing the same sentence twice. With no quiz at all, the "No
           assessment yet" card above is the only thing to say. */}
-      {quiz && approval.status !== "none" && (
-        <div
-          className={`rounded-[var(--radius-md)] border px-4 py-3${upcoming ? " mt-4" : ""}`}
-          style={{
-            borderColor:
-              approval.status === "valid"
-                ? "var(--color-safe)"
-                : approval.status === "expiring"
-                  ? "var(--color-caution)"
-                  : approval.status === "rejected"
-                    ? "var(--color-critical)"
-                    : "var(--color-line)",
-            background:
-              approval.status === "valid"
-                ? "var(--color-safe-soft)"
-                : approval.status === "expiring"
-                  ? "var(--color-caution-soft)"
-                  : approval.status === "rejected"
-                    ? "var(--color-critical-soft)"
-                    : "var(--color-surface-2)",
-          }}
-        >
-          <span className="t-micro block mb-1">Your physician approval</span>
-          <span className="t-body text-[var(--color-ink-2)]">{approval.message}</span>
+            {quiz && approval.status !== "none" && (
+              <div
+                className={`rounded-[var(--radius-md)] border px-4 py-3${upcoming ? " mt-4" : ""}`}
+                style={{
+                  borderColor:
+                    approval.status === "valid"
+                      ? "var(--color-safe)"
+                      : approval.status === "expiring"
+                        ? "var(--color-caution)"
+                        : approval.status === "rejected"
+                          ? "var(--color-critical)"
+                          : "var(--color-line)",
+                  background:
+                    approval.status === "valid"
+                      ? "var(--color-safe-soft)"
+                      : approval.status === "expiring"
+                        ? "var(--color-caution-soft)"
+                        : approval.status === "rejected"
+                          ? "var(--color-critical-soft)"
+                          : "var(--color-surface-2)",
+                }}
+              >
+                <span className="t-micro block mb-1">Your physician approval</span>
+                <span className="t-body text-[var(--color-ink-2)]">{approval.message}</span>
 
-          {/* With a session booked, the booking card above is the next step --
+                {/* With a session booked, the booking card above is the next step --
               except for a physician's question, which nothing moves without. */}
-          {next && (!upcoming || approval.status === "info_needed") && (
-            <div className="mt-3">
-              <ButtonLink href={next.href}>{next.label}</ButtonLink>
-            </div>
-          )}
+                {next && (!upcoming || approval.status === "info_needed") && (
+                  <div className="mt-3">
+                    <ButtonLink href={next.href}>{next.label}</ButtonLink>
+                  </div>
+                )}
 
-          {/* Retaking is a choice made here or on Profile, never by a website
+                {/* Retaking is a choice made here or on Profile, never by a website
               button. New answers replace any the physician has not decided on
               yet, so it is safe at any point. When the approval has lapsed it
               is the main button instead. */}
-          {approval.status !== "expired" && (
-            <Link href="/quiz?retake=1" className="t-body font-medium block mt-3">
-              Retake the health quiz&nbsp;
-              <Arrow />
-            </Link>
-          )}
+                {approval.status !== "expired" && (
+                  <Link href="/quiz?retake=1" className="t-body font-medium block mt-3">
+                    Retake the health quiz&nbsp;
+                    <Arrow />
+                  </Link>
+                )}
+              </div>
+            )}
+          </div>
         </div>
-      )}
+        <div className={`contents @4xl:block ${AREA.c}`}>
+          <div className="order-3 @4xl:order-none">
+            {/* ---------------- Vitality ---------------- */}
+            {quiz ? (
+              <div className="rounded-[var(--radius-lg)] border border-[var(--color-line)] bg-[var(--color-surface)] p-6 mb-4">
+                <div className="flex flex-col items-center gap-2">
+                  <FillRing score={quiz.vitalityScore} size={150} stroke={13} caption="of 100" />
+                  <Link href={`/app/results/${String(quiz._id)}`} className="t-body font-medium mt-2">
+                    See all 16 markers&nbsp;
+                    <Arrow />
+                  </Link>
+                </div>
+
+                {lowest.length > 0 && (
+                  <div className="flex flex-col gap-[14px] mt-6 pt-6 border-t border-[var(--color-line)]">
+                    <span className="t-micro">Three lowest markers</span>
+                    {lowest.map((m) => (
+                      <FillBar
+                        key={m.name}
+                        label={
+                          <span className="flex items-center gap-2">
+                            {m.name}
+                            <span className="t-small" style={{ color: riskColor(m.pct) }}>
+                              {riskBand(m.pct)}
+                            </span>
+                          </span>
+                        }
+                        value={`${m.pct}%`}
+                        pct={m.pct}
+                        color={riskColor(m.pct)}
+                      />
+                    ))}
+                  </div>
+                )}
+              </div>
+            ) : (
+              <div className="mb-4">
+                <EmptyState
+                  kind="first-run"
+                  title="No assessment yet"
+                  body="Sixteen markers, your history, medication and allergies. Three minutes, and a physician reads every word of it."
+                  actionLabel="Take the health quiz"
+                  actionHref="/quiz"
+                />
+              </div>
+            )}
+          </div>
+          <div className="order-4 @4xl:order-none">
+            {/* ---------------- Treatment plan ---------------- */}
+            {plan ? (
+              <Link
+                href={`/app/plan/${plan.id}`}
+                className="rounded-[var(--radius-lg)] border border-[var(--color-line)] bg-[var(--color-surface)] p-6 mb-4 flex items-start justify-between gap-4 no-underline hover:no-underline hover:border-[var(--color-primary-line)] transition-colors duration-150"
+              >
+                <div className="min-w-0">
+                  <span className="t-micro">Your treatment plan</span>
+                  <h2 className="t-h3 mt-1">
+                    {plan.totalWeeks} week{plan.totalWeeks === 1 ? "" : "s"} · {plan.sessions.length} session
+                    {plan.sessions.length === 1 ? "" : "s"}
+                  </h2>
+                  <span className="t-small text-[var(--color-ink-2)] block mt-1">
+                    {plan.diagnosis ?? `Written by ${plan.doctorName}`}
+                  </span>
+                  <span className="t-small text-[var(--color-ink-3)] block mt-2">
+                    See every drip and dose&nbsp;
+                    <Arrow />
+                  </span>
+                </div>
+                <div className="flex flex-col items-end flex-none">
+                  <span className="t-data text-[18px]">
+                    {plan.sessionsPast}/{plan.sessions.length}
+                  </span>
+                  <span className="t-small text-[var(--color-ink-3)]">so far</span>
+                </div>
+              </Link>
+            ) : null}
+          </div>
+        </div>
+      </div>
     </MobileShell>
   );
 }

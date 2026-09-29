@@ -45,12 +45,15 @@ export async function SiteHeader() {
         <div className="mx-auto max-w-[1280px] px-6 md:px-10 py-[14px] flex items-center gap-8">
           <Logo />
 
-          <nav className="hidden lg:flex gap-[26px] items-center" aria-label="Main">
+          {/* The full menu from 1280px. At 1024 it did not fit beside the account
+              and booking buttons, and every label broke onto two lines; below
+              1280 the menu button carries the same links. */}
+          <nav className="hidden xl:flex gap-[26px] items-center" aria-label="Main">
             {NAV.map((n) => (
               <Link
                 key={n.href}
                 href={n.href}
-                className="t-body font-medium text-[var(--color-ink-2)] hover:text-[var(--color-ink)] no-underline hover:no-underline"
+                className="t-body font-medium whitespace-nowrap text-[var(--color-ink-2)] hover:text-[var(--color-ink)] no-underline hover:no-underline"
               >
                 {n.label}
               </Link>
@@ -58,10 +61,10 @@ export async function SiteHeader() {
           </nav>
 
           <div className="ml-auto flex gap-[10px] items-center">
-            <span className="hidden md:inline t-data text-[13px] text-[var(--color-ink-2)]">Bengaluru</span>
+            <span className="hidden xl:inline t-data text-[13px] text-[var(--color-ink-2)]">Bengaluru</span>
             <span className="hidden sm:inline-flex">
               {session ? (
-                <ButtonLink href={HOME_FOR_ROLE[session.role]} variant="secondary">
+                <ButtonLink href={HOME_FOR_ROLE[session.role]} variant="secondary" className="whitespace-nowrap">
                   {session.name.split(" ")[0]}&apos;s dashboard
                 </ButtonLink>
               ) : (

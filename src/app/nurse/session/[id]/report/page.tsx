@@ -81,6 +81,7 @@ export default async function NurseReportPage({ params }: { params: Promise<{ id
         </span>
       }
       back={{ href: "/nurse", label: "Back to today" }}
+      width="wide"
     >
       <div className="flex items-center gap-3 flex-wrap mb-5">
         <StatusPill status={booking.status} dot />
@@ -89,234 +90,240 @@ export default async function NurseReportPage({ params }: { params: Promise<{ id
         </span>
       </div>
 
-      {/* ---------------- Times ---------------- */}
-      <div className="rounded-[var(--radius-lg)] border border-[var(--color-line)] bg-[var(--color-surface)] p-5 mb-4">
-        <span className="t-micro">{booking.dripName}</span>
-        <div className="flex flex-col gap-2 mt-3">
-          {[
-            ["Scheduled", `${formatDate(booking.scheduledAt)} · ${formatTime(booking.scheduledAt, clockFmt)}`],
-            ["Started", booking.startedAt ? formatTime(booking.startedAt, clockFmt) : "—"],
-            ["Finished", booking.completedAt ? formatTime(booking.completedAt, clockFmt) : "Not yet"],
-            [
-              "Consent",
-              booking.consent?.givenAt
-                ? `${formatTime(booking.consent.givenAt, clockFmt)} · ${
-                    booking.consent.version ?? "—"
-                  } · ${booking.consent.viaOtp ? "code" : "signature"}`
-                : "Not captured",
-            ],
-          ].map(([k, v]) => (
-            <div key={k} className="flex justify-between gap-4 items-baseline">
-              <span className="t-body text-[var(--color-ink-2)]">{k}</span>
-              <span className="t-data text-[14.5px] text-right">{v}</span>
-            </div>
-          ))}
+      {/* The record's cards flow down two, then three, columns once the page
+          has room — heights differ, so columns rather than a grid of rows. */}
+      <div className="@2xl:columns-2 @6xl:columns-3 @2xl:gap-4 @2xl:mb-4">
+        {/* ---------------- Times ---------------- */}
+        <div className="break-inside-avoid rounded-[var(--radius-lg)] border border-[var(--color-line)] bg-[var(--color-surface)] p-5 mb-4">
+          <span className="t-micro">{booking.dripName}</span>
+          <div className="flex flex-col gap-2 mt-3">
+            {[
+              ["Scheduled", `${formatDate(booking.scheduledAt)} · ${formatTime(booking.scheduledAt, clockFmt)}`],
+              ["Started", booking.startedAt ? formatTime(booking.startedAt, clockFmt) : "—"],
+              ["Finished", booking.completedAt ? formatTime(booking.completedAt, clockFmt) : "Not yet"],
+              [
+                "Consent",
+                booking.consent?.givenAt
+                  ? `${formatTime(booking.consent.givenAt, clockFmt)} · ${
+                      booking.consent.version ?? "—"
+                    } · ${booking.consent.viaOtp ? "code" : "signature"}`
+                  : "Not captured",
+              ],
+            ].map(([k, v]) => (
+              <div key={k} className="flex justify-between gap-4 items-baseline">
+                <span className="t-body text-[var(--color-ink-2)]">{k}</span>
+                <span className="t-data text-[14.5px] text-right">{v}</span>
+              </div>
+            ))}
+          </div>
         </div>
-      </div>
 
-      {/* ---------------- What was consented to ----------------
+        {/* ---------------- What was consented to ----------------
            The report is the document of record for this session, so it carries
            the agreement itself rather than a note that one exists. Read from
            the snapshot on the booking: a recipe edited since must not change
            what this patient is shown to have agreed to. */}
-      {booking.consent?.affirmation ? (
-        <div className="rounded-[var(--radius-lg)] border border-[var(--color-line)] bg-[var(--color-surface)] p-5 mb-4">
-          <span className="t-micro">What the patient agreed to</span>
-          <p className="t-body text-[var(--color-ink-2)] mt-2">{booking.consent.affirmation}</p>
-          {booking.consent.components?.length ? (
-            <div className="flex flex-col gap-2 mt-4 pt-4 border-t border-[var(--color-line)]">
-              {booking.consent.components.map((c, n) => (
-                <div key={n} className="flex justify-between gap-4 items-baseline">
-                  <span className="t-body text-[var(--color-ink-2)]">{c.name}</span>
-                  <span className="t-data text-[14.5px]">
-                    {c.dose?.toLocaleString("en-IN") ?? "—"} {c.unit}
+        {booking.consent?.affirmation ? (
+          <div className="break-inside-avoid rounded-[var(--radius-lg)] border border-[var(--color-line)] bg-[var(--color-surface)] p-5 mb-4">
+            <span className="t-micro">What the patient agreed to</span>
+            <p className="t-body text-[var(--color-ink-2)] mt-2">{booking.consent.affirmation}</p>
+            {booking.consent.components?.length ? (
+              <div className="flex flex-col gap-2 mt-4 pt-4 border-t border-[var(--color-line)]">
+                {booking.consent.components.map((c, n) => (
+                  <div key={n} className="flex justify-between gap-4 items-baseline">
+                    <span className="t-body text-[var(--color-ink-2)]">{c.name}</span>
+                    <span className="t-data text-[14.5px]">
+                      {c.dose?.toLocaleString("en-IN") ?? "—"} {c.unit}
+                    </span>
+                  </div>
+                ))}
+              </div>
+            ) : null}
+          </div>
+        ) : booking.consent?.givenAt ? (
+          <div className="break-inside-avoid rounded-[var(--radius-lg)] border border-[var(--color-line)] bg-[var(--color-surface-2)] p-5 mb-4">
+            <span className="t-micro">What the patient agreed to</span>
+            <p className="t-small text-[var(--color-ink-3)] mt-2">
+              This consent was captured before the wording was kept on the record, so only the version is known:{" "}
+              {booking.consent.version ?? "unknown"}.
+            </p>
+          </div>
+        ) : null}
+
+        {/* ---------------- Checklist coverage ---------------- */}
+        <div className="break-inside-avoid rounded-[var(--radius-lg)] border border-[var(--color-line)] bg-[var(--color-surface)] p-5 mb-4">
+          <span className="t-micro block mb-4">Checklist</span>
+          <div className="flex flex-col gap-[14px]">
+            {PHASE_ORDER.map((phase) => {
+              const p = progress.find((x) => x.phase === phase)!;
+              return <FillSegments key={phase} name={phase} done={p.done} total={p.total} />;
+            })}
+          </div>
+        </div>
+
+        {/* ---------------- Vitals ---------------- */}
+        {booking.vitals?.length > 0 && (
+          <div className="break-inside-avoid rounded-[var(--radius-lg)] border border-[var(--color-line)] bg-[var(--color-surface)] p-5 mb-4">
+            <span className="t-micro block mb-3">Vitals recorded</span>
+            <div className="flex flex-col gap-4">
+              {booking.vitals.map((v, i) => (
+                <div key={i}>
+                  <div className="flex items-baseline justify-between gap-3 mb-2">
+                    <span className="t-body font-medium capitalize">{v.label ?? "reading"}</span>
+                    <span className="t-data text-[13px] text-[var(--color-ink-3)]">
+                      {formatTime(v.takenAt, clockFmt)}
+                    </span>
+                  </div>
+                  <div className="grid grid-cols-2 gap-2">
+                    {(
+                      [
+                        ["Blood pressure", `${v.systolic}/${v.diastolic}`, "systolic"],
+                        ["Heart rate", `${v.heartRate} bpm`, "heartRate"],
+                        ["SpO₂", `${v.spo2}%`, "spo2"],
+                        ["Temperature", `${v.temperatureF} °F`, "temperatureF"],
+                      ] as Array<[string, string, VitalKey]>
+                    ).map(([k, val, key]) => {
+                      const out = (v.outOfRange ?? []).includes(key);
+                      return (
+                        <div key={k} className="flex flex-col">
+                          <span className="t-small text-[var(--color-ink-3)]">{k}</span>
+                          <span
+                            className="t-data text-[16px]"
+                            style={out ? { color: "var(--color-critical)" } : undefined}
+                          >
+                            {val}
+                          </span>
+                          {out && (
+                            <span className="t-small text-[var(--color-critical-text)]">
+                              Outside {VITAL_RANGES[key].min}–{VITAL_RANGES[key].max}
+                            </span>
+                          )}
+                        </div>
+                      );
+                    })}
+                  </div>
+                  <VitalsCorrected corrections={v.corrections} detail />
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* ---------------- What was given ---------------- */}
+        {booking.componentsGiven?.length > 0 && (
+          <div className="break-inside-avoid rounded-[var(--radius-lg)] border border-[var(--color-line)] bg-[var(--color-surface)] p-5 mb-4">
+            <span className="t-micro block mb-3">What was given</span>
+            <div className="flex flex-col gap-3">
+              {booking.componentsGiven.map((c, i) => (
+                <div key={i} className="flex justify-between gap-4 items-baseline">
+                  <div className="flex flex-col min-w-0">
+                    <span className="t-body text-[var(--color-ink-2)]">{c.name}</span>
+                    {c.batchNo && (
+                      <span className="t-data text-[13px] text-[var(--color-ink-3)]">Batch {c.batchNo}</span>
+                    )}
+                  </div>
+                  <span className="t-data text-[14.5px] flex-none">
+                    {c.dose?.toLocaleString("en-IN")} {c.unit}
                   </span>
                 </div>
               ))}
             </div>
-          ) : null}
-        </div>
-      ) : booking.consent?.givenAt ? (
-        <div className="rounded-[var(--radius-lg)] border border-[var(--color-line)] bg-[var(--color-surface-2)] p-5 mb-4">
-          <span className="t-micro">What the patient agreed to</span>
-          <p className="t-small text-[var(--color-ink-3)] mt-2">
-            This consent was captured before the wording was kept on the record, so only the version is known:{" "}
-            {booking.consent.version ?? "unknown"}.
-          </p>
-        </div>
-      ) : null}
+          </div>
+        )}
 
-      {/* ---------------- Checklist coverage ---------------- */}
-      <div className="rounded-[var(--radius-lg)] border border-[var(--color-line)] bg-[var(--color-surface)] p-5 mb-4">
-        <span className="t-micro block mb-4">Checklist</span>
-        <div className="flex flex-col gap-[14px]">
-          {PHASE_ORDER.map((phase) => {
-            const p = progress.find((x) => x.phase === phase)!;
-            return <FillSegments key={phase} name={phase} done={p.done} total={p.total} />;
-          })}
-        </div>
-      </div>
+        {/* ---------------- Observations ---------------- */}
+        {booking.observations?.length > 0 && (
+          <div className="break-inside-avoid rounded-[var(--radius-lg)] border border-[var(--color-line)] bg-[var(--color-surface)] p-5 mb-4">
+            <span className="t-micro block mb-4">Observations</span>
+            <Timeline
+              items={booking.observations.map((o) => ({
+                label: o.text,
+                time: formatTime(o.at, clockFmt),
+                state: "done" as const,
+              }))}
+            />
+          </div>
+        )}
 
-      {/* ---------------- Vitals ---------------- */}
-      {booking.vitals?.length > 0 && (
-        <div className="rounded-[var(--radius-lg)] border border-[var(--color-line)] bg-[var(--color-surface)] p-5 mb-4">
-          <span className="t-micro block mb-3">Vitals recorded</span>
-          <div className="flex flex-col gap-4">
-            {booking.vitals.map((v, i) => (
-              <div key={i}>
-                <div className="flex items-baseline justify-between gap-3 mb-2">
-                  <span className="t-body font-medium capitalize">{v.label ?? "reading"}</span>
-                  <span className="t-data text-[13px] text-[var(--color-ink-3)]">
-                    {formatTime(v.takenAt, clockFmt)}
+        {/* ---------------- Adverse events ---------------- */}
+        {booking.adverseEvents?.length > 0 && (
+          <div className="break-inside-avoid rounded-[var(--radius-lg)] border border-[var(--color-critical)] bg-[var(--color-critical-soft)] p-5 mb-4">
+            <span className="t-micro text-[var(--color-critical-text)] block mb-3">Adverse events filed</span>
+            <div className="flex flex-col gap-4">
+              {booking.adverseEvents.map((e, i) => (
+                <div key={i} className="flex flex-col gap-2">
+                  <span className="t-data text-[13px]">
+                    {formatTime(e.at, clockFmt)}
+                    {e.severity ? ` · ${e.severity}` : ""}
                   </span>
+                  <div className="flex gap-2 flex-wrap">
+                    {e.symptoms.map((s) => (
+                      <Pill key={s} tone="critical">
+                        {s}
+                      </Pill>
+                    ))}
+                  </div>
+                  {(e.actionsTaken ?? []).length > 0 && (
+                    <span className="t-small text-[var(--color-ink-2)]">{e.actionsTaken!.join(" · ")}</span>
+                  )}
                 </div>
-                <div className="grid grid-cols-2 gap-2">
-                  {(
-                    [
-                      ["Blood pressure", `${v.systolic}/${v.diastolic}`, "systolic"],
-                      ["Heart rate", `${v.heartRate} bpm`, "heartRate"],
-                      ["SpO₂", `${v.spo2}%`, "spo2"],
-                      ["Temperature", `${v.temperatureF} °F`, "temperatureF"],
-                    ] as Array<[string, string, VitalKey]>
-                  ).map(([k, val, key]) => {
-                    const out = (v.outOfRange ?? []).includes(key);
-                    return (
-                      <div key={k} className="flex flex-col">
-                        <span className="t-small text-[var(--color-ink-3)]">{k}</span>
-                        <span
-                          className="t-data text-[16px]"
-                          style={out ? { color: "var(--color-critical)" } : undefined}
-                        >
-                          {val}
-                        </span>
-                        {out && (
-                          <span className="t-small text-[var(--color-critical-text)]">
-                            Outside {VITAL_RANGES[key].min}–{VITAL_RANGES[key].max}
-                          </span>
-                        )}
-                      </div>
-                    );
-                  })}
-                </div>
-                <VitalsCorrected corrections={v.corrections} detail />
-              </div>
-            ))}
+              ))}
+            </div>
           </div>
-        </div>
-      )}
+        )}
 
-      {/* ---------------- What was given ---------------- */}
-      {booking.componentsGiven?.length > 0 && (
-        <div className="rounded-[var(--radius-lg)] border border-[var(--color-line)] bg-[var(--color-surface)] p-5 mb-4">
-          <span className="t-micro block mb-3">What was given</span>
-          <div className="flex flex-col gap-3">
-            {booking.componentsGiven.map((c, i) => (
-              <div key={i} className="flex justify-between gap-4 items-baseline">
-                <div className="flex flex-col min-w-0">
-                  <span className="t-body text-[var(--color-ink-2)]">{c.name}</span>
-                  {c.batchNo && <span className="t-data text-[13px] text-[var(--color-ink-3)]">Batch {c.batchNo}</span>}
-                </div>
-                <span className="t-data text-[14.5px] flex-none">
-                  {c.dose?.toLocaleString("en-IN")} {c.unit}
-                </span>
-              </div>
-            ))}
+        {booking.aftercareNotes && (
+          <div className="break-inside-avoid rounded-[var(--radius-lg)] border border-[var(--color-primary-line)] bg-[var(--color-primary-soft)] p-5 mb-4">
+            <span className="t-micro text-[var(--color-primary-dark)] block mb-2">Aftercare given</span>
+            <p className="t-body-lg">{booking.aftercareNotes}</p>
           </div>
-        </div>
-      )}
+        )}
 
-      {/* ---------------- Observations ---------------- */}
-      {booking.observations?.length > 0 && (
-        <div className="rounded-[var(--radius-lg)] border border-[var(--color-line)] bg-[var(--color-surface)] p-5 mb-4">
-          <span className="t-micro block mb-4">Observations</span>
-          <Timeline
-            items={booking.observations.map((o) => ({
-              label: o.text,
-              time: formatTime(o.at, clockFmt),
-              state: "done" as const,
-            }))}
-          />
-        </div>
-      )}
-
-      {/* ---------------- Adverse events ---------------- */}
-      {booking.adverseEvents?.length > 0 && (
-        <div className="rounded-[var(--radius-lg)] border border-[var(--color-critical)] bg-[var(--color-critical-soft)] p-5 mb-4">
-          <span className="t-micro text-[var(--color-critical-text)] block mb-3">Adverse events filed</span>
-          <div className="flex flex-col gap-4">
-            {booking.adverseEvents.map((e, i) => (
-              <div key={i} className="flex flex-col gap-2">
-                <span className="t-data text-[13px]">
-                  {formatTime(e.at, clockFmt)}
-                  {e.severity ? ` · ${e.severity}` : ""}
-                </span>
-                <div className="flex gap-2 flex-wrap">
-                  {e.symptoms.map((s) => (
-                    <Pill key={s} tone="critical">
-                      {s}
-                    </Pill>
-                  ))}
-                </div>
-                {(e.actionsTaken ?? []).length > 0 && (
-                  <span className="t-small text-[var(--color-ink-2)]">{e.actionsTaken!.join(" · ")}</span>
-                )}
-              </div>
-            ))}
-          </div>
-        </div>
-      )}
-
-      {booking.aftercareNotes && (
-        <div className="rounded-[var(--radius-lg)] border border-[var(--color-primary-line)] bg-[var(--color-primary-soft)] p-5 mb-4">
-          <span className="t-micro text-[var(--color-primary-dark)] block mb-2">Aftercare given</span>
-          <p className="t-body-lg">{booking.aftercareNotes}</p>
-        </div>
-      )}
-
-      {/* The patient is told "your nurse sees this on their record" when they
+        {/* The patient is told "your nurse sees this on their record" when they
           rate a session. This is that record. A rating that only ever travelled
           back to the person who gave it was a promise made and not kept. */}
-      {said && (
-        <div
-          className="rounded-[var(--radius-lg)] border p-5 mb-4 flex flex-col gap-4"
-          style={{
-            borderColor: isLow(said) ? "var(--color-caution)" : "var(--color-safe)",
-            background: isLow(said) ? "var(--color-caution-soft)" : "var(--color-safe-soft)",
-          }}
-        >
-          <span
-            className="t-micro"
-            style={{ color: isLow(said) ? "var(--color-caution-text)" : "var(--color-safe-text)" }}
+        {said && (
+          <div
+            className="break-inside-avoid rounded-[var(--radius-lg)] border p-5 mb-4 flex flex-col gap-4"
+            style={{
+              borderColor: isLow(said) ? "var(--color-caution)" : "var(--color-safe)",
+              background: isLow(said) ? "var(--color-caution-soft)" : "var(--color-safe-soft)",
+            }}
           >
-            {patient?.name ?? "The patient"}&rsquo;s feedback
-          </span>
-          {(
-            [
-              ["Your care", said.nurse],
-              ["The session", said.session],
-            ] as const
-          ).map(([label, part]) =>
-            part ? (
-              <div key={label} className="flex flex-col gap-1">
-                <div className="flex items-baseline justify-between gap-3">
-                  <span className="t-body font-medium">{label}</span>
-                  <span className="t-data text-[18px]">{part.rating}/5</span>
-                </div>
-                {part.comment ? (
-                  <p className="t-body text-[var(--color-ink-2)]">{part.comment}</p>
-                ) : (
-                  <span className="t-small text-[var(--color-ink-2)]">No comment left.</span>
-                )}
-              </div>
-            ) : null
-          )}
-          {said.givenAt && (
-            <span className="t-small text-[var(--color-ink-3)]">
-              {formatDate(said.givenAt)} · {formatTime(said.givenAt, clockFmt)}
+            <span
+              className="t-micro"
+              style={{ color: isLow(said) ? "var(--color-caution-text)" : "var(--color-safe-text)" }}
+            >
+              {patient?.name ?? "The patient"}&rsquo;s feedback
             </span>
-          )}
-        </div>
-      )}
+            {(
+              [
+                ["Your care", said.nurse],
+                ["The session", said.session],
+              ] as const
+            ).map(([label, part]) =>
+              part ? (
+                <div key={label} className="flex flex-col gap-1">
+                  <div className="flex items-baseline justify-between gap-3">
+                    <span className="t-body font-medium">{label}</span>
+                    <span className="t-data text-[18px]">{part.rating}/5</span>
+                  </div>
+                  {part.comment ? (
+                    <p className="t-body text-[var(--color-ink-2)]">{part.comment}</p>
+                  ) : (
+                    <span className="t-small text-[var(--color-ink-2)]">No comment left.</span>
+                  )}
+                </div>
+              ) : null
+            )}
+            {said.givenAt && (
+              <span className="t-small text-[var(--color-ink-3)]">
+                {formatDate(said.givenAt)} · {formatTime(said.givenAt, clockFmt)}
+              </span>
+            )}
+          </div>
+        )}
+      </div>
 
       <p className="t-small text-[var(--color-ink-3)] mb-4">
         The patient sees this same record from their own account, with the physician&apos;s and your registration
@@ -324,7 +331,7 @@ export default async function NurseReportPage({ params }: { params: Promise<{ id
       </p>
 
       {booking.status !== "completed" && (
-        <ButtonLink href={`/nurse/session/${id}`} block size="lg">
+        <ButtonLink href={`/nurse/session/${id}`} block size="lg" className="@2xl:w-auto @2xl:min-w-[280px]">
           Back to the checklist
         </ButtonLink>
       )}

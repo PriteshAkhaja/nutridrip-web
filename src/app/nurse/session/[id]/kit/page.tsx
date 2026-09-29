@@ -162,8 +162,9 @@ export default async function SessionKitPage({ params }: { params: Promise<{ id:
         </span>
       }
       back={{ href: `/nurse/session/${id}`, label: "Back to checklist" }}
+      width="wide"
     >
-      <p className="t-body text-[var(--color-ink-2)] mb-5">
+      <p className="t-body text-[var(--color-ink-2)] mb-5 max-w-[72ch]">
         Confirm the seal and the expiry on every item below before you open anything. The batch shown is the one the
         pharmacy will have drawn — earliest expiry first.
       </p>

@@ -40,30 +40,36 @@ export default async function PatientPlanPage({ params }: { params: Promise<{ id
       title="Your treatment plan"
       subtitle={`${plan.totalWeeks} week${plan.totalWeeks === 1 ? "" : "s"} · written by ${plan.doctorName}`}
       back={{ href: "/app", label: "Back to home" }}
+      width="wide"
     >
-      <div className="rounded-[var(--radius-lg)] border border-[var(--color-line)] bg-[var(--color-surface)] p-5 mb-5">
-        <span className="t-micro">Why this was prescribed</span>
-        <p className="t-body mt-1">{plan.diagnosis ?? "Your physician has not written a note here."}</p>
+      {/* On a desktop the summary stays in view beside the schedule. */}
+      <div className="@3xl:grid @3xl:grid-cols-[360px_minmax(0,1fr)] @3xl:gap-6 @3xl:items-start">
+        <div className="rounded-[var(--radius-lg)] border border-[var(--color-line)] bg-[var(--color-surface)] p-5 mb-5 @3xl:mb-0 @3xl:sticky @3xl:top-24">
+          <span className="t-micro">Why this was prescribed</span>
+          <p className="t-body mt-1">{plan.diagnosis ?? "Your physician has not written a note here."}</p>
 
-        <div className="mt-4 pt-4 border-t border-[var(--color-line)]">
-          <FillSegments name="Sessions so far" done={plan.sessionsPast} total={plan.sessions.length} />
+          <div className="mt-4 pt-4 border-t border-[var(--color-line)]">
+            <FillSegments name="Sessions so far" done={plan.sessionsPast} total={plan.sessions.length} />
+          </div>
+
+          <div className="flex flex-col gap-2 mt-4 pt-4 border-t border-[var(--color-line)]">
+            {[
+              ["Starts", plan.startDate ?? "—"],
+              ["Your nurse", plan.nurseName ?? "Not assigned yet"],
+              ["Written", plan.writtenOn],
+            ].map(([k, v]) => (
+              <div key={k} className="flex justify-between gap-4 items-baseline">
+                <span className="t-small text-[var(--color-ink-2)]">{k}</span>
+                <span className="t-data text-[13px] text-right">{v}</span>
+              </div>
+            ))}
+          </div>
         </div>
 
-        <div className="flex flex-col gap-2 mt-4 pt-4 border-t border-[var(--color-line)]">
-          {[
-            ["Starts", plan.startDate ?? "—"],
-            ["Your nurse", plan.nurseName ?? "Not assigned yet"],
-            ["Written", plan.writtenOn],
-          ].map(([k, v]) => (
-            <div key={k} className="flex justify-between gap-4 items-baseline">
-              <span className="t-small text-[var(--color-ink-2)]">{k}</span>
-              <span className="t-data text-[13px] text-right">{v}</span>
-            </div>
-          ))}
+        <div className="min-w-0">
+          <PlanSchedule sessions={plan.sessions} />
         </div>
       </div>
-
-      <PlanSchedule sessions={plan.sessions} />
 
       <p className="t-small text-[var(--color-ink-3)] mt-6" style={{ textWrap: "pretty" }}>
         Your physician can change this plan at any time, and you will be told when they do. If anything here looks

@@ -122,6 +122,7 @@ export default async function KitPage() {
       }
       tabs={NURSE_TABS}
       activeHref="/nurse/kit"
+      width="wide"
     >
       {items.length === 0 ? (
         <EmptyState
@@ -140,7 +141,7 @@ export default async function KitPage() {
             </div>
           )}
 
-          <div className="flex flex-col gap-3">
+          <div className="grid gap-3 [grid-template-columns:repeat(auto-fit,minmax(min(100%,300px),1fr))]">
             {items.map((i) => (
               <div
                 key={i.masterId}

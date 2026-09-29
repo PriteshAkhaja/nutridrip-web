@@ -163,7 +163,9 @@ function CallActions({
   }
 
   return (
-    <div className="rounded-[var(--radius-md)] border border-[var(--color-line)] bg-[var(--color-surface-2)] p-4 flex flex-col gap-4 mt-4">
+    <div className="border-t border-[var(--color-line)] pt-4 sm:rounded-[var(--radius-md)] sm:border sm:bg-[var(--color-surface-2)] sm:p-4 flex flex-col gap-4 mt-4">
+      {/* A section under a rule on a phone (a box inside the card cost the
+          week of days ~34px); a box of its own from 640px. */}
       <span className="t-body font-semibold">Move {call.callNo}</span>
       <SlotPicker
         endpoint="/api/calls/slots"

@@ -134,7 +134,12 @@ export function ConsentCapture({ bookingId, alreadyGivenAt }: { bookingId: strin
           Version {CURRENT_CONSENT_VERSION} · {shortDateClock(alreadyGivenAt, clockFmt)}
         </p>
         <div className="mt-3">
-          <Button variant="secondary" block onClick={() => router.push(`/nurse/session/${bookingId}`)}>
+          <Button
+            variant="secondary"
+            block
+            className="@2xl:w-auto @2xl:min-w-[240px]"
+            onClick={() => router.push(`/nurse/session/${bookingId}`)}
+          >
             Back to checklist
           </Button>
         </div>

@@ -86,8 +86,12 @@ export function ClinicEnquiryForm() {
           <Input label="Phone" type="tel" mono value={form.phone} onChange={set("phone")} placeholder="+91 98•• ••••" />
         </div>
 
-        <div className="grid grid-cols-3 gap-3">
-          <Input label="City" value={form.city} onChange={set("city")} />
+        {/* City on its own row on a phone: three to a row there left ~90px a
+            field, and "Sessions/mo" pushed its "est." out of the card. */}
+        <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
+          <div className="col-span-2 sm:col-span-1">
+            <Input label="City" value={form.city} onChange={set("city")} />
+          </div>
           <Input label="Rooms" type="number" min={0} mono value={form.rooms} onChange={set("rooms")} placeholder="2" />
           <Input
             label="Sessions/mo"

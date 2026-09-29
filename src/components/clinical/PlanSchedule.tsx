@@ -19,19 +19,22 @@ export function PlanSchedule({ sessions }: { sessions: PlanSessionView[] }) {
   const weeks = [...new Set(sessions.map((s) => s.weekNum))];
 
   return (
-    <div className="flex flex-col gap-6">
+    // Weeks side by side when there is room (about 320px each), one under
+    // another on a phone.
+    <div className="grid gap-6 [grid-template-columns:repeat(auto-fit,minmax(min(100%,320px),1fr))]">
       {weeks.map((weekNum) => {
         const inWeek = sessions.filter((s) => s.weekNum === weekNum);
         return (
-          <section key={weekNum}>
+          <section key={weekNum} className="flex flex-col">
             <span className="t-micro block mb-3">
               Week {weekNum} · {inWeek.length} session{inWeek.length === 1 ? "" : "s"}
             </span>
-            <div className="flex flex-col gap-3">
+            {/* The last card takes up the slack, so cards in a row end level. */}
+            <div className="flex flex-col gap-3 flex-1">
               {inWeek.map((s) => (
                 <article
                   key={s.key}
-                  className={`rounded-[var(--radius-md)] border border-[var(--color-line)] bg-[var(--color-surface)] p-4 ${
+                  className={`rounded-[var(--radius-md)] border border-[var(--color-line)] bg-[var(--color-surface)] p-4 flex flex-col last:flex-1 ${
                     s.past ? "opacity-60" : ""
                   }`}
                 >
@@ -42,7 +45,7 @@ export function PlanSchedule({ sessions }: { sessions: PlanSessionView[] }) {
                   <h3 className="t-body font-semibold mt-1">{s.dripName}</h3>
 
                   {s.components.length > 0 ? (
-                    <ul className="list-none p-0 m-0 mt-3 flex flex-col gap-[6px]">
+                    <ul className="list-none p-0 m-0 mt-3 flex flex-col gap-[6px] flex-1">
                       {s.components.map((c, i) => (
                         <li key={`${s.key}-${i}`} className="t-small text-[var(--color-ink-2)]">
                           <span className="t-data text-[13px] text-[var(--color-ink)]">
@@ -54,7 +57,9 @@ export function PlanSchedule({ sessions }: { sessions: PlanSessionView[] }) {
                       ))}
                     </ul>
                   ) : (
-                    <p className="t-small text-[var(--color-ink-3)] mt-2">As per the standard recipe for this drip.</p>
+                    <p className="t-small text-[var(--color-ink-3)] mt-2 flex-1">
+                      As per the standard recipe for this drip.
+                    </p>
                   )}
 
                   {s.note ? (

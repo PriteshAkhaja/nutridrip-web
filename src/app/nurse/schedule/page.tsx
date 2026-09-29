@@ -78,6 +78,7 @@ export default async function NurseSchedulePage({
       subtitle={`${history ? history.meta.total : bookings.length} session${(history ? history.meta.total : bookings.length) === 1 ? "" : "s"} ${past ? "completed" : "ahead"}`}
       tabs={NURSE_TABS}
       activeHref="/nurse/schedule"
+      width="wide"
     >
       <div className="flex gap-1 p-1 rounded-[var(--radius-sm)] bg-[var(--color-surface-2)] border border-[var(--color-line)] mb-5 w-fit">
         {[
@@ -115,7 +116,7 @@ export default async function NurseSchedulePage({
                   <span className="t-micro block mb-3">
                     {formatDate(day)} · {items.length} session{items.length === 1 ? "" : "s"}
                   </span>
-                  <div className="flex flex-col gap-2">
+                  <div className="grid gap-2 [grid-template-columns:repeat(auto-fit,minmax(min(100%,340px),1fr))]">
                     {items.map((b) => (
                       <Link
                         key={String(b._id)}
@@ -124,18 +125,18 @@ export default async function NurseSchedulePage({
                             ? `/nurse/session/${String(b._id)}/report`
                             : `/nurse/session/${String(b._id)}`
                         }
-                        className="rounded-[var(--radius-md)] border border-[var(--color-line)] bg-[var(--color-surface)] p-4 flex items-center justify-between gap-3 no-underline hover:no-underline hover:border-[var(--color-primary-line)] transition-colors duration-150"
+                        className="rounded-[var(--radius-md)] border border-[var(--color-line)] bg-[var(--color-surface)] p-4 flex flex-col min-w-0 no-underline hover:no-underline hover:border-[var(--color-primary-line)] transition-colors duration-150"
                       >
-                        <div className="flex flex-col min-w-0">
+                        {/* Time and status share the top line, so the name and the
+                            address below get the card's full width. */}
+                        <div className="flex items-center justify-between gap-3">
                           <span className="t-data text-[14.5px]">{formatTime(b.scheduledAt, clockFmt)}</span>
-                          <span className="t-body font-medium truncate">
-                            {nameById.get(String(b.patientId)) ?? "—"}
-                          </span>
-                          <span className="t-small text-[var(--color-ink-3)] truncate">
-                            {b.dripName} · {b.address ?? "—"}
-                          </span>
+                          <StatusPill status={b.status} dot />
                         </div>
-                        <StatusPill status={b.status} dot />
+                        <span className="t-body font-medium truncate">{nameById.get(String(b.patientId)) ?? "—"}</span>
+                        <span className="t-small text-[var(--color-ink-3)] truncate">
+                          {b.dripName} · {b.address ?? "—"}
+                        </span>
                       </Link>
                     ))}
                   </div>
@@ -159,16 +160,16 @@ export default async function NurseSchedulePage({
           <p className="t-small text-[var(--color-ink-3)] mb-3">
             Courses your physician wrote. Read one before the session it belongs to.
           </p>
-          <div className="flex flex-col gap-2">
+          <div className="grid gap-2 [grid-template-columns:repeat(auto-fill,minmax(min(100%,340px),1fr))]">
             {plans.map((p) => (
               <Link
                 key={p.id}
                 href={`/nurse/plan/${p.id}`}
-                className="rounded-[var(--radius-md)] border border-[var(--color-line)] bg-[var(--color-surface)] p-4 flex items-center justify-between gap-3 no-underline hover:no-underline hover:border-[var(--color-primary-line)] transition-colors duration-150"
+                className="rounded-[var(--radius-md)] border border-[var(--color-line)] bg-[var(--color-surface)] p-4 flex items-start justify-between gap-3 no-underline hover:no-underline hover:border-[var(--color-primary-line)] transition-colors duration-150"
               >
                 <div className="flex flex-col min-w-0">
                   <span className="t-body font-medium truncate">{p.patientName}</span>
-                  <span className="t-small text-[var(--color-ink-3)] truncate">
+                  <span className="t-small text-[var(--color-ink-3)] line-clamp-2">
                     {p.diagnosis ?? `Written by ${p.doctorName}`}
                   </span>
                 </div>

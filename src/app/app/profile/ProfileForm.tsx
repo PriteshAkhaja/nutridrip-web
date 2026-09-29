@@ -138,7 +138,7 @@ export function ProfileForm({
             </span>
           </div>
         )}
-        <Button variant="secondary" block onClick={() => setOpen(true)}>
+        <Button variant="secondary" block className="md:w-auto md:self-start" onClick={() => setOpen(true)}>
           Edit my details
         </Button>
       </div>
@@ -158,92 +158,97 @@ export function ProfileForm({
         </button>
       </div>
 
-      <section className="flex flex-col gap-3">
-        <span className="t-micro">You</span>
-        <Input label="Name" value={form.name} onChange={set("name")} />
-        <div className="grid grid-cols-2 gap-3">
-          <Input label="Phone" mono type="tel" value={form.phone} onChange={set("phone")} />
-          <Input label="Email" type="email" value={form.email} onChange={set("email")} placeholder="optional" />
-        </div>
-        <div className="grid grid-cols-2 gap-3">
-          <DatePicker label="Date of birth" value={form.dob} onChange={(v) => set("dob")({ target: { value: v } })} />
-          <Select label="Sex" value={form.gender} onChange={set("gender")}>
-            <option value="">—</option>
-            <option value="female">Female</option>
-            <option value="male">Male</option>
-            <option value="other">Other</option>
-            <option value="undisclosed">Prefer not to say</option>
-          </Select>
-        </div>
-        <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
-          <Select label="Blood group" value={form.bloodGroup} onChange={set("bloodGroup")}>
-            {BLOOD_GROUPS.map((g) => (
-              <option key={g} value={g}>
-                {g || "—"}
-              </option>
-            ))}
-          </Select>
-          <Input label="Height" hint="cm" type="number" mono value={form.heightCm} onChange={set("heightCm")} />
-          <Input label="Weight" hint="kg" type="number" mono value={form.weightKg} onChange={set("weightKg")} />
-        </div>
-      </section>
+      {/* When the page has room: you and your emergency contact on the left,
+          the address and its map on the right, and what a nurse reads aloud
+          across the bottom with its boxes two to a row. One column otherwise. */}
+      <div className="flex flex-col gap-5 @4xl:grid @4xl:grid-cols-2 @4xl:gap-x-8 @4xl:gap-y-5 @4xl:grid-rows-[auto_1fr_auto] @4xl:[grid-template-areas:'you_where'_'sos_where'_'aloud_aloud']">
+        <section className="flex flex-col gap-3 min-w-0 @4xl:[grid-area:you]">
+          <span className="t-micro">You</span>
+          <Input label="Name" value={form.name} onChange={set("name")} />
+          <div className="grid grid-cols-2 gap-3">
+            <Input label="Phone" mono type="tel" value={form.phone} onChange={set("phone")} />
+            <Input label="Email" type="email" value={form.email} onChange={set("email")} placeholder="optional" />
+          </div>
+          <div className="grid grid-cols-2 gap-3">
+            <DatePicker label="Date of birth" value={form.dob} onChange={(v) => set("dob")({ target: { value: v } })} />
+            <Select label="Sex" value={form.gender} onChange={set("gender")}>
+              <option value="">—</option>
+              <option value="female">Female</option>
+              <option value="male">Male</option>
+              <option value="other">Other</option>
+              <option value="undisclosed">Prefer not to say</option>
+            </Select>
+          </div>
+          <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+            <Select label="Blood group" value={form.bloodGroup} onChange={set("bloodGroup")}>
+              {BLOOD_GROUPS.map((g) => (
+                <option key={g} value={g}>
+                  {g || "—"}
+                </option>
+              ))}
+            </Select>
+            <Input label="Height" hint="cm" type="number" mono value={form.heightCm} onChange={set("heightCm")} />
+            <Input label="Weight" hint="kg" type="number" mono value={form.weightKg} onChange={set("weightKg")} />
+          </div>
+        </section>
 
-      <section className="flex flex-col gap-3">
-        <span className="t-micro">Where a nurse comes</span>
-        <AddressPicker
-          value={place}
-          onChange={setPlace}
-          mapsKey={mapsKey}
-          searchEnabled={searchEnabled}
-          zones={zones}
-        />
-      </section>
-
-      <section className="flex flex-col gap-3">
-        <span className="t-micro">In an emergency</span>
-        <div className="grid grid-cols-2 gap-3">
-          <Input label="Contact" value={form.emergencyContactName} onChange={set("emergencyContactName")} />
-          <Input
-            label="Their number"
-            mono
-            type="tel"
-            value={form.emergencyContactPhone}
-            onChange={set("emergencyContactPhone")}
+        <section className="flex flex-col gap-3 min-w-0 @4xl:[grid-area:where]">
+          <span className="t-micro">Where a nurse comes</span>
+          <AddressPicker
+            value={place}
+            onChange={setPlace}
+            mapsKey={mapsKey}
+            searchEnabled={searchEnabled}
+            zones={zones}
           />
-        </div>
-      </section>
+        </section>
 
-      <section className="flex flex-col gap-3">
-        <span className="t-micro">What a nurse reads aloud</span>
-        <Textarea
-          label="Allergies"
-          rows={2}
-          value={form.allergies}
-          onChange={set("allergies")}
-          placeholder="Write them exactly as you were told, or None"
-        />
-        <Textarea
-          label="Ongoing conditions"
-          rows={2}
-          value={form.chronicConditions}
-          onChange={set("chronicConditions")}
-        />
-        <Textarea
-          label="Current medication"
-          hint="including over the counter"
-          rows={2}
-          value={form.currentMedications}
-          onChange={set("currentMedications")}
-        />
-        <Textarea label="Past surgeries" rows={2} value={form.surgeries} onChange={set("surgeries")} />
-        <Textarea
-          label="Family history"
-          hint="optional"
-          rows={2}
-          value={form.familyHistory}
-          onChange={set("familyHistory")}
-        />
-      </section>
+        <section className="flex flex-col gap-3 min-w-0 @4xl:[grid-area:sos]">
+          <span className="t-micro">In an emergency</span>
+          <div className="grid grid-cols-2 gap-3">
+            <Input label="Contact" value={form.emergencyContactName} onChange={set("emergencyContactName")} />
+            <Input
+              label="Their number"
+              mono
+              type="tel"
+              value={form.emergencyContactPhone}
+              onChange={set("emergencyContactPhone")}
+            />
+          </div>
+        </section>
+
+        <section className="flex flex-col gap-3 min-w-0 @4xl:[grid-area:aloud] @4xl:grid @4xl:grid-cols-2 @4xl:gap-x-6">
+          <span className="t-micro @4xl:col-span-2">What a nurse reads aloud</span>
+          <Textarea
+            label="Allergies"
+            rows={2}
+            value={form.allergies}
+            onChange={set("allergies")}
+            placeholder="Write them exactly as you were told, or None"
+          />
+          <Textarea
+            label="Ongoing conditions"
+            rows={2}
+            value={form.chronicConditions}
+            onChange={set("chronicConditions")}
+          />
+          <Textarea
+            label="Current medication"
+            hint="including over the counter"
+            rows={2}
+            value={form.currentMedications}
+            onChange={set("currentMedications")}
+          />
+          <Textarea label="Past surgeries" rows={2} value={form.surgeries} onChange={set("surgeries")} />
+          <Textarea
+            label="Family history"
+            hint="optional"
+            rows={2}
+            value={form.familyHistory}
+            onChange={set("familyHistory")}
+          />
+        </section>
+      </div>
 
       {error && (
         <div className="rounded-[var(--radius-md)] border border-[var(--color-critical)] bg-[var(--color-critical-soft)] px-4 py-3">
@@ -259,7 +264,14 @@ export function ProfileForm({
         </div>
       )}
 
-      <Button size="lg" block loading={busy} disabled={missing.length > 0} onClick={save}>
+      <Button
+        size="lg"
+        block
+        className="@4xl:w-auto @4xl:min-w-[240px] @4xl:self-end"
+        loading={busy}
+        disabled={missing.length > 0}
+        onClick={save}
+      >
         Save my details
       </Button>
     </div>

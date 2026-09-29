@@ -49,6 +49,7 @@ export default async function NurseTodayPage() {
       subtitle={`${route.length} session${route.length === 1 ? "" : "s"} on your route`}
       tabs={NURSE_TABS}
       activeHref="/nurse"
+      width="wide"
     >
       {route.length === 0 ? (
         <EmptyState
@@ -57,7 +58,8 @@ export default async function NurseTodayPage() {
           body="When a physician approves a protocol and dispatch assigns it to you, the session appears here with its full checklist."
         />
       ) : (
-        <div className="flex flex-col gap-3">
+        // As many across as fit (about 340px each); one on a phone.
+        <div className="grid gap-3 [grid-template-columns:repeat(auto-fit,minmax(min(100%,340px),1fr))]">
           {route.map((s) => {
             const action = primaryAction(s.status, s.id);
             const active = s.status === "in_progress";
@@ -65,7 +67,7 @@ export default async function NurseTodayPage() {
             return (
               <div
                 key={s.id}
-                className="rounded-[var(--radius-lg)] border bg-[var(--color-surface)] p-5 flex flex-col gap-4"
+                className="@container/card rounded-[var(--radius-lg)] border bg-[var(--color-surface)] p-5 flex flex-col gap-4"
                 style={{ borderColor: active ? "var(--color-primary)" : "var(--color-line)" }}
               >
                 <div className="flex items-start justify-between gap-3">
@@ -111,7 +113,14 @@ export default async function NurseTodayPage() {
                   </div>
                 )}
 
-                <ButtonLink href={action.href} variant={action.variant} size={action.size} block>
+                {/* Full width in a narrow card; a button's width once the card itself is wide. */}
+                <ButtonLink
+                  href={action.href}
+                  variant={action.variant}
+                  size={action.size}
+                  block
+                  className="mt-auto @md/card:w-auto @md/card:min-w-[220px] @md/card:self-start"
+                >
                   {action.label}
                 </ButtonLink>
               </div>

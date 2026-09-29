@@ -13,6 +13,7 @@ import { ButtonLink } from "@/components/ui/Button";
 import { riskColor, riskBand, NUTRIENT_GROUPS } from "@/lib/models/types";
 import { formatInr } from "@/lib/inventory/units";
 import { PATIENT_TABS } from "../../tabs";
+import { AREA, COLUMNS } from "@/components/layout/columns";
 
 export const metadata: Metadata = { title: "Your vitality" };
 export const dynamic = "force-dynamic";
@@ -118,211 +119,235 @@ export default async function ResultsPage({
       }
       tabs={PATIENT_TABS}
       activeHref="/app"
+      width="wide"
     >
-      <div className="rounded-[var(--radius-lg)] border border-[var(--color-line)] bg-[var(--color-surface)] p-6 flex flex-col items-center gap-3 mb-4">
-        <FillRing score={quiz.vitalityScore} size={150} stroke={13} caption="of 100" />
-        <p className="t-body text-[var(--color-ink-2)] text-center max-w-[42ch]" style={{ textWrap: "pretty" }}>
-          A single number built from sixteen markers. It is a starting point for the physician, not a diagnosis.
-        </p>
-      </div>
-
-      {/* ---------------- Lowest three ---------------- */}
-      <div className="rounded-[var(--radius-lg)] border border-[var(--color-line)] bg-[var(--color-surface)] p-5 mb-4">
-        <span className="t-micro">Three lowest markers</span>
-        <div className="flex flex-col gap-[14px] mt-4">
-          {lowest.map((m) => (
-            <FillBar
-              key={m.name}
-              label={
-                <span className="flex items-center gap-2">
-                  {m.name}
-                  <span className="t-small" style={{ color: riskColor(m.pct) }}>
-                    {riskBand(m.pct)}
-                  </span>
-                </span>
-              }
-              value={`${m.pct}%`}
-              pct={m.pct}
-              color={riskColor(m.pct)}
-            />
-          ))}
-        </div>
-      </div>
-
-      {/* ---------------- Suggestions ---------------- */}
-      {drips.length > 0 && (
-        <div className="mb-4">
-          {/* The heading has to follow the list. Once a physician has chosen,
-              these are their choice — calling them "suggestions from your
-              answers" told the patient to discount the one list they should
-              trust. */}
-          <span className="t-micro block mb-3">
-            {physicianChose ? "What your physician recommends" : "Suggested for review"}
-          </span>
-          <div className="flex flex-col gap-3">
-            {drips.map((d) => {
-              const body = (
-                <>
-                  <h3 className="t-h3">{d.name}</h3>
-                  {d.description && <p className="t-body text-[var(--color-ink-2)] mt-1">{d.description}</p>}
-                  <div className="flex gap-5 mt-3 pt-3 border-t border-[var(--color-line)]">
-                    <span className="t-data text-[14.5px]">{formatInr(d.priceInr)}</span>
-                    <span className="t-data text-[14.5px] text-[var(--color-ink-3)]">{d.durationMin} min</span>
-                  </div>
-                </>
-              );
-              const box = "rounded-[var(--radius-lg)] border border-[var(--color-line)] bg-[var(--color-surface)] p-5";
-              // A drip kept off the website has no public page, so its card is not a link.
-              return d.isPublic === false ? (
-                <div key={d.slug} className={box}>
-                  {body}
-                </div>
-              ) : (
-                <Link
-                  key={d.slug}
-                  href={`/drips/${d.slug}`}
-                  className={`${box} no-underline hover:no-underline hover:border-[var(--color-primary-line)] transition-colors duration-150`}
-                >
-                  {body}
-                </Link>
-              );
-            })}
+      {/* Columns once the page has room (see columns.ts): the summary; the
+          suggestions and the physician's decision; all sixteen markers. A
+          phone keeps its order: the area wrappers are `contents` there and
+          `order` sequences the cards. */}
+      <div className={`flex flex-col ${COLUMNS}`}>
+        <div className={`contents @4xl:block ${AREA.a}`}>
+          <div className="order-1 @4xl:order-none">
+            <div className="rounded-[var(--radius-lg)] border border-[var(--color-line)] bg-[var(--color-surface)] p-6 flex flex-col items-center gap-3 mb-4">
+              <FillRing score={quiz.vitalityScore} size={150} stroke={13} caption="of 100" />
+              <p className="t-body text-[var(--color-ink-2)] text-center max-w-[42ch]" style={{ textWrap: "pretty" }}>
+                A single number built from sixteen markers. It is a starting point for the physician, not a diagnosis.
+              </p>
+            </div>
           </div>
-          <p className="t-small text-[var(--color-ink-3)] mt-3">
-            {physicianChose
-              ? `${physician?.name ?? "Your physician"} chose ${drips.length === 1 ? "this" : "these"} for you after reading your answers — ${drips.length === 1 ? "it is" : "they are"} not what the quiz alone suggested.`
-              : "These are suggestions from your answers. A physician decides what is actually prescribed, and may choose something else entirely."}
-          </p>
-        </div>
-      )}
-
-      {/* ---------------- All sixteen ---------------- */}
-      <div className="rounded-[var(--radius-lg)] border border-[var(--color-line)] bg-[var(--color-surface)] p-5 mb-5">
-        <span className="t-micro">All sixteen markers</span>
-        <div className="flex flex-col gap-5 mt-4">
-          {grouped.map((g) => (
-            <div key={g.group}>
-              <span className="t-small text-[var(--color-ink-3)] block mb-3">{g.group}</span>
-              <div className="flex flex-col gap-[14px]">
-                {g.items.map((m) => (
-                  <FillBar key={m.name} label={m.name} value={`${m.pct}%`} pct={m.pct} color={riskColor(m.pct)} />
+          <div className="order-2 @4xl:order-none">
+            {/* ---------------- Lowest three ---------------- */}
+            <div className="rounded-[var(--radius-lg)] border border-[var(--color-line)] bg-[var(--color-surface)] p-5 mb-4">
+              <span className="t-micro">Three lowest markers</span>
+              <div className="flex flex-col gap-[14px] mt-4">
+                {lowest.map((m) => (
+                  <FillBar
+                    key={m.name}
+                    label={
+                      <span className="flex items-center gap-2">
+                        {m.name}
+                        <span className="t-small" style={{ color: riskColor(m.pct) }}>
+                          {riskBand(m.pct)}
+                        </span>
+                      </span>
+                    }
+                    value={`${m.pct}%`}
+                    pct={m.pct}
+                    color={riskColor(m.pct)}
+                  />
                 ))}
               </div>
             </div>
-          ))}
+          </div>
         </div>
-      </div>
-
-      {/* ----------------- What the physician said -----------------
+        <div className={`contents @4xl:block ${AREA.b}`}>
+          <div className="order-3 @4xl:order-none">
+            {/* ---------------- Suggestions ---------------- */}
+            {drips.length > 0 && (
+              <div className="mb-4">
+                {/* The heading has to follow the list. Once a physician has chosen,
+              these are their choice — calling them "suggestions from your
+              answers" told the patient to discount the one list they should
+              trust. */}
+                <span className="t-micro block mb-3">
+                  {physicianChose ? "What your physician recommends" : "Suggested for review"}
+                </span>
+                <div className="flex flex-col gap-3">
+                  {drips.map((d) => {
+                    const body = (
+                      <>
+                        <h3 className="t-h3">{d.name}</h3>
+                        {d.description && <p className="t-body text-[var(--color-ink-2)] mt-1">{d.description}</p>}
+                        <div className="flex gap-5 mt-3 pt-3 border-t border-[var(--color-line)]">
+                          <span className="t-data text-[14.5px]">{formatInr(d.priceInr)}</span>
+                          <span className="t-data text-[14.5px] text-[var(--color-ink-3)]">{d.durationMin} min</span>
+                        </div>
+                      </>
+                    );
+                    const box =
+                      "rounded-[var(--radius-lg)] border border-[var(--color-line)] bg-[var(--color-surface)] p-5";
+                    // A drip kept off the website has no public page, so its card is not a link.
+                    return d.isPublic === false ? (
+                      <div key={d.slug} className={box}>
+                        {body}
+                      </div>
+                    ) : (
+                      <Link
+                        key={d.slug}
+                        href={`/drips/${d.slug}`}
+                        className={`${box} no-underline hover:no-underline hover:border-[var(--color-primary-line)] transition-colors duration-150`}
+                      >
+                        {body}
+                      </Link>
+                    );
+                  })}
+                </div>
+                <p className="t-small text-[var(--color-ink-3)] mt-3">
+                  {physicianChose
+                    ? `${physician?.name ?? "Your physician"} chose ${drips.length === 1 ? "this" : "these"} for you after reading your answers — ${drips.length === 1 ? "it is" : "they are"} not what the quiz alone suggested.`
+                    : "These are suggestions from your answers. A physician decides what is actually prescribed, and may choose something else entirely."}
+                </p>
+              </div>
+            )}
+          </div>
+          <div className="order-5 @4xl:order-none">
+            {/* ----------------- What the physician said -----------------
           Every outcome now says it here, on the page. The decline used to send
           the patient off to hunt through their notifications for the reason,
           and "approved with changes" said nothing at all. */}
-      {quiz.reviewStatus === "superseded" ? (
-        // Answers the patient replaced by taking the quiz again. Never read as a
-        // decision: the physician decides on the newer answers, not these.
-        <div className="rounded-[var(--radius-lg)] border border-[var(--color-line-2)] bg-[var(--color-surface-2)] p-5 flex flex-col gap-3 items-start">
-          <div>
-            <span className="t-body font-semibold">Replaced by your newer answers</span>
-            <p className="t-body text-[var(--color-ink-2)] mt-1">
-              You took the quiz again before a physician decided on this one, so they will read your newer answers
-              instead.
-            </p>
-          </div>
-          {quiz.supersededBy ? (
-            <ButtonLink href={`/app/results/${String(quiz.supersededBy)}`} variant="secondary">
-              See your newer results
-            </ButtonLink>
-          ) : null}
-        </div>
-      ) : quiz.reviewStatus === "pending" ? (
-        <div className="rounded-[var(--radius-lg)] border border-[var(--color-info)] bg-[var(--color-info-soft)] p-5">
-          <span className="t-body font-semibold">With a physician now</span>
-          <p className="t-body text-[var(--color-ink-2)] mt-1">
-            Book a short phone call with a physician from Book a session: they read your answers, call you at the time
-            you choose, then decide. If anything in your answers rules IV therapy out, they will tell you why.
-          </p>
-        </div>
-      ) : quiz.reviewStatus === "info_needed" ? (
-        <div className="rounded-[var(--radius-lg)] border border-[var(--color-info)] bg-[var(--color-info-soft)] p-5 flex flex-col gap-3">
-          <div>
-            <span className="t-body font-semibold">{physician?.name ?? "Your physician"} needs one more thing</span>
-            <p className="t-body-lg mt-2">{quiz.infoRequest}</p>
-          </div>
-          {quiz.infoAnswer ? (
-            <div className="rounded-[var(--radius-md)] border border-[var(--color-line)] bg-[var(--color-surface)] px-4 py-3">
-              <span className="t-micro">You answered</span>
-              <p className="t-body text-[var(--color-ink-2)] mt-1">{quiz.infoAnswer}</p>
-              <span className="t-small text-[var(--color-ink-3)] block mt-2">
-                Back with your physician now. Your slot is still held.
-              </span>
-            </div>
-          ) : (
-            <InfoAnswer quizId={id} />
-          )}
-        </div>
-      ) : (
-        <div className="flex flex-col gap-4">
-          <div
-            className="rounded-[var(--radius-lg)] border p-5 flex flex-col gap-2"
-            style={{
-              borderColor: quiz.reviewStatus === "rejected" ? "var(--color-critical)" : "var(--color-safe)",
-              background: quiz.reviewStatus === "rejected" ? "var(--color-critical-soft)" : "var(--color-safe-soft)",
-            }}
-          >
-            <span className="t-body font-semibold">
-              {quiz.reviewStatus === "rejected"
-                ? "A physician declined this protocol"
-                : quiz.reviewStatus === "modified"
-                  ? "Approved, with changes"
-                  : "Approved"}
-            </span>
+            {quiz.reviewStatus === "superseded" ? (
+              // Answers the patient replaced by taking the quiz again. Never read as a
+              // decision: the physician decides on the newer answers, not these.
+              <div className="rounded-[var(--radius-lg)] border border-[var(--color-line-2)] bg-[var(--color-surface-2)] p-5 flex flex-col gap-3 items-start">
+                <div>
+                  <span className="t-body font-semibold">Replaced by your newer answers</span>
+                  <p className="t-body text-[var(--color-ink-2)] mt-1">
+                    You took the quiz again before a physician decided on this one, so they will read your newer answers
+                    instead.
+                  </p>
+                </div>
+                {quiz.supersededBy ? (
+                  <ButtonLink href={`/app/results/${String(quiz.supersededBy)}`} variant="secondary">
+                    See your newer results
+                  </ButtonLink>
+                ) : null}
+              </div>
+            ) : quiz.reviewStatus === "pending" ? (
+              <div className="rounded-[var(--radius-lg)] border border-[var(--color-info)] bg-[var(--color-info-soft)] p-5">
+                <span className="t-body font-semibold">With a physician now</span>
+                <p className="t-body text-[var(--color-ink-2)] mt-1">
+                  Book a short phone call with a physician from Book a session: they read your answers, call you at the
+                  time you choose, then decide. If anything in your answers rules IV therapy out, they will tell you
+                  why.
+                </p>
+              </div>
+            ) : quiz.reviewStatus === "info_needed" ? (
+              <div className="rounded-[var(--radius-lg)] border border-[var(--color-info)] bg-[var(--color-info-soft)] p-5 flex flex-col gap-3">
+                <div>
+                  <span className="t-body font-semibold">
+                    {physician?.name ?? "Your physician"} needs one more thing
+                  </span>
+                  <p className="t-body-lg mt-2">{quiz.infoRequest}</p>
+                </div>
+                {quiz.infoAnswer ? (
+                  <div className="rounded-[var(--radius-md)] border border-[var(--color-line)] bg-[var(--color-surface)] px-4 py-3">
+                    <span className="t-micro">You answered</span>
+                    <p className="t-body text-[var(--color-ink-2)] mt-1">{quiz.infoAnswer}</p>
+                    <span className="t-small text-[var(--color-ink-3)] block mt-2">
+                      Back with your physician now. Your slot is still held.
+                    </span>
+                  </div>
+                ) : (
+                  <InfoAnswer quizId={id} />
+                )}
+              </div>
+            ) : (
+              <div className="flex flex-col gap-4">
+                <div
+                  className="rounded-[var(--radius-lg)] border p-5 flex flex-col gap-2"
+                  style={{
+                    borderColor: quiz.reviewStatus === "rejected" ? "var(--color-critical)" : "var(--color-safe)",
+                    background:
+                      quiz.reviewStatus === "rejected" ? "var(--color-critical-soft)" : "var(--color-safe-soft)",
+                  }}
+                >
+                  <span className="t-body font-semibold">
+                    {quiz.reviewStatus === "rejected"
+                      ? "A physician declined this protocol"
+                      : quiz.reviewStatus === "modified"
+                        ? "Approved, with changes"
+                        : "Approved"}
+                  </span>
 
-            {physician && (
-              <span className="t-small text-[var(--color-ink-2)]">
-                {physician.name}
-                {physician.doctor?.licenseNo ? ` · ${physician.doctor.licenseNo}` : ""}
-                {quiz.reviewedAt
-                  ? ` · ${new Date(quiz.reviewedAt).toLocaleDateString("en-IN", { day: "2-digit", month: "short", year: "numeric" })}`
-                  : ""}
-              </span>
-            )}
+                  {physician && (
+                    <span className="t-small text-[var(--color-ink-2)]">
+                      {physician.name}
+                      {physician.doctor?.licenseNo ? ` · ${physician.doctor.licenseNo}` : ""}
+                      {quiz.reviewedAt
+                        ? ` · ${new Date(quiz.reviewedAt).toLocaleDateString("en-IN", { day: "2-digit", month: "short", year: "numeric" })}`
+                        : ""}
+                    </span>
+                  )}
 
-            {/* The reason first, then the physician's own words. Being told
+                  {/* The reason first, then the physician's own words. Being told
                 only that "a physician declined this protocol" left the patient
                 to guess at why. */}
-            {quiz.declineReason && <p className="t-body-lg mt-1">{quiz.declineReason}</p>}
+                  {quiz.declineReason && <p className="t-body-lg mt-1">{quiz.declineReason}</p>}
 
-            {quiz.patientNote ? (
-              <p className={`t-body${quiz.declineReason ? " text-[var(--color-ink-2)]" : "-lg"} mt-1`}>
-                {quiz.patientNote}
-              </p>
-            ) : quiz.reviewStatus === "rejected" ? (
-              <p className="t-body text-[var(--color-ink-2)] mt-1">
-                This is not a refusal of care — it usually means something in your history needs a different route. Your
-                physician will be in touch.
-              </p>
-            ) : null}
+                  {quiz.patientNote ? (
+                    <p className={`t-body${quiz.declineReason ? " text-[var(--color-ink-2)]" : "-lg"} mt-1`}>
+                      {quiz.patientNote}
+                    </p>
+                  ) : quiz.reviewStatus === "rejected" ? (
+                    <p className="t-body text-[var(--color-ink-2)] mt-1">
+                      This is not a refusal of care — it usually means something in your history needs a different
+                      route. Your physician will be in touch.
+                    </p>
+                  ) : null}
 
-            {physicianChose && quiz.reviewStatus === "modified" && (
-              <span className="t-small text-[var(--color-ink-2)] mt-1">
-                What they recommend is below, and it is not the same as the quiz suggested.
-              </span>
-            )}
+                  {physicianChose && quiz.reviewStatus === "modified" && (
+                    <span className="t-small text-[var(--color-ink-2)] mt-1">
+                      What they recommend is below, and it is not the same as the quiz suggested.
+                    </span>
+                  )}
 
-            {quiz.recommendationStrength && quiz.reviewStatus !== "rejected" && (
-              <span className="t-small text-[var(--color-ink-2)]">
-                {STRENGTH_LABEL[quiz.recommendationStrength] ?? quiz.recommendationStrength}
-              </span>
+                  {quiz.recommendationStrength && quiz.reviewStatus !== "rejected" && (
+                    <span className="t-small text-[var(--color-ink-2)]">
+                      {STRENGTH_LABEL[quiz.recommendationStrength] ?? quiz.recommendationStrength}
+                    </span>
+                  )}
+                </div>
+
+                {quiz.reviewStatus !== "rejected" && (
+                  <ButtonLink href="/app/book" size="lg" block>
+                    Book a session
+                  </ButtonLink>
+                )}
+              </div>
             )}
           </div>
-
-          {quiz.reviewStatus !== "rejected" && (
-            <ButtonLink href="/app/book" size="lg" block>
-              Book a session
-            </ButtonLink>
-          )}
         </div>
-      )}
+        <div className={`contents @4xl:block ${AREA.c}`}>
+          <div className="order-4 @4xl:order-none">
+            {/* ---------------- All sixteen ---------------- */}
+            <div className="rounded-[var(--radius-lg)] border border-[var(--color-line)] bg-[var(--color-surface)] p-5 mb-5">
+              <span className="t-micro">All sixteen markers</span>
+              <div className="flex flex-col gap-5 mt-4">
+                {grouped.map((g) => (
+                  <div key={g.group}>
+                    <span className="t-small text-[var(--color-ink-3)] block mb-3">{g.group}</span>
+                    <div className="flex flex-col gap-[14px]">
+                      {g.items.map((m) => (
+                        <FillBar key={m.name} label={m.name} value={`${m.pct}%`} pct={m.pct} color={riskColor(m.pct)} />
+                      ))}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
     </MobileShell>
   );
 }

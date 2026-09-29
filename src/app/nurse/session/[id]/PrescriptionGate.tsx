@@ -131,7 +131,7 @@ export function PrescriptionGate({
   };
 
   return (
-    <div className="rounded-[var(--radius-lg)] border border-[var(--color-line-2)] bg-[var(--color-surface)] p-6 flex flex-col gap-4">
+    <div className="@container/gate w-full max-w-[640px] rounded-[var(--radius-lg)] border border-[var(--color-line-2)] bg-[var(--color-surface)] p-6 flex flex-col gap-4">
       <div className="flex flex-col gap-2">
         <span className="t-micro">Prescription locked</span>
         <h2 className="t-h3">Ask {patientName} for their code</h2>
@@ -142,7 +142,12 @@ export function PrescriptionGate({
       </div>
 
       {!sent ? (
-        <Button block loading={busy} onClick={request}>
+        <Button
+          block
+          loading={busy}
+          onClick={request}
+          className="@md/gate:w-auto @md/gate:min-w-[240px] @md/gate:self-start"
+        >
           Send a code to the patient
         </Button>
       ) : (

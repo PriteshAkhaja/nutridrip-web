@@ -23,7 +23,7 @@ export function MobileNav({ links, account }: { links: NavLink[]; account: { lab
   }
 
   return (
-    <div className="lg:hidden">
+    <div className="xl:hidden">
       <button
         type="button"
         onClick={() => setOpen((o) => !o)}

@@ -843,3 +843,184 @@ Fixed, with six more problems found by checking the whole calendar:
 | 20.6 | Live, patients: not offered to S. Krishnan and refused if booked directly (403); once his physician recommends it, it is offered and books; his results page shows it without a link | ✅ 5 checks |
 | 20.7 | Live, Drip builder: "Not on the website" label and no Public page button; editing Glow Protocol shows the box unticked and saving keeps it hidden; editing Hydrate Plus (no approval) shows "Needs physician approval" unticked and saving keeps it; label 12 px from its neighbours | ✅ 10 checks |
 | 20.8 | Typecheck, lint, Prettier, production build | ✅ clean |
+
+
+## 21. Patient and nurse apps at every screen size, desktop to phone
+
+**Asked (28 Sept):** the patient and nurse apps worked only as a phone screen. On a desktop they were a 560px column in the middle, with the phone's bottom tab bar. They need to work on every screen from desktop to mobile.
+
+Built in two steps, following the widths in the design's responsive proofs (Block 8): **(1)** one frame for all 22 screens, then **(2)** page layouts, screen by screen.
+
+**Step 1 (28 Sept): the frame.**
+- **Phone (below 834px):** unchanged, with bottom tabs and the header.
+- **Tablet (834–1023px):** a menu button in the header opens the sections in a drawer. It closes with ✕, Escape, a tap outside, or a tap on a link. Focus goes into the drawer and back to the button.
+- **Desktop (1024px and up):** a 240px sidebar, as in the doctor and admin consoles, with the sections and, at the bottom, who is signed in and Sign out. The page sits beside it with a larger title.
+- The sidebar shows the app's sections on every page, including a session or a report that hides the bottom tabs on a phone. It marks the section the page belongs to.
+- Nurse sidebar rows are 56px tall (used standing and gloved); patient rows are 44px.
+- The nurse app's "waiting to sync" banner now sits at the top of the page column instead of above the whole screen.
+
+| # | Test | Result |
+|---|---|---|
+| 21.1 | Live, 5 screens (patient Home, Sessions, a session; nurse Today, a session) at 1440 and 1024: sidebar 240px, no menu button, no bottom tabs, right section marked, no sideways scroll | ✅ 10 checks |
+| 21.2 | Same 5 screens at 834: menu button, no sidebar, no bottom tabs, no sideways scroll; the drawer opens with focus on Close and Sessions marked, Escape closes it and returns focus, tapping Reports goes there and closes it | ✅ 8 checks |
+| 21.3 | Same 5 screens at 390: as before (bottom tabs where the page had them), no sideways scroll | ✅ 5 checks |
+| 21.4 | Typecheck, lint, Prettier, 630 unit tests, production build | ✅ clean |
+
+
+**21, follow-up (28 Sept): the tablet layout starts at 768px, not 834px.** Reported: at 768px (an iPad held upright) the apps still looked like a stretched phone. The design's proofs start the tablet band at 834px, but most iPads held upright are narrower: iPad mini 744–768, iPad and iPad Air 820. So the menu button and drawer now start at **768px**, and the page there is up to 720px wide (was 640). Below 768px the phone layout, with bottom tabs, is unchanged.
+
+**Also (28 Sept): the address map uses Google's current pin.** The browser console warned that `google.maps.Marker` is deprecated. The address map (the welcome "Where should we come?" step, and Profile → Edit my details) now uses `AdvancedMarkerElement`, which can also be dragged with the keyboard. The script is loaded the way Google recommends (`loading=async`), which removes a second console warning about slower loading. The new pin needs a Map ID: set `NEXT_PUBLIC_GOOGLE_MAPS_MAP_ID` (Google Cloud → Map Management, free). Until then Google's `DEMO_MAP_ID` is used, which is fine for development. See `.env.example`.
+
+| # | Test | Result |
+|---|---|---|
+| 21.5 | Patient Home at 767px: bottom tabs, no menu; at 768 and 820: menu button, no bottom tabs, page 720px, no sideways scroll; at 1024: sidebar | ✅ 4 checks |
+| 21.6 | Profile → Edit my details at 1440: the map and the new pin load; no "Marker is deprecated" warning, no loading=async warning, no Maps errors in the console; dragging the pin with the mouse moves it and the form shows the new point | ✅ 5 checks |
+| 21.7 | Typecheck, lint, Prettier, 630 unit tests, production build | ✅ clean |
+
+
+**21, follow-up (28 Sept): tablets keep the bottom tabs.** Asked: on a tablet, show the same bottom tabs as on a phone, and only make the content wider. The menu button and drawer are gone. The bands are now:
+- **Phone (below 768px):** unchanged, with bottom tabs and a 560px page.
+- **Tablet (768–1023px):** the same bottom tabs, spread across the full width; the page uses the full width with 32px margins; no menu button.
+- **Desktop (1024px and up):** the sidebar in place of the bottom tabs, as before.
+
+| # | Test | Result |
+|---|---|---|
+| 21.8 | Patient Home at 390 and 767: phone layout; at 768, 820 and 1023: bottom tabs across the width, page full width with 32px margins, logo in line with the content, no menu button; at 1024 and 1440: sidebar; no sideways scroll anywhere | ✅ 10 checks |
+| 21.9 | Nurse at 820: Today has bottom tabs and full width; a session (a task screen) has no tabs, as on a phone | ✅ 2 checks |
+| 21.10 | Typecheck, lint, Prettier, 630 unit tests, production build | ✅ clean |
+
+
+**21, follow-up (28 Sept): the sign-in page on a tablet.** Reported: at 768px the sign-in form was a narrow 420px strip down the middle. On a tablet (768–1023px) the form, and the demo accounts under it in development, are now 560px wide. On a phone it fills the screen as before; on a desktop it stays 420px beside the demo accounts. (The demo accounts half exists only outside production; real users see the form alone.)
+
+| # | Test | Result |
+|---|---|---|
+| 21.11 | Sign-in form width: 342px at 390, 560px at 768, 420px at 1024 and 1440; no sideways scroll | ✅ |
+
+
+**21, step 2a (28 Sept): patient pages laid out for tablet and desktop.** Every patient screen now uses the width. Phones are unchanged, including the order of the cards.
+- **Home:** two columns from a tablet up. On the left, what happens next: the call, a session to rate, the next session and the approval. On the right, your health: the vitality score and the treatment plan.
+- **Sessions:** session cards two across. On a desktop the vitality trend sits beside them and stays in view (only when there is a trend to show).
+- **A live session:** the bag, your nurse and baseline vitals on the left; the nurse's progress and notes on the right.
+- **Session report:** what was given, vitals and what happened on the left; fees, aftercare, rating and who was responsible on the right.
+- **Your vitality (results):** score, lowest markers, suggestions and the physician's decision on the left; all sixteen markers on the right.
+- **Treatment plan:** on a desktop the summary stays in view beside the week-by-week schedule.
+- **Lab reports:** on a desktop the upload form sits beside the list; reports two across.
+- **Profile:** the detail cards two across, and the two buttons side by side. The page keeps a reading width on a desktop, because most of it is a form.
+- **Booking:** drips two across from a tablet up. On a desktop the page has two panes: which drip and where on the left; the time, the summary and the button on the right. In the call step the physicians sit beside their free times.
+- **Health quiz and the address step:** the column is 720px wide on a tablet or desktop (was 560).
+
+| # | Test | Result |
+|---|---|---|
+| 21.12 | Live, all 12 patient screens (Home, Sessions, a live session, a report, results, plan, reports, profile, booking with a call, booking approved, quiz, address step) at 390, 768, 1024 and 1440: no sideways scroll, nothing past the edge (on the address step only the map's own tiles, clipped inside the map) | ✅ 48 checks |
+| 21.13 | Home and results: on a phone the cards keep their order top to bottom; at 768, 1024 and 1440 they sit in two columns | ✅ 8 checks |
+| 21.14 | Typecheck, lint, Prettier, 630 unit tests, production build | ✅ clean |
+
+
+**21, step 2a follow-up (28 Sept): layouts follow the room the page has, not the screen.** Reported:
+- above 1024px the layout did not change, so a 1920px screen had a large empty area;
+- at 1024px the report cards were squeezed (file name cut, text broken word by word);
+- on a tablet the call's time picker was cramped inside a half-width card;
+- the call picker put Saturday and Sunday on a second row;
+- the website header broke its links onto two lines at 1024px.
+
+Changes:
+- **Columns follow the width of the page area, not the screen** (the desktop sidebar takes 240px, so a 1024px desktop leaves less room than a 1000px tablet). Home, Your vitality, a live session and a session report use:
+  - one full-width column below 896px of page, so pickers and forms inside a card have room;
+  - two columns from 896px, each at least ~430px;
+  - three from 1152px.
+
+  On a phone the cards keep their order.
+- **Wide pages use up to 1600px** (was 1200).
+- **Card lists fit as many columns as there is room for**: sessions (~340px each), lab reports (~320px), drips on the booking page (~240px), profile cards (~300px). No card is squeezed: at 1024px lab reports show two per row under the upload button; at 1920px, three beside it.
+- **Profile uses the full width.** The cards run up to four across. The edit form keeps a reading width (880px), and "Edit my details" is no longer a full-width bar.
+- **Booking, Lab reports, Treatment plan and Sessions** put their side panes beside the content only when the page has room for both.
+- **The call and session pickers show every day on one row.** A week of calls is 7 columns; on a narrow phone "20 free" wraps under the date instead.
+- **The website header** shows its page links from 1280px. Below that the menu button carries them, and no label breaks onto two lines.
+
+| # | Test | Result |
+|---|---|---|
+| 21.15 | Home and Your vitality at 425, 768, 1024, 1000 (tablet), 1280, 1440, 1536 and 1920: 1, 1, 1, 2, 2, 2, 3, 3 columns as the page width allows; no sideways scroll | ✅ 16 checks |
+| 21.16 | Lab reports and Profile at the same widths: no report card under 300px, no profile card under 290px, Edit button not stretched from a tablet up | ✅ 16 checks |
+| 21.17 | The call picker ("Move it") at 375, 425 and 768: all 7 days on one row, no sideways scroll | ✅ 3 checks |
+| 21.18 | Website header at 1024 (menu button, nothing on two lines) and 1280 (page links) | ✅ 2 checks |
+| 21.19 | All 12 patient screens at 390, 768, 1024 and 1440: no sideways scroll (on the address step only the map's own clipped tiles reach past the edge); on a phone Home and results keep their order | ✅ |
+| 21.20 | Typecheck, lint, Prettier, 630 unit tests, production build | ✅ clean |
+
+
+**21, follow-up (28 Sept): no empty strip on big screens; the day picker uses a phone's width.** Reported: on a big screen the right side stayed empty (Profile, Lab reports), and on a phone the "Move" day picker was cramped.
+- **Pages use the whole width beside the sidebar** at any size (the 1600px cap is gone).
+- **Lists stretch their cards to fill each row** (lab reports, sessions, drips when booking): two reports share the row instead of leaving empty slots on the right.
+- **Profile fills whole rows.** Its six cards go one, two or three across, never a half-empty row. Retake the health quiz, Lab reports and Sign out form one row as wide as the cards (stacked on a phone, as before). Lab reports is now an outlined button like the others.
+- **The Move and Reschedule panels** are a section under a rule on a phone, not a box inside the card. The days and times get the card's full width: at 425px a day is 46px wide (was ~40px). From 640px they are boxed as before. Days sit 4px apart when there are seven.
+
+| # | Test | Result |
+|---|---|---|
+| 21.21 | Profile, Lab reports and Home at 390, 768, 1024, 1440, 1920 and 2560: cards reach the right edge of the page (0px gap), no sideways scroll | ✅ 18 checks |
+| 21.22 | Profile: one card per row on a phone with Sign out below; full rows of 2 (768–1440) and 3 (1920, 2560); the button row exactly as wide as the cards | ✅ 6 checks |
+| 21.23 | Move panel at 375, 390, 425: seven days on one row, no inner box, the row as wide as the card; at 425 only Sunday's "no calls" wraps; at 768 boxed, every label on one line | ✅ 5 of 6 checks. The one flag is that "no calls" wrap at 425, accepted: the next step would take labels below 11px |
+| 21.24 | Typecheck, lint, Prettier, 630 unit tests, production build | ✅ clean |
+
+
+**21, follow-up (28 Sept): a week of days in two rows on a phone.** Reported: seven days squeezed into one row looked shrunk on a phone. A week of call days now wraps into rows of four (four and three) whenever the picker is under 448px wide. Each day is 67–80px wide and every "20 free" fits on one line. From 448px (a tablet up) all seven share one row, and the drip picker's five days always share one row.
+
+| # | Test | Result |
+|---|---|---|
+| 21.25 | Move panel at 375, 390, 425: two rows, 4 + 3, days 67 / 71 / 80px wide, no label on two lines; at 768 one row of 7; no sideways scroll | ✅ 7 checks |
+| 21.26 | Booking at 390: the drip picker's 5 days on one row | ✅ |
+| 21.27 | Typecheck, lint, Prettier, 630 unit tests, production build | ✅ clean |
+
+
+**21, follow-up (28 Sept): Edit my details at full width; lab report cards line up.** Reported: the Profile edit screen stayed 880px wide on a big screen; the lab report cards' buttons did not sit at the bottom; on a big screen the upload sat beside the cards instead of above them.
+- **Edit my details uses the whole width.** When the page has room (896px or more), you and your emergency contact sit on the left and the address with its map on the right. What a nurse reads aloud runs across the bottom, its boxes two to a row. Save sits at the right at its own width. Narrower, it is one column in the order it always had.
+- **Lab report cards:** Open and Remove sit at the bottom of every card, and the middle takes the spare height, so the buttons line up across a row.
+- **Lab reports:** the upload takes the whole row at every width, with the reports below it.
+
+| # | Test | Result |
+|---|---|---|
+| 21.28 | Edit my details at 390, 768, 1024, 1440, 1920: reaches the right edge (0px gap); at 1440 and 1920 the address sits beside you, reads-aloud spans the bottom and Save is 240px; narrower, one column in the original order; no sideways scroll | ✅ 5 checks |
+| 21.29 | Lab reports at the same widths: upload as wide as the page, reports below it; every Open button 21px from its card's bottom; level across a row from 768 up (on a phone the cards stack) | ✅ |
+| 21.30 | Typecheck, lint, Prettier, 630 unit tests, production build | ✅ clean |
+
+
+**21, follow-up (28 Sept): nothing spills out of a card on the public site.** Reported: on the Drips page at 768px the "Ingredients" label ran past the edge of the card, and "45–60 min" broke onto two lines.
+- **Drip cards:** the price, duration, volume and ingredients sit two by two in a narrow card (a phone, or a tablet's two columns), and in one row once the card is 448px wide. Their values never break.
+- **For clinics enquiry form:** on a phone, City takes its own row, with Rooms and Sessions/mo side by side under it. Three to a row had pushed "est." out of the card. From 640px the three share a row as before.
+- A sweep of every public page and the patient pages found nothing else.
+
+| # | Test | Result |
+|---|---|---|
+| 21.31 | 12 public pages (Home, Drips, a drip, Pricing, How it works, Safety, Zones, For clinics, About, FAQs, Consult, Terms) and 7 patient pages, at 390, 768, 1024, 1280 and 1920: no text or control drawn outside its card, no sideways scroll | ✅ 95 page-widths, 0 problems (a comparison table that scrolls inside its own box on a phone is deliberate and not counted) |
+| 21.32 | Typecheck, lint, Prettier, 630 unit tests, production build | ✅ clean |
+
+
+**21, step 2 (29 Sept): the nurse app, phone to big screen.** Every nurse screen now uses the width it has. A tablet keeps the bottom tabs with a wider page. From 1024px the side menu appears. Cards sit side by side and fill the row, with no empty band on the right.
+- **Today, Schedule, Kit:** sessions, kit items and plans are cards, as many across as fit (about 340px each). Cards in a row share one height, and their buttons sit level at the bottom. Once a card is wide, its button keeps a button's width instead of stretching. On the Schedule, time and status share a card's top line, so the name and address get the full width.
+- **Me:** Registration, Your record and What patients said sit two, then three, to a row, at one height.
+- **A plan:** the summary stays in view on the left, with the weeks beside it two to a row (one on a phone). Weeks in a row end level, with the physician's note at the foot. The patient's plan page uses the same weeks.
+- **A session:** once the page has room, On my way, progress and the prescription sit in a column that stays in view, with the checklist beside it. Buttons in the checklist keep a button's width.
+- **Vitals:** three fields to a row on a tablet, all six in one row on a big screen.
+- **Consent:** what was agreed to and the risks sit on the left; the agreement and the capture on the right.
+- **Kit check:** the items are cards, three across on a laptop, ticked in the same order.
+- **Prescription:** the components are cards, as many across as fit, with How it must run and Approved by in a column beside them. The locked screen asking for the patient's code is one focused card, never a bar across the page.
+- **Infusion running:** the bag and what is in it sit on the left and observations on the right. On a big screen the bag, the components and the observations sit three across.
+- **Adverse event:** what the patient reports, then what you did, on the left; severity, then anything else, on the right. On a phone the order is unchanged.
+- **Session report:** the record's cards flow into two, then three, columns.
+- Buttons are full width on a phone and a button's width from a tablet up.
+
+| # | Test | Result |
+|---|---|---|
+| 21.33 | All 16 nurse screens (Today, Schedule, Kit, Me, a plan, a session live and not started, Vitals, Consent, Kit check, Prescription open and locked, Infusion running, Adverse event, Report finished and in progress) at 390, 768, 1024, 1440, 1920 and 2560: no sideways scroll, nothing outside its card, cards reach the right edge, cards in a row at one height with buttons level, no button stretched across a tablet or wider page | ✅ 96 page-widths, 0 problems |
+| 21.34 | Every screen above checked by eye at each width; the adverse form keeps its phone order (reported, severity, what you did, anything else) | ✅ |
+| 21.35 | Patient plan page (shares the weeks) at 390, 768, 1440, 1920; public and patient sweep re-run | ✅ 0 problems |
+| 21.36 | Typecheck, lint, Prettier, 630 unit tests, production build | ✅ clean |
+
+
+**Quiz (29 Sept): a way out part-way.** Reported: while answering the health quiz there was no way to stop and go back, except the browser's own Back, which some patients will not think of.
+- **Close (✕) at the top right of every question.** With nothing answered yet it goes straight to Home.
+- **With answers given, it asks first:** "Leave the quiz?" The patient is told their answers so far will not be kept. Keep answering is the first, highlighted choice; Leave the quiz goes to Home. Escape or a tap outside keeps them on the quiz. On a retake it also says their earlier answers stay as they are; the first time, that they can take the quiz from Home whenever they are ready.
+- Unfinished answers are not saved anywhere (as agreed), so leaving by the browser's Back or by closing the tab still loses them.
+
+| # | Test | Result |
+|---|---|---|
+| 22.1 | At 390, 768, 1440: ✕ is 44 × 44 and does not make the header taller; nothing answered → Home at once; one answer → the question appears with Keep answering focused; Escape and Keep answering stay with the answer kept; Leave the quiz → Home; retake and first-time wording | ✅ 30 checks |
+| 22.2 | Typecheck, lint, Prettier, 630 unit tests, production build | ✅ clean |

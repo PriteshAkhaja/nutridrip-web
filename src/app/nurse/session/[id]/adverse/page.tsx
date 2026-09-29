@@ -23,6 +23,7 @@ export default async function AdversePage({ params }: { params: Promise<{ id: st
       title="Adverse event"
       subtitle={<span className="t-data text-[13px]">{booking.bookingNo}</span>}
       back={{ href: `/nurse/session/${id}`, label: "Back to checklist" }}
+      width="wide"
     >
       <div className="rounded-[var(--radius-md)] border border-[var(--color-critical)] bg-[var(--color-critical-soft)] px-4 py-3 mb-5">
         <span className="t-body font-semibold">Patient safety comes before this form</span>

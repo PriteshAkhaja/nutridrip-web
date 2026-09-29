@@ -202,7 +202,8 @@ export function VitalsForm({
         </div>
       )}
 
-      <div className="grid grid-cols-2 gap-3">
+      {/* Three to a row once the page is wide enough, two on a phone. */}
+      <div className="grid grid-cols-2 gap-3 @2xl:grid-cols-3 @6xl:grid-cols-6">
         {FIELDS.map((f) => {
           const out = isOut(f.vitalKey, values[f.key]);
           return (
@@ -310,16 +311,23 @@ export function VitalsForm({
                 : "You can move on to consent."}
           </p>
           <div className="mt-3">
-            <Button variant="secondary" block onClick={() => router.push(`/nurse/session/${bookingId}`)}>
+            <Button
+              variant="secondary"
+              block
+              className="@2xl:w-auto @2xl:min-w-[240px]"
+              onClick={() => router.push(`/nurse/session/${bookingId}`)}
+            >
               Back to checklist
             </Button>
           </div>
         </div>
       ) : (
-        <div className="flex flex-col gap-2">
+        // At a button's width once the page is wide, not a bar across it.
+        <div className="flex flex-col gap-2 @2xl:items-start">
           <Button
             size="lg"
             block
+            className="@2xl:w-auto @2xl:min-w-[280px]"
             loading={busy}
             disabled={missing !== null}
             onClick={submit}
@@ -328,7 +336,7 @@ export function VitalsForm({
             {correcting ? "Save the correction" : "Record vitals"}
           </Button>
           {missing && (
-            <span id="vitals-missing" className="t-small text-[var(--color-ink-2)] text-center">
+            <span id="vitals-missing" className="t-small text-[var(--color-ink-2)] text-center @2xl:text-left">
               {missing}
             </span>
           )}

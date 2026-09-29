@@ -374,7 +374,7 @@ export function RescheduleSession({
   }
 
   return (
-    <div className="rounded-[var(--radius-md)] border border-[var(--color-line)] bg-[var(--color-surface-2)] p-4 flex flex-col gap-4 mt-3">
+    <div className="border-t border-[var(--color-line)] pt-4 sm:rounded-[var(--radius-md)] sm:border sm:bg-[var(--color-surface-2)] sm:p-4 flex flex-col gap-4 mt-3">
       <span className="t-body font-semibold">Move {bookingNo}</span>
 
       {fee > 0 && (

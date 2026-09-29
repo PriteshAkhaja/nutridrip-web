@@ -15,6 +15,7 @@ import { NurseCodes } from "../../NurseCodes";
 import { liveCodesFor } from "@/lib/data/session-codes";
 import { getClockFormat } from "@/lib/settings/clock";
 import { clock } from "@/lib/time";
+import { AREA, COLUMNS } from "@/components/layout/columns";
 
 export const metadata: Metadata = { title: "Your session" };
 export const dynamic = "force-dynamic";
@@ -78,93 +79,102 @@ export default async function LiveSessionPage({ params }: { params: Promise<{ id
       }
       tabs={PATIENT_TABS}
       activeHref="/app"
+      width="wide"
     >
       <NurseCodes initial={codes} active={sessionOn && session.role === "patient"} bookingNo={booking.bookingNo} />
 
-      {/* ---------------- The bag ---------------- */}
-      <div className="rounded-[var(--radius-lg)] border border-[var(--color-line)] bg-[var(--color-surface)] p-6 flex gap-6 items-center mb-4">
-        <FillColumn pct={pct} ariaLabel={`${remaining} of ${bag} millilitres remaining`} />
-        <div className="flex flex-col gap-[10px]">
-          <div className="flex flex-col">
-            <span className="t-micro">Remaining</span>
-            <span className="t-data text-[22px] leading-[1.3]">{remaining} ml</span>
+      {/* Columns once the page has room (see columns.ts): the drip; who is
+          giving it and the readings before; how far the nurse has got. */}
+      <div className={COLUMNS}>
+        <div className={AREA.a}>
+          {/* ---------------- The bag ---------------- */}
+          <div className="rounded-[var(--radius-lg)] border border-[var(--color-line)] bg-[var(--color-surface)] p-6 flex gap-6 items-center mb-4">
+            <FillColumn pct={pct} ariaLabel={`${remaining} of ${bag} millilitres remaining`} />
+            <div className="flex flex-col gap-[10px]">
+              <div className="flex flex-col">
+                <span className="t-micro">Remaining</span>
+                <span className="t-data text-[22px] leading-[1.3]">{remaining} ml</span>
+              </div>
+              {minutesLeft !== null && (
+                <div className="flex flex-col">
+                  <span className="t-micro">About</span>
+                  <span className="t-data text-[14.5px]">{minutesLeft} min left</span>
+                </div>
+              )}
+              {booking.startedAt && (
+                <div className="flex flex-col">
+                  <span className="t-micro">Started</span>
+                  <span className="t-data text-[14.5px]">{formatTime(booking.startedAt, clockFmt)}</span>
+                </div>
+              )}
+            </div>
           </div>
-          {minutesLeft !== null && (
-            <div className="flex flex-col">
-              <span className="t-micro">About</span>
-              <span className="t-data text-[14.5px]">{minutesLeft} min left</span>
+        </div>
+        <div className={AREA.b}>
+          {/* ---------------- Nurse ---------------- */}
+          {nurse && (
+            <div className="rounded-[var(--radius-lg)] border border-[var(--color-line)] bg-[var(--color-surface)] p-5 mb-4">
+              <span className="t-micro">Your nurse</span>
+              <div className="flex items-baseline justify-between gap-3 mt-2">
+                <span className="t-body font-semibold">{nurse.name}</span>
+                <span className="t-data text-[13px] text-[var(--color-ink-3)]">{nurse.nurse?.licenseNo}</span>
+              </div>
             </div>
           )}
-          {booking.startedAt && (
-            <div className="flex flex-col">
-              <span className="t-micro">Started</span>
-              <span className="t-data text-[14.5px]">{formatTime(booking.startedAt, clockFmt)}</span>
+
+          {/* ---------------- Baseline vitals ---------------- */}
+          {baseline && (
+            <div className="rounded-[var(--radius-lg)] border border-[var(--color-line)] bg-[var(--color-surface)] p-5 mb-4">
+              <span className="t-micro">Baseline vitals · {formatTime(baseline.takenAt, clockFmt)}</span>
+              <div className="grid grid-cols-2 gap-3 mt-3">
+                {[
+                  ["Blood pressure", `${baseline.systolic}/${baseline.diastolic}`],
+                  ["Heart rate", `${baseline.heartRate} bpm`],
+                  ["SpO₂", `${baseline.spo2}%`],
+                  ["Temperature", `${baseline.temperatureF} °F`],
+                ].map(([k, v]) => (
+                  <div key={k} className="flex flex-col">
+                    <span className="t-small text-[var(--color-ink-3)]">{k}</span>
+                    <span className="t-data text-[16px]">{v}</span>
+                  </div>
+                ))}
+              </div>
+              <VitalsCorrected corrections={baseline.corrections} />
+            </div>
+          )}
+        </div>
+        <div className={AREA.c}>
+          {/* ---------------- Checklist progress ---------------- */}
+          <div className="rounded-[var(--radius-lg)] border border-[var(--color-line)] bg-[var(--color-surface)] p-5 mb-4">
+            <span className="t-micro block mb-4">Where your nurse is up to</span>
+            <div className="flex flex-col gap-[14px]">
+              {PHASE_ORDER.map((phase) => {
+                const p = progress.find((x) => x.phase === phase)!;
+                return <FillSegments key={phase} name={phase} done={p.done} total={p.total} />;
+              })}
+            </div>
+          </div>
+
+          {/* ---------------- Observations ---------------- */}
+          {booking.observations?.length > 0 && (
+            <div className="rounded-[var(--radius-lg)] border border-[var(--color-line)] bg-[var(--color-surface)] p-5">
+              <span className="t-micro block mb-3">Notes from your nurse</span>
+              <div className="flex flex-col gap-3">
+                {booking.observations.map((o, i) => (
+                  <div key={i} className="flex gap-3 items-start">
+                    <span
+                      className={`t-data text-[13px] text-[var(--color-ink-3)] flex-none whitespace-nowrap ${clockFmt === "24h" ? "w-[44px]" : "w-[64px]"}`}
+                    >
+                      {clock(o.at, clockFmt)}
+                    </span>
+                    <span className="t-body text-[var(--color-ink-2)]">{o.text}</span>
+                  </div>
+                ))}
+              </div>
             </div>
           )}
         </div>
       </div>
-
-      {/* ---------------- Nurse ---------------- */}
-      {nurse && (
-        <div className="rounded-[var(--radius-lg)] border border-[var(--color-line)] bg-[var(--color-surface)] p-5 mb-4">
-          <span className="t-micro">Your nurse</span>
-          <div className="flex items-baseline justify-between gap-3 mt-2">
-            <span className="t-body font-semibold">{nurse.name}</span>
-            <span className="t-data text-[13px] text-[var(--color-ink-3)]">{nurse.nurse?.licenseNo}</span>
-          </div>
-        </div>
-      )}
-
-      {/* ---------------- Baseline vitals ---------------- */}
-      {baseline && (
-        <div className="rounded-[var(--radius-lg)] border border-[var(--color-line)] bg-[var(--color-surface)] p-5 mb-4">
-          <span className="t-micro">Baseline vitals · {formatTime(baseline.takenAt, clockFmt)}</span>
-          <div className="grid grid-cols-2 gap-3 mt-3">
-            {[
-              ["Blood pressure", `${baseline.systolic}/${baseline.diastolic}`],
-              ["Heart rate", `${baseline.heartRate} bpm`],
-              ["SpO₂", `${baseline.spo2}%`],
-              ["Temperature", `${baseline.temperatureF} °F`],
-            ].map(([k, v]) => (
-              <div key={k} className="flex flex-col">
-                <span className="t-small text-[var(--color-ink-3)]">{k}</span>
-                <span className="t-data text-[16px]">{v}</span>
-              </div>
-            ))}
-          </div>
-          <VitalsCorrected corrections={baseline.corrections} />
-        </div>
-      )}
-
-      {/* ---------------- Checklist progress ---------------- */}
-      <div className="rounded-[var(--radius-lg)] border border-[var(--color-line)] bg-[var(--color-surface)] p-5 mb-4">
-        <span className="t-micro block mb-4">Where your nurse is up to</span>
-        <div className="flex flex-col gap-[14px]">
-          {PHASE_ORDER.map((phase) => {
-            const p = progress.find((x) => x.phase === phase)!;
-            return <FillSegments key={phase} name={phase} done={p.done} total={p.total} />;
-          })}
-        </div>
-      </div>
-
-      {/* ---------------- Observations ---------------- */}
-      {booking.observations?.length > 0 && (
-        <div className="rounded-[var(--radius-lg)] border border-[var(--color-line)] bg-[var(--color-surface)] p-5">
-          <span className="t-micro block mb-3">Notes from your nurse</span>
-          <div className="flex flex-col gap-3">
-            {booking.observations.map((o, i) => (
-              <div key={i} className="flex gap-3 items-start">
-                <span
-                  className={`t-data text-[13px] text-[var(--color-ink-3)] flex-none whitespace-nowrap ${clockFmt === "24h" ? "w-[44px]" : "w-[64px]"}`}
-                >
-                  {clock(o.at, clockFmt)}
-                </span>
-                <span className="t-body text-[var(--color-ink-2)]">{o.text}</span>
-              </div>
-            ))}
-          </div>
-        </div>
-      )}
     </MobileShell>
   );
 }

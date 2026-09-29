@@ -124,7 +124,7 @@ export default async function CataloguePage({
             <Link
               key={d.slug}
               href={`/drips/${d.slug}`}
-              className="rounded-[var(--radius-lg)] border border-[var(--color-line)] bg-[var(--color-surface)] p-6 no-underline hover:no-underline hover:border-[var(--color-ink)] transition-colors duration-150 flex flex-col gap-4"
+              className="@container rounded-[var(--radius-lg)] border border-[var(--color-line)] bg-[var(--color-surface)] p-6 no-underline hover:no-underline hover:border-[var(--color-ink)] transition-colors duration-150 flex flex-col gap-4"
             >
               <div className="flex items-start justify-between gap-4">
                 {/* The icon sits ON the category line rather than beside the
@@ -178,7 +178,10 @@ export default async function CataloguePage({
                 </div>
               )}
 
-              <div className="flex gap-6 pt-4 mt-auto border-t border-[var(--color-line)]">
+              {/* Two by two in a narrow card (a phone, or a tablet's two
+                  columns), one row once the card is 448px wide. A single row
+                  in a narrow card pushed "Ingredients" past its edge. */}
+              <div className="grid grid-cols-2 gap-x-6 gap-y-3 @md:flex @md:gap-6 pt-4 mt-auto border-t border-[var(--color-line)] [&>div]:whitespace-nowrap">
                 <div className="flex flex-col">
                   <span className="t-micro">Price</span>
                   <span className="t-data text-[16px] leading-[1.4]">{formatInr(d.priceInr)}</span>
