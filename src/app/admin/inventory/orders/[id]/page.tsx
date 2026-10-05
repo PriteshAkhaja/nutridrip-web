@@ -158,12 +158,31 @@ export default async function OrderDetailPage({ params }: { params: Promise<{ id
       {pay !== "credit" && (order.status === "DRAFT" || pay === "received" || order.payment?.refundDue) && (
         <Card
           tone={
-            pay === "received" ? "safe" : pay === "submitted" ? "info" : order.payment?.refundDue ? "caution" : "muted"
+            order.payment?.method === "online" && order.status === "CANCELLED"
+              ? "info"
+              : pay === "received"
+                ? "safe"
+                : pay === "submitted"
+                  ? "info"
+                  : order.payment?.refundDue
+                    ? "caution"
+                    : "muted"
           }
           padding="p-5"
           className="mb-6"
         >
-          {order.payment?.refundDue ? (
+          {order.payment?.method === "online" && order.status === "CANCELLED" ? (
+            <>
+              <span className="t-body font-semibold block">
+                {order.payment?.refundDue ? "Refund on its way to the clinic" : "Refunded to the clinic"}
+              </span>
+              <span className="t-body text-[var(--color-ink-2)]">
+                Paid online and cancelled: {formatInr(order.amount ?? 0)} goes back through Razorpay to the account{" "}
+                {clinic?.name ?? "the clinic"} paid from — nothing to do here. Its progress is under{" "}
+                <a href="/admin/payments?view=refunds">Payments</a>.
+              </span>
+            </>
+          ) : order.payment?.refundDue ? (
             <>
               <span className="t-body font-semibold block">Refund due to the clinic</span>
               <span className="t-body text-[var(--color-ink-2)]">

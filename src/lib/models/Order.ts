@@ -45,7 +45,10 @@ const OrderSchema = new Schema(
      */
     payment: {
       state: { type: String, enum: ["awaiting", "submitted", "received"] },
-      method: { type: String, enum: ["upi", "bank_transfer", "cheque"] },
+      /** "online" is Razorpay: received the moment it is captured, with nobody to check it. */
+      method: { type: String, enum: ["upi", "bank_transfer", "cheque", "online"] },
+      /** The Payment record, when paid online. */
+      paymentId: { type: Schema.Types.ObjectId, ref: "Payment" },
       reference: String,
       paidOn: Date,
       submittedAt: Date,
@@ -56,6 +59,9 @@ const OrderSchema = new Schema(
       note: String,
       /** Cancelled after the money arrived: owed back to the clinic. */
       refundDue: Boolean,
+      /** Paid online and refunded through Razorpay: when it was started, and when the bank confirmed it. */
+      refundStartedAt: Date,
+      refundedAt: Date,
     },
     scheduledDelivery: Date,
     notes: String,

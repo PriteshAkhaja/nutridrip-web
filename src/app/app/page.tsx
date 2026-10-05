@@ -23,6 +23,9 @@ import { sessionToRate } from "@/lib/data/feedback-prompt";
 import { getLatePolicy } from "@/lib/billing/settings";
 import { LateCharges } from "@/components/ui/LateCharges";
 import { CancelSession, RescheduleSession } from "./sessions/SessionActions";
+import { SessionMoney } from "@/components/payments/SessionMoney";
+import { paymentsEnabled, paymentsSetup } from "@/lib/payments/config";
+import { sweepBookingMoney } from "@/lib/payments/money";
 import { CallCard } from "./CallCard";
 import { callGate, expireStaleHolds, lastCallFor } from "@/lib/data/calls";
 import { callWhen } from "@/lib/clinical/calls";
@@ -107,6 +110,8 @@ export default async function PatientHomePage() {
   await connectDB();
   // A held drip whose time passed without an approval is released first.
   await expireStaleHolds(session.sub);
+  // Money a session is owed that an earlier run did not get to finish.
+  await sweepBookingMoney({ patientId: session.sub });
 
   const [user, quiz, upcoming, plans] = await Promise.all([
     User.findById(session.sub).lean<{ name: string; patient?: { vitalityScore?: number } } | null>(),
@@ -144,7 +149,12 @@ export default async function PatientHomePage() {
           at: Date;
           note?: string;
           settledAs?: "paid" | "waived";
+          paidMethod?: string;
         }>;
+        paymentStatus?: string;
+        amount?: number;
+        paidAmount?: number;
+        refundedAmount?: number;
       } | null>(),
     // Drafts are excluded inside plansFor — a plan the physician has not
     // shared yet is not the patient's to read.
@@ -158,6 +168,8 @@ export default async function PatientHomePage() {
   const approval = approvalState(quiz);
   // For moving or cancelling the next session from here, on the same terms as Sessions.
   const policy = await getLatePolicy();
+  const payOnline = paymentsEnabled();
+  const instantRefunds = paymentsSetup().refundSpeed === "optimum";
 
   // A nurse can be at the door for any of these, and may ask for a code.
   const sessionOn = await Booking.exists({
@@ -297,7 +309,19 @@ export default async function PatientHomePage() {
                     at: new Date(c.at).toISOString(),
                     note: c.note ?? null,
                     settledAs: c.settledAs ?? null,
+                    paidMethod: c.paidMethod ?? null,
                   }))}
+                />
+                <SessionMoney
+                  instantRefunds={instantRefunds}
+                  bookingId={String(upcoming._id)}
+                  status={upcoming.status}
+                  paymentStatus={upcoming.paymentStatus ?? "unpaid"}
+                  amount={upcoming.amount ?? 0}
+                  paidAmount={upcoming.paidAmount ?? 0}
+                  refundedAmount={upcoming.refundedAmount ?? 0}
+                  owedFees={(upcoming.charges ?? []).filter((c) => !c.settledAs).reduce((n, c) => n + c.amount, 0)}
+                  payOnline={payOnline}
                 />
 
                 {/* Moving or cancelling it, from where the patient first sees it --
@@ -309,12 +333,14 @@ export default async function PatientHomePage() {
                       bookingNo={upcoming.bookingNo}
                       scheduledAt={upcoming.scheduledAt.toISOString()}
                       policy={policy}
+                      payOnline={payOnline}
                     />
                     <CancelSession
                       bookingId={String(upcoming._id)}
                       bookingNo={upcoming.bookingNo}
                       scheduledAt={upcoming.scheduledAt.toISOString()}
                       policy={policy}
+                      paidNet={Math.max(0, (upcoming.paidAmount ?? 0) - (upcoming.refundedAmount ?? 0))}
                     />
                   </div>
                 )}

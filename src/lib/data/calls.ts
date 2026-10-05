@@ -1,6 +1,7 @@
 import { connectDB } from "@/lib/db/mongoose";
 import { AuditLog, Booking, Consultation, DoctorHours, HealthQuiz, User } from "@/lib/models";
 import { notify } from "@/lib/notify";
+import { syncBookingMoney } from "@/lib/payments/money";
 import { istInstant, istParts } from "@/lib/clinical/slots";
 import {
   callClash,
@@ -242,14 +243,17 @@ export async function expireStaleHolds(patientId?: string): Promise<number> {
           status: "cancelled",
           cancelledAt: new Date(),
           cancelReason: "The time passed before a physician approved it.",
+          cancelledByRole: "system",
         },
       }
     );
     if (!res.modifiedCount) continue;
+    // What was paid to hold it goes back.
+    await syncBookingMoney(String(b._id)).catch((err) => console.error("[holds] refund:", err));
     await notify(
       String(b.patientId),
       `Your held session lapsed · ${b.bookingNo}`,
-      "Its time passed before a physician approved your answers. Pick a new time once they have.",
+      "Its time passed before a physician approved your answers. Anything you paid to hold it is refunded in full. Pick a new time once they have.",
       "warning",
       "/app"
     );

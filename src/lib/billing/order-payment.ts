@@ -7,18 +7,22 @@
  * confirmed and its stock reserved. A clinic the team has put "on credit" skips
  * all of this and pays within 30 days of the invoice, as before.
  *
- * Nothing here takes money: there is no payment gateway. It records a payment
- * made elsewhere, and makes sure the pharmacy never prepares an order that has
- * not been paid for.
+ * Paying online (Razorpay, lib/payments) skips the checking: the order is
+ * received the moment the payment is captured. Recording a transfer made
+ * outside the app stays, for clinics that pay a large order by NEFT or cheque.
+ * Either way the pharmacy never prepares an order that has not been paid for.
  */
 export type OrderPayState = "awaiting" | "submitted" | "received";
+/** What a clinic records by hand, for a payment made outside the app. */
 export const PAY_METHODS = ["upi", "bank_transfer", "cheque"] as const;
-export type PayMethod = (typeof PAY_METHODS)[number];
+/** ...and "online", a Razorpay payment, which is received the moment it is captured. */
+export type PayMethod = (typeof PAY_METHODS)[number] | "online";
 
 export const PAY_METHOD_LABEL: Record<PayMethod, string> = {
   upi: "UPI",
   bank_transfer: "Bank transfer",
   cheque: "Cheque",
+  online: "Online (Razorpay)",
 };
 
 export type OrderPayment = {
@@ -53,6 +57,11 @@ type OrderLike = {
 export function needsPayment(order: OrderLike, clinicOnCredit = false): boolean {
   if (!order.clinicId) return false;
   if (typeof order.onCredit === "boolean") return !order.onCredit;
+  // No decision recorded, but a payment on it: it was paid first, whatever it
+  // became since. Without this, a paid order that is confirmed or cancelled
+  // read as "on credit", and its refund went unshown. (Only a pay-first order
+  // ever carries a payment: recording one is refused on credit.)
+  if (order.payment?.state) return true;
   return order.status === "DRAFT" && !clinicOnCredit;
 }
 

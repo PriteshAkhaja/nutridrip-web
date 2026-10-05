@@ -2,21 +2,25 @@ import { connectDB } from "@/lib/db/mongoose";
 import { Booking, User } from "@/lib/models";
 import { zoneForPincode } from "@/lib/zones";
 import { getZones } from "@/lib/zones-store";
-import { NURSE_CAPACITY, distanceKm } from "./nurse-options";
-import { HOLDING_STATUSES, busyNurses } from "./slots";
+import { distanceKm } from "./nurse-options";
+import { HOLDING_STATUSES, busyNurses, istDateOf, istInstant } from "./slots";
+import { getNurseDayLimit } from "@/lib/settings/nurse-day";
 
 // Defined in nurse-options because that file must stay free of any database
 // import — the admin form reaches it from the browser. Re-exported here so
 // callers that have always read them from dispatch still can.
-export { NURSE_CAPACITY, distanceKm } from "./nurse-options";
+export { DEFAULT_NURSE_DAY_LIMIT, distanceKm } from "./nurse-options";
 
 const OPEN_STATUSES = ["approved", "nurse_assigned", "en_route", "in_progress"];
+/** What counts towards a nurse's day: everything on them that day, the finished ones too. */
+export const DAY_STATUSES = [...HOLDING_STATUSES, "completed"];
 
 export type NursePick = {
   nurseId: string;
   name: string;
   phone?: string;
   distanceKm: number;
+  /** Sessions already on them that day (with a session to staff), or all they have open. */
   load: number;
   /** False when nobody covering the zone was free, so the nearest was taken. */
   coversZone: boolean;
@@ -27,13 +31,15 @@ export type NursePick = {
 };
 
 /**
- * Pick the nearest active nurse who is still under capacity. If a specific
- * nurse was requested but cannot take it, fall back to the nearest one and say
- * so — never swap silently, because the doctor asked for a reason.
+ * Pick the nearest active nurse who can take it. If a specific nurse was
+ * requested but cannot take it, fall back to the nearest one and say so —
+ * never swap silently, because the doctor asked for a reason.
  *
  * Given the session's time, a nurse already busy then (another session, or the
- * travel after it) is not picked: the booking screen only offered the time
- * because somebody was free, and that somebody is who should go.
+ * travel after it) is not picked, nor one who already has their most sessions
+ * for that day (the super admin's limit). The booking screen applies the same
+ * two rules, so it only offered the time because somebody could go -- and that
+ * somebody is who should go.
  */
 export async function pickNurse(
   patient: { latitude?: number | null; longitude?: number | null; pincode?: string | null },
@@ -46,7 +52,10 @@ export async function pickNurse(
 ): Promise<NursePick | null> {
   await connectDB();
 
-  const [nurses, openBookings, zones] = await Promise.all([
+  const s = opts.session;
+  // The India day of the session being staffed, when there is one.
+  const dayStart = s ? istInstant(istDateOf(s.start.getTime()), "00:00") : null;
+  const [nurses, openBookings, zones, dayLimit, sameDay] = await Promise.all([
     User.find({ role: "nurse", status: "active" }).lean<
       Array<{
         _id: unknown;
@@ -59,16 +68,28 @@ export async function pickNurse(
       .select("nurseId status scheduledAt durationMin")
       .lean<Array<{ _id: unknown; nurseId: unknown; status: string; scheduledAt: Date; durationMin?: number }>>(),
     getZones(),
+    getNurseDayLimit(),
+    dayStart
+      ? Booking.find({
+          status: { $in: DAY_STATUSES },
+          nurseId: { $ne: null },
+          scheduledAt: { $gte: dayStart, $lt: new Date(dayStart.getTime() + 24 * 3_600_000) },
+          ...(s?.bookingId ? { _id: { $ne: s.bookingId } } : {}),
+        })
+          .select("nurseId")
+          .lean<Array<{ nurseId: unknown }>>()
+      : Promise.resolve(null),
   ]);
 
+  // With a session to staff: each nurse's sessions that day, against the limit.
+  // Without one there is no day to count, so it is what they have open, and no limit.
   const load = new Map<string, number>();
-  for (const b of openBookings) {
-    if (!OPEN_STATUSES.includes(b.status)) continue;
+  for (const b of sameDay ?? openBookings.filter((o) => OPEN_STATUSES.includes(o.status))) {
     const k = String(b.nurseId);
     load.set(k, (load.get(k) ?? 0) + 1);
   }
+  const fullThatDay = (nurseId: string) => sameDay !== null && (load.get(nurseId) ?? 0) >= dayLimit;
 
-  const s = opts.session;
   const busy = s
     ? busyNurses(
         openBookings
@@ -112,7 +133,7 @@ export async function pickNurse(
         km: hasGeo ? distanceKm(patient.latitude!, patient.longitude!, n.nurse!.latitude!, n.nurse!.longitude!) : 9999,
       };
     })
-    .filter((r) => r.load < NURSE_CAPACITY && !busy.has(String(r.nurse._id)))
+    .filter((r) => !fullThatDay(String(r.nurse._id)) && !busy.has(String(r.nurse._id)))
     // Whoever covers the zone comes first, then the nearest, then the least busy.
     .sort((a, b) => (a.covers !== b.covers ? (a.covers ? -1 : 1) : a.km !== b.km ? a.km - b.km : a.load - b.load));
 

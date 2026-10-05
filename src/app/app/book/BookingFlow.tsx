@@ -12,6 +12,7 @@ import { latePolicySentence, type LatePolicy } from "@/lib/billing/late-policy";
 import { filterDrips, noMatchMessage } from "@/lib/data/drip-search";
 import { useClockFormat } from "@/components/ClockProvider";
 import { clockText } from "@/lib/time";
+import { PayButton, PaymentTrust } from "@/components/payments/PayButton";
 
 type DripOption = {
   id: string;
@@ -26,12 +27,11 @@ type DripOption = {
   keywords?: Array<string | undefined>;
 };
 
-type ClinicOption = { id: string; name: string; city: string };
-
+// Where the nurse comes to. Partner clinics are the business's own customers and
+// are not offered to patients.
 const LOCATIONS = [
   { value: "home", label: "My home" },
   { value: "office", label: "My office" },
-  { value: "clinic", label: "A partner clinic" },
   { value: "hotel", label: "A hotel" },
 ] as const;
 
@@ -57,7 +57,6 @@ export function CoverageNote({ pincode, zones }: { pincode: string; zones: Zone[
 
 export function BookingFlow({
   drips,
-  clinics,
   recommendedIds = [],
   preferredSlug,
   defaultAddress,
@@ -65,9 +64,9 @@ export function BookingFlow({
   pendingReview,
   zones,
   latePolicy,
+  payOnline = false,
 }: {
   drips: DripOption[];
-  clinics: ClinicOption[];
   /** What the physician recommended, or the quiz suggested. Leads the list. */
   recommendedIds?: string[];
   preferredSlug: string | null;
@@ -78,6 +77,8 @@ export function BookingFlow({
   zones: Zone[];
   /** The late-change rule and fees, from the Billing page. */
   latePolicy: LatePolicy;
+  /** Online payment is on: the session is paid for to book it. */
+  payOnline?: boolean;
 }) {
   const clockFmt = useClockFormat();
   const router = useRouter();
@@ -111,7 +112,6 @@ export function BookingFlow({
   const [slotAt, setSlotAt] = useState<string | null>(null);
   const [slotReload, setSlotReload] = useState(0);
   const [location, setLocation] = useState<(typeof LOCATIONS)[number]["value"]>("home");
-  const [clinicId, setClinicId] = useState(clinics[0]?.id ?? "");
   const [address, setAddress] = useState(defaultAddress);
   const [pincode, setPincode] = useState(defaultPincode);
   const [busy, setBusy] = useState(false);
@@ -119,7 +119,6 @@ export function BookingFlow({
   const [query, setQuery] = useState("");
 
   const drip = drips.find((d) => d.id === dripId);
-  const atClinic = location === "clinic";
   const served = Boolean(zoneForPincode(pincode, zones));
 
   // The chosen drip stays on screen even when it falls outside the search, so a
@@ -138,9 +137,8 @@ export function BookingFlow({
           dripId,
           scheduledAt: slotAt,
           location,
-          address: atClinic ? undefined : address,
-          pincode: atClinic ? undefined : pincode,
-          clinicId: atClinic ? clinicId : undefined,
+          address,
+          pincode,
         }),
       });
       const json = await res.json();
@@ -161,14 +159,9 @@ export function BookingFlow({
 
   // What the slot picker asks about: this drip's length, at this address.
   const slotQuery =
-    !dripId || (atClinic ? !clinicId : pincode.length !== 6 || !served)
-      ? null
-      : new URLSearchParams(atClinic ? { dripId, location, clinicId } : { dripId, location, pincode }).toString();
+    !dripId || pincode.length !== 6 || !served ? null : new URLSearchParams({ dripId, location, pincode }).toString();
 
-  const canSubmit =
-    Boolean(dripId) &&
-    Boolean(slotAt) &&
-    (atClinic ? Boolean(clinicId) : Boolean(address) && pincode.length === 6 && served);
+  const canSubmit = Boolean(dripId) && Boolean(slotAt) && Boolean(address) && pincode.length === 6 && served;
 
   return (
     // On a desktop, two panes: what and where on the left; when, the summary
@@ -178,8 +171,9 @@ export function BookingFlow({
         {pendingReview && (
           <div className="rounded-[var(--radius-md)] border border-[var(--color-info)] bg-[var(--color-info-soft)] px-4 py-3">
             <span className="t-body text-[var(--color-ink-2)]">
-              You can hold a slot now. It is confirmed only once a physician approves your quiz, and nothing is charged
-              before then.
+              {payOnline
+                ? "You can hold a slot now. You pay to hold it, and it is confirmed once a physician approves your quiz — if they do not, everything you paid is refunded in full, automatically."
+                : "You can hold a slot now. It is confirmed only once a physician approves your quiz, and nothing is charged before then."}
             </span>
           </div>
         )}
@@ -255,44 +249,30 @@ export function BookingFlow({
         <div className="flex flex-col gap-4">
           <Select label="Where" value={location} onChange={(e) => setLocation(e.target.value as typeof location)}>
             {LOCATIONS.map((l) => (
-              <option key={l.value} value={l.value} disabled={l.value === "clinic" && clinics.length === 0}>
+              <option key={l.value} value={l.value}>
                 {l.label}
-                {l.value === "clinic" && clinics.length === 0 ? " — none taking bookings" : ""}
               </option>
             ))}
           </Select>
 
-          {atClinic ? (
-            <Select label="Which clinic" value={clinicId} onChange={(e) => setClinicId(e.target.value)}>
-              {clinics.map((c) => (
-                <option key={c.id} value={c.id}>
-                  {c.name}
-                  {c.city ? ` — ${c.city}` : ""}
-                </option>
-              ))}
-            </Select>
-          ) : (
-            <>
-              <Input
-                label="Address"
-                placeholder="Flat, building, street"
-                value={address}
-                onChange={(e) => setAddress(e.target.value)}
-              />
-              <div className="flex flex-col gap-[7px]">
-                <Input
-                  label="Pincode"
-                  hint={`${zones.length} ${zones.length === 1 ? "zone" : "zones"} served`}
-                  mono
-                  inputMode="numeric"
-                  maxLength={6}
-                  value={pincode}
-                  onChange={(e) => setPincode(e.target.value.replace(/\D/g, ""))}
-                />
-                <CoverageNote pincode={pincode} zones={zones} />
-              </div>
-            </>
-          )}
+          <Input
+            label="Address"
+            placeholder="Flat, building, street"
+            value={address}
+            onChange={(e) => setAddress(e.target.value)}
+          />
+          <div className="flex flex-col gap-[7px]">
+            <Input
+              label="Pincode"
+              hint={`${zones.length} ${zones.length === 1 ? "zone" : "zones"} served`}
+              mono
+              inputMode="numeric"
+              maxLength={6}
+              value={pincode}
+              onChange={(e) => setPincode(e.target.value.replace(/\D/g, ""))}
+            />
+            <CoverageNote pincode={pincode} zones={zones} />
+          </div>
         </div>
       </div>
 
@@ -303,47 +283,97 @@ export function BookingFlow({
           value={slotAt}
           onChange={setSlotAt}
           reloadKey={slotReload}
-          idleMessage={
-            atClinic ? "Choose the clinic to see the times." : "Enter your pincode to see the times a nurse can come."
-          }
+          idleMessage="Enter your pincode to see the times a nurse can come."
         />
 
-        {/* ---------------- Summary ---------------- */}
+        {/* ---------------- Summary ----------------
+            A checkout card: what is being booked, then the total set apart in
+            large figures, then what happens to the money if it does not go ahead. */}
         {drip && (
-          <div className="rounded-[var(--radius-lg)] border border-[var(--color-line)] bg-[var(--color-surface-2)] p-5">
-            <span className="t-micro">Summary</span>
-            <div className="flex flex-col gap-2 mt-3">
-              {[
-                ["Drip", drip.name],
-                ["When", slotAt ? slotLabel(slotAt, clockFmt) : "Pick a time"],
-                [
-                  "Where",
-                  atClinic
-                    ? (clinics.find((c) => c.id === clinicId)?.name ?? "Clinic")
-                    : (LOCATIONS.find((l) => l.value === location)?.label ?? ""),
-                ],
-                ["Duration", `${drip.durationMin} min`],
-                ["Session total", formatInr(drip.priceInr)],
-              ].map(([k, v]) => (
-                <div key={k} className="flex justify-between gap-4 items-baseline">
-                  <span className="t-body text-[var(--color-ink-2)]">{k}</span>
-                  <span className="t-data text-[14.5px]">{v}</span>
-                </div>
-              ))}
+          <div className="rounded-[var(--radius-lg)] border border-[var(--color-line)] bg-[var(--color-surface)] overflow-hidden">
+            <div className="p-5">
+              <span className="t-micro">Summary</span>
+              <div className="flex flex-col gap-2 mt-3">
+                {[
+                  ["Drip", drip.name],
+                  ["When", slotAt ? slotLabel(slotAt, clockFmt) : "Pick a time"],
+                  ["Where", LOCATIONS.find((l) => l.value === location)?.label ?? ""],
+                  ["Duration", `${drip.durationMin} min`],
+                ].map(([k, v]) => (
+                  <div key={k} className="flex justify-between gap-4 items-baseline">
+                    <span className="t-body text-[var(--color-ink-2)]">{k}</span>
+                    <span className="t-data text-[14.5px] text-right">{v}</span>
+                  </div>
+                ))}
+              </div>
             </div>
-            <p className="t-small text-[var(--color-ink-3)] mt-4">{latePolicySentence(latePolicy)}</p>
+            <div className="px-5 py-4 border-t border-[var(--color-line)] bg-[var(--color-surface-2)] flex flex-col gap-3">
+              <div className="flex justify-between gap-4 items-baseline">
+                <span className="t-body font-semibold">{payOnline ? "Total to pay now" : "Session total"}</span>
+                <span className="t-data text-[22px] leading-[1.2]">{formatInr(drip.priceInr)}</span>
+              </div>
+              <p className="t-small text-[var(--color-ink-3)]">{latePolicySentence(latePolicy)}</p>
+              {payOnline && (
+                <p className="t-small text-[var(--color-ink-3)]">
+                  If the session does not go ahead — the physician does not approve, we cancel, or your vitals stop it —
+                  everything you paid is refunded to the account you paid from, automatically.
+                </p>
+              )}
+            </div>
           </div>
         )}
 
         {error && (
-          <div className="rounded-[var(--radius-md)] border border-[var(--color-critical)] bg-[var(--color-critical-soft)] px-4 py-3">
+          <div className="pay-swap rounded-[var(--radius-md)] border border-[var(--color-critical)] bg-[var(--color-critical-soft)] px-4 py-3">
             <span className="t-body text-[var(--color-ink-2)]">{error}</span>
           </div>
         )}
 
-        <Button size="lg" block loading={busy} disabled={!canSubmit} onClick={submit}>
-          {pendingReview ? "Hold this slot" : "Confirm booking"}
-        </Button>
+        {payOnline ? (
+          <div className="flex flex-col gap-3">
+            <PayButton
+              size="lg"
+              block
+              navigate
+              disabled={!canSubmit}
+              successTitle={pendingReview ? "Paid — your slot is held" : "Paid — you are booked"}
+              finishing={pendingReview ? "Holding your slot" : "Booking your session"}
+              request={{
+                purpose: "booking",
+                booking: {
+                  dripId,
+                  scheduledAt: slotAt,
+                  location,
+                  address,
+                  pincode,
+                },
+              }}
+              onRefused={(r) => {
+                setError(r.message);
+                // Taken since the grid loaded: show the times as they are now.
+                if (r.status === 409 || r.status === 422) setSlotReload((n) => n + 1);
+              }}
+              onSettled={(st) => {
+                // Paid for a time that went while paying, and refunded: that time is
+                // gone, so clear it and show the times as they are now.
+                if (st.phase === "refunded") {
+                  setSlotAt(null);
+                  setSlotReload((n) => n + 1);
+                }
+              }}
+              noticeAlign="center"
+            >
+              {drip
+                ? `Pay ${formatInr(drip.priceInr)} and ${pendingReview ? "hold this slot" : "book"}`
+                : "Pay and book"}
+            </PayButton>
+            <PaymentTrust align="center" />
+          </div>
+        ) : (
+          <Button size="lg" block loading={busy} disabled={!canSubmit} onClick={submit}>
+            {pendingReview ? "Hold this slot" : "Confirm booking"}
+          </Button>
+        )}
       </div>
     </div>
   );

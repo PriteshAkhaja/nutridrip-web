@@ -64,8 +64,12 @@ export function CountUp({
         if (!entry?.isIntersecting) return;
         io.disconnect();
         cancelAnimationFrame(raf);
-        const t0 = performance.now();
+        // Timed from the first frame's own timestamp, not performance.now():
+        // the two clocks can disagree, and a start later than the next frame
+        // would put the count below zero.
+        let t0: number | undefined;
         const tick = (now: number) => {
+          t0 ??= now;
           const t = Math.min(1, (now - t0) / duration);
           // Quartic ease-out: quick to rise, slow to land on the real figure.
           setShown(format(parsed, parsed.number * (1 - Math.pow(1 - t, 4))));

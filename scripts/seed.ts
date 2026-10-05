@@ -38,6 +38,8 @@ import {
   Zone,
   DoctorHours,
   Consultation,
+  Payment,
+  Invoice,
 } from "../src/lib/models";
 import { istInstant, istParts } from "../src/lib/clinical/slots";
 import { ZONE_DEFAULTS } from "../src/lib/zones";
@@ -47,6 +49,7 @@ import { planAllocation } from "../src/lib/inventory/dispatch";
 import { componentsFromRecipe } from "../src/lib/clinical/plan-input";
 import { componentsForConsent, CURRENT_CONSENT_VERSION, currentConsentDocument } from "../src/lib/clinical/consent";
 import { seedQuizQuestions } from "../src/lib/clinical/quiz-store";
+import { chargesGst, getBillingConfig } from "../src/lib/billing/settings";
 
 const DAY = 86_400_000;
 const days = (n: number) => new Date(Date.now() + n * DAY);
@@ -141,6 +144,11 @@ async function wipe() {
       Zone,
       DoctorHours,
       Consultation,
+      // Online payments and invoices point at the bookings, orders and people
+      // above; kept, they would name people and orders that no longer exist
+      // (and an old invoice number would push the next one up).
+      Payment,
+      Invoice,
     ].map((m) => m.deleteMany({}))
   );
 }
@@ -1564,6 +1572,7 @@ async function seedClinical(
       startedAt: new Date(new Date().setHours(9, 52, 0, 0)),
       amount: myers.priceInr,
       paymentStatus: "paid",
+      paidAmount: myers.priceInr,
     },
     {
       bookingNo: "ND-4415",
@@ -1608,6 +1617,7 @@ async function seedClinical(
       aftercareNotes: "Hydrate well today. Expect the lift within 24 hours.",
       amount: immune.priceInr,
       paymentStatus: "paid",
+      paidAmount: immune.priceInr,
     },
     {
       bookingNo: "ND-4419",
@@ -1635,11 +1645,12 @@ async function seedClinical(
       // On the slot grid (hourly), like any booking made through the app.
       // Held for the physician: the afternoon after V. Iyer's seeded call (see seedCalls).
       scheduledAt: istInstant(callDay(), "16:00"),
-      location: "clinic",
+      // At home: patients never book a partner clinic's rooms.
+      location: "home",
+      address: "Bellandur, Outer Ring Road",
       city: "Bengaluru",
       pincode: "560103",
       nurseId: nurse2._id,
-      clinicId: clinic._id,
       status: "awaiting_review",
       checklist,
       amount: myers.priceInr,
@@ -1874,6 +1885,9 @@ async function seedClinical(
         { dripId: immune._id, dripName: immune.name, quantity: 1, withKit: true, unitPrice: immune.priceInr },
       ],
       amount: myers.priceInr * 2 + immune.priceInr,
+      // Raised before it was confirmed and supplied. Left to default, it was
+      // "raised" when the seed ran, days after its invoice says it was supplied.
+      createdAt: days(-7),
       confirmedAt: days(-6),
       dispatchedAt: days(-5),
     },
@@ -1900,6 +1914,7 @@ async function seedClinical(
       includeKits: true,
       lines: [{ dripId: immune._id, dripName: immune.name, quantity: 2, withKit: true, unitPrice: immune.priceInr }],
       amount: immune.priceInr * 2,
+      createdAt: days(-2),
       confirmedAt: days(-1),
       scheduledDelivery: days(2),
     },
@@ -2010,11 +2025,18 @@ async function main() {
   console.log(`  Dr. Menon calls V. Iyer and Riya on ${day} — editable at /doctor/availability`);
 
   console.log("\nDone. Sign in with:");
-  // Said here rather than left to be discovered: GST is off on a fresh
-  // database on purpose, because there is no GSTIN to seed that would not be
-  // a fabricated registration number.
-  console.log("\nGST is off. Clinics download a bill of supply until a real GSTIN");
-  console.log("is entered at /admin/billing — nothing here invents one.\n");
+  // Said here rather than left to be discovered. The seed never writes billing
+  // settings -- there is no GSTIN to seed that would not be a fabricated
+  // registration number -- and it does not wipe them either, so this says what
+  // this database has, by the rule every invoice uses, not what a fresh one would.
+  const billing = await getBillingConfig();
+  if (chargesGst(billing)) {
+    console.log(`\nGST is on: invoices are tax invoices under GSTIN ${billing.gstin}, as set at`);
+    console.log("/admin/billing. The seed leaves billing settings as they are.\n");
+  } else {
+    console.log("\nGST is off. Clinics download a bill of supply until a real GSTIN");
+    console.log("is entered at /admin/billing — nothing here invents one.\n");
+  }
 
   console.table([
     { role: "superadmin", email: "admin@nutridrip.com", password: "admin123" },

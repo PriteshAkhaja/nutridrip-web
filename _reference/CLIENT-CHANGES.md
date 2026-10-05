@@ -1141,3 +1141,184 @@ Changes:
 | # | Test | Result |
 |---|---|---|
 | 28.1 | Typecheck, lint, Prettier | ✅ clean (not browser-checked: a one-attribute change) |
+
+
+## 29. Online payment with Razorpay
+
+**29 (30 Sept): every payment in the app, through Razorpay.** Asked for: Razorpay for every payment, with proper error and status handling, smooth animation, automatic refunds when something fails, a modern payment screen, and every case tested end to end. Decided with the client: patients pay when booking (refunded automatically if the session does not go ahead); clinics pay orders online with bank transfer kept as a fallback; clinics on credit pay invoices online.
+
+Online payment switches on when the Razorpay keys are added (`.env.example` lists them and the dashboard steps). Until then the app works exactly as before.
+
+- **Added — patients pay to book.** "Pay ₹9,200 and book" (or "…and hold this slot" while the physician decides). Paid securely through Razorpay: UPI, cards, net banking, wallets.
+- **Added — automatic refunds.** Refunded in full when a physician declines, the team or a clinic cancels, vitals stop the session, a held slot lapses, or the patient cancels in good time. A late cancellation refunds everything except the late fee. A physician switching to a cheaper drip refunds the difference; a dearer one asks the patient to pay the balance.
+- **Added — a late move is paid for first:** "Pay ₹500 and move".
+- **Added — if it cannot be done, it goes straight back.** Paid for a slot that was taken in the minute it took to pay: refunded in full, and the patient is told why. The same for a payment for the wrong amount, or a second payment on something already paid.
+- **Added — the payment screen.** A sheet that shows each step while the payment is confirmed, then a tick with the amount and a receipt (receipt number, how it was paid, when). A refund shows where the money has got to: started, with your bank, in your account. Closing Razorpay, a declined card, or a slow bank each say clearly what happened and that no money was lost.
+- **Added — clinics.** "Pay online" on an unpaid order (received at once, nobody has to check it), with the transfer form kept under "Paid by bank transfer, UPI or cheque instead?". An order paid online and then cancelled is refunded automatically. Invoices show Paid, Due or Overdue, with Pay on each unpaid one; the team can record a transfer against an invoice.
+- **Added — Admin → Payments.** Every payment and refund, with the month's figures (collected, refunded, refunds on their way). A refund Razorpay refuses shows under *Needs attention* (and in the menu badge) with a retry. Refunds can be made by hand, with a reason and a confirmation.
+- **Added — receipts** on every session report: each payment, its receipt number, and every refund with its bank reference once processed.
+- **Changed:** the Terms and Pricing pages now say you pay when you book and are refunded in full if the session does not go ahead (they said "charged on completion").
+- **Fixed:** an open Move or Cancel panel on Sessions now takes the card's full width instead of squeezing into the row of buttons.
+
+| # | Test | Result |
+|---|---|---|
+| 29.1 | Unit tests: signatures, the Razorpay client, the money rules (every refund case), invoice due dates | ✅ 36 new, 666 in all |
+| 29.2 | End to end against a stand-in for Razorpay: pay to book; late and in-time cancel; late move; the team cancelling; slot taken while paying; decline; clinic order and invoice; hand refund; closed browser; failed then good attempt; manual capture; refused refund and retry; lost refund answer (never sent twice); paid twice; wrong amount; cheaper and dearer drip switch; lapsed hold; vitals stand-down; older fees; transfer and online together; webhooks | ✅ 113 checks, 0 failed |
+| 29.3 | The screens in a browser at 390 and 1440: pay button, confirming, paid with receipt, refunded, closed, declined, sessions, report, clinic order, invoice, billing, admin ledger and refund | ✅ 43 checks, 0 failed |
+| 29.4 | Keys not set: bookings work without paying, no pay buttons, the webhook refuses | ✅ 7 checks |
+| 29.5 | Typecheck, lint, Prettier, production build | ✅ clean |
+| 29.6 | With real Razorpay test keys, the real Checkout window and a real webhook | ⏳ waiting on the keys |
+
+**29, follow-up (30 Sept): Razorpay's capture settings.** Set in the Razorpay dashboard: automatic capture within 12 minutes, late approvals refunded automatically, normal refund speed.
+- **Fixed:** when Razorpay captures a payment a moment before the app does, the booking is confirmed at once instead of after a second check.
+- **Fixed:** a payment the bank approves too late, which Razorpay returns without taking, is recorded as a failed attempt (never as paid) and the patient can simply pay again.
+
+| # | Test | Result |
+|---|---|---|
+| 29.7 | Razorpay's capture wins the race; approved too late and returned — against the stand-in | ✅ 4 checks; full suite 117, 0 failed |
+
+
+## 30. Payments and bookings that happen at the same moment
+
+**30 (30 Sept): every way money moves, checked for two things happening at once.** Asked for: close the gap where two patients paying for the last free nurse at the same moment could both be booked; go through every part of payments with care, because it is patients' money; and check the physician call booking the same way.
+
+- **Fixed — the last free nurse.** Booking a slot, moving a session, a physician's approval and assigning a nurse now happen one at a time, each checked again at that moment. Two payments for the last free nurse at the same moment: one is booked, the other is refunded in full straight away and told the time was taken. A nurse is never given two sessions at once.
+- **Fixed — a cancellation during an approval.** A patient cancelling at the moment the physician approves can no longer bring a refunded session back to life. Two physicians deciding the same answers at once can no longer both win: the second is told it was already reviewed.
+- **Fixed — a refund could be lost.** A cancellation arriving while another refund on the same payment was going through (a refund by hand, or the bank's confirmation) could have its refund dropped. It now waits its turn and is sent. Anything left half-done, for example if the server stopped at that moment, is sent the next time the patient or the team opens their payments.
+- **Fixed — goodwill turned into a "balance to pay".** A refund by hand on a session still to come made it look underpaid, and the patient was asked to pay the goodwill back. Goodwill now never creates a balance, and it is not taken out of a later refund for a cheaper drip.
+- **Fixed — a failed refund sent again by hand** is recorded as the refund it replaces, so it can never be sent a third time.
+- **Fixed — the price changes while the patient pays.** A session costs what the patient agreed to at checkout; before, they could be shown a surprise balance.
+- **Fixed — a balance paid as the session is cancelled** comes back in full with everything else, and the message says so.
+- **Fixed — a declined session** can no longer be cancelled afterwards, which would have added a late fee to a session that was never going ahead.
+- **Fixed — clinic orders.** A bank transfer recorded while an online payment for the same order is landing can no longer leave both in place: the online payment is refunded. An order cancelled while its online payment is landing is refunded in full.
+- **Added — "Session needs a nurse".** When a time is free but every nurse free then already has 6 open sessions (the per-nurse limit), the paid booking stands and the team is told to assign a nurse. Before, it was left without one and nobody was told.
+- **Changed — instant refunds** (optional: `RAZORPAY_REFUND_SPEED=optimum`, charged per refund by Razorpay). When Razorpay sends a refund instantly, messages and the refund tracker say "usually within minutes"; a normal refund still says 5–7 working days.
+- **Checked — physician calls.** Five patients booking the same call at once: exactly one gets it. One patient booking two calls at once: one. The database already enforced this; nothing needed to change. Moving a call together with its held drip now happens in one step, so neither moves without the other.
+
+| # | Test | Result |
+|---|---|---|
+| 30.1 | Against the stand-in for Razorpay, every race fired truly at once: two patients for the last nurse; five patients for two nurses; one patient paying twice; a paid booking against a move; two late-move fees; cancel against approval (5 rounds, both orders seen); two physicians at once; a cancellation during a hand refund; browser and webhook together; two captures from every side; a balance against a cancel; a transfer against an online payment; an order cancel against its payment; five patients booking one call; goodwill; a refund retried by hand; a half-done refund picked up; declined then cancelled; the price changing while paying | ✅ 74 checks, 0 failed |
+| 30.2 | The lock itself, on the app's own code: 20 simultaneous read-then-write updates with none lost; a refusal rolls back; a stale status write is refused | ✅ 9 checks |
+| 30.3 | The earlier payment suite, and online payment switched off | ✅ 117 and 7 checks, 0 failed |
+| 30.4 | Unit tests (8 new: goodwill, refund timing), typecheck, lint, Prettier, production build | ✅ 674 tests, clean |
+
+
+## 31. A nurse's day, and two layout fixes
+
+**31 (30 Sept): six sessions per nurse per day, set by the super admin.** Decided with the client: the limit is per day, not in total; the booking screen and nurse assignment follow the same rule; the super admin can change the number; an admin can still assign a nurse by hand.
+
+- **Changed — the nurse limit is per day.** A nurse takes at most 6 sessions on one day (sessions already finished that day count too). Before, the limit was 6 unfinished sessions in total across all days, and the booking screen ignored it, so a patient could pay for a time and get no nurse.
+- **Changed — the booking screen follows the same rule.** Once every nurse who could go has a full day, that day's times show as taken, and a payment for one is refused before any money is asked for: "Every nurse who could come that day is already fully booked. Pick another day." A drip held for the physician keeps its place in the day, so approving it always finds its nurse.
+- **Added — Admin → Settings → Nurse workload** (super admin): sessions per nurse per day, 1 to 12, starting at 6. The change is recorded in the audit trail; sessions already booked are never moved or called off by it.
+- **Changed — the physician's nurse list** counts the day of the session being approved: "2 of 6 that day", "full that day".
+- **Fixed — moving a session onto a day its nurse is already full** hands it to a nurse who is free, and tells the first nurse why, instead of giving her one more than the limit.
+- **Unchanged:** an admin can assign any nurse by hand, over the limit if they choose.
+- **Fixed — the order page's header (Admin → Orders → an order).** "Raised …", the buttons and the bell sit on one line again. The "Not paid yet…" note under the buttons made the header tall and left the date and bell floating; it now shows when you hover over Confirm, and the payment card below still explains it in full. An error from Confirm or Cancel gets a line of its own under the header.
+- **Fixed — dropdowns open where they fit.** A choice list near the bottom of the screen now opens upwards, as the date and time pickers do, is never taller than the room it has, and opens with the chosen option in view. (The nurse workload setting, the physician's nurse choice and the quiz rule builder.)
+
+| # | Test | Result |
+|---|---|---|
+| 31.1 | Unit tests: a full day, finished sessions counting, a place kept for a held drip, the new refusal, India dates across midnight, the physician's list, the limit's range | ✅ 8 new, 682 in all |
+| 31.2 | Against the stand-in for Razorpay: the setting (range, who may change it, audit, the page); a full day no longer offered and not payable; two patients paying at once for a day's last place (one booked, one refunded); a held drip keeping its place and getting its nurse on approval; the physician's list; moving onto a full day and within one; a move handed to a nurse who is not full; assigning by hand; the order page's header | ✅ 42 checks, 0 failed |
+| 31.3 | The payment race suite (now 0 sessions waiting for a nurse), the earlier payment suite, and online payment switched off | ✅ 74, 117 and 7 checks, 0 failed |
+| 31.4 | Typecheck, lint, Prettier, production build | ✅ clean (the dropdown's placement: same rule as the date and time pickers; not browser-checked) |
+
+## 32. Reviews a little quicker, and counting figures
+
+**32 (1 Oct): asked for while reviewing the website video.**
+
+- **Changed — the reviews row moves on every 4.5 seconds** (was 5.5), on the home page and on each drip's page. As before, it holds still while the pointer is over it or it has keyboard focus, the pause button stops it, and with reduced motion it never moves on its own.
+- **Fixed — a counting figure could show a negative number for an instant.** The figures that count up as they come into view (the home page's 4.9 rating, 15 min and 14 zones, and others like them) and the amount in the payment sheet timed themselves against two different clocks; when the clocks disagreed, the count started below zero. They now use one.
+
+| # | Test | Result |
+|---|---|---|
+| 32.1 | Typecheck, lint, Prettier, production build | ✅ clean |
+| 32.2 | In a browser (the website video's recording): the reviews row moving on by itself twice, 4.5 s apart; Next to the end and Previous back to the start; the home page's figures counting up to 4.9, 15 min and 14 with no negative values | ✅ |
+| 32.3 | The payment sheet's amount: the same one-line change | not browser-checked |
+
+## 33. Patients no longer see partner clinics
+
+**33 (2 Oct): "For patient login, the clinic admin is also opened — restrict it, don't show the patient about the clinic."** A patient could never open the clinic console (it sends them to sign-in and records the refusal). What they did see was on Book a session: a "A partner clinic" choice under Where, then a list of every clinic by name.
+
+- **Changed — Book a session offers My home, My office and A hotel only.** The partner-clinic choice and the list of clinic names are gone.
+- **Changed — the server refuses a patient booking at a clinic**, so it cannot be made by calling the API directly either: "Sessions are given at your home, office or hotel."
+- **Changed — the website no longer says patients can go to a partner clinic** (How it works, and two FAQs; the clinic FAQ now asks about an office or a hotel).
+- **Changed — demo data:** V. Iyer's held session (ND-4421) is at home instead of at the clinic. Takes effect on the next `npm run seed`.
+- **Unchanged:** sessions already booked at a clinic stay as they are, and can still be moved. Clinics keep their own console.
+- **Fixed — the payment success screen** no longer repeats "Paid." under the amount; the title, amount and receipt already say it.
+
+| # | Test | Result |
+|---|---|---|
+| 33.1 | Typecheck, lint, Prettier, unit tests | ✅ clean, 682 passed |
+| 33.2 | The success screen without "Paid.": seen during payment testing (Test 2) | ✅ |
+| 33.3 | Book a session without the clinic choice, and the server's refusal | not browser-checked yet |
+
+## 34. Fixes from the payment testing round
+
+**34 (2 Oct): found while testing payments step by step against Razorpay in test mode.**
+
+- **Fixed — a refund could be refused as "Duplicate receipt found".** Razorpay will not take the same refund reference twice on one account, and ours was only the receipt number and refund count (RCPT-2026-0003-R1). Receipt numbers start again after a reseed — or if a database is ever restored — so every refund after that would fail. The reference now also carries the payment's own id, which never repeats.
+- **Fixed — a declined session stayed under Upcoming,** with Move and Cancel, on the patient's Sessions page. It now goes to Your history, as it already did on Home.
+- **Fixed — a refund that had not gone through yet showed as "Refund on its way ₹0".** It now says "Your refund is being arranged", as the patient's notification does, until the team sends it.
+- **Changed — session cards line up.** In a row of cards, what sits under the title (Move / Cancel, and Paid / Refunded) is at the foot of each card, so the money rows are level and no card ends in an empty band.
+- **Fixed — our logo on Razorpay's pages.** Checkout and the bank page it opens showed a broken image (or an "N"): the logo was a link Razorpay's https pages could not load from a non-public site. It is now sent with the payment itself.
+- **Fixed — Admin → Payments, after Check.** A long Check result stretched the last column across the page; it now wraps in a column the width of the Refund form.
+
+| # | Test | Result |
+|---|---|---|
+| 34.1 | Unit tests: the refund reference is new when a receipt number repeats, counts refunds, and fits Razorpay's 40 characters | ✅ 2 new, 684 in all |
+| 34.2 | Typecheck, lint, Prettier | ✅ clean |
+| 34.3 | Payment tests 1–6 against Razorpay test mode (pay, fail and pay again, close the window, cancel in time and late, two payments for a day's last place, a physician's switch and the balance) | ✅ passed |
+| 34.4 | Test 7 (a physician's decline and its refund) found the duplicate-receipt refusal; the retry with the fix | to be confirmed |
+
+## 35. An empty column takes no room
+
+**35 (2 Oct): "In a grid, if one column is empty the UI looks bad — many places have 3 columns."**
+
+- **Fixed — the three-column pages no longer leave a blank third.** Home, Session report, the live session and Results lay out in up to three columns on a wide screen, and a column with nothing to show kept its full width — for example the left of Home for a patient the physician declined, or the middle of the report for a session that never started. A column with nothing in it now takes no room, and the others share the width. One shared layout (`components/layout/columns.ts`), so all four pages follow it.
+
+| # | Test | Result |
+|---|---|---|
+| 35.1 | Typecheck, lint, Prettier; the new rules compiled by Tailwind and checked | ✅ |
+| 35.2 | Test 7 (item 34.4) confirmed: after the fix, the declined session's ₹9,200 refund went through and shows as processed in Razorpay | ✅ |
+| 35.3 | The four pages at every width in a browser | not checked yet |
+
+## 36. A paid order no longer reads "on credit"
+
+**36 (2 Oct): found in payment Test 8 (a clinic pays an order online; the team cancels it).** The money was right — paid, then refunded in full — but two screens said otherwise.
+
+- **Fixed — an order paid before it was confirmed said "On credit — invoice, 30 days" once it was cancelled,** on both the clinic's and the team's order page, and the team's page did not show the refund at all. An order with no recorded terms (one placed before the pay-first rule, like the demo orders) was only treated as pay-first while it was a draft. One that carries a payment is now always pay-first.
+- **Fixed — Check on Admin → Payments said "Paid." for a payment since refunded.** It now says where the payment stands: "Up to date with Razorpay: ₹27,200 paid; all of it refunded." (or the part refunded, or what the bank has not confirmed yet).
+
+| # | Test | Result |
+|---|---|---|
+| 36.1 | Unit tests: a paid order stays pay-first when confirmed or cancelled; Check's summary for paid, part-refunded, refunded, refund pending, failed refund, unpaid | ✅ 4 new, 687 in all |
+| 36.2 | Typecheck, lint, Prettier | ✅ clean |
+| 36.3 | Payment Test 8: order paid online, cancelled, ₹27,200 refunded and processed in Razorpay | ✅ |
+
+## 37. Payment testing — all ten tests passed
+
+**37 (2 Oct): every payment path, run by hand against Razorpay in test mode, with the webhook delivered through ngrok.** Bugs found along the way are items 34–36.
+
+| # | Test | Result |
+|---|---|---|
+| 37.1 | Book and pay; Razorpay captured; webhook 200 | ✅ |
+| 37.2 | A failed payment, then paying again (a fresh attempt after 30 minutes) | ✅ |
+| 37.3 | Closing the payment window: nothing charged, the time still free | ✅ |
+| 37.4 | Cancelling in good time (full refund) and late (₹500 kept, the rest refunded) | ✅ |
+| 37.5 | Two payments at once for a day's last place: one booked, the other refunded in full | ✅ |
+| 37.6 | The physician switches a held drip to a dearer one; the patient pays the ₹2,600 balance | ✅ |
+| 37.7 | The physician declines: the held session refunded in full (after fix 34) | ✅ |
+| 37.8 | A clinic pays an order online; the team cancels it; ₹27,200 refunded (labels fixed in 36) | ✅ |
+| 37.9 | A clinic pays an invoice on credit online; Billing shows it paid | ✅ |
+| 37.10 | The team's Check, and a ₹100 goodwill refund that leaves the session paid, not owing | ✅ |
+
+## 38. The invoice's pay button lines up
+
+**38 (2 Oct):**
+
+- **Changed — on an unpaid invoice, "Pay online" sits flush right** beside the amount due, with "Secured by Razorpay" and the ways to pay right-aligned under it. It used to float in the middle of the card. On a phone it stacks under the amount, left-aligned, as before.
+
+| # | Test | Result |
+|---|---|---|
+| 38.1 | Typecheck, lint, Prettier | ✅ clean (not browser-checked) |

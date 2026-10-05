@@ -272,7 +272,7 @@ export default async function DripDetailPage({ params }: { params: Promise<{ slu
 
               <p className="t-small text-[var(--color-ink-3)] mt-4">
                 A physician reviews your answers before anything is scheduled. If this drip is not right for you, they
-                will say so — and you pay nothing.
+                will say so — and anything you paid is refunded in full.
               </p>
             </div>
 
@@ -462,7 +462,7 @@ export default async function DripDetailPage({ params }: { params: Promise<{ slu
         />
         <Rail
           label="Reviews from verified sessions"
-          autoplay={5500}
+          autoplay={4500}
           className="-mx-6 gap-5 px-6 scroll-px-6 md:mx-0 md:px-0 md:scroll-px-0"
         >
           {reviews.map((t, i) => (

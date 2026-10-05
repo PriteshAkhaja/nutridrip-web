@@ -43,13 +43,14 @@ const DOCS = {
         body: [
           // Filled in when the page is drawn, from the fees set on the Billing page.
           LATE_POLICY_TOKEN,
-          "If we cancel — a nurse falls ill, stock fails a check, a physician withdraws approval — you are charged nothing and we say which of those it was.",
+          "If we cancel — a nurse falls ill, stock fails a check, a physician withdraws approval — everything you paid is refunded in full and we say which of those it was.",
         ],
       },
       {
         heading: "Payment",
         body: [
-          "Sessions are charged on completion, not on booking. A session that does not run because your vitals blocked it is not charged.",
+          "You pay for a session when you book it (or hold a slot), securely through Razorpay — UPI, cards, net banking or wallets. If the session does not go ahead — a physician does not approve, we cancel, or your vitals mean the infusion cannot start — the full amount is refunded automatically to the account you paid from.",
+          "Refunds are started at once and usually reach your account within 5–7 working days, depending on your bank. Cancelling inside the late window refunds everything except the late fee.",
           "A GST invoice with HSN codes is issued for every completed session. Wellness infusions are not usually reimbursable by insurance; therapeutic protocols sometimes are.",
         ],
       },

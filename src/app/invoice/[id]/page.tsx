@@ -6,7 +6,12 @@ import { LogoMark } from "@/components/layout/Logo";
 import { formatInr } from "@/lib/inventory/units";
 import { formatDate } from "@/lib/data/inventory";
 import { DOCUMENT_TITLE, hsnSummary, rateLabel, taxBasisLabel } from "@/lib/billing/gst";
-import { ensureInvoice } from "@/lib/billing/invoice";
+import { ensureInvoice, invoiceDueAt, invoicePayState } from "@/lib/billing/invoice";
+import { PAY_METHOD_LABEL, type PayMethod } from "@/lib/billing/order-payment";
+import { paymentsEnabled } from "@/lib/payments/config";
+import { PayButton, PaymentTrust } from "@/components/payments/PayButton";
+import { can } from "@/lib/auth/rbac";
+import { RecordPayment } from "./RecordPayment";
 import { PrintButton } from "@/components/ui/PrintButton";
 import { Arrow } from "@/components/ui/Arrow";
 
@@ -57,6 +62,12 @@ export default async function InvoicePage({ params }: { params: Promise<{ id: st
   const taxed = inv.documentType === "tax_invoice";
   const summary = taxed ? hsnSummary(inv.lines) : [];
 
+  // Paid, due or overdue -- and what each viewer can do about it.
+  const payState = invoicePayState(inv);
+  const paidVia = inv.payment?.method ? (PAY_METHOD_LABEL[inv.payment.method as PayMethod] ?? "payment") : null;
+  const dueAt = invoiceDueAt(inv.issuedAt);
+  const today = new Date().toLocaleDateString("en-CA", { timeZone: "Asia/Kolkata" });
+
   return (
     <div className="min-h-screen bg-[var(--color-surface-2)] print:bg-white py-8 print:py-0 px-4">
       <div className="no-print mx-auto max-w-[820px] flex items-center justify-between gap-4 mb-5 flex-wrap">
@@ -65,6 +76,64 @@ export default async function InvoicePage({ params }: { params: Promise<{ id: st
           &nbsp;Back to the order
         </Link>
         <PrintButton />
+      </div>
+
+      {/* ---------------- Where the payment stands (not printed) ---------------- */}
+      <div className="no-print mx-auto max-w-[820px] mb-5">
+        {payState === "paid" ? (
+          <div className="rounded-[var(--radius-md)] border border-[var(--color-safe)] bg-[var(--color-safe-soft)] px-5 py-4">
+            <span className="t-body font-semibold">Paid</span>
+            <span className="t-body text-[var(--color-ink-2)]">
+              {" "}
+              ·{" "}
+              {inv.payment?.inAdvance || (!inv.payment && inv.terms?.startsWith("Paid in advance"))
+                ? "in advance, with the order"
+                : `${inv.payment?.paidAt ? formatDate(inv.payment.paidAt) : ""}${paidVia ? ` by ${paidVia}` : ""}${
+                    inv.payment?.reference ? `, ref ${inv.payment.reference}` : ""
+                  }`}
+            </span>
+          </div>
+        ) : (
+          <div
+            className={`rounded-[var(--radius-md)] border px-5 py-4 ${
+              payState === "overdue"
+                ? "border-[var(--color-caution)] bg-[var(--color-caution-soft)]"
+                : "border-[var(--color-line)] bg-[var(--color-surface)]"
+            }`}
+          >
+            <div className="flex items-center justify-between gap-4 flex-wrap">
+              <div className="flex flex-col">
+                <span className="t-body font-semibold">
+                  {payState === "overdue" ? "Overdue" : "Due"} · {formatInr(inv.grandTotal)}
+                </span>
+                <span className="t-small text-[var(--color-ink-2)]">
+                  {payState === "overdue" ? "Was due" : "Due"} by {formatDate(dueAt)}
+                </span>
+              </div>
+              {session.role === "clinic" && paymentsEnabled() ? (
+                // Flush right beside the amount; on a phone it stacks under it, left.
+                <div className="flex flex-col gap-2 items-start sm:items-end sm:ml-auto">
+                  <PayButton
+                    successTitle="Invoice paid"
+                    finishing="Marking the invoice paid"
+                    request={{ purpose: "invoice", orderId: id }}
+                  >
+                    Pay {formatInr(inv.grandTotal)} online
+                  </PayButton>
+                  <PaymentTrust align="end" />
+                </div>
+              ) : null}
+            </div>
+            {can(session.role, "billing.manage") && (
+              <details className="mt-3">
+                <summary className="t-body font-medium cursor-pointer text-[var(--color-primary-text)] min-h-[44px] inline-flex items-center">
+                  Record a payment received outside the app
+                </summary>
+                <RecordPayment orderId={id} today={today} />
+              </details>
+            )}
+          </div>
+        )}
       </div>
 
       <article className="rx-page mx-auto max-w-[820px] bg-white border border-[var(--color-line)] rounded-[var(--radius-lg)] p-8 md:p-12 print:border-0 print:rounded-none print:p-0">
@@ -202,6 +271,15 @@ export default async function InvoicePage({ params }: { params: Promise<{ id: st
                 <span className="t-body font-semibold">Total payable</span>
                 <span className="t-data text-[18px]">{formatInr(inv.grandTotal)}</span>
               </div>
+              {payState === "paid" && inv.payment?.state === "paid" && !inv.payment.inAdvance ? (
+                <div className="flex justify-between gap-4 items-baseline">
+                  <span className="t-body text-[var(--color-ink-2)]">
+                    Paid{inv.payment.paidAt ? ` ${formatDate(inv.payment.paidAt)}` : ""}
+                    {paidVia ? ` · ${paidVia}` : ""}
+                  </span>
+                  <span className="t-data text-[14.5px]">Balance {formatInr(0)}</span>
+                </div>
+              ) : null}
             </div>
           </div>
         </section>

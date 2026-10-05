@@ -1160,3 +1160,181 @@
     break-inside: avoid;
   }
 }
+
+/* --------------------------------------------------------------------------
+   Payment status sheet (components/payments/PaymentSheet).
+   Every animation runs FROM a hidden or offset state towards the resting one,
+   so with reduced motion (which switches animation off above) each element
+   simply shows as it ends: the tick drawn, the sheet in place. No blur on any
+   of it -- the sheet moves, and a blurred moving layer costs frames.
+   -------------------------------------------------------------------------- */
+@keyframes ndPayFade {
+  from {
+    opacity: 0;
+  }
+}
+@keyframes ndPaySheetIn {
+  from {
+    opacity: 0;
+    transform: translateY(24px);
+  }
+}
+@keyframes ndPaySpin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+@keyframes ndPayPop {
+  from {
+    opacity: 0;
+    transform: scale(0.6);
+  }
+}
+@keyframes ndPayDraw {
+  from {
+    stroke-dashoffset: var(--pay-len, 48);
+  }
+}
+@keyframes ndPayShake {
+  0%,
+  100% {
+    transform: translateX(0);
+  }
+  20%,
+  60% {
+    transform: translateX(-5px);
+  }
+  40%,
+  80% {
+    transform: translateX(5px);
+  }
+}
+
+@layer components {
+  .pay-scrim {
+    animation: ndPayFade 200ms ease-out both;
+  }
+  .pay-sheet {
+    animation: ndPaySheetIn 340ms var(--ease-glide) both;
+  }
+  .pay-spin {
+    transform-origin: center;
+    animation: ndPaySpin 0.9s linear infinite;
+  }
+  .pay-pop {
+    animation: ndPayPop 420ms var(--ease-glide) both;
+  }
+  .pay-draw {
+    stroke-dasharray: var(--pay-len, 48);
+    animation: ndPayDraw 460ms 180ms var(--ease-glide) backwards;
+  }
+  .pay-shake {
+    animation: ndPayShake 440ms ease-in-out;
+  }
+}
+
+/* Payment sheet, second layer: the state swap, the success ripple and burst,
+   the steps coming in, and the refund tracker's live dot. Same rules as above:
+   transform and opacity only, every animation from a hidden state. */
+@keyframes ndPaySwap {
+  from {
+    opacity: 0;
+    transform: translateY(10px) scale(0.985);
+  }
+}
+@keyframes ndPayRipple {
+  from {
+    opacity: 0.55;
+    transform: scale(0.85);
+  }
+  to {
+    opacity: 0;
+    transform: scale(1.9);
+  }
+}
+@keyframes ndPayBurst {
+  from {
+    opacity: 1;
+    transform: translate(0, 0) rotate(0deg) scale(1);
+  }
+  to {
+    opacity: 0;
+    transform: translate(var(--dx), var(--dy)) rotate(var(--rot)) scale(0.6);
+  }
+}
+@keyframes ndPayStepIn {
+  from {
+    opacity: 0;
+    transform: translateX(-6px);
+  }
+}
+@keyframes ndPayLive {
+  0%,
+  100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+  50% {
+    transform: scale(1.35);
+    opacity: 0.55;
+  }
+}
+@keyframes ndPayBar {
+  from {
+    transform: translateX(-100%);
+  }
+  to {
+    transform: translateX(260%);
+  }
+}
+
+@layer components {
+  .pay-swap {
+    animation: ndPaySwap 360ms var(--ease-glide) both;
+  }
+  .pay-ripple {
+    animation: ndPayRipple 1100ms var(--ease-glide) 120ms both;
+    /* Ends invisible: with motion off it simply is not there. */
+    opacity: 0;
+  }
+  .pay-ripple-late {
+    animation: ndPayRipple 1300ms var(--ease-glide) 320ms both;
+    opacity: 0;
+  }
+  .pay-burst > i {
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    width: 7px;
+    height: 7px;
+    margin: -3.5px 0 0 -3.5px;
+    border-radius: 2px;
+    opacity: 0;
+    animation: ndPayBurst 900ms cubic-bezier(0.2, 0.7, 0.3, 1) var(--delay, 150ms) both;
+  }
+  .pay-step {
+    animation: ndPayStepIn 380ms var(--ease-glide) both;
+  }
+  .pay-live {
+    animation: ndPayLive 1.6s ease-in-out infinite;
+  }
+  .pay-orbit {
+    background: conic-gradient(from 0deg, transparent 0 58%, var(--color-primary) 100%);
+    -webkit-mask: radial-gradient(farthest-side, transparent calc(100% - 5px), #000 calc(100% - 4px));
+    mask: radial-gradient(farthest-side, transparent calc(100% - 5px), #000 calc(100% - 4px));
+    animation: ndPaySpin 0.95s linear infinite;
+  }
+  .pay-bar {
+    animation: ndPayBar 1.25s var(--ease-drift) infinite;
+  }
+}
+
+@layer components {
+  /* The small live ring beside a step: thinner, so at 24px it reads as a ring, not a crescent. */
+  .pay-orbit-sm {
+    background: conic-gradient(from 0deg, transparent 0 55%, var(--color-primary) 100%);
+    -webkit-mask: radial-gradient(farthest-side, transparent calc(100% - 2.5px), #000 calc(100% - 2px));
+    mask: radial-gradient(farthest-side, transparent calc(100% - 2.5px), #000 calc(100% - 2px));
+    animation: ndPaySpin 0.95s linear infinite;
+  }
+}

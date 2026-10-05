@@ -1,11 +1,17 @@
 import { z } from "zod";
 import { connectDB } from "@/lib/db/mongoose";
 import { AuditLog, Booking, Consultation, Drip, HealthQuiz, User } from "@/lib/models";
-import { notify } from "@/lib/notify";
+import { notify, notifyRole } from "@/lib/notify";
 import { pickNurse } from "@/lib/clinical/assign";
+import { withScheduleLock } from "@/lib/booking/schedule-lock";
+import { saveUnlessChanged } from "@/lib/db/guarded";
+import { getClockFormat } from "@/lib/settings/clock";
+import { shortDateClock } from "@/lib/time";
 import { getSession } from "@/lib/auth/session";
 import { can } from "@/lib/auth/rbac";
 import { ok, fail, handleError } from "@/lib/api";
+import { syncBookingMoney } from "@/lib/payments/money";
+import { inr } from "@/lib/billing/late-policy";
 
 const Input = z.object({
   decision: z.enum(["approved", "modified", "rejected", "info_needed"]),
@@ -113,7 +119,12 @@ export async function POST(req: Request, { params }: { params: Promise<{ id: str
       quiz.infoAnswer = undefined;
       quiz.infoAnsweredAt = undefined;
     }
-    await quiz.save();
+    // Claimed on the status that was read: two physicians deciding the same
+    // answers at once cannot both win. One approving as the other declines
+    // would leave the sessions -- and the refunds -- following whichever
+    // landed last.
+    quiz.$where = { reviewStatus: "pending" };
+    if (!(await saveUnlessChanged(quiz))) return fail("This submission has already been reviewed", 409);
 
     // The decision releases or blocks any booking the patient is waiting on.
     const waiting = await Booking.find({ patientId: quiz.patientId, status: "awaiting_review" });
@@ -136,6 +147,8 @@ export async function POST(req: Request, { params }: { params: Promise<{ id: str
 
     const switched: string[] = [];
     const lapsed: string[] = [];
+    /** Sessions whose money changes with this decision: refunds, or a balance to pay. */
+    const moneyToSettle: string[] = [];
 
     const assigned: Array<{
       bookingNo: string;
@@ -146,6 +159,8 @@ export async function POST(req: Request, { params }: { params: Promise<{ id: str
       overridden: boolean;
       requestedNurseName: string | null;
     }> = [];
+    /** Approved, but nobody under their session limit was free then: a person assigns one. */
+    const unstaffed: Array<{ bookingNo: string; scheduledAt: Date }> = [];
 
     for (const booking of waiting) {
       /**
@@ -155,11 +170,14 @@ export async function POST(req: Request, { params }: { params: Promise<{ id: str
        */
       if (decision === "info_needed") continue;
 
+      // A session the patient cancelled a moment ago stays cancelled: each save
+      // below lands only on the status that was read.
       if (decision === "rejected") {
         booking.status = "rejected";
         booking.doctorId = session!.sub;
         booking.rejectionReason = notes;
-        await booking.save();
+        if (!(await saveUnlessChanged(booking))) continue;
+        moneyToSettle.push(String(booking._id));
         continue;
       }
 
@@ -169,57 +187,80 @@ export async function POST(req: Request, { params }: { params: Promise<{ id: str
         booking.status = "cancelled";
         booking.cancelledAt = new Date();
         booking.cancelReason = "Its time passed before the approval. Book a new time.";
-        await booking.save();
+        booking.cancelledByRole = "system";
+        if (!(await saveUnlessChanged(booking))) continue;
         lapsed.push(booking.bookingNo);
+        moneyToSettle.push(String(booking._id));
         continue;
       }
 
-      if (switchTo && String(booking.dripId) !== String(switchTo._id)) {
-        booking.dripId = switchTo._id;
-        booking.dripName = switchTo.name;
-        booking.durationMin = switchTo.durationMin;
-        booking.amount = switchTo.priceInr;
-        switched.push(booking.bookingNo);
-      }
+      // Confirmed and given a nurse in one step no booking, move or other
+      // approval can interleave with (see schedule-lock), on the session read
+      // again inside it -- so the nurse chosen here cannot be handed the same
+      // time by anyone else, and a session cancelled meanwhile is left alone.
+      const done = await withScheduleLock(async (tx) => {
+        const b = await Booking.findById(booking._id).session(tx);
+        if (!b || b.status !== "awaiting_review") return null;
 
-      booking.status = "approved";
-      booking.doctorId = session!.sub;
-      booking.approvedAt = new Date();
-      booking.approvalNotes = notes;
-
-      // An approval that reaches nobody is not an approval. Dispatch the
-      // nearest nurse under capacity so the session actually has an owner.
-      // The physician's choice wins over whoever was already pencilled in.
-      const pick = await pickNurse(
-        {
-          latitude: patient?.patient?.latitude,
-          longitude: patient?.patient?.longitude,
-          pincode: patient?.patient?.pincode,
-        },
-        {
-          requestedNurseId: nurseId || (booking.nurseId ? String(booking.nurseId) : null),
-          // Nobody busy at the session's own time, the requested nurse included.
-          session: {
-            start: booking.scheduledAt,
-            durationMin: booking.durationMin ?? 45,
-            bookingId: String(booking._id),
-          },
+        let switchedNow = false;
+        if (switchTo && String(b.dripId) !== String(switchTo._id)) {
+          b.dripId = switchTo._id;
+          b.dripName = switchTo.name;
+          b.durationMin = switchTo.durationMin;
+          b.amount = switchTo.priceInr;
+          switchedNow = true;
         }
-      );
 
-      if (pick) {
-        booking.nurseId = pick.nurseId;
-        booking.status = "nurse_assigned";
-        assigned.push({
-          bookingNo: booking.bookingNo,
-          nurseId: pick.nurseId,
-          nurseName: pick.name,
-          km: pick.distanceKm,
-          overridden: pick.overridden,
-          requestedNurseName: pick.requestedNurseName,
-        });
+        b.status = "approved";
+        b.doctorId = session!.sub;
+        b.approvedAt = new Date();
+        b.approvalNotes = notes;
+
+        // An approval that reaches nobody is not an approval. Dispatch the
+        // nearest nurse under capacity so the session actually has an owner.
+        // The physician's choice wins over whoever was already pencilled in.
+        const pick = await pickNurse(
+          {
+            latitude: patient?.patient?.latitude,
+            longitude: patient?.patient?.longitude,
+            pincode: patient?.patient?.pincode,
+          },
+          {
+            requestedNurseId: nurseId || (b.nurseId ? String(b.nurseId) : null),
+            // Nobody busy at the session's own time, the requested nurse included.
+            session: {
+              start: b.scheduledAt,
+              durationMin: b.durationMin ?? 45,
+              bookingId: String(b._id),
+            },
+          }
+        );
+        if (pick) {
+          b.nurseId = pick.nurseId;
+          b.status = "nurse_assigned";
+        }
+        await b.save();
+        return { bookingNo: b.bookingNo as string, scheduledAt: b.scheduledAt as Date, switchedNow, pick };
+      });
+      if (!done) continue;
+
+      if (done.switchedNow) {
+        switched.push(done.bookingNo);
+        // Cheaper: the difference goes back. Dearer: it becomes a balance to pay.
+        moneyToSettle.push(String(booking._id));
       }
-      await booking.save();
+      if (done.pick) {
+        assigned.push({
+          bookingNo: done.bookingNo,
+          nurseId: done.pick.nurseId,
+          nurseName: done.pick.name,
+          km: done.pick.distanceKm,
+          overridden: done.pick.overridden,
+          requestedNurseName: done.pick.requestedNurseName,
+        });
+      } else {
+        unstaffed.push({ bookingNo: done.bookingNo, scheduledAt: done.scheduledAt });
+      }
     }
 
     /**
@@ -241,12 +282,39 @@ export async function POST(req: Request, { params }: { params: Promise<{ id: str
         booking.status = "rejected";
         booking.rejectionReason =
           declineReason?.trim() || notes || "The physician declined the patient's latest answers.";
-        await booking.save();
+        // Started or ended a moment ago: that is the nurse's, or already settled.
+        if (!(await saveUnlessChanged(booking))) continue;
+        moneyToSettle.push(String(booking._id));
         calledOff.push({
           bookingNo: booking.bookingNo,
           nurseId: booking.nurseId ? String(booking.nurseId) : null,
           when: booking.scheduledAt,
         });
+      }
+    }
+
+    /* ---- The money follows the decision ----
+       Declined or lapsed: refunded in full. Switched to a cheaper drip: the
+       difference goes back. Switched to a dearer one: the difference is a
+       balance the patient pays before the session. */
+    for (const bookingId of moneyToSettle) {
+      const res = await syncBookingMoney(bookingId, { byId: session!.sub }).catch((err) => {
+        console.error("[review] money:", err);
+        return null;
+      });
+      if (res?.status === "balance_due") {
+        const b = await Booking.findById(bookingId)
+          .select("bookingNo amount paidAmount dripName")
+          .lean<{ bookingNo: string; amount?: number; paidAmount?: number; dripName?: string } | null>();
+        if (b) {
+          await notify(
+            String(quiz.patientId),
+            `${inr(Math.max(0, (b.amount ?? 0) - (b.paidAmount ?? 0)))} to pay before your session · ${b.bookingNo}`,
+            `Your physician switched you to ${b.dripName ?? "a different drip"}, which costs more. Pay the difference from Sessions before the nurse arrives.`,
+            "warning",
+            "/app/sessions"
+          );
+        }
       }
     }
 
@@ -317,6 +385,17 @@ export async function POST(req: Request, { params }: { params: Promise<{ id: str
           .join(" "),
         "success",
         `/app/results/${id}`
+      );
+    }
+
+    const clockFmt = unstaffed.length ? await getClockFormat() : null;
+    for (const u of unstaffed) {
+      await notifyRole(
+        ["admin", "superadmin"],
+        `Session needs a nurse · ${u.bookingNo}`,
+        `${patientName}, approved for ${shortDateClock(u.scheduledAt, clockFmt ?? "12h")}. Nobody under their session limit was free then — assign a nurse from the booking.`,
+        "warning",
+        "/admin"
       );
     }
 

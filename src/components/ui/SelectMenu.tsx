@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useId, useRef, useState, type ReactNode } from "react";
+import { useEffect, useId, useLayoutEffect, useRef, useState, type ReactNode } from "react";
 
 /**
  * A dropdown for choices that each carry a reason.
@@ -21,7 +21,18 @@ import { useEffect, useId, useRef, useState, type ReactNode } from "react";
  * Keyboard and screen readers are handled rather than reimplemented badly:
  * combobox/listbox roles, arrow keys, Home/End, Enter, Escape, click-outside,
  * and focus returned to the button on close.
+ *
+ * Placed where it fits, as DatePicker and TimePicker are: below the button,
+ * or above it when the button sits too low for the list to open downwards --
+ * and never taller than the room on that side.
  */
+
+/** The list's height when there is room for all of it. */
+const LIST_MAX = 300;
+/** Never squeezed below this: a few rows, still scrollable. */
+const LIST_MIN = 160;
+/** Kept clear of the window's edge. */
+const EDGE = 12;
 
 export type Choice = {
   value: string;
@@ -78,9 +89,14 @@ export function SelectMenu({
 }) {
   const [open, setOpen] = useState(false);
   const [active, setActive] = useState(0);
+  /** Opens above the button when there is not room for it below. */
+  const [dropUp, setDropUp] = useState(false);
+  const [maxHeight, setMaxHeight] = useState(LIST_MAX);
   const wrapRef = useRef<HTMLDivElement>(null);
   const buttonRef = useRef<HTMLButtonElement>(null);
   const listRef = useRef<HTMLUListElement>(null);
+  /** The list has just opened: its chosen row is brought to the middle, not merely into view. */
+  const justOpened = useRef(false);
   const id = useId();
 
   const selectedIndex = Math.max(
@@ -100,15 +116,41 @@ export function SelectMenu({
     return () => document.removeEventListener("mousedown", onDown);
   }, [open]);
 
-  // Arrowing past the bottom of a scrolled list must bring the row into view,
-  // or the highlight moves somewhere the reader cannot see.
+  // Measured before paint, so the list never flashes in the wrong place first:
+  // upwards when the button sits too low for it to open below, and no taller
+  // than the room on the side it opens to.
+  useLayoutEffect(() => {
+    if (!open || !buttonRef.current) return;
+    const box = buttonRef.current.getBoundingClientRect();
+    const height = Math.min(listRef.current?.scrollHeight ?? LIST_MAX, LIST_MAX);
+    const below = window.innerHeight - box.bottom;
+    const up = below < height + EDGE && box.top > below;
+    setDropUp(up);
+    setMaxHeight(Math.max(LIST_MIN, Math.min(LIST_MAX, (up ? box.top : below) - EDGE)));
+  }, [open]);
+
+  // The highlighted row stays in view as it moves -- scrolling the list only.
+  // scrollIntoView would move the page as well. On opening, the chosen row is
+  // brought to the middle, so what is picked now is what the reader sees.
   useEffect(() => {
     if (!open) return;
-    listRef.current?.querySelector<HTMLElement>(`[data-index="${active}"]`)?.scrollIntoView({ block: "nearest" });
-  }, [open, active]);
+    const list = listRef.current;
+    const row = list?.querySelector<HTMLElement>(`[data-index="${active}"]`);
+    if (!list || !row) return;
+    if (justOpened.current) {
+      justOpened.current = false;
+      list.scrollTop = row.offsetTop - (list.clientHeight - row.offsetHeight) / 2;
+      return;
+    }
+    if (row.offsetTop < list.scrollTop) list.scrollTop = row.offsetTop;
+    else if (row.offsetTop + row.offsetHeight > list.scrollTop + list.clientHeight) {
+      list.scrollTop = row.offsetTop + row.offsetHeight - list.clientHeight;
+    }
+  }, [open, active, maxHeight]);
 
   const openMenu = () => {
     setActive(selectedIndex);
+    justOpened.current = true;
     setOpen(true);
   };
 
@@ -161,7 +203,7 @@ export function SelectMenu({
   };
 
   return (
-    <div ref={wrapRef} className="relative">
+    <div ref={wrapRef}>
       <div className="flex items-baseline justify-between gap-3 mb-[7px]">
         <span className="t-micro" id={`${id}-label`}>
           {label}
@@ -169,70 +211,74 @@ export function SelectMenu({
         {hint && <span className="t-small text-[var(--color-ink-3)]">{hint}</span>}
       </div>
 
-      <button
-        ref={buttonRef}
-        type="button"
-        role="combobox"
-        aria-haspopup="listbox"
-        aria-expanded={open}
-        aria-controls={`${id}-list`}
-        aria-labelledby={`${id}-label`}
-        onClick={() => (open ? setOpen(false) : openMenu())}
-        onKeyDown={onKeyDown}
-        className="w-full min-h-[44px] px-[14px] py-[8px] rounded-[var(--radius-sm)] border border-[var(--color-line-2)] bg-[var(--color-surface)] cursor-pointer flex items-center gap-3 text-left"
-      >
-        {/* min-w-0 lets the summary shrink and ellipsis rather than push the
+      {/* The list is placed against the button, not the label above it. */}
+      <div className="relative">
+        <button
+          ref={buttonRef}
+          type="button"
+          role="combobox"
+          aria-haspopup="listbox"
+          aria-expanded={open}
+          aria-controls={`${id}-list`}
+          aria-labelledby={`${id}-label`}
+          onClick={() => (open ? setOpen(false) : openMenu())}
+          onKeyDown={onKeyDown}
+          className="w-full min-h-[44px] px-[14px] py-[8px] rounded-[var(--radius-sm)] border border-[var(--color-line-2)] bg-[var(--color-surface)] cursor-pointer flex items-center gap-3 text-left"
+        >
+          {/* min-w-0 lets the summary shrink and ellipsis rather than push the
             chevron off the edge. Closed, one line is right: the full reason is
             a tap away and the row must stay the height of a form control. */}
-        <span className="min-w-0 flex-1 flex flex-col">
-          <span className="t-body truncate">{selected?.label ?? "Choose"}</span>
-          {selected?.detail && selected.detail.length > 0 && (
-            <Detail bits={selected.detail} warn={selected.warn} clamp />
-          )}
-        </span>
-        <span aria-hidden="true" className="t-small text-[var(--color-ink-3)] flex-none">
-          {open ? "▴" : "▾"}
-        </span>
-      </button>
+          <span className="min-w-0 flex-1 flex flex-col">
+            <span className="t-body truncate">{selected?.label ?? "Choose"}</span>
+            {selected?.detail && selected.detail.length > 0 && (
+              <Detail bits={selected.detail} warn={selected.warn} clamp />
+            )}
+          </span>
+          <span aria-hidden="true" className="t-small text-[var(--color-ink-3)] flex-none">
+            {open ? "▴" : "▾"}
+          </span>
+        </button>
 
-      {open && (
-        <ul
-          ref={listRef}
-          id={`${id}-list`}
-          role="listbox"
-          aria-labelledby={`${id}-label`}
-          tabIndex={-1}
-          className="absolute z-30 left-0 right-0 mt-1 max-h-[300px] overflow-y-auto list-none p-0 m-0 rounded-[var(--radius-md)] border border-[var(--color-line-2)] bg-[var(--color-surface)] shadow-[var(--shadow-pop)]"
-        >
-          {options.map((o, i) => {
-            const isSelected = o.value === value;
-            const isActive = i === active;
-            return (
-              <li
-                key={o.value}
-                data-index={i}
-                role="option"
-                aria-selected={isSelected}
-                onMouseEnter={() => setActive(i)}
-                onClick={() => choose(i)}
-                className="px-[14px] py-[10px] cursor-pointer border-b border-[var(--color-line)] last:border-b-0 flex flex-col gap-[2px]"
-                style={{
-                  background: isActive
-                    ? "var(--color-primary-soft)"
-                    : isSelected
-                      ? "var(--color-surface-2)"
-                      : "var(--color-surface)",
-                }}
-              >
-                <span className="t-body" style={{ fontWeight: isSelected ? 600 : 500 }}>
-                  {o.label}
-                </span>
-                {o.detail && o.detail.length > 0 && <Detail bits={o.detail} warn={o.warn} />}
-              </li>
-            );
-          })}
-        </ul>
-      )}
+        {open && (
+          <ul
+            ref={listRef}
+            id={`${id}-list`}
+            role="listbox"
+            aria-labelledby={`${id}-label`}
+            tabIndex={-1}
+            className={`absolute z-30 left-0 right-0 ${dropUp ? "bottom-full mb-1" : "top-full mt-1"} overflow-y-auto list-none p-0 m-0 rounded-[var(--radius-md)] border border-[var(--color-line-2)] bg-[var(--color-surface)] shadow-[var(--shadow-pop)]`}
+            style={{ maxHeight }}
+          >
+            {options.map((o, i) => {
+              const isSelected = o.value === value;
+              const isActive = i === active;
+              return (
+                <li
+                  key={o.value}
+                  data-index={i}
+                  role="option"
+                  aria-selected={isSelected}
+                  onMouseEnter={() => setActive(i)}
+                  onClick={() => choose(i)}
+                  className="px-[14px] py-[10px] cursor-pointer border-b border-[var(--color-line)] last:border-b-0 flex flex-col gap-[2px]"
+                  style={{
+                    background: isActive
+                      ? "var(--color-primary-soft)"
+                      : isSelected
+                        ? "var(--color-surface-2)"
+                        : "var(--color-surface)",
+                  }}
+                >
+                  <span className="t-body" style={{ fontWeight: isSelected ? 600 : 500 }}>
+                    {o.label}
+                  </span>
+                  {o.detail && o.detail.length > 0 && <Detail bits={o.detail} warn={o.warn} />}
+                </li>
+              );
+            })}
+          </ul>
+        )}
+      </div>
     </div>
   );
 }

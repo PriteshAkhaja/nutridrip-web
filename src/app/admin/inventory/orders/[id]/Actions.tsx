@@ -44,15 +44,24 @@ export function OrderActions({
     }
   };
 
+  // Laid out as items of the header's own row: the buttons sit on the line with
+  // "Raised …" and the bell. Text under the buttons made this block taller than
+  // them, and the header's centring then left the date and the bell floating.
   return (
-    <div className="flex flex-col items-end gap-2">
+    <>
       <div className="flex gap-2 flex-wrap justify-end">
         {status === "DRAFT" && (
           <>
             <Button variant="secondary" onClick={() => act("cancel")} loading={busy === "cancel"}>
               Cancel
             </Button>
-            <Button onClick={() => act("confirm")} loading={busy === "confirm"} disabled={!canConfirm}>
+            <Button
+              onClick={() => act("confirm")}
+              loading={busy === "confirm"}
+              disabled={!canConfirm}
+              // Why it is off is on the payment card just below; this is the short form.
+              title={!canConfirm && confirmNote ? confirmNote : undefined}
+            >
               Confirm &amp; reserve
             </Button>
           </>
@@ -68,10 +77,13 @@ export function OrderActions({
           </>
         )}
       </div>
-      {status === "DRAFT" && confirmNote && !error && (
-        <span className="t-small text-[var(--color-ink-2)] max-w-[420px] text-right">{confirmNote}</span>
+      {/* A refusal gets a line of its own under the whole row (after the bell,
+          hence order-last), rather than stretching the row it came from. */}
+      {error && (
+        <p role="alert" className="order-last basis-full m-0 flex justify-end">
+          <span className="t-small text-[var(--color-critical-text)] max-w-[420px] text-right">{error}</span>
+        </p>
       )}
-      {error && <span className="t-small text-[var(--color-critical-text)] max-w-[420px] text-right">{error}</span>}
-    </div>
+    </>
   );
 }

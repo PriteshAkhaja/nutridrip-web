@@ -1,5 +1,5 @@
 import { connectDB } from "@/lib/db/mongoose";
-import { Booking, Drip, User } from "@/lib/models";
+import { Booking, Drip } from "@/lib/models";
 import { getSession } from "@/lib/auth/session";
 import { can } from "@/lib/auth/rbac";
 import { canManageBooking } from "@/lib/auth/ownership";
@@ -28,7 +28,7 @@ export const dynamic = "force-dynamic";
  * Two ways in:
  *   ?booking=<id>                        moving a session — its own address and length, and it
  *                                        does not stand in its own way;
- *   ?dripId=&location=&pincode=&clinicId= booking a new one.
+ *   ?dripId=&location=&pincode= booking a new one.
  *
  * A drip held for a patient who has a call booked with a physician starts no
  * earlier than 2 hours after the call; `after=<ISO>` pushes that later still,
@@ -68,16 +68,10 @@ export async function GET(req: Request) {
         const drip = await Drip.findById(dripId).select("durationMin").lean<{ durationMin?: number } | null>();
         durationMin = drip?.durationMin ?? durationMin;
       }
-      if (params.get("location") === "clinic") {
-        const clinic = await User.findOne({ _id: params.get("clinicId"), role: "clinic", status: "active" })
-          .select("clinic.pincode")
-          .lean<{ clinic?: { pincode?: string } } | null>();
-        if (!clinic) return fail("That clinic is not taking bookings", 422);
-        pincode = clinic.clinic?.pincode;
-      } else {
-        pincode = (params.get("pincode") ?? "").replace(/\D/g, "");
-        if (pincode.length !== 6) return ok({ served: false, zone: null, days: [] });
-      }
+      // A new booking is never at a partner clinic (see planBooking).
+      if (params.get("location") === "clinic") return fail("Sessions are given at your home, office or hotel.", 422);
+      pincode = (params.get("pincode") ?? "").replace(/\D/g, "");
+      if (pincode.length !== 6) return ok({ served: false, zone: null, days: [] });
     }
 
     const dates = releasedDates();
@@ -88,9 +82,10 @@ export async function GET(req: Request) {
       excludeBookingId,
     });
 
-    // A home visit outside every zone is a straight no, said by the pincode
-    // note; a clinic's rooms run the default hours wherever they are.
-    if (!ctx.zone && params.get("location") !== "clinic" && !bookingId) {
+    // A new visit outside every zone is a straight no, said by the pincode
+    // note. (Moving an existing session at a clinic's rooms keeps the default
+    // hours wherever they are.)
+    if (!ctx.zone && !bookingId) {
       return ok({ served: false, zone: null, days: [] });
     }
 

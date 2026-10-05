@@ -26,6 +26,12 @@ export type SessionCard = {
   /** Late-change fees on this session, oldest first. */
   charges: LateCharge[];
   paymentStatus: string;
+  /** Rupees: the session's price now, what was paid for it, and what went back. */
+  amount: number;
+  paidAmount: number;
+  refundedAmount: number;
+  /** Rupees of late-change fees not yet paid or waived. */
+  owedFees: number;
 };
 
 export type LateCharge = {
@@ -35,6 +41,8 @@ export type LateCharge = {
   note: string | null;
   /** Settled by the team: paid or waived. Null while still owed. */
   settledAs?: "paid" | "waived" | null;
+  /** How: "online", or "deducted" from a late cancellation's refund. */
+  paidMethod?: string | null;
 };
 
 const timeOf = (d: Date, fmt: ClockFormat) => clock(d, fmt);
@@ -52,8 +60,18 @@ type LeanBooking = {
   status: BookingStatus;
   componentsGiven?: Array<{ batchNo?: string }>;
   checklist: Array<{ phase: string; doneAt?: Date }>;
-  charges?: Array<{ kind: LateCharge["kind"]; amount: number; at: Date; note?: string; settledAs?: "paid" | "waived" }>;
+  charges?: Array<{
+    kind: LateCharge["kind"];
+    amount: number;
+    at: Date;
+    note?: string;
+    settledAs?: "paid" | "waived";
+    paidMethod?: string;
+  }>;
   paymentStatus?: string;
+  amount?: number;
+  paidAmount?: number;
+  refundedAmount?: number;
 };
 
 function toCard(b: LeanBooking, patientName: string, fmt: ClockFormat): SessionCard {
@@ -82,8 +100,13 @@ function toCard(b: LeanBooking, patientName: string, fmt: ClockFormat): SessionC
       at: new Date(c.at).toISOString(),
       note: c.note?.trim() || null,
       settledAs: c.settledAs ?? null,
+      paidMethod: c.paidMethod ?? null,
     })),
     paymentStatus: b.paymentStatus ?? "unpaid",
+    amount: b.amount ?? 0,
+    paidAmount: b.paidAmount ?? 0,
+    refundedAmount: b.refundedAmount ?? 0,
+    owedFees: (b.charges ?? []).filter((c) => !c.settledAs).reduce((n, c) => n + c.amount, 0),
   };
 }
 
@@ -129,7 +152,9 @@ export async function patientSessions(patientId: string): Promise<SessionCard[]>
   return withPatientNames(bookings);
 }
 
-const FINISHED = ["completed", "cancelled"];
+// Over, one way or another: a declined session belongs in the history with the
+// rest, not under Upcoming with Move and Cancel (Home already counts it so).
+const FINISHED = ["completed", "cancelled", "rejected"];
 
 /**
  * A patient's sessions, split the way their screen shows them.

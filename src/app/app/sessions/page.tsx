@@ -17,6 +17,9 @@ import { quizCtaFor } from "@/lib/data/quiz-cta";
 import { getLatePolicy } from "@/lib/billing/settings";
 import { LateCharges } from "@/components/ui/LateCharges";
 import { getClockFormat } from "@/lib/settings/clock";
+import { SessionMoney } from "@/components/payments/SessionMoney";
+import { paymentsEnabled, paymentsSetup } from "@/lib/payments/config";
+import { sweepBookingMoney } from "@/lib/payments/money";
 
 export const metadata: Metadata = { title: "Sessions" };
 export const dynamic = "force-dynamic";
@@ -29,10 +32,14 @@ export default async function SessionsPage({
   const clockFmt = await getClockFormat();
   const session = await requireRole("patient", "superadmin");
   const { page, pageSize } = await searchParams;
+  // Money a session is owed that an earlier run did not get to finish, before the list shows it.
+  await sweepBookingMoney({ patientId: session.sub });
   const { upcoming, past, meta } = await patientSessionsPaged(session.sub, parsePaging({ page, pageSize }));
   // With no sessions yet, the way on depends on whether the quiz has been taken.
   const next = await quizCtaFor(session);
   const policy = await getLatePolicy();
+  const payOnline = paymentsEnabled();
+  const instantRefunds = paymentsSetup().refundSpeed === "optimum";
 
   await connectDB();
   // The vitality trend is only meaningful across more than one assessment.
@@ -82,7 +89,7 @@ export default async function SessionsPage({
                 {upcoming.map((s) => (
                   <div
                     key={s.id}
-                    className="rounded-[var(--radius-lg)] border border-[var(--color-line)] bg-[var(--color-surface)] p-5"
+                    className="rounded-[var(--radius-lg)] border border-[var(--color-line)] bg-[var(--color-surface)] p-5 flex flex-col"
                   >
                     <div className="flex items-start justify-between gap-3">
                       <Link href={`/app/session/${s.id}`} className="min-w-0 no-underline hover:no-underline">
@@ -94,25 +101,42 @@ export default async function SessionsPage({
                       </Link>
                       <StatusPill status={s.status} dot />
                     </div>
-                    {s.status !== "in_progress" && (
-                      <div className="mt-3 pt-3 border-t border-[var(--color-line)] flex flex-col gap-2">
-                        <div className="flex justify-end gap-2 flex-wrap">
-                          <RescheduleSession
-                            bookingId={s.id}
-                            bookingNo={s.bookingNo}
-                            scheduledAt={s.scheduledAt}
-                            policy={policy}
-                          />
-                          <CancelSession
-                            bookingId={s.id}
-                            bookingNo={s.bookingNo}
-                            scheduledAt={s.scheduledAt}
-                            policy={policy}
-                          />
+                    {/* Everything under the title sits at the foot of the card, so a row of
+                        cards of different heights lines up and none ends in an empty band. */}
+                    <div className="mt-auto">
+                      {s.status !== "in_progress" && (
+                        <div className="mt-3 pt-3 border-t border-[var(--color-line)] flex flex-col gap-2">
+                          <div className="flex justify-end gap-2 flex-wrap">
+                            <RescheduleSession
+                              bookingId={s.id}
+                              bookingNo={s.bookingNo}
+                              scheduledAt={s.scheduledAt}
+                              policy={policy}
+                              payOnline={payOnline}
+                            />
+                            <CancelSession
+                              bookingId={s.id}
+                              bookingNo={s.bookingNo}
+                              scheduledAt={s.scheduledAt}
+                              policy={policy}
+                              paidNet={Math.max(0, s.paidAmount - s.refundedAmount)}
+                            />
+                          </div>
                         </div>
-                      </div>
-                    )}
-                    <LateCharges charges={s.charges} />
+                      )}
+                      <LateCharges charges={s.charges} />
+                      <SessionMoney
+                        instantRefunds={instantRefunds}
+                        bookingId={s.id}
+                        status={s.status}
+                        paymentStatus={s.paymentStatus}
+                        amount={s.amount}
+                        paidAmount={s.paidAmount}
+                        refundedAmount={s.refundedAmount}
+                        owedFees={s.owedFees}
+                        payOnline={payOnline}
+                      />
+                    </div>
                   </div>
                 ))}
               </div>
@@ -137,7 +161,7 @@ export default async function SessionsPage({
                       <Link
                         key={s.id}
                         href={`/app/report/${s.id}`}
-                        className="rounded-[var(--radius-lg)] border border-[var(--color-line)] bg-[var(--color-surface)] p-5 no-underline hover:no-underline hover:border-[var(--color-primary-line)] transition-colors duration-150"
+                        className="rounded-[var(--radius-lg)] border border-[var(--color-line)] bg-[var(--color-surface)] p-5 flex flex-col no-underline hover:no-underline hover:border-[var(--color-primary-line)] transition-colors duration-150"
                       >
                         <div className="flex items-start justify-between gap-3">
                           <div className="min-w-0">
@@ -153,7 +177,19 @@ export default async function SessionsPage({
                           </div>
                           <StatusPill status={s.status} dot />
                         </div>
-                        <LateCharges charges={s.charges} />
+                        <div className="mt-auto">
+                          <LateCharges charges={s.charges} />
+                          <SessionMoney
+                            instantRefunds={instantRefunds}
+                            bookingId={s.id}
+                            status={s.status}
+                            paymentStatus={s.paymentStatus}
+                            amount={s.amount}
+                            paidAmount={s.paidAmount}
+                            refundedAmount={s.refundedAmount}
+                            payOnline={false}
+                          />
+                        </div>
                       </Link>
                     ))}
                   </div>

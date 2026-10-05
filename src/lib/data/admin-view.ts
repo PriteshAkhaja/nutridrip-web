@@ -43,6 +43,18 @@ export const ADMIN_BOOKING_FIELDS = [
   "completedAt",
   "amount",
   "paymentStatus",
+  // Online payment (lib/payments): what was paid and refunded, the payment that
+  // made the booking, and who ended it (which decides the refund). Money and
+  // scheduling; nothing clinical. moneyLockAt is a short-lived lock timestamp,
+  // and the moneyAsk fields its bookkeeping (lib/payments/money).
+  "paidAmount",
+  "refundedAmount",
+  "createdFromPaymentId",
+  "moneyLockAt",
+  "moneyAsk",
+  "moneyAskRefund",
+  "moneyDirtyAt",
+  "cancelledByRole",
   "cancelledAt",
   "cancelReason",
   "rescheduledFrom",

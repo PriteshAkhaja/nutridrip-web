@@ -398,7 +398,7 @@ export default async function HomePage() {
         />
         <Rail
           label="Reviews from verified sessions"
-          autoplay={5500}
+          autoplay={4500}
           className="-mx-6 gap-5 px-6 scroll-px-6 md:mx-0 md:px-0 md:scroll-px-0"
         >
           {TESTIMONIALS.map((t, i) => (

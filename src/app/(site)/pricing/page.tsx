@@ -55,7 +55,7 @@ const FAQ = [
   },
   {
     q: "What if the nurse finds something wrong?",
-    a: "The 29-step checklist gates the session. If your vitals fall outside the reference range, the infusion does not start — the nurse escalates to the reviewing physician, and you are not charged for a session that does not run.",
+    a: "The 29-step checklist gates the session. If your vitals fall outside the reference range, the infusion does not start — the nurse escalates to the reviewing physician, and a session that does not run is refunded in full.",
   },
   {
     q: "Can I cancel or reschedule?",
@@ -197,7 +197,7 @@ export default async function PricingPage() {
           <span className="text-[var(--color-primary)]">
             <IconCheck size={15} />
           </span>
-          A session that does not run because your vitals blocked it is not charged.
+          A session that does not run because your vitals blocked it is refunded in full, automatically.
         </p>
       </Section>
 
@@ -213,7 +213,7 @@ export default async function PricingPage() {
       <CtaPanel
         eyebrow="No card needed"
         title="Get a protocol reviewed first."
-        lede="A physician reads your quiz before anything is booked or charged. Sessions are charged on completion, not on booking."
+        lede="A physician reads your quiz before anything is booked. You pay when you book, and if the session does not go ahead it is refunded in full."
         actions={
           <>
             <QuizButton size="lg">Take the health quiz</QuizButton>

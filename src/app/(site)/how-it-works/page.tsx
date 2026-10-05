@@ -52,7 +52,7 @@ export default async function HowItWorksPage() {
     {
       title: "You choose a drip and a slot",
       kicker: "You",
-      body: "Pick the formula, a date and a time — at home, or at a partner clinic. Enter your pincode and you get a straight yes or no on whether we can reach you.",
+      body: "Pick the formula, a date and a time — at home, at your office or at a hotel. Enter your pincode and you get a straight yes or no on whether we can reach you.",
       note: latePolicySentence(latePolicy),
     },
     {

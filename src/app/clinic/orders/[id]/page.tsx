@@ -9,6 +9,8 @@ import { Allocation, BatchLot, Consumption, Order, ProductMaster, User } from "@
 import { PAY_METHOD_LABEL, payState, type OrderPayment, type PayMethod } from "@/lib/billing/order-payment";
 import { getPayee, hasPayee } from "@/lib/billing/settings";
 import { PayOrderForm } from "./PayOrderForm";
+import { PayButton, PaymentTrust } from "@/components/payments/PayButton";
+import { paymentsEnabled } from "@/lib/payments/config";
 import { DataTable, THead, TH, TR, TD } from "@/components/ui/Table";
 import { StatusPill, Pill } from "@/components/ui/Pill";
 import { Card } from "@/components/ui/Card";
@@ -48,7 +50,13 @@ export default async function ClinicOrderPage({ params }: { params: Promise<{ id
     cancelledAt?: Date;
     scheduledDelivery?: Date;
     onCredit?: boolean;
-    payment?: OrderPayment & { paidOn?: Date; submittedAt?: Date; verifiedAt?: Date };
+    payment?: OrderPayment & {
+      paidOn?: Date;
+      submittedAt?: Date;
+      verifiedAt?: Date;
+      refundStartedAt?: Date;
+      refundedAt?: Date;
+    };
   } | null>();
 
   // A clinic only ever sees its own orders.
@@ -90,6 +98,8 @@ export default async function ClinicOrderPage({ params }: { params: Promise<{ id
   const today = new Date().toLocaleDateString("en-CA", { timeZone: "Asia/Kolkata" });
   const method = order.payment?.method ? PAY_METHOD_LABEL[order.payment.method as PayMethod] : null;
   const paid = pay === "received";
+  const payOnline = paymentsEnabled();
+  const paidOnline = order.payment?.method === "online";
   const timeline: TimelineItem[] = [
     { label: "Raised", time: stamp(order.createdAt, clockFmt), state: "done" },
     // Paid first: the step between placing the order and the pharmacy taking it.
@@ -154,8 +164,9 @@ export default async function ClinicOrderPage({ params }: { params: Promise<{ id
                   <span className="t-micro block">Payment needed</span>
                   <h2 className="t-h3 mt-1">Pay {formatInr(order.amount ?? 0)} to confirm this order</h2>
                   <p className="t-body text-[var(--color-ink-2)] mt-1 max-w-[62ch]">
-                    The pharmacy prepares it once your payment has arrived. Pay by UPI or bank transfer, then record it
-                    here.
+                    {payOnline
+                      ? "The pharmacy prepares it once your payment has arrived. Pay online and it is received at once — nobody has to check it. Or pay by UPI or bank transfer and record it here."
+                      : "The pharmacy prepares it once your payment has arrived. Pay by UPI or bank transfer, then record it here."}
                   </p>
                   {order.payment?.note && (
                     <div className="rounded-[var(--radius-md)] border border-[var(--color-caution)] bg-[var(--color-caution-soft)] px-4 py-3 mt-4">
@@ -177,7 +188,22 @@ export default async function ClinicOrderPage({ params }: { params: Promise<{ id
                 </>
               )}
 
-              {payee && (
+              {payOnline && pay === "awaiting" && (
+                <div className="mt-5 flex flex-col gap-2 sm:items-start">
+                  <PayButton
+                    size="lg"
+                    className="sm:min-w-[280px]"
+                    successTitle="Order paid"
+                    finishing="Sending it to the pharmacy"
+                    request={{ purpose: "order", orderId: id }}
+                  >
+                    Pay {formatInr(order.amount ?? 0)} online
+                  </PayButton>
+                  <PaymentTrust />
+                </div>
+              )}
+
+              {payee && (!payOnline || pay !== "awaiting") && (
                 <div className="rounded-[var(--radius-md)] border border-[var(--color-line)] bg-[var(--color-surface)] px-4 py-3 mt-4">
                   <span className="t-micro block mb-2">Pay to</span>
                   {hasPayee(payee) ? (
@@ -208,7 +234,40 @@ export default async function ClinicOrderPage({ params }: { params: Promise<{ id
               )}
 
               <div className="mt-5">
-                {pay === "awaiting" ? (
+                {pay === "awaiting" && payOnline ? (
+                  // Online first; a transfer made outside the app is still recorded here.
+                  <details>
+                    <summary className="t-body font-medium cursor-pointer text-[var(--color-primary-text)] min-h-[44px] inline-flex items-center">
+                      Paid by bank transfer, UPI or cheque instead?
+                    </summary>
+                    <div className="mt-4 flex flex-col gap-4">
+                      {payee && hasPayee(payee) && (
+                        <div className="rounded-[var(--radius-md)] border border-[var(--color-line)] bg-[var(--color-surface)] px-4 py-3">
+                          <span className="t-micro block mb-2">Pay to</span>
+                          <dl className="grid grid-cols-[auto_1fr] gap-x-4 gap-y-1 m-0">
+                            {(
+                              [
+                                ["UPI ID", payee.upiId],
+                                ["Account name", payee.accountName],
+                                ["Bank", payee.bankName],
+                                ["Account number", payee.accountNo],
+                                ["IFSC", payee.ifsc],
+                              ] as const
+                            )
+                              .filter(([, v]) => v)
+                              .map(([k, v]) => (
+                                <div key={k} className="contents">
+                                  <dt className="t-small text-[var(--color-ink-2)]">{k}</dt>
+                                  <dd className="t-data text-[14px] m-0 break-all">{v}</dd>
+                                </div>
+                              ))}
+                          </dl>
+                        </div>
+                      )}
+                      <PayOrderForm orderId={id} today={today} />
+                    </div>
+                  </details>
+                ) : pay === "awaiting" ? (
                   <PayOrderForm orderId={id} today={today} />
                 ) : (
                   <details>
@@ -353,14 +412,23 @@ export default async function ClinicOrderPage({ params }: { params: Promise<{ id
               </span>
             </Card>
           )}
-          {cancelled && order.payment?.refundDue && (
+          {cancelled && paidOnline && (order.payment?.refundStartedAt || order.payment?.refundedAt) ? (
+            <Card padding="p-5" tone={order.payment?.refundedAt ? "safe" : "info"}>
+              <span className="t-micro block mb-1">{order.payment?.refundedAt ? "Refunded" : "Refund on its way"}</span>
+              <span className="t-body">
+                {order.payment?.refundedAt
+                  ? `${formatInr(order.amount ?? 0)} went back to the account you paid from on ${formatDate(order.payment.refundedAt)}.`
+                  : `This order was cancelled, so ${formatInr(order.amount ?? 0)} is going back to the account you paid from — it can take 5–7 working days to show.`}
+              </span>
+            </Card>
+          ) : cancelled && order.payment?.refundDue ? (
             <Card padding="p-5" tone="caution">
               <span className="t-micro block mb-1">Refund due</span>
               <span className="t-body">
                 This order was cancelled after your payment arrived. {formatInr(order.amount ?? 0)} is due back to you.
               </span>
             </Card>
-          )}
+          ) : null}
           <Card padding="p-5">
             <span className="t-micro">Summary</span>
             <div className="flex flex-col gap-2 mt-4">

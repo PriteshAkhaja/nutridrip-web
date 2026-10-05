@@ -1,4 +1,5 @@
 import { connectDB } from "@/lib/db/mongoose";
+import { attentionCount } from "@/lib/payments/admin";
 import { Booking, Consultation, HealthQuiz, Lead, Order, ProductMaster, User } from "@/lib/models";
 import { getAlerts } from "@/lib/inventory/alerts";
 import type { NavItem } from "@/components/layout/ConsoleShell";
@@ -26,6 +27,7 @@ export async function adminNav(activeCounts = true): Promise<NavItem[]> {
       { section: "Inventory", label: "Alerts", href: "/admin/inventory/alerts" },
       { section: "Inventory", label: "Recall trace", href: "/admin/inventory/recall" },
       { section: "Admin", label: "Billing", href: "/admin/billing" },
+      { section: "Admin", label: "Payments", href: "/admin/payments", permission: "payments.view" },
       { section: "Admin", label: "Settings", href: "/admin/settings", permission: "settings.manage" },
       ...(AI_STUDIO_ENABLED
         ? [{ section: "Admin", label: "AI Studio", href: "/admin/studio", permission: "ai.configure" } as const]
@@ -43,6 +45,8 @@ export async function adminNav(activeCounts = true): Promise<NavItem[]> {
     Lead.countDocuments({ status: "new" }),
     HealthQuiz.countDocuments({ reviewStatus: "pending" }),
   ]);
+  // A refund that failed or a payment that stalled: somebody has to look.
+  const paymentsAttention = await attentionCount().catch(() => 0);
 
   const alertCount =
     alerts.counts.expired + alerts.counts.expiringSoon + alerts.counts.lowStock + alerts.counts.outOfStock;
@@ -88,6 +92,14 @@ export async function adminNav(activeCounts = true): Promise<NavItem[]> {
     },
     { section: "Inventory", label: "Recall trace", href: "/admin/inventory/recall" },
     { section: "Admin", label: "Billing", href: "/admin/billing" },
+    {
+      section: "Admin",
+      label: "Payments",
+      href: "/admin/payments",
+      permission: "payments.view",
+      badge: paymentsAttention || undefined,
+      badgeTone: "critical",
+    },
     { section: "Admin", label: "Settings", href: "/admin/settings", permission: "settings.manage" },
     ...(AI_STUDIO_ENABLED
       ? [{ section: "Admin", label: "AI Studio", href: "/admin/studio", permission: "ai.configure" } as const]

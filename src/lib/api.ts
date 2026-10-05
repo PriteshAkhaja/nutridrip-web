@@ -29,6 +29,11 @@ export function handleError(err: unknown) {
       return fail("That already exists", 409);
     }
     if (err.name === "ValidationError") return fail("Some of those values are not valid", 422);
+    // A save guarded on what was read (a session's status, say) found it had
+    // changed: somebody else acted on it a moment ago.
+    if (err.name === "DocumentNotFoundError") {
+      return fail("This was changed by someone else a moment ago. Reload and try again.", 409);
+    }
     // Confirming and dispatching an order run in a transaction, which MongoDB
     // only allows on a replica set. On a single server nothing was changed —
     // the transaction never started — so say what to fix, not the driver's words.

@@ -15,7 +15,7 @@ npm run seed                   # demo dataset: 9 drips, 25 products, 31 batches,
 npm run dev                    # http://localhost:3000
 ```
 
-MongoDB must be a **replica set** — order confirm and dispatch run inside transactions. A standalone `mongod` will fail on those two routes and nothing else.
+MongoDB must be a **replica set** — order confirm and dispatch run inside transactions, and so does every change to the nurse schedule (booking a session, moving one, a physician's approval, assigning a nurse), so two patients can never be given the same last free nurse. A standalone `mongod` fails on those.
 
 ### Checking it still works
 
@@ -251,9 +251,18 @@ Two findings were argued down rather than fixed. The loader's counter pads with 
 
 ---
 
+## Payments (Razorpay)
+
+Online payment is Razorpay, over its REST API (`src/lib/payments`, no SDK). It is **off until `RAZORPAY_KEY_ID` and `RAZORPAY_KEY_SECRET` are set** — then everything below switches on; without them the app runs as before (book without paying, clinics record transfers). `.env.example` lists every setting and the dashboard steps (keys, webhook, capture).
+
+- **Patients pay to book** (or to hold a slot for the physician). A session that does not go ahead is **refunded automatically** — in full when the physician declines, the team or a clinic cancels, vitals stop it, a held slot lapses, or the patient cancels in good time; less the late fee when the patient cancels inside the late window. A physician switching to a cheaper drip refunds the difference; a dearer one leaves a balance the patient pays from Sessions. Moving a session inside the late window asks for the fee first.
+- **Clinics** pay an order online (received at once, nothing to check) or still record a transfer for the team to check; an order paid online and then cancelled is refunded automatically. Clinics on credit pay each invoice online from Billing; the team can record a transfer against an invoice.
+- **How it stays right:** the amount is always worked out on the server. A payment is applied once, however many times it is confirmed (browser, webhook, a later check): the Razorpay order id is unique, the claim is atomic, and a booking remembers the payment that made it. If what a payment was for can no longer be done — the slot went while the patient paid — it is refunded in full and the patient told why. One function (`syncBookingMoney`) decides what a session is owed, so every path that ends a session calls it rather than carrying its own idea of a refund. Refunds are never sent twice: one refund decision per payment at a time, and Razorpay is asked what it has already refunded before anything more goes.
+- **Admin → Payments** lists every payment and refund, with the month's figures; a failed refund appears under *Needs attention* (and in the nav badge) with a retry; refunds can be made by hand with a reason.
+- `POST /api/payments` starts a checkout · `/confirm` takes Checkout's success · `/failed` records a failed attempt · `/webhook` is Razorpay's · `GET /api/payments/[id]` (checks with Razorpay when unsettled) · `/[id]/refund` and `/[id]/reconcile` for admins.
+
 ## Not built yet
 
-- **Payments** — bookings carry an amount, a payment status and a late-cancellation fee, but no gateway is connected.
 - **Email and SMS** — notifications reach the in-app bell only. No OTP gateway, so patient codes are logged server-side and echoed in development.
 - **Object storage** — lab reports upload and read back, but the file lives in the record rather than in a bucket, so uploads are capped at 4 MB.
 - **AI Studio** — specified in the PRD, not started.

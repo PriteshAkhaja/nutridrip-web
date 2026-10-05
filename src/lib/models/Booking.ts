@@ -234,27 +234,62 @@ const BookingSchema = new Schema(
             /** "Moved from 25 Sept, 10:00 am" / the reason given for cancelling. */
             note: String,
             /**
-             * Paid (and how), or waived; absent means still owed. Nothing sets
-             * it yet: there is no payment in the app, so every fee is unpaid
-             * until the payment integration records the patient paying it.
+             * Paid (and how), or waived; absent means still owed. "online" is a
+             * Razorpay payment (paymentId says which); "deducted" is a late
+             * cancellation's fee kept back from the refund of the session.
              */
             settledAs: { type: String, enum: ["paid", "waived"] },
             settledAt: Date,
             settledById: { type: Schema.Types.ObjectId, ref: "User" },
-            paidMethod: { type: String, enum: ["cash", "upi", "card", "bank_transfer"] },
+            paidMethod: { type: String, enum: ["cash", "upi", "card", "bank_transfer", "online", "deducted"] },
+            paymentId: { type: Schema.Types.ObjectId, ref: "Payment" },
           },
           { _id: false }
         ),
       ],
       default: undefined,
     },
+    /**
+     * Where the money stands, worked out from the Payment records by
+     * syncBookingMoney -- never set by hand.
+     *
+     *   unpaid              nothing paid (booked before online payment, or with it off)
+     *   paid                the drip price is paid
+     *   balance_due         a physician switched to a dearer drip; the difference is owed
+     *   refund_pending      money is on its way back
+     *   partially_refunded  refunded less a late fee
+     *   refunded            everything paid has gone back
+     */
     paymentStatus: {
       type: String,
-      enum: ["unpaid", "paid", "refund_pending", "refunded"],
+      enum: ["unpaid", "paid", "balance_due", "refund_pending", "partially_refunded", "refunded"],
       default: "unpaid",
     },
+    /** Rupees captured for the session itself (drip price and any balance), and rupees refunded of it. */
+    paidAmount: { type: Number, default: 0 },
+    refundedAmount: { type: Number, default: 0 },
+    /** The payment that created this booking: a second delivery of the same payment finds it here. */
+    createdFromPaymentId: { type: Schema.Types.ObjectId, ref: "Payment", unique: true, sparse: true },
+    /** Only one money decision at a time for a session. */
+    moneyLockAt: Date,
+    /**
+     * Asks for a money decision, counted. Whoever holds the lock goes round
+     * again if this moved while it worked, so an event landing mid-run -- a
+     * cancellation during a refund webhook -- is never lost.
+     */
+    moneyAsk: { type: Number, default: 0 },
+    /** One of the waiting asks wants money sent back (a cancellation, not just a status refresh). */
+    moneyAskRefund: Boolean,
+    /** Set while an ask waits to be served; a stale one is picked up by sweepBookingMoney. */
+    moneyDirtyAt: Date,
     cancelledAt: Date,
     cancelReason: String,
+    /**
+     * Who ended it. A patient's own cancellation keeps any late fee; anybody
+     * else ending a session -- the team, a clinic, a physician, the system --
+     * refunds everything the patient paid for it.
+     */
+    cancelledByRole: String,
     rescheduledFrom: Date,
     rescheduleCount: { type: Number, default: 0 },
 
@@ -278,6 +313,28 @@ const BookingSchema = new Schema(
 
 BookingSchema.index({ status: 1, scheduledAt: 1 });
 BookingSchema.index({ nurseId: 1, scheduledAt: 1 });
+BookingSchema.index({ moneyDirtyAt: 1 }, { sparse: true });
+
+/**
+ * A save that changes the status lands only if the status is still the one
+ * that was read. Two people acting on one session at once -- a patient
+ * cancelling as the physician approves, a nurse setting off as the session is
+ * called off -- would otherwise each write their status over the other's, and
+ * a cancelled, refunded session could come back to life. The later save fails
+ * instead (DocumentNotFoundError, answered 409 "reload and try again").
+ */
+BookingSchema.post("init", function () {
+  this.$locals.readStatus = this.status;
+});
+BookingSchema.pre("save", function () {
+  const read = this.$locals.readStatus;
+  if (!this.isNew && typeof read === "string" && this.isModified("status")) {
+    this.$where = { ...(this.$where ?? {}), status: read };
+  }
+});
+BookingSchema.post("save", function () {
+  this.$locals.readStatus = this.status;
+});
 
 /** Serves the paged lists: the filter, then the sort, so a page is an index walk. */
 BookingSchema.index({ patientId: 1, scheduledAt: -1, _id: -1 });

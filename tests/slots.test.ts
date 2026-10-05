@@ -4,7 +4,9 @@ import {
   LATE_CANCEL_FEE_INR,
   LATE_CHANGE_HOURS,
   clashes,
+  dayLoadOf,
   freeNurses,
+  istDateOf,
   istInstant,
   istParts,
   releasedDates,
@@ -102,6 +104,76 @@ describe("whether a nurse is free", () => {
     expect(freeNurses({ ...base, held: [held({ zoneName: "Hebbal" })] })).toBe(2);
     // A nurse from outside the pool being busy changes nothing here.
     expect(freeNurses({ ...base, held: [held({ nurseId: "chitra" })] })).toBe(2);
+  });
+});
+
+describe("a nurse's day", () => {
+  const day = (t: string) => istInstant("2026-09-25", t).getTime();
+  const on = (nurseId: string, t: string, d = "2026-09-25"): Held =>
+    held({ id: `${nurseId}-${t}-${d}`, nurseId, start: istInstant(d, t).getTime(), durationMin: 45 });
+  const base = { pool: ["asha"], zoneName: "Koramangala", durationMin: 45 };
+
+  it("reads the India date of a moment exactly, across India's midnight", () => {
+    const midnight = istInstant("2026-09-26", "00:00").getTime();
+    expect(istDateOf(midnight - 1)).toBe("2026-09-25");
+    expect(istDateOf(midnight)).toBe("2026-09-26");
+    for (const t of [midnight - 60_000, midnight, day("07:30"), day("23:59")]) {
+      expect(istDateOf(t)).toBe(istParts(new Date(t)).date);
+    }
+  });
+
+  it("stops offering a nurse who has her most sessions that day, even at a time she is idle", () => {
+    const three = [on("asha", "08:00"), on("asha", "10:00"), on("asha", "12:00")];
+    // 17:00 is clear of all three by the clock...
+    expect(freeNurses({ ...base, held: three, start: day("17:00") })).toBe(1);
+    // ...but at three a day she is full.
+    expect(freeNurses({ ...base, held: three, start: day("17:00"), dayLimit: 3 })).toBe(0);
+    expect(freeNurses({ ...base, held: three, start: day("17:00"), dayLimit: 4 })).toBe(1);
+    // The next day is a new day.
+    expect(freeNurses({ ...base, held: three, start: istInstant("2026-09-26", "10:00").getTime(), dayLimit: 3 })).toBe(
+      1
+    );
+  });
+
+  it("counts the sessions she has already finished that day", () => {
+    const done = [
+      { nurseId: "asha", start: day("08:00") },
+      { nurseId: "asha", start: day("10:00") },
+    ];
+    expect(freeNurses({ ...base, held: [], done, start: day("15:00"), dayLimit: 2 })).toBe(0);
+    expect(freeNurses({ ...base, held: [], done, start: day("15:00"), dayLimit: 3 })).toBe(1);
+    expect(dayLoadOf({ held: [on("asha", "12:00")], done }, "asha", day("18:00"))).toBe(3);
+  });
+
+  it("keeps a place in the day for a session still waiting for a nurse", () => {
+    // Asha has one session; a drip held for the physician at 14:00 has no nurse yet.
+    const heldToo = [on("asha", "08:00"), held({ id: "h", nurseId: null, start: day("14:00"), durationMin: 45 })];
+    // With two a day, the one place left is the held drip's: nothing else that day.
+    expect(freeNurses({ ...base, held: heldToo, start: day("18:00"), dayLimit: 2 })).toBe(0);
+    // With three, one more fits.
+    expect(freeNurses({ ...base, held: heldToo, start: day("18:00"), dayLimit: 3 })).toBe(1);
+  });
+
+  it("shows every time of a full day taken, and says to pick another day", () => {
+    const three = [on("asha", "08:00"), on("asha", "11:00"), on("asha", "14:00")];
+    const c = ctx({ pool: ["asha"], held: three, dayLimit: 3 });
+    const friday = slotGrid(c, 45, ["2026-09-25"], NOW)[0];
+    expect(friday.freeCount).toBe(0);
+    const saturday = slotGrid(c, 45, ["2026-09-26"], NOW)[0];
+    expect(saturday.freeCount).toBeGreaterThan(0);
+    expect(slotProblem(c, istInstant("2026-09-25", "18:00"), 45, NOW)).toEqual({
+      error: "Every nurse who could come that day is already fully booked. Pick another day.",
+      status: 409,
+    });
+    // A time she is busy for still says so plainly.
+    expect(slotProblem(ctx({ pool: ["asha"], held: three }), istInstant("2026-09-25", "11:00"), 45, NOW)?.error).toBe(
+      "No nurse is free at that time any more. Pick another time."
+    );
+  });
+
+  it("with no limit set, a day is only as full as the clock makes it", () => {
+    const busyDay = ["07:00", "09:00", "11:00", "13:00", "15:00"].map((t) => on("asha", t));
+    expect(freeNurses({ ...base, held: busyDay, start: day("19:00") })).toBe(1);
   });
 });
 

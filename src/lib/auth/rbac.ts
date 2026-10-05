@@ -53,6 +53,14 @@ export const PERMISSIONS = {
    */
   "billing.manage": ["superadmin", "admin"],
   /**
+   * The payments ledger, and sending money back. Refunds that follow a rule --
+   * a cancellation, a physician's decline -- happen by themselves; this is the
+   * hand-made refund (a complaint, a goodwill gesture) and the retry of one
+   * that failed.
+   */
+  "payments.view": ["superadmin", "admin"],
+  "payments.refund": ["superadmin", "admin"],
+  /**
    * The service zones and their pincodes. Super admin only: a zone decides
    * where a nurse is sent and which patients are told "yes", so it is not an
    * operations tweak.

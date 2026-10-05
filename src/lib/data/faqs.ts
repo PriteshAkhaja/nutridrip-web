@@ -80,7 +80,7 @@ const RAW_CATEGORIES: FaqCategory[] = [
     items: [
       {
         q: "How do I book a session?",
-        a: `Take the quiz and wait for the physician's approval. Then choose your drip, whether the nurse comes to your home or you go to a partner clinic, and a day and time. The times follow your zone's hours on the Zones page, and only times a nurse is free for are offered — a nurse needs the length of your session plus about ${BETWEEN_SESSIONS_MIN} minutes to reach the next door, so a busy hour shows as taken rather than being double-booked.`,
+        a: `Take the quiz and wait for the physician's approval. Then choose your drip, where the nurse comes to (your home, your office or a hotel), and a day and time. The times follow your zone's hours on the Zones page, and only times a nurse is free for are offered — a nurse needs the length of your session plus about ${BETWEEN_SESSIONS_MIN} minutes to reach the next door, so a busy hour shows as taken rather than being double-booked.`,
       },
       {
         q: "Can I cancel or reschedule?",
@@ -88,8 +88,8 @@ const RAW_CATEGORIES: FaqCategory[] = [
         a: LATE_POLICY_TOKEN,
       },
       {
-        q: "Can I have the session at a clinic instead of at home?",
-        a: "Yes. When you book you choose either your home or one of our partner clinics. It is the same physician-approved protocol and the same checklist either way.",
+        q: "Can the nurse come to my office or a hotel instead of my home?",
+        a: "Yes. When you book you choose your home, your office or a hotel, anywhere inside the zones we serve. It is the same physician-approved protocol and the same checklist wherever it is.",
       },
     ],
   },

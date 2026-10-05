@@ -7,6 +7,7 @@ import { Textarea, Select } from "@/components/ui/Field";
 import { SlotPicker } from "@/components/ui/SlotPicker";
 import { inr, lateFee, type LatePolicy } from "@/lib/billing/late-policy";
 import type { FeedbackView } from "@/lib/clinical/feedback";
+import { PayButton } from "@/components/payments/PayButton";
 
 const REASONS = [
   "Something came up",
@@ -29,11 +30,14 @@ export function CancelSession({
   bookingNo,
   scheduledAt,
   policy,
+  paidNet = 0,
 }: {
   bookingId: string;
   bookingNo: string;
   scheduledAt: string;
   policy: LatePolicy;
+  /** Rupees paid for the session and not yet refunded: what a cancellation gives back (less a late fee). */
+  paidNet?: number;
 }) {
   const router = useRouter();
   const [open, setOpen] = useState(false);
@@ -44,6 +48,8 @@ export function CancelSession({
   // Matches the server: a slot already past is the deepest part of the window.
   const fee = lateFee(policy, hoursUntil(scheduledAt), "late_cancel");
   const late = fee > 0;
+  // What goes back: everything paid, less the late fee when it applies.
+  const back = Math.max(0, paidNet - (late ? Math.min(fee, paidNet) : 0));
 
   const cancel = async () => {
     setBusy(true);
@@ -76,7 +82,8 @@ export function CancelSession({
   }
 
   return (
-    <div className="rounded-[var(--radius-md)] border border-[var(--color-line)] bg-[var(--color-surface-2)] p-4 flex flex-col gap-3 mt-3">
+    // Its own full-width line when open, not squeezed into the row of buttons.
+    <div className="pay-swap w-full basis-full rounded-[var(--radius-md)] border border-[var(--color-line)] bg-[var(--color-surface-2)] p-4 flex flex-col gap-3 mt-3">
       <span className="t-body font-semibold">Cancel {bookingNo}?</span>
 
       <div
@@ -92,6 +99,19 @@ export function CancelSession({
               Your slot is in under {policy.windowHours} hours, so a{" "}
               <span className="t-data text-[14.5px]">{inr(fee)}</span> fee applies — the nurse is already dispatched
               with your batch drawn.
+              {paidNet > 0 && (
+                <>
+                  {" "}
+                  <span className="t-data text-[14.5px]">{inr(back)}</span> of the{" "}
+                  <span className="t-data text-[14.5px]">{inr(paidNet)}</span> you paid goes back to the account you
+                  paid from.
+                </>
+              )}
+            </>
+          ) : paidNet > 0 ? (
+            <>
+              No fee. All <span className="t-data text-[14.5px]">{inr(paidNet)}</span> you paid goes back to the account
+              you paid from, automatically — it can take 5–7 working days to show.
             </>
           ) : (
             "No fee. Your slot is far enough out that nothing has been drawn for it yet."
@@ -320,11 +340,14 @@ export function RescheduleSession({
   bookingNo,
   scheduledAt,
   policy,
+  payOnline = false,
 }: {
   bookingId: string;
   bookingNo: string;
   scheduledAt: string;
   policy: LatePolicy;
+  /** Online payment is on: a late move is paid for, then made. */
+  payOnline?: boolean;
 }) {
   const router = useRouter();
   const [open, setOpen] = useState(false);
@@ -351,6 +374,8 @@ export function RescheduleSession({
       });
       const json = await res.json();
       if (!json.success) {
+        // The window was crossed while this was open: the fee is shown, and with
+        // online payment on, the button becomes "Pay and move".
         if (typeof json.fee === "number" && json.fee > 0 && fee === 0) setServerFee(json.fee);
         setError(json.error ?? "Could not move that session");
         if (res.status === 409 || res.status === 422) setSlotReload((n) => n + 1);
@@ -374,15 +399,16 @@ export function RescheduleSession({
   }
 
   return (
-    <div className="border-t border-[var(--color-line)] pt-4 sm:rounded-[var(--radius-md)] sm:border sm:bg-[var(--color-surface-2)] sm:p-4 flex flex-col gap-4 mt-3">
+    <div className="pay-swap w-full basis-full border-t border-[var(--color-line)] pt-4 sm:rounded-[var(--radius-md)] sm:border sm:bg-[var(--color-surface-2)] sm:p-4 flex flex-col gap-4 mt-3">
       <span className="t-body font-semibold">Move {bookingNo}</span>
 
       {fee > 0 && (
         <div className="rounded-[var(--radius-sm)] px-3 py-2 border border-[var(--color-caution)] bg-[var(--color-caution-soft)]">
           <span className="t-body text-[var(--color-ink-2)]">
             Your slot is less than {policy.windowHours} hours away, so moving it now costs{" "}
-            <span className="t-data text-[14.5px]">{inr(fee)}</span>, added to this session. The nurse is already on
-            their way with your batch drawn.
+            <span className="t-data text-[14.5px]">{inr(fee)}</span>
+            {payOnline ? ", paid now to move it" : ", added to this session"}. The nurse is already on their way with
+            your batch drawn.
           </span>
         </div>
       )}
@@ -395,9 +421,30 @@ export function RescheduleSession({
         <Button variant="secondary" block onClick={() => setOpen(false)}>
           Keep it
         </Button>
-        <Button block loading={busy} disabled={!slotAt} onClick={move}>
-          {fee > 0 ? `Move for ${inr(fee)}` : "Move the session"}
-        </Button>
+        {fee > 0 && payOnline ? (
+          <div className="w-full flex flex-col gap-1">
+            <PayButton
+              block
+              disabled={!slotAt}
+              successTitle="Paid — your session is moved"
+              finishing="Moving your session"
+              request={{ purpose: "reschedule_fee", bookingId, scheduledAt: slotAt }}
+              onSettled={(st) => {
+                if (st.phase === "done") setOpen(false);
+              }}
+              onRefused={(r) => {
+                setError(r.message);
+                if (r.status === 409 || r.status === 422) setSlotReload((n) => n + 1);
+              }}
+            >
+              Pay {inr(fee)} and move
+            </PayButton>
+          </div>
+        ) : (
+          <Button block loading={busy} disabled={!slotAt} onClick={move}>
+            {fee > 0 ? `Move for ${inr(fee)}` : "Move the session"}
+          </Button>
+        )}
       </div>
     </div>
   );

@@ -1,5 +1,6 @@
 import { connectDB } from "@/lib/db/mongoose";
 import { Invoice, Order } from "@/lib/models";
+import { invoiceDueAt, invoicePayState } from "./invoice-pay";
 import {
   monthBounds,
   roundToRupees,
@@ -15,12 +16,20 @@ import {
 
 export type MissingInvoice = { id: string; orderNo: string; dispatchedAt: Date | null; amount: number };
 
+export type InvoicePay = { state: "paid" | "due" | "overdue"; dueAt: Date | null; paidAt: Date | null };
+
 export type Statement = {
   month: MonthKey;
   rows: StatementRow[];
   totals: StatementTotals;
   /** Dispatched in the month, no invoice raised yet. */
   missing: MissingInvoice[];
+  /** Paid, due or overdue, by order id. */
+  pay: Record<string, InvoicePay>;
+  /** Whole rupees across the month's invoices. */
+  paidTotal: number;
+  outstandingTotal: number;
+  overdueCount: number;
 };
 
 /**
@@ -42,7 +51,7 @@ export async function loadStatement(clinicId: string, month: MonthKey): Promise<
     Invoice.find({
       clinicId,
       $or: [{ suppliedAt: range }, { suppliedAt: null, issuedAt: range }],
-    }).lean<InvoiceLike[]>(),
+    }).lean<Array<InvoiceLike & { payment?: { state?: string; paidAt?: Date } | null; terms?: string | null }>>(),
     Order.find({ clinicId, status: "DISPATCHED", dispatchedAt: range })
       .select("orderNo dispatchedAt amount")
       .lean<Array<{ _id: unknown; orderNo: string; dispatchedAt?: Date; amount?: number }>>(),
@@ -60,6 +69,25 @@ export async function loadStatement(clinicId: string, month: MonthKey): Promise<
   // Whole rupees, as the invoice shows them — see roundToRupees.
   const rows = sortRows(invoices.map(toRow)).map(roundToRupees);
 
+  const now = new Date();
+  const pay: Record<string, InvoicePay> = {};
+  let paidTotal = 0;
+  let outstandingTotal = 0;
+  let overdueCount = 0;
+  for (const inv of invoices) {
+    const state = invoicePayState(inv, now);
+    const key = String(inv.orderId ?? "");
+    const total = Math.round(Number(inv.grandTotal) || 0);
+    pay[key] = {
+      state,
+      dueAt: inv.issuedAt ? invoiceDueAt(inv.issuedAt) : null,
+      paidAt: inv.payment?.paidAt ?? null,
+    };
+    if (state === "paid") paidTotal += total;
+    else outstandingTotal += total;
+    if (state === "overdue") overdueCount++;
+  }
+
   return {
     month,
     rows,
@@ -73,5 +101,9 @@ export async function loadStatement(clinicId: string, month: MonthKey): Promise<
       dispatchedAt: o.dispatchedAt ?? null,
       amount: Number(o.amount) || 0,
     })),
+    pay,
+    paidTotal,
+    outstandingTotal,
+    overdueCount,
   };
 }

@@ -6,10 +6,11 @@ import { canManageBooking } from "@/lib/auth/ownership";
 import { notify } from "@/lib/notify";
 import { ok, fail, handleError } from "@/lib/api";
 
-const Input = z.object({ reason: z.string().max(500).optional() });
-
 import { getLatePolicy } from "@/lib/billing/settings";
 import { lateFee } from "@/lib/billing/late-policy";
+import { syncBookingMoney } from "@/lib/payments/money";
+
+const Input = z.object({ reason: z.string().max(500).optional() });
 
 export async function POST(req: Request, { params }: { params: Promise<{ id: string }> }) {
   try {
@@ -29,7 +30,13 @@ export async function POST(req: Request, { params }: { params: Promise<{ id: str
     if (["completed", "in_progress"].includes(booking.status)) {
       return fail("A session that has started cannot be cancelled", 409);
     }
-    if (booking.status === "cancelled") return ok({ alreadyCancelled: true, fee: 0 });
+    if (booking.status === "cancelled") return ok({ alreadyCancelled: true, fee: 0, refunded: 0 });
+    // Declined by the physician: already ended, and already refunded in full. A
+    // cancel now would mark it the patient's own late cancellation -- a late
+    // fee on a session they were never going to have.
+    if (booking.status === "rejected") {
+      return fail("This session was declined by the physician and has already ended. Nothing to cancel.", 409);
+    }
 
     // Once the slot is inside the window the nurse is dispatched with the batch
     // drawn, and that stays true after the slot time passes — a negative
@@ -53,6 +60,8 @@ export async function POST(req: Request, { params }: { params: Promise<{ id: str
     booking.status = "cancelled";
     booking.cancelledAt = new Date();
     booking.cancelReason = reason;
+    // Whose decision it was decides the refund: a patient's own late cancel keeps the fee.
+    booking.cancelledByRole = session.role;
     if (fee > 0) {
       booking.charges = [
         ...(booking.charges ?? []),
@@ -60,6 +69,14 @@ export async function POST(req: Request, { params }: { params: Promise<{ id: str
       ];
     }
     await booking.save();
+
+    // Whatever was paid for it goes back now (less a late fee the patient
+    // incurred). A refund that cannot be made this minute does not undo the
+    // cancellation: it is recorded, the admins are told, and it is retried.
+    const money = await syncBookingMoney(id, { byId: session.sub }).catch((err) => {
+      console.error("[cancel] refund:", err);
+      return null;
+    });
 
     // The nurse has this on their route; they need to know it is off.
     await notify(
@@ -73,7 +90,9 @@ export async function POST(req: Request, { params }: { params: Promise<{ id: str
       await notify(
         String(booking.patientId),
         `Your session was cancelled · ${booking.bookingNo}`,
-        reason || "Contact us if this was not expected.",
+        `${reason || "Contact us if this was not expected."}${
+          money?.refunded ? " Everything you paid for it is being refunded." : ""
+        }`,
         "warning",
         "/app/sessions"
       );
@@ -85,10 +104,17 @@ export async function POST(req: Request, { params }: { params: Promise<{ id: str
       action: "booking.cancel",
       entity: "Booking",
       entityId: id,
-      after: { reason, fee },
+      after: { reason, fee, ...(money?.refunded ? { refundedPaise: money.refunded } : {}) },
     });
 
-    return ok({ cancelled: true, fee, hoursOut: Math.round(hoursOut * 10) / 10 });
+    return ok({
+      cancelled: true,
+      fee,
+      hoursOut: Math.round(hoursOut * 10) / 10,
+      /** Paise on their way back, and whether a refund could not be made yet. */
+      refunded: money?.refunded ?? 0,
+      refundFailed: money?.refundFailed ?? false,
+    });
   } catch (err) {
     return handleError(err);
   }

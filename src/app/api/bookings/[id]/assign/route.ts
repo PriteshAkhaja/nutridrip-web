@@ -5,6 +5,7 @@ import { getSession } from "@/lib/auth/session";
 import { canManageBooking } from "@/lib/auth/ownership";
 import { notify } from "@/lib/notify";
 import { pickNurse } from "@/lib/clinical/assign";
+import { isRefusal, withScheduleLock, type Refusal } from "@/lib/booking/schedule-lock";
 import { ok, fail, handleError } from "@/lib/api";
 import { BETWEEN_SESSIONS_MIN, HOLDING_STATUSES, clashes, istParts } from "@/lib/clinical/slots";
 
@@ -31,95 +32,113 @@ export async function POST(req: Request, { params }: { params: Promise<{ id: str
     if (!booking) return fail("Session not found", 404);
     // Scoped, so one clinic cannot reassign another clinic's nurse.
     if (!canManageBooking(session, booking)) return fail("Not permitted", 403);
-    if (["completed", "cancelled"].includes(booking.status)) {
-      return fail("That session is finished — there is nothing to reassign", 409);
-    }
-    if (booking.status === "in_progress") {
-      return fail("The infusion has started. Swapping the nurse mid-session is not safe.", 409);
-    }
-
-    const previousNurseId = booking.nurseId ? String(booking.nurseId) : null;
 
     if (nurseId) {
       const nurse = await User.findById(nurseId).lean<{ name: string; role: string; status: string } | null>();
       if (!nurse || nurse.role !== "nurse") return fail("That is not a nurse account", 422);
       if (nurse.status !== "active") return fail(`${nurse.name} is not active`, 409);
-      // One nurse, one door at a time: the session plus the travel after it.
-      const theirs = await Booking.find({
-        _id: { $ne: booking._id },
-        nurseId,
-        status: { $in: HOLDING_STATUSES },
-        scheduledAt: {
-          $gte: new Date(booking.scheduledAt.getTime() - 86_400_000),
-          $lte: new Date(booking.scheduledAt.getTime() + 86_400_000),
-        },
-      })
-        .select("bookingNo scheduledAt durationMin")
-        .lean<Array<{ bookingNo: string; scheduledAt: Date; durationMin?: number }>>();
-      const clash = theirs.find((b) =>
-        clashes(
-          booking.scheduledAt.getTime(),
-          booking.durationMin ?? 45,
-          new Date(b.scheduledAt).getTime(),
-          b.durationMin ?? 45
-        )
-      );
-      if (clash) {
-        return fail(
-          `${nurse.name} already has ${clash.bookingNo} at ${istParts(new Date(clash.scheduledAt)).time}, and needs ${BETWEEN_SESSIONS_MIN} minutes to travel on. Choose another nurse, or move one of the sessions.`,
-          409
-        );
-      }
-      booking.nurseId = nurseId;
-    } else {
-      const patient = await User.findById(booking.patientId).lean<{
-        patient?: { latitude?: number; longitude?: number; pincode?: string };
-      } | null>();
-      const pick = await pickNurse(
-        {
-          latitude: patient?.patient?.latitude,
-          longitude: patient?.patient?.longitude,
-          pincode: patient?.patient?.pincode,
-        },
-        // Never hand it straight back to the nurse being replaced, nor to anyone busy then.
-        {
-          excludeNurseId: previousNurseId,
-          session: {
-            start: booking.scheduledAt,
-            durationMin: booking.durationMin ?? 45,
-            bookingId: String(booking._id),
-          },
-        }
-      );
-      if (!pick) return fail("No other nurse is available under capacity right now", 409);
-      booking.nurseId = pick.nurseId;
     }
 
-    if (booking.status === "approved") booking.status = "nurse_assigned";
-    await booking.save();
+    // Checked and written in one step no booking, move or approval can
+    // interleave with (see schedule-lock), on the session as it is now: two
+    // people handing out the same nurse for the same time cannot both succeed.
+    const out = await withScheduleLock(async (tx) => {
+      const b = await Booking.findById(id).session(tx);
+      if (!b) return { error: "Session not found", status: 404 } satisfies Refusal;
+      if (["completed", "cancelled", "rejected"].includes(b.status)) {
+        return { error: "That session is finished — there is nothing to reassign", status: 409 } satisfies Refusal;
+      }
+      if (b.status === "in_progress") {
+        return {
+          error: "The infusion has started. Swapping the nurse mid-session is not safe.",
+          status: 409,
+        } satisfies Refusal;
+      }
+      const previous = b.nurseId ? String(b.nurseId) : null;
 
-    const assigned = await User.findById(booking.nurseId).lean<{ name: string } | null>();
+      if (nurseId) {
+        // One nurse, one door at a time: the session plus the travel after it.
+        const theirs = await Booking.find({
+          _id: { $ne: b._id },
+          nurseId,
+          status: { $in: HOLDING_STATUSES },
+          scheduledAt: {
+            $gte: new Date(b.scheduledAt.getTime() - 86_400_000),
+            $lte: new Date(b.scheduledAt.getTime() + 86_400_000),
+          },
+        })
+          .select("bookingNo scheduledAt durationMin")
+          .lean<Array<{ bookingNo: string; scheduledAt: Date; durationMin?: number }>>();
+        const clash = theirs.find((o) =>
+          clashes(b.scheduledAt.getTime(), b.durationMin ?? 45, new Date(o.scheduledAt).getTime(), o.durationMin ?? 45)
+        );
+        if (clash) {
+          const nurse = await User.findById(nurseId).select("name").lean<{ name?: string } | null>();
+          return {
+            error: `${nurse?.name ?? "That nurse"} already has ${clash.bookingNo} at ${istParts(new Date(clash.scheduledAt)).time}, and needs ${BETWEEN_SESSIONS_MIN} minutes to travel on. Choose another nurse, or move one of the sessions.`,
+            status: 409,
+          } satisfies Refusal;
+        }
+        b.nurseId = nurseId;
+      } else {
+        const patient = await User.findById(b.patientId).lean<{
+          patient?: { latitude?: number; longitude?: number; pincode?: string };
+        } | null>();
+        const pick = await pickNurse(
+          {
+            latitude: patient?.patient?.latitude,
+            longitude: patient?.patient?.longitude,
+            pincode: patient?.patient?.pincode,
+          },
+          // Never hand it straight back to the nurse being replaced, nor to anyone busy then.
+          {
+            excludeNurseId: previous,
+            session: {
+              start: b.scheduledAt,
+              durationMin: b.durationMin ?? 45,
+              bookingId: String(b._id),
+            },
+          }
+        );
+        if (!pick)
+          return { error: "No other nurse is available under capacity right now", status: 409 } satisfies Refusal;
+        b.nurseId = pick.nurseId;
+      }
+
+      if (b.status === "approved") b.status = "nurse_assigned";
+      await b.save();
+      return {
+        previousNurseId: previous,
+        nurseId: String(b.nurseId),
+        bookingNo: b.bookingNo as string,
+        patientId: String(b.patientId),
+      };
+    });
+    if (isRefusal(out)) return fail(out.error, out.status);
+    const previousNurseId = out.previousNurseId;
+
+    const assigned = await User.findById(out.nurseId).lean<{ name: string } | null>();
 
     await notify(
-      String(booking.nurseId),
-      `Session assigned to you · ${booking.bookingNo}`,
+      out.nurseId,
+      `Session assigned to you · ${out.bookingNo}`,
       reason ?? "Reassigned by the clinical team. The checklist is ready.",
       "info",
       "/nurse"
     );
-    if (previousNurseId && previousNurseId !== String(booking.nurseId)) {
+    if (previousNurseId && previousNurseId !== out.nurseId) {
       await notify(
         previousNurseId,
-        `Session reassigned · ${booking.bookingNo}`,
+        `Session reassigned · ${out.bookingNo}`,
         reason ?? "This is no longer on your route.",
         "warning",
         "/nurse"
       );
     }
     await notify(
-      String(booking.patientId),
+      out.patientId,
       "Your nurse has changed",
-      `${assigned?.name ?? "A nurse"} will attend ${booking.bookingNo}.`,
+      `${assigned?.name ?? "A nurse"} will attend ${out.bookingNo}.`,
       "info",
       "/app/sessions"
     );
@@ -131,10 +150,10 @@ export async function POST(req: Request, { params }: { params: Promise<{ id: str
       entity: "Booking",
       entityId: id,
       before: { nurseId: previousNurseId },
-      after: { nurseId: String(booking.nurseId), reason },
+      after: { nurseId: out.nurseId, reason },
     });
 
-    return ok({ nurseId: String(booking.nurseId), nurseName: assigned?.name ?? null });
+    return ok({ nurseId: out.nurseId, nurseName: assigned?.name ?? null });
   } catch (err) {
     return handleError(err);
   }

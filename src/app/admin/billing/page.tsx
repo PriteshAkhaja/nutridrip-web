@@ -13,6 +13,8 @@ import { Pill } from "@/components/ui/Pill";
 import { inr } from "@/lib/billing/late-policy";
 import { formatDate, formatTime } from "@/lib/data/inventory";
 import { getClockFormat } from "@/lib/settings/clock";
+import { paymentsSetup } from "@/lib/payments/config";
+import Link from "next/link";
 
 export const metadata: Metadata = { title: "Billing" };
 export const dynamic = "force-dynamic";
@@ -43,6 +45,35 @@ export default async function BillingPage() {
         copy, which is why they are here and not under Site copy — there is no sensible default for a GSTIN, and a
         made-up one printed on a real bill is a fabricated document.
       </p>
+
+      {/* ---------------- Online payment ---------------- */}
+      {(() => {
+        const setup = paymentsSetup();
+        return (
+          <Card
+            padding="p-5"
+            tone={setup.enabled ? (setup.mode === "live" ? "safe" : "info") : "caution"}
+            className="mb-6"
+          >
+            <div className="flex items-center justify-between gap-4 flex-wrap">
+              <div className="flex flex-col gap-1 max-w-[70ch]">
+                <span className="t-body font-semibold">
+                  Online payment ·{" "}
+                  {setup.enabled ? (setup.mode === "live" ? "Razorpay, live" : "Razorpay, test mode") : "not set up"}
+                </span>
+                <span className="t-body text-[var(--color-ink-2)]">
+                  {setup.enabled
+                    ? "Patients pay to book and are refunded automatically when a session does not go ahead; clinics pay orders and invoices online."
+                    : "Add RAZORPAY_KEY_ID and RAZORPAY_KEY_SECRET to the server's environment and restart it to take payments online."}
+                </span>
+              </div>
+              <Link href="/admin/payments" className="t-body font-semibold">
+                Payments &rarr;
+              </Link>
+            </div>
+          </Card>
+        );
+      })()}
 
       <BillingForm config={config} />
 

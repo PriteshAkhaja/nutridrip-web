@@ -80,6 +80,22 @@ const InvoiceSchema = new Schema(
 
     /** The batches supplied, so the bill and the recall trail agree. */
     batches: [String],
+
+    /**
+     * Paid, and how. Absent means unpaid. An order paid for before it was
+     * confirmed raises an invoice that is paid from the start; a clinic on
+     * credit pays it online (Razorpay) or the team records a transfer.
+     */
+    payment: {
+      state: { type: String, enum: ["paid"] },
+      method: { type: String, enum: ["online", "upi", "bank_transfer", "cheque"] },
+      reference: String,
+      paidAt: Date,
+      paymentId: { type: Schema.Types.ObjectId, ref: "Payment" },
+      recordedBy: { type: Schema.Types.ObjectId, ref: "User" },
+      /** Paid in advance, with the order: the invoice was never owed. */
+      inAdvance: Boolean,
+    },
   },
   { timestamps: true }
 );

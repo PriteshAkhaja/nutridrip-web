@@ -12,17 +12,19 @@ import { formatDate } from "@/lib/data/inventory";
 import { loadStatement } from "@/lib/billing/statement-data";
 import { formatInr } from "@/lib/inventory/units";
 import { isFutureMonth, monthKeyOf, monthLabel, parseMonth, shiftMonth } from "@/lib/billing/statement";
+import { PayButton } from "@/components/payments/PayButton";
+import { paymentsEnabled } from "@/lib/payments/config";
 
 export const metadata: Metadata = { title: "Billing" };
 export const dynamic = "force-dynamic";
 
 /**
- * A clinic's invoices, month by month.
+ * A clinic's invoices, month by month, and whether each is paid.
  *
- * What it lists is what has been invoiced. The app does not record payments —
- * there is no gateway and an invoice has no paid state — so nothing here is
- * called "due", "paid" or "outstanding", and the page says so plainly rather
- * than leave a clinic to assume a balance the software cannot know.
+ * An invoice is paid when it was paid online (it marks itself), when the team
+ * recorded a transfer, or when its order was paid for in advance. Anything
+ * else is due within 30 days of the invoice, then overdue -- and can be paid
+ * from here.
  */
 export default async function ClinicBillingPage({ searchParams }: { searchParams: Promise<{ month?: string }> }) {
   const session = await requireRole("clinic", "superadmin");
@@ -32,7 +34,8 @@ export default async function ClinicBillingPage({ searchParams }: { searchParams
   const thisMonth = monthKeyOf(now);
 
   const [nav, statement] = await Promise.all([clinicNav(session.sub), loadStatement(session.sub, month)]);
-  const { rows, totals, missing } = statement;
+  const { rows, totals, missing, pay, paidTotal, outstandingTotal, overdueCount } = statement;
+  const payOnline = paymentsEnabled();
 
   const prev = shiftMonth(month, -1);
   const next = shiftMonth(month, 1);
@@ -52,8 +55,11 @@ export default async function ClinicBillingPage({ searchParams }: { searchParams
       meta={monthLabel(month)}
     >
       <p className="t-body text-[var(--color-ink-2)] max-w-[76ch] mb-6" style={{ textWrap: "pretty" }}>
-        The invoices raised to you, grouped by the month the goods left. This is what has been invoiced — payments are
-        not recorded here, so it is not a balance.
+        The invoices raised to you, grouped by the month the goods left, and whether each is paid. An invoice on credit
+        is due 30 days after it is raised —{" "}
+        {payOnline
+          ? "pay it online here, or by bank transfer and the team marks it paid."
+          : "the team marks it paid when your transfer arrives."}
       </p>
 
       {/* ---------------- Month switcher ---------------- */}
@@ -82,12 +88,14 @@ export default async function ClinicBillingPage({ searchParams }: { searchParams
       </div>
 
       {/* ---------------- Figures ---------------- */}
-      <div className="grid grid-cols-2 gap-4 xl:grid-cols-4 mb-6">
+      <div className="grid grid-cols-2 gap-4 md:grid-cols-3 2xl:grid-cols-6 mb-6">
         {[
           ["Invoices", String(totals.count)],
           ["Taxable value", formatInr(totals.taxable)],
           ["GST", formatInr(totals.gst)],
           ["Total invoiced", formatInr(totals.total)],
+          ["Paid", formatInr(paidTotal)],
+          [overdueCount > 0 ? `Outstanding · ${overdueCount} overdue` : "Outstanding", formatInr(outstandingTotal)],
         ].map(([label, value]) => (
           <Card key={label} padding="p-5">
             <span className="t-micro">{label}</span>
@@ -146,6 +154,7 @@ export default async function ClinicBillingPage({ searchParams }: { searchParams
               <TH numeric>Taxable</TH>
               <TH numeric>GST</TH>
               <TH numeric>Total</TH>
+              <TH>Payment</TH>
             </TR>
           </THead>
           <tbody>
@@ -178,6 +187,32 @@ export default async function ClinicBillingPage({ searchParams }: { searchParams
                 <TD numeric nowrap>
                   {formatInr(r.total)}
                 </TD>
+                <TD nowrap>
+                  {(() => {
+                    const p = pay[r.orderId];
+                    if (!p) return <span className="t-small">—</span>;
+                    if (p.state === "paid") return <Pill tone="safe">Paid</Pill>;
+                    return (
+                      <div className="flex items-center gap-3">
+                        <Pill tone={p.state === "overdue" ? "caution" : "neutral"}>
+                          {p.state === "overdue" ? "Overdue" : `Due ${p.dueAt ? formatDate(p.dueAt) : ""}`}
+                        </Pill>
+                        {payOnline && r.orderId ? (
+                          <PayButton
+                            size="sm"
+                            variant="secondary"
+                            successTitle="Invoice paid"
+                            finishing="Marking the invoice paid"
+                            lock={false}
+                            request={{ purpose: "invoice", orderId: r.orderId }}
+                          >
+                            Pay
+                          </PayButton>
+                        ) : null}
+                      </div>
+                    );
+                  })()}
+                </TD>
               </TR>
             ))}
             <TR>
@@ -196,6 +231,7 @@ export default async function ClinicBillingPage({ searchParams }: { searchParams
               <TD numeric nowrap>
                 <span className="font-semibold">{formatInr(totals.total)}</span>
               </TD>
+              <TD> </TD>
             </TR>
           </tbody>
         </DataTable>

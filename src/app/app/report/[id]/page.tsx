@@ -16,6 +16,8 @@ import { readFeedback, type StoredFeedback } from "@/lib/clinical/feedback";
 import { LateCharges } from "@/components/ui/LateCharges";
 import { getClockFormat } from "@/lib/settings/clock";
 import { AREA, COLUMNS } from "@/components/layout/columns";
+import { BookingPayments } from "@/components/payments/BookingPayments";
+import { paymentsEnabled } from "@/lib/payments/config";
 
 export const metadata: Metadata = { title: "Session report" };
 export const dynamic = "force-dynamic";
@@ -37,6 +39,9 @@ export default async function ReportPage({ params }: { params: Promise<{ id: str
     completedAt?: Date;
     status: string;
     amount: number;
+    paymentStatus?: string;
+    paidAmount?: number;
+    refundedAmount?: number;
     vitals: Array<{
       takenAt: Date;
       label?: string;
@@ -59,6 +64,7 @@ export default async function ReportPage({ params }: { params: Promise<{ id: str
       at: Date;
       note?: string;
       settledAs?: "paid" | "waived";
+      paidMethod?: string;
     }>;
   } | null>();
 
@@ -232,10 +238,25 @@ export default async function ReportPage({ params }: { params: Promise<{ id: str
                   at: new Date(c.at).toISOString(),
                   note: c.note ?? null,
                   settledAs: c.settledAs ?? null,
+                  paidMethod: c.paidMethod ?? null,
                 }))}
               />
             </div>
           )}
+
+          {/* ---------------- Payments & receipts ---------------- */}
+          <BookingPayments
+            booking={{
+              id,
+              status: booking.status,
+              paymentStatus: booking.paymentStatus,
+              amount: booking.amount,
+              paidAmount: booking.paidAmount,
+              refundedAmount: booking.refundedAmount,
+              owedFees: (booking.charges ?? []).filter((c) => !c.settledAs).reduce((n, c) => n + c.amount, 0),
+            }}
+            payOnline={paymentsEnabled()}
+          />
 
           {booking.aftercareNotes && (
             <div className="rounded-[var(--radius-lg)] border border-[var(--color-primary-line)] bg-[var(--color-primary-soft)] p-5 mb-4">

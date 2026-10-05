@@ -329,8 +329,8 @@ export function ReviewDecision({
             )}
             {nurseId && nurses.mine.find((n) => n.id === nurseId)?.atCapacity && (
               <span className="t-small text-[var(--color-caution-text)]">
-                That nurse is already at capacity. If they cannot take it, the nearest free nurse goes instead and you
-                will be told.
+                That nurse already has a full day then. If they cannot take it, the nearest free nurse goes instead and
+                you will be told.
               </span>
             )}
           </div>

@@ -58,7 +58,17 @@ export type InvoiceView = {
   roundOff: number;
   grandTotal: number;
   batches: string[];
+  payment?: {
+    state?: "paid";
+    method?: string;
+    reference?: string;
+    paidAt?: Date;
+    paymentId?: unknown;
+    inAdvance?: boolean;
+  } | null;
 };
+
+export { CREDIT_DAYS, invoiceDueAt, invoicePayState } from "./invoice-pay";
 
 type OrderDoc = {
   _id: unknown;
@@ -67,7 +77,14 @@ type OrderDoc = {
   status: string;
   dispatchedAt?: Date;
   lines: Array<{ dripId?: unknown; dripName?: string; quantity: number; unitPrice: number }>;
-  payment?: { state?: string; method?: string; reference?: string; paidOn?: Date };
+  payment?: {
+    state?: string;
+    method?: string;
+    reference?: string;
+    paidOn?: Date;
+    verifiedAt?: Date;
+    paymentId?: unknown;
+  };
 };
 
 /**
@@ -231,6 +248,19 @@ export async function ensureInvoice(
         roundOff,
         grandTotal,
         batches: [...new Set(consumed.map((c) => c.batchNo).filter(Boolean))] as string[],
+        // Paid for before it was prepared: the invoice was never owed.
+        ...(order.payment?.state === "received"
+          ? {
+              payment: {
+                state: "paid",
+                method: order.payment.method,
+                reference: order.payment.reference,
+                paidAt: order.payment.verifiedAt ?? order.payment.paidOn,
+                paymentId: order.payment.paymentId,
+                inAdvance: true,
+              },
+            }
+          : {}),
       }),
     (attempt) =>
       nextReference(

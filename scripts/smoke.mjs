@@ -707,10 +707,19 @@ async function main() {
     address: "Koramangala 8th Block",
     pincode: "560095",
   });
-  ok("a served pincode books", booked.status === 201, booked.json?.error);
+  // With Razorpay keys set, a session is booked by paying for it, which a
+  // script cannot do: the rules above still ran (the route checks them first),
+  // and the booking itself is reported as skipped rather than failed.
+  const payToBook = booked.status === 402 && booked.json?.code === "payment_required";
+  if (payToBook) {
+    ok("with online payment on, a valid booking asks to be paid for", true);
+    skip("booking without paying", "online payment is on — sessions are booked by paying (see Admin → Payments)");
+  } else {
+    ok("a served pincode books", booked.status === 201, booked.json?.error);
+    ok("the booking number follows the ND-sequence form", /^ND-\d+$/.test(booked.json?.data?.booking?.bookingNo ?? ""));
+    ok("the booking opens with the full 29-step checklist", booked.json?.data?.booking?.checklist?.length === 29);
+  }
   const bookingId = booked.json?.data?.booking?._id;
-  ok("the booking number follows the ND-sequence form", /^ND-\d+$/.test(booked.json?.data?.booking?.bookingNo ?? ""));
-  ok("the booking opens with the full 29-step checklist", booked.json?.data?.booking?.checklist?.length === 29);
 
   const clinicCantBook = await post(clinic.jar, "/api/bookings", {
     dripId: jetlag._id,

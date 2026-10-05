@@ -93,6 +93,15 @@ export function istInstant(date: string, time: string): Date {
   return new Date(`${date}T${time}:00+05:30`);
 }
 
+/**
+ * The India date of a moment, "2026-09-25". India has kept UTC+05:30, with no
+ * summer time, since 1945 -- so a fixed offset is exact, and cheap enough to
+ * call for every session on every slot of a week's grid.
+ */
+export function istDateOf(ms: number): string {
+  return new Date(ms + 330 * 60_000).toISOString().slice(0, 10);
+}
+
 /** A moment, as India reads it: { date: "2026-09-25", time: "10:00" }. */
 export function istParts(at: Date): { date: string; time: string } {
   const parts = Object.fromEntries(
@@ -165,11 +174,32 @@ export function busyNurses(held: Held[], start: number, durationMin: number): Se
   );
 }
 
+/** The sessions a nurse has on the India day of `at` -- booked and finished -- by these lists. */
+export function dayLoadOf(
+  lists: { held: Held[]; done?: Array<{ nurseId: string; start: number }> },
+  nurseId: string,
+  at: number
+): number {
+  const date = istDateOf(at);
+  const on = (id: string | null, start: number) => id === nurseId && istDateOf(start) === date;
+  return (
+    lists.held.filter((h) => on(h.nurseId, h.start)).length +
+    (lists.done ?? []).filter((d) => on(d.nurseId, d.start)).length
+  );
+}
+
 /**
  * How many nurses who work the zone are still free at this time.
  *
- * The pool's nurses, minus those busy then, minus the zone's sessions booked
- * for then that have no nurse yet (each will need one of those free nurses).
+ * The pool's nurses, minus those busy then, minus those who already have their
+ * most sessions for that day (`dayLimit`, counting the ones `done`), minus the
+ * zone's sessions booked for then that have no nurse yet (each will need one of
+ * those free nurses).
+ *
+ * With a day limit it is also never more than the room left in the pool's day:
+ * every session of the zone that day still waiting for a nurse (a slot held for
+ * the physician, say) will take one of those places when it is approved. Offer
+ * that place to somebody else and the approval would find nobody.
  */
 export function freeNurses(opts: {
   pool: string[];
@@ -177,13 +207,35 @@ export function freeNurses(opts: {
   zoneName: string | null;
   start: number;
   durationMin: number;
+  /** Sessions finished that day, which count towards the day but hold no time. */
+  done?: Array<{ nurseId: string; start: number }>;
+  /** The most sessions a nurse takes in a day; none, no limit. */
+  dayLimit?: number | null;
 }): number {
   const busy = busyNurses(opts.held, opts.start, opts.durationMin);
-  const free = opts.pool.filter((n) => !busy.has(n)).length;
+  const limit = opts.dayLimit ?? null;
+  const date = istDateOf(opts.start);
+  const dayLoad = new Map<string, number>();
+  if (limit !== null) {
+    const add = (nurseId: string | null, at: number) => {
+      if (nurseId && istDateOf(at) === date) dayLoad.set(nurseId, (dayLoad.get(nurseId) ?? 0) + 1);
+    };
+    for (const h of opts.held) add(h.nurseId, h.start);
+    for (const d of opts.done ?? []) add(d.nurseId, d.start);
+  }
+  const fullThatDay = (n: string) => limit !== null && (dayLoad.get(n) ?? 0) >= limit;
+
+  const free = opts.pool.filter((n) => !busy.has(n) && !fullThatDay(n)).length;
   const waiting = opts.held.filter(
     (h) => !h.nurseId && h.zoneName === opts.zoneName && clashes(opts.start, opts.durationMin, h.start, h.durationMin)
   ).length;
-  return free - waiting;
+  if (limit === null) return free - waiting;
+
+  const room = opts.pool.reduce((n, nurse) => n + Math.max(0, limit - (dayLoad.get(nurse) ?? 0)), 0);
+  const waitingThatDay = opts.held.filter(
+    (h) => !h.nurseId && h.zoneName === opts.zoneName && istDateOf(h.start) === date
+  ).length;
+  return Math.min(free - waiting, room - waitingThatDay);
 }
 
 /**
@@ -219,6 +271,10 @@ export type SlotContext = {
   pool: string[];
   held: Held[];
   zoneName: string | null;
+  /** Sessions finished around these dates: they count towards a nurse's day, and hold no time. */
+  done?: Array<{ nurseId: string; start: number }>;
+  /** The most sessions one nurse takes in a day (the super admin's setting); none, no limit. */
+  dayLimit?: number | null;
 };
 
 /**
@@ -243,7 +299,15 @@ export function slotGrid(
           ? "too_soon"
           : notBefore && start < notBefore
             ? "before_call"
-            : freeNurses({ pool: ctx.pool, held: ctx.held, zoneName: ctx.zoneName, start, durationMin }) > 0
+            : freeNurses({
+                  pool: ctx.pool,
+                  held: ctx.held,
+                  zoneName: ctx.zoneName,
+                  start,
+                  durationMin,
+                  done: ctx.done,
+                  dayLimit: ctx.dayLimit,
+                }) > 0
               ? "free"
               : "taken";
       return { time, at: at.toISOString(), state };
@@ -273,8 +337,16 @@ export function slotProblem(
       status: 422,
     };
   }
-  const free = freeNurses({ pool: ctx.pool, held: ctx.held, zoneName: ctx.zoneName, start: at.getTime(), durationMin });
-  if (free <= 0) {
+  const base = { pool: ctx.pool, held: ctx.held, zoneName: ctx.zoneName, start: at.getTime(), durationMin };
+  if (freeNurses({ ...base, done: ctx.done, dayLimit: ctx.dayLimit }) <= 0) {
+    // Free by the clock, but every nurse who could go already has their most
+    // sessions for that day: another time that day will not help.
+    if (ctx.dayLimit != null && freeNurses(base) > 0) {
+      return {
+        error: "Every nurse who could come that day is already fully booked. Pick another day.",
+        status: 409,
+      };
+    }
     return { error: "No nurse is free at that time any more. Pick another time.", status: 409 };
   }
   return null;

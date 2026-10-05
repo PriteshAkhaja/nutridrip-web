@@ -45,16 +45,22 @@ export default async function PatientReviewPage({ params }: { params: Promise<{ 
   // Only worth loading while there is still a decision to make.
   const pending = review.reviewStatus === "pending";
   await connectDB();
-  const [nurses, catalogue, held, call] = await Promise.all([
-    pending ? nurseChoicesFor(review.location, session.sub) : Promise.resolve(null),
+  // The drip the patient is holding for this decision: its day is the day the
+  // nurse list counts ("2 of 6 that day"), as dispatch will when approving.
+  const held = pending
+    ? await Booking.findOne({
+        patientId: review.patient.id,
+        status: "awaiting_review",
+        scheduledAt: { $gte: new Date() },
+      })
+        .sort({ scheduledAt: 1 })
+        .select("bookingNo dripId dripName scheduledAt")
+        .lean<{ bookingNo: string; dripId: unknown; dripName?: string; scheduledAt: Date } | null>()
+    : null;
+  const [nurses, catalogue, call] = await Promise.all([
+    pending ? nurseChoicesFor(review.location, session.sub, held?.scheduledAt ?? null) : Promise.resolve(null),
     pending ? listLiveDrips() : Promise.resolve([]),
-    // The drip the patient is holding for this decision, and their call.
-    pending
-      ? Booking.findOne({ patientId: review.patient.id, status: "awaiting_review", scheduledAt: { $gte: new Date() } })
-          .sort({ scheduledAt: 1 })
-          .select("bookingNo dripId dripName scheduledAt")
-          .lean<{ bookingNo: string; dripId: unknown; dripName?: string; scheduledAt: Date } | null>()
-      : Promise.resolve(null),
+    // ...and their call.
     pending ? lastCallFor(String(review.patient.id)) : Promise.resolve(null),
   ]);
 

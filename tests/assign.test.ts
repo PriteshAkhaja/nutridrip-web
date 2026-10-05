@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
-import { distanceKm, NURSE_CAPACITY } from "@/lib/clinical/assign";
+import { DEFAULT_NURSE_DAY_LIMIT, distanceKm } from "@/lib/clinical/assign";
+import { nurseDayLimitOf } from "@/lib/clinical/nurse-options";
 import { nurseOwns } from "@/lib/auth/ownership";
 import type { SessionPayload } from "@/lib/auth/session";
 
@@ -20,8 +21,11 @@ describe("great-circle distance", () => {
     expect(a).toBeCloseTo(b, 9);
   });
 
-  it("caps a nurse's open sessions", () => {
-    expect(NURSE_CAPACITY).toBeGreaterThan(0);
+  it("limits a nurse's day to six sessions until the super admin says otherwise", () => {
+    expect(DEFAULT_NURSE_DAY_LIMIT).toBe(6);
+    expect(nurseDayLimitOf(8)).toBe(8);
+    // Anything outside 1-12, or not a whole number, is the default -- never 0, which would close every day.
+    for (const bad of [0, 13, 2.5, -1, "x", null, undefined]) expect(nurseDayLimitOf(bad)).toBe(6);
   });
 });
 

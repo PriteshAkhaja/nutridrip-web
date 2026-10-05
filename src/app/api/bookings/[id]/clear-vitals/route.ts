@@ -4,6 +4,7 @@ import { AuditLog, Booking, User } from "@/lib/models";
 import { getSession } from "@/lib/auth/session";
 import { notify } from "@/lib/notify";
 import { ok, fail, handleError } from "@/lib/api";
+import { syncBookingMoney } from "@/lib/payments/money";
 
 const Input = z.object({
   decision: z.enum(["clear", "stop"]),
@@ -81,9 +82,14 @@ export async function POST(req: Request, { params }: { params: Promise<{ id: str
         booking.status = "cancelled";
         booking.cancelledAt = new Date();
         booking.cancelReason = note || "Stopped by the physician after out-of-range baseline vitals";
+        booking.cancelledByRole = session.role;
       }
       if (!booking.doctorId && session.role === "doctor") booking.doctorId = session.sub;
       await booking.save();
+      // Stood down before it ran: the patient is refunded in full.
+      if (!running) {
+        await syncBookingMoney(id, { byId: session.sub }).catch((err) => console.error("[clear-vitals] refund:", err));
+      }
 
       await notify(
         booking.nurseId ? String(booking.nurseId) : null,
@@ -97,7 +103,8 @@ export async function POST(req: Request, { params }: { params: Promise<{ id: str
       await notify(
         String(booking.patientId),
         "Your session was stopped by the physician",
-        note || "Your baseline readings were outside the safe range today. Nothing is charged.",
+        note ||
+          "Your baseline readings were outside the safe range today. Anything you paid for this session is refunded in full.",
         "warning",
         "/app/sessions"
       );

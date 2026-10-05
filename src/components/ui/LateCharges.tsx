@@ -10,6 +10,8 @@ type Charge = {
   at: string;
   note: string | null;
   settledAs?: "paid" | "waived" | null;
+  /** "deducted": kept from a late cancellation's refund; "online": paid through Razorpay. */
+  paidMethod?: string | null;
 };
 
 /**
@@ -26,24 +28,33 @@ export function LateCharges({ charges }: { charges?: Charge[] | null }) {
   const settled = owed.length === 0;
   return (
     <div
-      className={`rounded-[var(--radius-sm)] border px-3 py-2 mt-3 flex flex-col gap-1 ${
+      className={`rounded-[14px] border px-3 py-3 mt-3 flex flex-col gap-2 ${
         settled
           ? "border-[var(--color-line)] bg-[var(--color-surface-2)]"
           : "border-[var(--color-caution)] bg-[var(--color-caution-soft)]"
       }`}
     >
       {charges.map((c, i) => (
-        <div key={i} className="flex items-baseline justify-between gap-3">
-          <span className="t-small text-[var(--color-ink-2)] min-w-0">
-            <span className="font-semibold text-[var(--color-ink)]">
+        // What happened and when on the left; the amount and how it was settled on the right.
+        <div key={i} className="flex items-start justify-between gap-3">
+          <span className="min-w-0 flex flex-col">
+            <span className="t-small font-semibold text-[var(--color-ink)]">
               {c.kind === "late_reschedule" ? "Moved late" : "Cancelled late"}
-            </span>{" "}
-            · {shortDateClock(c.at, clockFmt)}
+            </span>
+            <span className="t-small text-[var(--color-ink-3)]">{shortDateClock(c.at, clockFmt)}</span>
           </span>
-          <span className="t-data text-[13px] flex-none">
-            {inr(c.amount)}
+          <span className="flex flex-col items-end flex-none text-right">
+            <span className="t-data text-[13px]">{inr(c.amount)}</span>
             {c.settledAs ? (
-              <span className="t-small text-[var(--color-ink-2)]"> · {c.settledAs === "paid" ? "Paid" : "Waived"}</span>
+              <span className="t-small text-[var(--color-ink-2)]">
+                {c.settledAs === "waived"
+                  ? "Waived"
+                  : c.paidMethod === "deducted"
+                    ? "Kept from your refund"
+                    : c.paidMethod === "online"
+                      ? "Paid online"
+                      : "Paid"}
+              </span>
             ) : null}
           </span>
         </div>

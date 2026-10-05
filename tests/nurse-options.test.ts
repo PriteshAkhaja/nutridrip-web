@@ -1,10 +1,19 @@
 import { describe, expect, it } from "vitest";
-import { nurseOptions as rank, NURSE_CAPACITY, type NurseRow, type PatientPoint } from "@/lib/clinical/nurse-options";
+import {
+  nurseOptions as rank,
+  DEFAULT_NURSE_DAY_LIMIT as LIMIT,
+  type NurseRow,
+  type PatientPoint,
+} from "@/lib/clinical/nurse-options";
 import { ZONE_DEFAULTS, zoneNames } from "@/lib/zones";
 
-/** Ranked against the launch zones. */
-const nurseOptions = (nurses: NurseRow[], patient: PatientPoint, doctorId: string | null) =>
-  rank(nurses, patient, doctorId, ZONE_DEFAULTS);
+/** Ranked against the launch zones, for a session on a known day (the physician approving a held drip). */
+const nurseOptions = (
+  nurses: NurseRow[],
+  patient: PatientPoint,
+  doctorId: string | null,
+  day: { limit: number } | null = { limit: LIMIT }
+) => rank(nurses, patient, doctorId, ZONE_DEFAULTS, day);
 const ZONE_NAMES = zoneNames(ZONE_DEFAULTS);
 
 const DOC = "doc-1";
@@ -98,7 +107,7 @@ describe("the order they are offered in", () => {
           serviceAreas: ["Jayanagar"],
           latitude: 12.931,
           longitude: 77.584,
-          load: NURSE_CAPACITY,
+          load: LIMIT,
         }),
         nurse({ id: "free", name: "Free", serviceAreas: ["Whitefield"], latitude: 13.2, longitude: 77.9 }),
       ],
@@ -110,9 +119,9 @@ describe("the order they are offered in", () => {
   });
 
   it("keeps a full nurse visible rather than dropping them", () => {
-    const out = nurseOptions([nurse({ id: "f", name: "Full", load: NURSE_CAPACITY })], PATIENT, null);
+    const out = nurseOptions([nurse({ id: "f", name: "Full", load: LIMIT })], PATIENT, null);
     expect(out.others).toHaveLength(1);
-    expect(out.others[0].detail).toContain("full");
+    expect(out.others[0].detail).toContain("full that day");
   });
 
   it("breaks a dead heat on the name, so the list does not shuffle between loads", () => {
@@ -138,7 +147,20 @@ describe("what the physician is told about each nurse", () => {
     expect(out.zoneName).toBe("Jayanagar");
     expect(out.others[0].detail).toContain("covers Jayanagar");
     expect(out.others[0].detail).toMatch(/\d+(\.\d+)? km/);
-    expect(out.others[0].detail).toContain(`2 of ${NURSE_CAPACITY}`);
+    expect(out.others[0].detail).toContain(`2 of ${LIMIT} that day`);
+  });
+
+  it("counts against the day's limit as the super admin set it", () => {
+    const out = nurseOptions([nurse({ id: "a", name: "Asha", load: 3 })], PATIENT, null, { limit: 3 });
+    expect(out.others[0].atCapacity).toBe(true);
+    expect(out.others[0].detail).toContain("full that day · 3 of 3");
+  });
+
+  it("with no session day to count, says what a nurse has open and calls nobody full", () => {
+    const out = nurseOptions([nurse({ id: "a", name: "Asha", load: 9 })], PATIENT, null, null);
+    expect(out.others[0].atCapacity).toBe(false);
+    expect(out.others[0].detail).toContain("9 open");
+    expect(out.others[0].detail).not.toContain(" of ");
   });
 
   it("says plainly when a nurse does not cover the area", () => {

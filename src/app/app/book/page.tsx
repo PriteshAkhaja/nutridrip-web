@@ -7,6 +7,7 @@ import { connectDB } from "@/lib/db/mongoose";
 import { HealthQuiz, User } from "@/lib/models";
 import { EmptyState } from "@/components/ui/States";
 import { BookingFlow } from "./BookingFlow";
+import { paymentsEnabled } from "@/lib/payments/config";
 import { PATIENT_TABS } from "../tabs";
 import { approvalState } from "@/lib/clinical/validity";
 import { getLatePolicy } from "@/lib/billing/settings";
@@ -91,16 +92,13 @@ export default async function BookPage({ searchParams }: { searchParams: Promise
   const held = needsCall ? await heldDripOf(session.sub) : null;
   const clockFmt = await getClockFormat();
 
-  const [drips, user, clinics] = await Promise.all([
+  const [drips, user] = await Promise.all([
     // The public catalogue, plus anything kept off the website that their physician recommended.
     listBookableDrips((quiz.recommendedDripIds ?? []).map(String)),
     User.findById(session.sub).lean<{
       phone?: string;
       patient?: { address?: string; pincode?: string };
     } | null>(),
-    User.find({ role: "clinic", status: "active" })
-      .sort({ name: 1 })
-      .lean<Array<{ _id: unknown; name: string; clinic?: { city?: string } }>>(),
   ]);
 
   /**
@@ -192,7 +190,6 @@ export default async function BookPage({ searchParams }: { searchParams: Promise
             category: d.category,
             keywords: [...d.headline, ...d.tags],
           }))}
-          clinics={clinics.map((c) => ({ id: String(c._id), name: c.name, city: c.clinic?.city ?? "" }))}
           recommendedIds={recommendedIds}
           preferredSlug={preferred ?? null}
           defaultAddress={user?.patient?.address ?? ""}
@@ -200,6 +197,7 @@ export default async function BookPage({ searchParams }: { searchParams: Promise
           zones={servedZones(await getZones())}
           pendingReview={approval.canHold}
           latePolicy={await getLatePolicy()}
+          payOnline={paymentsEnabled()}
         />
       )}
     </MobileShell>

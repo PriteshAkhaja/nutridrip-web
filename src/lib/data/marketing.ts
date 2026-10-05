@@ -157,7 +157,7 @@ export const FAQS = [
   },
   {
     q: "What if the nurse finds something wrong?",
-    a: "The 29-step checklist gates the session. If your vitals fall outside the reference range the infusion does not start — the nurse escalates to the reviewing physician, and you are not charged for a session that does not run.",
+    a: "The 29-step checklist gates the session. If your vitals fall outside the reference range the infusion does not start — the nurse escalates to the reviewing physician, and a session that does not run is refunded in full.",
   },
   {
     q: "Can I cancel or reschedule?",

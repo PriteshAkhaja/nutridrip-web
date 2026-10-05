@@ -17,6 +17,10 @@ describe("clinic orders are paid first", () => {
     expect(needsPayment({ status: "DRAFT", clinicId: "c1" })).toBe(true);
     expect(needsPayment({ status: "DRAFT", clinicId: "c1" }, true)).toBe(false);
     expect(needsPayment({ status: "CONFIRMED", clinicId: "c1" })).toBe(false);
+    // ...unless it carries a payment: then it was paid first, even once confirmed or cancelled.
+    const paidOnline = { state: "received" as const, method: "online" as const };
+    expect(needsPayment({ status: "CANCELLED", clinicId: "c1", payment: paidOnline })).toBe(true);
+    expect(payState({ status: "CONFIRMED", clinicId: "c1", payment: paidOnline })).toBe("received");
   });
 
   it("walks awaiting → submitted → received", () => {

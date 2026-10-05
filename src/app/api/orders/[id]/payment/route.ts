@@ -105,6 +105,11 @@ export async function POST(req: Request, { params }: { params: Promise<{ id: str
     }
     order.payment = next;
     order.markModified("payment");
+    // Only over the state that was read. An online payment captured a moment
+    // ago must not be written over by a transfer record -- the order would
+    // look unpaid and could be paid again.
+    order.$where =
+      input.action === "submit" ? { "payment.state": { $ne: "received" } } : { "payment.state": "submitted" };
     await order.save();
 
     const what = `${order.orderNo} · ${inr(order.amount ?? 0)}`;

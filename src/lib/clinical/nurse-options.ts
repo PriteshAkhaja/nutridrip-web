@@ -13,12 +13,26 @@ import { zoneForPincode, type Zone } from "@/lib/zones";
  * is a client component and reaches this area. Importing
  * anything here that touches Mongoose puts the driver in the browser bundle,
  * which fails at module evaluation with "Cannot read properties of undefined".
- * So the capacity rule and the distance maths live HERE, and `assign.ts` — the
+ * So the day limit and the distance maths live HERE, and `assign.ts` — the
  * side that does talk to the database — imports them from this file.
  */
 
-/** A nurse runs at most this many open sessions before they stop being offered. */
-export const NURSE_CAPACITY = 6;
+/**
+ * The most sessions one nurse takes on one day (India date), counting the ones
+ * already done that day. A setting the super admin can change (lib/settings/
+ * nurse-day); this is where it starts. The booking screen and dispatch apply the
+ * same limit, so a time is never offered -- or paid for -- that no nurse can take.
+ */
+export const DEFAULT_NURSE_DAY_LIMIT = 6;
+export const NURSE_DAY_LIMIT_MIN = 1;
+export const NURSE_DAY_LIMIT_MAX = 12;
+
+/** A stored or typed limit, as the rules use it: a whole number inside the range, else the default. */
+export function nurseDayLimitOf(raw: unknown): number {
+  const n = typeof raw === "number" ? raw : Number(raw);
+  if (!Number.isInteger(n) || n < NURSE_DAY_LIMIT_MIN || n > NURSE_DAY_LIMIT_MAX) return DEFAULT_NURSE_DAY_LIMIT;
+  return n;
+}
 
 /** Great-circle distance, which is close enough for dispatch inside one city. */
 export function distanceKm(aLat: number, aLng: number, bLat: number, bLng: number): number {
@@ -38,7 +52,7 @@ export type NurseRow = {
   longitude?: number | null;
   /** The physician this nurse works under, if any. */
   doctorId?: string | null;
-  /** Open sessions already on them. */
+  /** Sessions on them that day (with a day), or all their open sessions (without one). */
   load: number;
 };
 
@@ -51,7 +65,7 @@ export type PatientPoint = {
 export type NurseOption = {
   id: string;
   name: string;
-  /** "covers Jayanagar · 3.2 km · 2 of 6" — the whole reason, in one line. */
+  /** "covers Jayanagar · 3.2 km · 2 of 6 that day" — the whole reason, in one line. */
   detail: string;
   /**
    * The same reason as separate pieces, so a narrow screen wraps BETWEEN them
@@ -88,6 +102,8 @@ function describe(o: {
   load: number;
   atCapacity: boolean;
   zoneName: string | null;
+  /** The day's limit, when the list is for a session on a known day. */
+  limit: number | null;
 }): string[] {
   const bits: string[] = [];
 
@@ -95,15 +111,16 @@ function describe(o: {
   if (o.distanceKm !== null) bits.push(`${o.distanceKm} km`);
   else bits.push("distance unknown");
 
-  // Said as a fraction, so "2" is never mistaken for "nearly full".
-  bits.push(o.atCapacity ? `full · ${o.load} of ${NURSE_CAPACITY}` : `${o.load} of ${NURSE_CAPACITY}`);
+  // Said as a fraction of that day, so "2" is never mistaken for "nearly full".
+  if (o.limit === null) bits.push(`${o.load} open`);
+  else bits.push(o.atCapacity ? `full that day · ${o.load} of ${o.limit}` : `${o.load} of ${o.limit} that day`);
 
   return bits;
 }
 
 /**
  * Rank nurses for one patient, splitting the physician's own team from the
- * rest. Nurses at capacity are kept in the list, marked and sorted last: a
+ * rest. Nurses full that day are kept in the list, marked and sorted last: a
  * physician deserves to see that somebody is full rather than find them
  * missing and wonder why.
  */
@@ -112,7 +129,13 @@ export function nurseOptions(
   patient: PatientPoint,
   doctorId: string | null,
   /** The saved zones (lib/zones-store), so this stays pure and runs in the browser. */
-  zones: Zone[]
+  zones: Zone[],
+  /**
+   * The session's day limit, when the list is for a session on a known day:
+   * each nurse's `load` is then their sessions that day, and one at the limit
+   * is full. Without it, `load` is simply what they have open.
+   */
+  day: { limit: number } | null = null
 ): NurseOptions {
   const zone = zoneForPincode(patient.pincode ?? undefined, zones);
 
@@ -126,8 +149,15 @@ export function nurseOptions(
     const km = hasGeo
       ? Math.round(distanceKm(patient.latitude!, patient.longitude!, n.latitude!, n.longitude!) * 10) / 10
       : null;
-    const atCapacity = n.load >= NURSE_CAPACITY;
-    const bits = describe({ coversZone, distanceKm: km, load: n.load, atCapacity, zoneName: zone?.name ?? null });
+    const atCapacity = day !== null && n.load >= day.limit;
+    const bits = describe({
+      coversZone,
+      distanceKm: km,
+      load: n.load,
+      atCapacity,
+      zoneName: zone?.name ?? null,
+      limit: day?.limit ?? null,
+    });
 
     return {
       id: n.id,

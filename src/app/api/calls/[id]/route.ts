@@ -1,4 +1,5 @@
 import { z } from "zod";
+import type { ClientSession } from "mongoose";
 import { connectDB } from "@/lib/db/mongoose";
 import { AuditLog, Booking, Consultation, HealthQuiz, User } from "@/lib/models";
 import { getSession, type SessionPayload } from "@/lib/auth/session";
@@ -9,6 +10,9 @@ import { ownClashMessage, slotProblem } from "@/lib/clinical/slots";
 import { slotContext } from "@/lib/clinical/slot-availability";
 import { bookedCalls, ensureCallIndexes, hoursOf, unansweredSince } from "@/lib/data/calls";
 import { ok, fail, handleError } from "@/lib/api";
+import { syncBookingMoney } from "@/lib/payments/money";
+import { withScheduleLock, type Refusal } from "@/lib/booking/schedule-lock";
+import { saveUnlessChanged } from "@/lib/db/guarded";
 import { getClockFormat } from "@/lib/settings/clock";
 import { clockText } from "@/lib/time";
 import { patientClash } from "@/lib/data/own-sessions";
@@ -117,31 +121,51 @@ export async function PATCH(req: Request, { params }: { params: Promise<{ id: st
         if (dripAt.getTime() < needFrom) {
           return fail(`Pick a drip time from ${callWhen(new Date(needFrom), clockFmt)}, 2 hours after the call.`, 422);
         }
-        const clash = await patientClash(String(call.patientId), dripAt, drip.durationMin ?? 45, String(drip._id));
-        if (clash) return fail(ownClashMessage(clash, clockFmt), 409);
-        const slot = slotProblem(
-          await slotContext({ pincode: drip.pincode, from: dripAt, to: dripAt, excludeBookingId: String(drip._id) }),
-          dripAt,
-          drip.durationMin ?? 45
-        );
-        if (slot) return fail(clockText(slot.error, clockFmt), slot.status);
         dripMove = { from: drip.scheduledAt, to: dripAt };
       }
 
       const before = call.startAt;
-      try {
-        await Consultation.updateOne(
+      const moveCall = (tx?: ClientSession) =>
+        Consultation.updateOne(
           { _id: id, status: "booked" },
-          { $set: { startAt: at, minutes: hours.callMinutes }, $push: { movedFrom: before } }
+          { $set: { startAt: at, minutes: hours.callMinutes }, $push: { movedFrom: before } },
+          tx ? { session: tx } : {}
         );
+      try {
+        if (!drip || !dripMove) {
+          await moveCall();
+        } else {
+          // The call and the drip move together or not at all, and the drip's
+          // new time is checked and taken in one step no booking, move or
+          // approval can interleave with (see schedule-lock).
+          const to = dripMove.to;
+          const refused = await withScheduleLock(async (tx) => {
+            const d = await Booking.findById(drip._id).session(tx);
+            if (!d || d.status !== "awaiting_review") {
+              return {
+                error: "Your held drip changed a moment ago. Reload and try again.",
+                status: 409,
+              } satisfies Refusal;
+            }
+            const clash = await patientClash(String(call.patientId), to, d.durationMin ?? 45, String(d._id));
+            if (clash) return { error: ownClashMessage(clash, clockFmt), status: 409 } satisfies Refusal;
+            const slot = slotProblem(
+              await slotContext({ pincode: d.pincode, from: to, to, excludeBookingId: String(d._id) }),
+              to,
+              d.durationMin ?? 45
+            );
+            if (slot) return { error: clockText(slot.error, clockFmt), status: slot.status } satisfies Refusal;
+            await moveCall(tx);
+            d.rescheduledFrom = d.scheduledAt;
+            d.scheduledAt = to;
+            await d.save();
+            return null;
+          });
+          if (refused) return fail(refused.error, refused.status);
+        }
       } catch (err) {
         if ((err as { code?: number }).code === 11000) return fail("That call time was just taken. Pick another.", 409);
         throw err;
-      }
-      if (drip && dripMove) {
-        drip.rescheduledFrom = dripMove.from;
-        drip.scheduledAt = dripMove.to;
-        await drip.save();
       }
 
       const line = `Now ${callWhen(at, clockFmt)} (was ${callWhen(before, clockFmt)}).${dripMove ? ` The held drip ${drip!.bookingNo} moved to ${callWhen(dripMove.to, clockFmt)}.` : ""}`;
@@ -221,7 +245,7 @@ export async function PATCH(req: Request, { params }: { params: Promise<{ id: st
         }
       );
 
-      let calledOff: string[] = [];
+      const calledOff: string[] = [];
       if (input.action === "no_answer") {
         const quiz = await HealthQuiz.findOne({ patientId: call.patientId })
           .sort({ completedAt: -1 })
@@ -235,9 +259,13 @@ export async function PATCH(req: Request, { params }: { params: Promise<{ id: st
             b.status = "cancelled";
             b.cancelledAt = new Date();
             b.cancelReason = `${MAX_NO_ANSWER} calls from the physician went unanswered.`;
-            await b.save();
+            b.cancelledByRole = "system";
+            // Approved or cancelled a moment ago: leave it as it now is.
+            if (!(await saveUnlessChanged(b))) continue;
+            calledOff.push(b.bookingNo);
+            // What they paid to hold it goes back.
+            await syncBookingMoney(String(b._id)).catch((err) => console.error("[calls] refund:", err));
           }
-          calledOff = held.map((b) => b.bookingNo);
         }
         await notify(
           String(call.patientId),

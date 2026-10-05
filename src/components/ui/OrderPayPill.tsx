@@ -12,10 +12,24 @@ export function OrderPayPill({
   clinicOnCredit = false,
   audience,
 }: {
-  order: { status: string; clinicId?: unknown; onCredit?: boolean | null; payment?: OrderPayment | null };
+  order: {
+    status: string;
+    clinicId?: unknown;
+    onCredit?: boolean | null;
+    payment?: (OrderPayment & { refundedAt?: Date | string | null }) | null;
+  };
   clinicOnCredit?: boolean;
   audience: "clinic" | "team";
 }) {
+  // Paid online and cancelled: Razorpay is sending it back, or has.
+  if (order.payment?.refundedAt) return <Pill tone="neutral">Refunded</Pill>;
+  if (order.payment?.refundDue && order.payment?.method === "online") {
+    return (
+      <Pill tone="info" dot>
+        Refund on its way
+      </Pill>
+    );
+  }
   if (order.payment?.refundDue) return <Pill tone="caution">Refund due</Pill>;
   const state = payState(order, clinicOnCredit);
   if (state === "credit" || order.status === "CANCELLED") return null;

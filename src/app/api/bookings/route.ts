@@ -1,40 +1,13 @@
-import { z } from "zod";
 import { connectDB } from "@/lib/db/mongoose";
-import { AuditLog, Booking, Drip, HealthQuiz, User } from "@/lib/models";
+import { Booking } from "@/lib/models";
 import { getSession } from "@/lib/auth/session";
 import { can } from "@/lib/auth/rbac";
-import { CHECKLIST_STEPS } from "@/lib/clinical/checklist";
-import { approvalState } from "@/lib/clinical/validity";
-import { checkAvailability } from "@/lib/inventory/availability";
-import { LOCATIONS } from "@/lib/models/types";
-import { notify, notifyRole } from "@/lib/notify";
-import { pickNurse } from "@/lib/clinical/assign";
-import { nextReference, createWithReference } from "@/lib/sequence";
-import { zoneForPincode } from "@/lib/zones";
-import { getZones } from "@/lib/zones-store";
-import { MIN_LEAD_MS, ownClashMessage, slotProblem } from "@/lib/clinical/slots";
-import { slotContext } from "@/lib/clinical/slot-availability";
 import { paginate } from "@/lib/pagination-db";
 import { pageInfo, parsePaging } from "@/lib/pagination";
 import { ADMIN_BOOKING_SELECT } from "@/lib/data/admin-view";
 import { ok, fail, handleError } from "@/lib/api";
-import { callGate } from "@/lib/data/calls";
-import { callWhen } from "@/lib/clinical/calls";
-import { getClockFormat } from "@/lib/settings/clock";
-import { clockText, shortDateClock } from "@/lib/time";
-import { heldDripOf, patientClash } from "@/lib/data/own-sessions";
-import { patientMayBook } from "@/lib/clinical/drip-access";
-
-const CreateBooking = z.object({
-  dripId: z.string(),
-  scheduledAt: z.string().datetime(),
-  location: z.enum(LOCATIONS),
-  address: z.string().max(300).optional(),
-  pincode: z.string().max(10).optional(),
-  /** Required when the session runs in a partner clinic's rooms. */
-  clinicId: z.string().optional(),
-  notes: z.string().max(1000).optional(),
-});
+import { CreateBooking, bookSlot, planBooking } from "@/lib/booking/create";
+import { paymentsEnabled } from "@/lib/payments/config";
 
 export async function GET(req: Request) {
   try {
@@ -65,230 +38,27 @@ export async function GET(req: Request) {
 }
 
 export async function POST(req: Request) {
-  const clockFmt = await getClockFormat();
   try {
     const session = await getSession();
     if (!can(session?.role, "bookings.create")) return fail("Not permitted", 403);
 
     const input = CreateBooking.parse(await req.json());
-    await connectDB();
 
-    const drip = await Drip.findById(input.dripId).lean<{
-      _id: unknown;
-      name: string;
-      priceInr: number;
-      durationMin: number;
-      isActive: boolean;
-      isPublic?: boolean;
-    } | null>();
-    if (!drip || !drip.isActive) return fail("That drip is no longer available", 404);
-    // A drip kept off the website is booked on a physician's recommendation only.
-    if (drip.isPublic === false) {
-      const latest = await HealthQuiz.findOne({ patientId: session!.sub })
-        .sort({ completedAt: -1 })
-        .select("recommendedDripIds")
-        .lean<{ recommendedDripIds?: unknown[] } | null>();
-      if (!patientMayBook(drip, latest?.recommendedDripIds ?? [])) {
-        return fail("That drip is booked on your physician's recommendation only.", 403);
-      }
+    // Every rule first, so an impossible booking says why whichever way it is made.
+    const planned = await planBooking(session!.sub, input);
+    if ("error" in planned) return fail(planned.error, planned.status);
+
+    // With online payment switched on, a session is booked by paying for it
+    // (POST /api/payments, purpose "booking"): the booking is written when the
+    // money arrives. Booking here without paying would be a free session.
+    if (paymentsEnabled()) {
+      return fail("Pay to book this session.", 402, { code: "payment_required" });
     }
 
-    const when = new Date(input.scheduledAt);
-    if (when.getTime() - Date.now() < MIN_LEAD_MS) return fail("Pick a slot at least an hour from now", 422);
-    // Not two sessions of the patient's own at once. Checked before stock and
-    // nurses: "you already have a session then" is the answer that helps.
-    const clash = await patientClash(session!.sub, when, drip.durationMin);
-    if (clash) return fail(ownClashMessage(clash, clockFmt), 409);
-
-    // A slot is only real if the stock behind it is real — and a booking does
-    // not reserve, so the sessions already promised have to be counted too.
-    // Without that, ten patients could each pass a check for the same last
-    // preparable drip.
-    const { results } = await checkAvailability([{ dripId: input.dripId, quantity: 1 }], true);
-    const preparable = results[0]?.wholeVialAvailability ?? 0;
-    const alreadyPromised = await Booking.countDocuments({
-      dripId: drip._id,
-      status: { $in: ["awaiting_review", "approved", "nurse_assigned", "en_route", "in_progress"] },
-    });
-
-    if (preparable < 1) {
-      return fail(
-        `${drip.name} cannot be prepared right now${
-          results[0]?.bottleneck ? ` — ${results[0].bottleneck.ingredient} is out` : ""
-        }`,
-        409
-      );
-    }
-    if (preparable <= alreadyPromised) {
-      return fail(
-        `${drip.name} is fully committed — every unit we can prepare is already promised to a booked session. Try another drip, or come back once the pharmacy has restocked.`,
-        409
-      );
-    }
-
-    const patient = await User.findById(session!.sub).lean<{
-      patient?: {
-        address?: string;
-        city?: string;
-        pincode?: string;
-        latitude?: number;
-        longitude?: number;
-      };
-    } | null>();
-
-    // Where the nurse goes: a partner clinic's rooms, or an address inside a
-    // zone we actually cover. The site promises a straight yes or no on the
-    // pincode, so the no is given here rather than by a nurse who cannot come.
-    let clinic: { _id: unknown; name: string; clinic?: { pincode?: string; city?: string } } | null = null;
-    let pincode = input.pincode?.replace(/\D/g, "") || patient?.patient?.pincode || undefined;
-
-    if (input.location === "clinic") {
-      if (!input.clinicId) return fail("Choose the clinic you will visit", 422);
-      clinic = await User.findOne({ _id: input.clinicId, role: "clinic", status: "active" }).lean<{
-        _id: unknown;
-        name: string;
-        clinic?: { pincode?: string; city?: string };
-      } | null>();
-      if (!clinic) return fail("That clinic is not taking bookings", 422);
-      pincode = clinic.clinic?.pincode ?? pincode;
-    } else {
-      if (!pincode) return fail("Add your pincode so we can check a nurse can reach you", 422);
-      const zone = zoneForPincode(pincode, await getZones());
-      if (!zone) {
-        return fail(`We do not serve pincode ${pincode} yet. The zones we cover are listed under Zones.`, 409);
-      }
-    }
-
-    // The time must be one the zone offers, with a nurse free for it — the
-    // same rule that greyed the others out on the booking screen, applied
-    // again here because the screen may be minutes old.
-    const slot = slotProblem(await slotContext({ pincode, from: when, to: when }), when, drip.durationMin);
-    if (slot) return fail(clockText(slot.error, clockFmt), slot.status);
-
-    // A booking is only approved once a physician has read a quiz that is
-    // still inside its review window.
-    const quiz = await HealthQuiz.findOne({ patientId: session!.sub })
-      .sort({ completedAt: -1 })
-      .lean<{ reviewStatus: string; reviewedAt?: Date; reviewedBy?: unknown; completedAt: Date } | null>();
-    const approval = approvalState(quiz);
-    // Undecided -- still being read, or waiting on the patient's answer to a
-    // question -- is the one blocked state a patient may hold a slot against.
-    if (!approval.canBook && !approval.canHold) {
-      return fail(approval.message, 409);
-    }
-    // Waiting for an approval: the physician calls first, and the drip is held
-    // from two hours after the call, so the decision comes before the nurse sets off.
-    if (!approval.canBook) {
-      const gate = await callGate(session!.sub, quiz!.completedAt);
-      if (!gate.ok) return fail(gate.message, 409);
-      if (gate.notBefore && when.getTime() < gate.notBefore) {
-        return fail(
-          `Your drip must be at least 2 hours after your call — from ${callWhen(new Date(gate.notBefore), clockFmt)}.`,
-          422
-        );
-      }
-      // One held drip per decision: it is the session the approval confirms.
-      const held = await heldDripOf(session!.sub);
-      if (held) {
-        return fail(
-          `You already have ${held.bookingNo}${held.dripName ? ` (${held.dripName})` : ""} held for ${callWhen(held.scheduledAt, clockFmt)}. It is confirmed when your physician approves — move it from Home if the time does not suit.`,
-          409
-        );
-      }
-    }
-
-    const booking = await createWithReference(
-      (bookingNo) =>
-        Booking.create({
-          bookingNo,
-          patientId: session!.sub,
-          dripId: drip._id,
-          dripName: drip.name,
-          scheduledAt: when,
-          durationMin: drip.durationMin,
-          location: input.location,
-          address: clinic ? clinic.name : (input.address ?? patient?.patient?.address),
-          city: clinic?.clinic?.city ?? patient?.patient?.city,
-          pincode,
-          clinicId: clinic?._id,
-          // The physician who approved the standing protocol owns this session.
-          doctorId: approval.canBook && quiz?.reviewedBy ? quiz.reviewedBy : undefined,
-          // Only a physician's yes confirms a booking; anything else is a held slot.
-          status: approval.canBook ? "approved" : "awaiting_review",
-          approvedAt: approval.canBook ? new Date() : undefined,
-          checklist: CHECKLIST_STEPS.map((s) => ({ ...s })),
-          amount: drip.priceInr,
-          paymentStatus: "unpaid",
-        }),
-      (attempt) =>
-        nextReference(
-          Booking,
-          "bookingNo",
-          (n) => `ND-${4400 + n}`,
-          (ref) => Number(ref.split("-")[1] ?? 0) - 4400,
-          attempt
-        )
-    );
-
-    const slotLabel = shortDateClock(when, clockFmt);
-
-    if (booking.status === "awaiting_review") {
-      await notifyRole(
-        ["doctor"],
-        "A slot is held pending your review",
-        `${drip.name} · ${slotLabel}`,
-        "info",
-        "/doctor"
-      );
-    } else {
-      // Already-approved patients skip the queue, so dispatch a nurse now.
-      const pick = await pickNurse(
-        {
-          latitude: patient?.patient?.latitude,
-          longitude: patient?.patient?.longitude,
-          pincode,
-        },
-        { session: { start: when, durationMin: drip.durationMin, bookingId: String(booking._id) } }
-      );
-      if (pick) {
-        booking.nurseId = pick.nurseId;
-        booking.status = "nurse_assigned";
-        await booking.save();
-        await notify(
-          pick.nurseId,
-          `New session assigned · ${booking.bookingNo}`,
-          `${drip.name}${pick.distanceKm ? ` · ${pick.distanceKm} km away` : ""}`,
-          "info",
-          "/nurse"
-        );
-      }
-    }
-
-    if (clinic) {
-      await notify(
-        String(clinic._id),
-        `Session booked into your rooms · ${booking.bookingNo}`,
-        `${drip.name} · ${slotLabel}`,
-        "info",
-        "/clinic/bookings"
-      );
-    }
-
-    await AuditLog.create({
-      actorId: session!.sub,
-      actorRole: session!.role,
-      action: "booking.create",
-      entity: "Booking",
-      entityId: String(booking._id),
-      after: {
-        bookingNo: booking.bookingNo,
-        dripName: booking.dripName,
-        scheduledAt: booking.scheduledAt,
-        location: booking.location,
-      },
-    });
-
-    return ok({ booking: booking.toObject() }, { status: 201 });
+    // Checked again inside the booking itself: the time may have gone since.
+    const made = await bookSlot(session!.sub, input, { id: session!.sub, role: session!.role });
+    if ("error" in made) return fail(made.error, made.status);
+    return ok({ booking: made.booking }, { status: 201 });
   } catch (err) {
     return handleError(err);
   }
