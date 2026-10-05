@@ -341,6 +341,7 @@ export default async function PatientHomePage() {
                       scheduledAt={upcoming.scheduledAt.toISOString()}
                       policy={policy}
                       paidNet={Math.max(0, (upcoming.paidAmount ?? 0) - (upcoming.refundedAmount ?? 0))}
+                      instantRefunds={instantRefunds}
                     />
                   </div>
                 )}

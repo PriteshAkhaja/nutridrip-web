@@ -1099,14 +1099,14 @@ Changes:
 
 ## 26. The opening animation plays on every device
 
-**26 (29 Sept): the opening animation froze at 0%.** Reported: opened by the computer's network address (http://192.168.1.7:3000, as a phone or another computer would), the opening animation showed "Preparing 0%" and did not move.
+**26 (29 Sept): the opening animation froze at 0%.** Reported: opened by the computer's network address (http://192.168.1.15:3000, as a phone or another computer would), the opening animation showed "Preparing 0%" and did not move.
 - **Cause:** the count only started once the page's code had downloaded and started. On a slower device or connection that took longer than the 3-second safety limit, so the animation was taken away before it ever moved. The same happened on a device set to reduce motion.
 - **Now:** the count, the bag emptying and the name filling all run from the very first moment the page appears, and finish on time however slowly the rest of the page loads. It still shows once a day, holds the page still while it plays, and is never replayed by a reload.
 - **Reduced motion:** a device set to reduce motion skips the opening animation and shows the page straight away.
 
 | # | Test | Result |
 |---|---|---|
-| 26.1 | Opened at http://192.168.1.7:3000 and at localhost: counts 0 to 100, fades, page appears (development and production builds) | ✅ |
+| 26.1 | Opened at http://192.168.1.15:3000 and at localhost: counts 0 to 100, fades, page appears (development and production builds) | ✅ |
 | 26.2 | With all of the page's code blocked (the slowest possible device): still counts 0 to 100, fades, page appears and scrolls; marked as seen | ✅ |
 | 26.3 | Held still while it plays, not replayed on reload or in a new tab the same day, shown again the next day, never on pages without it | ✅ 8 checks |
 | 26.4 | Reduced motion: no opening animation, the page from the first frame | ✅ |
@@ -1322,3 +1322,17 @@ Online payment switches on when the Razorpay keys are added (`.env.example` list
 | # | Test | Result |
 |---|---|---|
 | 38.1 | Typecheck, lint, Prettier | ✅ clean (not browser-checked) |
+
+## 39. The two remaining payment checks, run in a browser
+
+**39 (5 Oct): checked by Claude in a headless browser against Razorpay test mode, with the webhook through ngrok.**
+
+- **Checked — a payment is booked even if the patient closes the tab at once.** Paid with the test card; the moment Razorpay reported success, the page was stopped from telling our server and the tab was closed. Razorpay's webhook arrived 4 seconds later and booked the session on its own (ND-4424, payment recorded as confirmed via the webhook).
+- **Checked — instant refunds.** With `RAZORPAY_REFUND_SPEED="optimum"`, Admin → Payments says "Instant refunds where possible" and refunds are asked for at that speed. Razorpay's test mode then makes them at normal speed (an instant refund needs the account enabled for it and a bank that takes one), and the patient is told the speed actually used. `.env` was put back to `normal` afterwards.
+- **Fixed — the cancel box promised 5–7 working days even when instant refunds are on.** It now says what the bell will say: "usually within minutes, or 5–7 working days where the bank cannot take an instant refund", or 5–7 working days when they are off.
+
+| # | Test | Result |
+|---|---|---|
+| 39.1 | Tab closed at Razorpay's success: webhook 200 (twice), payment applied via the webhook, session booked and paid | ✅ |
+| 39.2 | Optimum refunds: setting shown; Razorpay records speed requested "optimum", processed "normal"; patient told 5–7 days, which matches | ✅ |
+| 39.3 | The cancel box's wording: typecheck, lint, Prettier | ✅ (not browser-checked: no paid session left to open it on) |

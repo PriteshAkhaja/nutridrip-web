@@ -120,6 +120,7 @@ export default async function SessionsPage({
                               scheduledAt={s.scheduledAt}
                               policy={policy}
                               paidNet={Math.max(0, s.paidAmount - s.refundedAmount)}
+                              instantRefunds={instantRefunds}
                             />
                           </div>
                         </div>

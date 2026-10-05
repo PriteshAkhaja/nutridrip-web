@@ -8,6 +8,7 @@ import { SlotPicker } from "@/components/ui/SlotPicker";
 import { inr, lateFee, type LatePolicy } from "@/lib/billing/late-policy";
 import type { FeedbackView } from "@/lib/clinical/feedback";
 import { PayButton } from "@/components/payments/PayButton";
+import { refundEta } from "@/lib/payments/rules";
 
 const REASONS = [
   "Something came up",
@@ -31,6 +32,7 @@ export function CancelSession({
   scheduledAt,
   policy,
   paidNet = 0,
+  instantRefunds = false,
 }: {
   bookingId: string;
   bookingNo: string;
@@ -38,6 +40,8 @@ export function CancelSession({
   policy: LatePolicy;
   /** Rupees paid for the session and not yet refunded: what a cancellation gives back (less a late fee). */
   paidNet?: number;
+  /** Refunds are asked for at Razorpay's "optimum" speed, so the promise is said the way the bell will say it. */
+  instantRefunds?: boolean;
 }) {
   const router = useRouter();
   const [open, setOpen] = useState(false);
@@ -111,7 +115,7 @@ export function CancelSession({
           ) : paidNet > 0 ? (
             <>
               No fee. All <span className="t-data text-[14.5px]">{inr(paidNet)}</span> you paid goes back to the account
-              you paid from, automatically — it can take 5–7 working days to show.
+              you paid from, automatically — {refundEta(instantRefunds ? "optimum" : "normal")}.
             </>
           ) : (
             "No fee. Your slot is far enough out that nothing has been drawn for it yet."
