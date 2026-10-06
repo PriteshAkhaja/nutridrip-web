@@ -115,6 +115,20 @@ export function DripAssembly({
     </div>
   ) : null;
   // On a drip page the count is the act's title: it greets, already in place.
+  // A pre-med or a push is part of the session but never in the bag: named
+  // here, under the heading, rather than shown as a container left out.
+  const separate = drip.items.filter((i) => i.separate);
+  const sepLine = separate.length ? (
+    <p className={styles.sep} data-asm-sep>
+      {separate.map((i, k) => (
+        <span key={i.name}>
+          {k > 0 ? (k === separate.length - 1 ? " and " : ", ") : null}
+          {i.name} {fmt(i.dose)} {i.unit}
+        </span>
+      ))}{" "}
+      {separate.length === 1 ? "is" : "are"} given separately, not in the bag.
+    </p>
+  ) : null;
   const countTitle = (
     <h2 id={hero ? undefined : titleId} className={styles.count} data-asm-count>
       {count}
@@ -122,13 +136,12 @@ export function DripAssembly({
   );
   const captions = (
     <ol className={styles.captions} aria-label={`${drip.name}: what goes in`}>
-      {drip.items.map((i) => (
+      {inBag.map((i) => (
         <li key={i.name} data-asm-cap>
           <b>{i.name}</b>
           <span>
             {fmt(i.dose)} {i.unit}
           </span>
-          {i.separate ? <em>Given separately</em> : null}
         </li>
       ))}
     </ol>
@@ -183,6 +196,7 @@ export function DripAssembly({
           {heroBlock ?? (
             <>
               {countTitle}
+              {sepLine}
               {captions}
             </>
           )}
@@ -214,6 +228,7 @@ export function DripAssembly({
         </div>
         {heroBlock}
         {countTitle}
+        {sepLine}
         {one}
         {readout}
         {captions}

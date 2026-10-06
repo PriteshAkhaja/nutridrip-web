@@ -198,7 +198,10 @@ function scene(stage: HTMLElement, drip: AssemblyDrip, later: HTMLImageElement[]
   // A drip page has no headline to lift away: the act opens on the spread.
   const spread = opening === "spread";
   const q = <E extends Element = HTMLElement>(s: string) => stage.querySelector<E & HTMLElement>(s);
-  const items = drip.items;
+  // Only what goes into the bag becomes a container. A pre-med or a push is
+  // given separately; it is named in a line under the heading ([data-asm-sep]),
+  // never shown as a container left out of the merge.
+  const items = drip.items.filter((i) => !i.separate);
   const n = items.length;
   const glass = q("[data-asm-glass]");
   const C = glass ? items.map((it) => container(it, later)) : [];
@@ -221,6 +224,7 @@ function scene(stage: HTMLElement, drip: AssemblyDrip, later: HTMLImageElement[]
     room: q("[data-asm-room]"),
     roomImg: q<HTMLImageElement>("[data-asm-room-img]"),
     grounded: q("[data-asm-grounded]"),
+    sep: q("[data-asm-sep]"),
   };
 
   type G = {
@@ -407,6 +411,16 @@ function scene(stage: HTMLElement, drip: AssemblyDrip, later: HTMLImageElement[]
       tOut = span(p, 0.41, 0.46);
     T(el.count, 0, 24 * (1 - tIn), null, 0, tIn * (1 - tOut));
 
+    if (el.sep) {
+      const under = (h: HTMLElement | null) => (h ? h.offsetTop + h.offsetHeight + 14 : 0);
+      const a1 = tIn * (1 - span(p, 0.38, 0.42));
+      // After the ring has widened past it and faded (0.58 to 0.66).
+      const a2 = g.phone ? 0 : span(p, 0.62, 0.67) * (1 - span(p, 0.74, 0.77));
+      const y = a2 > 0 ? under(el.one) : under(el.count);
+      el.sep.style.transform = `translate3d(0,${y.toFixed(1)}px,0)`;
+      el.sep.style.opacity = Math.max(a1, a2).toFixed(3);
+    }
+
     // The containers.
     const settle = spread ? 1 : inOut(span(p, 0.05, 0.15));
     const conv0 = 0.24,
@@ -426,17 +440,7 @@ function scene(stage: HTMLElement, drip: AssemblyDrip, later: HTMLImageElement[]
       let a = lerp(hp.a, 1, settle);
       const t0 = conv0 + (k * convSpan) / Math.max(n, 1);
       const tt = inOut(span(p, t0, t0 + travel));
-      if (c.item.separate) {
-        // Given separately: it parks beside the bag (below it on a phone, where
-        // there is no room beside it), and stays until the callouts.
-        const side = g.phone
-          ? { x: g.gut + 70, y: g.bagC.y + g.bagH / 2 + 12 + (c.h * 0.55) / 2 }
-          : { x: g.bagC.x + g.bagH * 0.46 + 70, y: g.bagC.y + g.bagH * 0.2 };
-        x = lerp(x, side.x, tt);
-        y = lerp(y, side.y, tt);
-        s = lerp(s, g.phone ? 0.55 : 0.8, tt);
-        a *= 1 - (g.phone ? span(p, 0.74, 0.77) : span(p, 0.86, 0.9));
-      } else if (tt > 0) {
+      if (tt > 0) {
         const ctrl = { x: (sl.x + g.C.x) / 2, y: Math.min(sl.y, g.C.y) - H * 0.16 };
         const pt = bez(sl, ctrl, g.C, tt);
         x = pt.x;
@@ -450,14 +454,8 @@ function scene(stage: HTMLElement, drip: AssemblyDrip, later: HTMLImageElement[]
       const cap = caps[i];
       if (cap) {
         const cIn = spread ? 1 : easeOut(span(p, 0.1 + (i / n) * 0.06, 0.14 + (i / n) * 0.06));
-        const cOut = c.item.separate
-          ? g.phone
-            ? span(p, 0.74, 0.77)
-            : span(p, 0.86, 0.9)
-          : span(p, t0 - 0.01, t0 + 0.03);
-        const capX = c.item.separate ? lerp(sl.x, x, tt) : sl.x;
-        const capY = c.item.separate ? lerp(sl.y + c.h / 2 + 14, y + (c.h * s) / 2 + 12, tt) : sl.y + c.h / 2 + 14;
-        cap.style.transform = `translate(${capX.toFixed(1)}px,${capY.toFixed(1)}px)`;
+        const cOut = span(p, t0 - 0.01, t0 + 0.03);
+        cap.style.transform = `translate(${sl.x.toFixed(1)}px,${(sl.y + c.h / 2 + 14).toFixed(1)}px)`;
         cap.style.opacity = (cIn * (1 - cOut)).toFixed(3);
       }
     }

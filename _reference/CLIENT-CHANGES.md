@@ -1409,3 +1409,14 @@ Online payment switches on when the Razorpay keys are added (`.env.example` list
 | 42.6 | Reload `/for-clinics#enquire`: opens at the enquiry form | ✅ |
 | 42.7 | Home page's "How it works": still the plain version | ✅ |
 | 42.8 | Speed numbers for these four pages; a real phone | Not checked |
+
+## 43. Drip pages: an ingredient given separately no longer looks left out
+
+**43 (6 Oct):** on Hydrate Plus (ondansetron), Iron Restore (pheniramine) and Glow Protocol (glutathione), one container stayed behind while the others merged into the bag, and the ring cut through it. It was deliberate (a pre-medicine or a push is given separately, never mixed into the bag), but it read as a broken merge.
+
+- **Fixed — only what goes into the bag takes part in the merge.** The separately-given ingredient is named in one line under the heading instead: "Ondansetron 4 mg is given separately, not in the bag." It shows while the containers stand apart and again once the bag is full (on a phone, while they stand apart). The bag's label still lists only what is in the bag, and the composition list for screen readers still includes it, marked "given separately".
+
+| # | Test | Result |
+|---|---|---|
+| 43.1 | All nine drip pages at 1440 and 390, eight moments each: nothing left behind, nothing crossed by the ring or the callout cards, nothing off screen, no console errors | ✅ |
+| 43.2 | Typecheck, lint, Prettier, 687 unit tests | ✅ |

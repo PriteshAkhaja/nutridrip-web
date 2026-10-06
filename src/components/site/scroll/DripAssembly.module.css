@@ -142,6 +142,19 @@
     display: block;
     color: var(--color-primary-on-dark);
   }
+  /* "Ondansetron 4 mg is given separately, not in the bag." Placed under the
+     showing heading by assembly.ts; ink on paper, light on the deep ground. */
+  .sep {
+    left: clamp(24px, 3vw, 40px);
+    top: 0;
+    z-index: 6;
+    margin: 0;
+    max-width: min(34ch, calc(100% - 48px));
+    opacity: 0;
+    color: color-mix(in srgb, rgb(255 255 255 / 0.82) calc(var(--ink-t) * 100%), var(--color-ink-2));
+    font: 500 clamp(14px, 0.8rem + 0.3vw, 16px) / 1.45 var(--font-sans);
+    text-wrap: pretty;
+  }
   .readout {
     left: 0;
     top: 0;
@@ -299,6 +312,9 @@
   .still .stage {
     position: relative;
     min-height: 600px;
+  }
+  .still .sep {
+    opacity: 1;
   }
   .still .formula {
     display: block;
