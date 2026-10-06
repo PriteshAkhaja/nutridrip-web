@@ -1,0 +1,44 @@
+[
+  {
+    "kicker": "You",
+    "title": "You take the health quiz",
+    "body": "About three minutes of questions on your symptoms, medication, allergies and history. It is not a diagnosis and it is not a sales funnel — it is the information a physician needs before they will put their name to a protocol for you.",
+    "note": "It screens for the conditions that rule IV therapy out, and tells you so straight away."
+  },
+  {
+    "kicker": "Physician",
+    "title": "A physician reviews it",
+    "body": "A registered doctor reads your submission — typically within 15 min. They approve a protocol, change the doses, ask you for more, or decline. Nothing is prepared on a quiz score alone.",
+    "note": "An approval lasts 90 days, because weight, medication and kidney function move."
+  },
+  {
+    "kicker": "You",
+    "title": "You choose a drip and a slot",
+    "body": "Pick the formula, a date and a time — at home, at your office or at a hotel. Enter your pincode and you get a straight yes or no on whether we can reach you.",
+    "note": "Move or cancel freely up to 4 hours before your slot. Inside that, moving or cancelling carries a ₹500 late fee, because the nurse is already dispatched with your batch drawn."
+  },
+  {
+    "kicker": "Nurse",
+    "title": "Your nurse sets off",
+    "body": "A council-registered nurse is dispatched with a sealed kit for your protocol and presses On my way. Your session screen shows Nurse on the way with an estimate of the minutes, and you get a notification.",
+    "note": "At your door they inspect the seal and every vial's expiry. The batch numbers are fixed against your booking then, drawn from stock with the soonest expiry first — expired and quarantined lots are never counted as available."
+  },
+  {
+    "kicker": "You and the nurse",
+    "title": "Proof they are with you",
+    "body": "Before the nurse can see your drugs and doses, a six-digit code is sent to your own phone and you read it out. Then they take baseline vitals and read you the risks. You sign, or confirm with a code, and the exact wording you agreed to is stored with your record.",
+    "note": "If your phone has died, a physician can authorise it, or the nurse can proceed under their own name after recording why. You are told either way."
+  },
+  {
+    "kicker": "Nurse",
+    "title": "The session",
+    "body": "Your nurse works through a 29-step checklist in order. Mandatory steps refuse to close out of sequence, and a baseline vital outside its reference range stops the infusion before it starts until the physician clears it.",
+    "note": null
+  },
+  {
+    "kicker": "You",
+    "title": "Your report",
+    "body": "The session report lands in your account: your vitals, the doses given, the batch number of every vial, the aftercare notes, and the physician's name and registration number. If a manufacturer later recalls a batch, we can name everyone who received it the same day.",
+    "note": null
+  }
+]

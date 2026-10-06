@@ -1,0 +1,326 @@
+/* The live StickySteps layout (src/components/site/StickySteps.tsx), plus
+   the thread mode. */
+:root {
+  --radius-xl: 24px;
+}
+html {
+  scroll-behavior: auto;
+}
+body {
+  margin: 0;
+  background: #fff;
+  font-family: "Inter", system-ui, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  color: var(--ink);
+}
+* {
+  box-sizing: border-box;
+}
+.sec {
+  padding-block: var(--section-y);
+}
+.eyebrow {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  font:
+    600 12px/1.2 "Inter",
+    sans-serif;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--primary-text);
+}
+.eyebrow::before {
+  content: "";
+  width: 18px;
+  height: 1.5px;
+  background: currentColor;
+  opacity: 0.55;
+}
+.t-section {
+  margin: 16px 0 0;
+  font:
+    600 clamp(2rem, 1.2rem + 2.6vw, 3.4rem)/1.04 "Instrument Sans",
+    sans-serif;
+  letter-spacing: -0.037em;
+}
+.tone-2 {
+  color: var(--ink-3);
+}
+.t-lead {
+  margin: 16px 0 0;
+  max-width: 48ch;
+  font:
+    400 clamp(1.03rem, 0.96rem + 0.28vw, 1.19rem)/1.6 "Inter",
+    sans-serif;
+  color: var(--ink-2);
+}
+.t-data {
+  font-family: "Noto Sans Mono", monospace;
+  font-weight: 500;
+  font-variant-numeric: tabular-nums;
+}
+.t-micro {
+  font:
+    500 11.5px/1.4 "Inter",
+    sans-serif;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--ink-3);
+}
+.t-small {
+  font:
+    400 13px/1.5 "Inter",
+    sans-serif;
+  margin: 0;
+}
+.ctx {
+  padding: calc(var(--site-header-h) + 72px) 0 40px;
+}
+.ctx h1 {
+  margin: 0;
+  font:
+    600 clamp(2.3rem, 1.4rem + 2.8vw, 4rem)/1.02 "Instrument Sans",
+    sans-serif;
+  letter-spacing: -0.042em;
+}
+.head {
+  margin-bottom: 56px;
+}
+
+.st {
+  display: grid;
+  gap: 40px;
+}
+.st__media {
+  display: none;
+}
+@media (min-width: 1024px) {
+  .st {
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+    gap: 80px;
+  }
+  .st__media {
+    display: block;
+  }
+  .st__sticky {
+    position: sticky;
+    top: calc(var(--site-header-h) + 48px);
+  }
+}
+.frame {
+  position: relative;
+  aspect-ratio: 4 / 4.6;
+  overflow: hidden;
+  border-radius: 32px;
+  background: var(--surface-2);
+}
+.frame img {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  opacity: 0;
+  transition:
+    opacity 0.7s var(--ease-glide),
+    transform 0.7s var(--ease-glide);
+  transform: scale(1.03);
+}
+.frame img.is-on {
+  opacity: 1;
+  transform: scale(1);
+}
+.bars {
+  margin-top: 20px;
+  display: flex;
+  gap: 8px;
+}
+.bars span {
+  height: 3px;
+  flex: 1;
+  border-radius: 999px;
+  background: var(--line);
+  transition: background-color 0.5s;
+}
+.bars span[data-on="1"] {
+  background: var(--primary);
+}
+
+.list {
+  position: relative;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+.item {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  padding: 40px 0;
+  border-top: 1px solid var(--line);
+}
+.item:first-child {
+  border-top: 0;
+  padding-top: 0;
+}
+.item__pic {
+  position: relative;
+  margin-bottom: 28px;
+  aspect-ratio: 4 / 3.4;
+  overflow: hidden;
+  border-radius: var(--radius-xl);
+  background: var(--surface-2);
+}
+.item__pic img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+@media (min-width: 1024px) {
+  .item {
+    min-height: 56vh;
+    padding: 56px 0;
+  }
+  .item:first-child {
+    padding-top: 56px;
+  }
+  .item__pic {
+    display: none;
+  }
+}
+.item__top {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.dot {
+  position: relative;
+  z-index: 1;
+  display: inline-flex;
+  width: 36px;
+  height: 36px;
+  align-items: center;
+  justify-content: center;
+  border-radius: 999px;
+  border: 1px solid var(--line-2);
+  background: #fff;
+  color: var(--ink-2);
+  font-size: 13px;
+  transition:
+    background-color 0.5s,
+    border-color 0.5s,
+    color 0.5s;
+}
+.item.is-on .dot {
+  border-color: var(--primary);
+  background: var(--primary);
+  color: #fff;
+}
+.item h3 {
+  margin: 20px 0 0;
+  font:
+    600 clamp(26px, 2.6vw, 36px)/1.12 "Instrument Sans",
+    sans-serif;
+  letter-spacing: -0.03em;
+  transition: color 0.5s;
+}
+@media (min-width: 1024px) {
+  .item:not(.is-on) h3 {
+    color: var(--ink-3);
+  }
+}
+.note {
+  margin-top: 20px;
+  max-width: 52ch;
+  padding-left: 16px;
+  border-left: 2px solid var(--primary-line);
+  color: var(--ink-2);
+}
+
+/* ------------------------------------------------------- the thread mode --
+   Server-rendered for this page (so nothing moves when the script starts):
+   the numbered circles sit in a gutter, and the thread runs down it. */
+.st--thread .item {
+  position: relative;
+  padding-left: 56px;
+  border-top: 0;
+}
+/* The divider between steps starts where the text does, clear of the thread
+   (drawn edge to edge, it left a stub to the left of the line). */
+.st--thread .item + .item::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 56px;
+  right: 0;
+  height: 1px;
+  background: var(--line);
+}
+.st--thread .item__top {
+  position: relative;
+  min-height: 36px;
+}
+.st--thread .dot {
+  position: absolute;
+  left: -56px;
+  top: 0;
+}
+@media (min-width: 1024px) {
+  .st--thread .item {
+    padding-left: 68px;
+  }
+  .st--thread .item + .item::before {
+    left: 68px;
+  }
+  .st--thread .dot {
+    left: -68px;
+  }
+}
+.st--thread .thread {
+  display: block;
+}
+/* Without the script (reduced motion), the thread is simply drawn. */
+.st--thread:not(.st--live) .thread i {
+  transform: scaleY(1);
+}
+.thread {
+  display: none;
+  position: absolute;
+  width: 1.5px;
+  background: var(--line);
+  pointer-events: none;
+}
+.thread i {
+  position: absolute;
+  inset: 0;
+  background: var(--primary);
+  transform-origin: 50% 0;
+  transform: scaleY(0);
+}
+.st--live .frame img {
+  transition: none;
+}
+.st--live .item[data-state="current"] .dot {
+  border-color: var(--primary);
+  background: var(--primary);
+  color: #fff;
+}
+.st--live .item[data-state="done"] .dot {
+  border-color: var(--primary);
+  color: var(--primary-text);
+}
+.st--live .item[data-state="current"] h3 {
+  color: var(--ink);
+}
+.st--live .item[data-state="done"] h3,
+.st--live .item[data-state="ahead"] h3 {
+  color: var(--ink);
+}
+@media (min-width: 1024px) {
+  .st--live .item[data-state="done"] h3,
+  .st--live .item[data-state="ahead"] h3 {
+    color: var(--ink-3);
+  }
+}

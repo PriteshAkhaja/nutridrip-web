@@ -21,6 +21,7 @@
   },
   "dependencies": {
     "bcryptjs": "^3.0.2",
+    "gsap": "^3.15.0",
     "jose": "^6.1.0",
     "mongoose": "^8.9.5",
     "next": "16.2.3",

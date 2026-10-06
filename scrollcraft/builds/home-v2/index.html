@@ -1,0 +1,742 @@
+<!doctype html>
+<html lang="en-IN">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <title>NutriDrip · IV nutrient therapy at home</title>
+    <link rel="icon" href="data:," />
+    <meta
+      name="description"
+      content="Answer a health quiz, get a protocol reviewed by a registered physician, and have a nurse administer it in your own home."
+    />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      rel="stylesheet"
+      href="https://fonts.googleapis.com/css2?family=Instrument+Sans:wght@400;500;600;700&family=Inter:wght@400;500;600&family=Noto+Sans+Mono:wght@400;500&display=swap"
+    />
+    <link rel="preload" as="image" href="assets/vial.webp" />
+    <link rel="preload" as="image" href="assets/ampoule.webp" />
+    <link rel="stylesheet" href="scrollcraft.css" />
+    <link rel="stylesheet" href="site.css" />
+    <link rel="stylesheet" href="assembly.css" />
+  </head>
+  <body>
+    <div class="site" id="sc-root">
+      <!-- Stand-in for the shared SiteChrome header. The port keeps the real one. -->
+      <header class="sitehdr">
+        <div class="capsule">
+          <a class="logo" href="/" aria-label="NutriDrip home"
+            ><span class="logomark"><i></i></span><span class="logo__word">NutriDrip</span></a
+          >
+          <nav class="capsule__nav" aria-label="Main">
+            <a href="/drips">Drips</a><a href="/how-it-works">How it works</a><a href="/pricing">Pricing</a
+            ><a href="/safety">Safety</a><a href="/zones">Zones</a><a href="/for-clinics">For clinics</a>
+          </nav>
+          <div class="capsule__end">
+            <a class="btn btn--secondary btn--md capsule__signin" href="/login">Sign in</a
+            ><a class="btn btn--primary btn--md" href="/quiz">Take the quiz</a>
+          </div>
+        </div>
+      </header>
+
+      <main id="main">
+        <!-- THE ASSEMBLY. One pinned act: the hero opens it, and the drip's own
+       ingredients become its bag. Visual layers are built by assembly.js from
+       the data island; every word is here as real text. -->
+        <section class="asm" data-sc-act="pin" data-sc-span="6.4" data-assembly aria-labelledby="hero-title">
+          <div class="sc-stage asm__stage" data-sc-stage>
+            <div class="asm__ink" aria-hidden="true"></div>
+            <div class="asm__room" aria-hidden="true">
+              <img
+                class="asm__room-img"
+                src="assets/room.webp"
+                alt=""
+                width="2200"
+                height="1238"
+                loading="lazy"
+                decoding="async"
+              />
+              <div class="asm__room-scrim"></div>
+            </div>
+            <div class="asm__ring" aria-hidden="true"><i></i></div>
+            <div class="asm__glass" aria-hidden="true"></div>
+            <div class="asm__bagwrap" aria-hidden="true"><div class="asm__bag"></div></div>
+            <div class="asm__point" aria-hidden="true"></div>
+
+            <div class="asm__hero">
+              <span class="badge"
+                ><svg viewBox="0 0 20 20" width="14" height="14" aria-hidden="true">
+                  <path
+                    d="M4 10.5l3.5 3.5L16 6"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="2"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                  /></svg
+                >Physician-approved · nurse-administered</span
+              >
+              <h1 id="hero-title" class="asm__h1">IV nutrient therapy, at home, with a doctor in the loop.</h1>
+              <p class="asm__sub">
+                Answer a 16-point health quiz, get a protocol reviewed by a registered physician, and have a nurse
+                administer it in your own home. No walk-in, no guesswork.
+              </p>
+              <div class="asm__actions">
+                <a class="btn btn--primary btn--lg" href="/quiz"
+                  >Take the health quiz · 3 min<span class="btn__arrow" aria-hidden="true"></span
+                ></a>
+                <a class="btn btn--secondary btn--lg" href="/drips">Browse all <span data-drip-count>9</span> drips</a>
+              </div>
+            </div>
+
+            <h2 class="asm__count" data-count-title>Six ingredients.</h2>
+            <h2 class="asm__one">One drip. <span data-drip-name>Myers' Revive.</span></h2>
+            <p class="asm__readout" aria-hidden="true"><span data-fill-num>0</span> ml</p>
+
+            <!-- The formula as text: the captions under each container while they
+           stand apart, and the full list for screen readers at every step. -->
+            <ol class="asm__captions" data-captions></ol>
+            <ul class="sr-only" data-formula></ul>
+
+            <div class="asm__card asm__card--a">
+              <p data-card-a>45 to 60 min, given at home by a council-registered nurse.</p>
+            </div>
+            <div class="asm__card asm__card--b"><p>Approved by a physician before anything is prepared.</p></div>
+
+            <div class="asm__grounded">
+              <p class="asm__time" data-last-slot>7:00 pm</p>
+              <p class="asm__line">
+                A nurse at your door, in any of <span data-zone-count>14</span> zones across Bengaluru, after a 15 min
+                call with your physician.
+              </p>
+              <div class="asm__actions asm__actions--close">
+                <a class="btn btn--primary btn--lg" href="/quiz" data-close-cta
+                  >Take the health quiz · 3 min<span class="btn__arrow" aria-hidden="true"></span
+                ></a>
+                <a class="link link--light" href="/consult">Ask a clinician</a>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- TRUST -->
+        <section class="trust" aria-label="Credentials">
+          <div class="trust__track" data-pause-offscreen>
+            <ul class="trust__list">
+              <li>Karnataka Medical Council</li>
+              <li>KA/CEA/2024/11872</li>
+              <li>Physician review before every protocol</li>
+              <li>29-step session checklist</li>
+              <li>Council-registered nurses</li>
+              <li>Batch numbers on every report</li>
+              <li>DPDP compliant</li>
+              <li>GST invoiced</li>
+            </ul>
+            <ul class="trust__list" aria-hidden="true">
+              <li>Karnataka Medical Council</li>
+              <li>KA/CEA/2024/11872</li>
+              <li>Physician review before every protocol</li>
+              <li>29-step session checklist</li>
+              <li>Council-registered nurses</li>
+              <li>Batch numbers on every report</li>
+              <li>DPDP compliant</li>
+              <li>GST invoiced</li>
+            </ul>
+          </div>
+        </section>
+
+        <!-- HOW IT WORKS: the live sticky steps, kept -->
+        <section class="sec how" aria-labelledby="how-title">
+          <div class="wrap">
+            <div class="sec__head" data-sc-in data-sc-stagger="70">
+              <span class="eyebrow">How it works</span>
+              <h2 id="how-title" class="h-section">From the quiz <span class="tone-2">to the report.</span></h2>
+              <p class="lead">A person accountable at every stage, and a record of what they did.</p>
+            </div>
+            <div class="how__grid">
+              <div class="how__media" aria-hidden="true">
+                <div class="how__frame">
+                  <figure class="how__pic is-on" data-step-pic="0">
+                    <div class="how__note">
+                      <span class="eyebrow">You · about three minutes</span>
+                      <p>
+                        The quiz screens for the conditions that rule IV therapy out, and tells you so straight away.
+                      </p>
+                    </div>
+                  </figure>
+                  <figure class="how__pic" data-step-pic="1">
+                    <img src="assets/site/physician-phone.jpg" alt="" loading="lazy" width="1400" height="1600" />
+                  </figure>
+                  <figure class="how__pic" data-step-pic="2">
+                    <img src="assets/site/vitals-home.jpg" alt="" loading="lazy" width="1600" height="1067" />
+                  </figure>
+                  <figure class="how__pic" data-step-pic="3">
+                    <div class="how__note">
+                      <span class="eyebrow">You · the same day</span>
+                      <p>If a manufacturer recalls a batch, we can name everyone who received it the same day.</p>
+                    </div>
+                  </figure>
+                </div>
+              </div>
+              <ol class="how__steps">
+                <li data-step="0">
+                  <span class="how__kicker">You · about three minutes</span>
+                  <h3>Take the health quiz</h3>
+                  <p>
+                    Questions on your symptoms, medication, allergies and history. It is not a diagnosis; it is what a
+                    physician needs before they will put their name to a protocol.
+                  </p>
+                </li>
+                <li data-step="1">
+                  <span class="how__kicker">Physician</span>
+                  <h3>A physician reviews it</h3>
+                  <p>
+                    A registered doctor approves a protocol, changes the doses, asks you for more, or declines. Nothing
+                    is prepared on a quiz score alone.
+                  </p>
+                  <p class="how__aside">
+                    An approval lasts 90 days, because weight, medication and kidney function move.
+                  </p>
+                </li>
+                <li data-step="2">
+                  <span class="how__kicker">Nurse · at your home</span>
+                  <h3>A nurse comes to you</h3>
+                  <p>
+                    A council-registered nurse arrives with a sealed kit, checks the seal and every vial's expiry in
+                    front of you, and takes baseline vitals before anything starts.
+                  </p>
+                  <p class="how__aside">
+                    A reading outside its reference range stops the infusion until the physician clears it.
+                  </p>
+                </li>
+                <li data-step="3">
+                  <span class="how__kicker">You · the same day</span>
+                  <h3>Your report lands</h3>
+                  <p>
+                    Your vitals, the doses given, the batch number of every vial, the aftercare notes, and the
+                    physician's name and registration number.
+                  </p>
+                </li>
+              </ol>
+            </div>
+          </div>
+        </section>
+
+        <!-- RANGE: goals, then the drips most people book (merged) -->
+        <section class="sec sec--mist range" aria-labelledby="range-title">
+          <div class="wrap">
+            <div class="sec__head sec__head--split" data-sc-in data-sc-stagger="70">
+              <div>
+                <span class="eyebrow">By goal</span>
+                <h2 id="range-title" class="h-section">What are you <span class="tone-2">trying to fix?</span></h2>
+              </div>
+              <a class="link" href="/drips">Browse the catalogue <span aria-hidden="true">→</span></a>
+            </div>
+            <ul class="goals" data-goals data-sc-in data-sc-stagger="60"></ul>
+            <div class="popular">
+              <h3 class="popular__title">Or start where most people do</h3>
+              <ul class="popular__row" data-popular></ul>
+            </div>
+          </div>
+        </section>
+
+        <!-- SAFETY, ending on the people we turn away (merged, now white) -->
+        <section class="sec safety" aria-labelledby="safety-title">
+          <div class="wrap safety__grid">
+            <figure class="safety__photo">
+              <img
+                src="assets/site/nurse-prep.jpg"
+                alt="A nurse, lit from a window behind her, drawing up a syringe from a vial"
+                loading="lazy"
+                width="1600"
+                height="1067"
+              />
+              <figcaption class="chip">
+                <b><span data-sc-count="0 29">29</span> steps, none skippable</b
+                ><span>Mandatory steps refuse to close out of order</span>
+              </figcaption>
+            </figure>
+            <div>
+              <div data-sc-in data-sc-stagger="70">
+                <h2 id="safety-title" class="h-section">Where the safety actually sits</h2>
+                <p class="lead">
+                  Every session is bounded by a 29-step checklist the nurse cannot skip, and out-of-range vitals stop
+                  the infusion before it starts.
+                </p>
+              </div>
+              <ul class="benefits" data-sc-in data-sc-stagger="70">
+                <li>
+                  <h3>A doctor, before a needle</h3>
+                  <p>
+                    Every protocol is read and signed by a physician registered with the Karnataka Medical Council.
+                    Their name and number are on your report. Nothing is dispensed on a quiz score.
+                  </p>
+                </li>
+                <li>
+                  <h3>Twenty-nine steps, none skippable</h3>
+                  <p>
+                    The software refuses to advance a step whose predecessor is open. Your nurse cannot cannulate before
+                    consent is captured, however late the day is running.
+                  </p>
+                </li>
+                <li>
+                  <h3>Every vial traced to you</h3>
+                  <p>
+                    Batch numbers are recorded against your session. If a manufacturer issues a recall, we can name
+                    everyone affected the same day.
+                  </p>
+                </li>
+              </ul>
+            </div>
+          </div>
+          <div class="wrap">
+            <div class="contra" data-sc-in>
+              <div>
+                <h3 class="contra__title">We turn people away, <span class="tone-2">and that is the point.</span></h3>
+                <p class="lead">
+                  IV therapy is unsuitable during pregnancy, in renal or cardiac failure, and with certain drug
+                  interactions. The quiz screens for these and a physician can decline.
+                </p>
+              </div>
+              <div class="contra__actions">
+                <a class="btn btn--secondary btn--lg" href="/safety">Read the full contraindication list</a>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- COMPARISON -->
+        <section class="sec sec--soft compare" aria-labelledby="compare-title">
+          <div class="wrap">
+            <div class="sec__head sec__head--center" data-sc-in data-sc-stagger="70">
+              <h2 id="compare-title" class="h-section">Us, a drip bar, and a hospital</h2>
+              <p class="lead">Every row is something you can check for yourself elsewhere on this site.</p>
+            </div>
+            <div
+              class="cmp"
+              role="table"
+              aria-label="NutriDrip compared with a drip bar and a hospital day-care"
+              data-compare
+            ></div>
+          </div>
+        </section>
+
+        <!-- FAQ -->
+        <section class="sec sec--mist faq" aria-labelledby="faq-title">
+          <div class="wrap faq__grid">
+            <div class="faq__aside">
+              <h2 id="faq-title" class="h-section">Questions people actually ask</h2>
+              <div class="ask">
+                <h3>Not answered here?</h3>
+                <p>
+                  Ask our clinical team. Tell us what you want to know and how to reach you, and someone will get back
+                  to you.
+                </p>
+                <div class="ask__row">
+                  <a class="btn btn--primary btn--md" href="/consult">Ask a clinician</a
+                  ><a class="link" href="/faqs">All FAQs <span aria-hidden="true">→</span></a>
+                </div>
+              </div>
+            </div>
+            <div class="faq__list" data-faq></div>
+          </div>
+        </section>
+
+        <!-- CLOSE: the live copy, on a light ground -->
+        <section class="sec close" aria-labelledby="close-title">
+          <div class="wrap">
+            <div class="close__panel">
+              <div class="close__copy" data-sc-in data-sc-stagger="80">
+                <h2 id="close-title" class="h-section">Three minutes now, or another month of guessing.</h2>
+                <p class="lead">
+                  A physician reads every submission. If IV therapy is not right for you, they will say so, and tell you
+                  what is.
+                </p>
+                <div class="asm__actions">
+                  <a class="btn btn--primary btn--lg" href="/quiz"
+                    >Take the health quiz · 3 min<span class="btn__arrow" aria-hidden="true"></span></a
+                  ><a class="btn btn--secondary btn--lg" href="/drips">Browse drips</a>
+                </div>
+                <p class="close__note">No card needed to get a protocol reviewed.</p>
+              </div>
+              <div class="close__photo">
+                <img src="assets/site/drip-line-window.jpg" alt="" loading="lazy" width="1600" height="1067" />
+              </div>
+            </div>
+          </div>
+        </section>
+      </main>
+
+      <footer class="sitefoot">
+        <div class="wrap sitefoot__in">
+          <a class="logo logo--light" href="/"
+            ><span class="logomark"><i></i></span><span class="logo__word">NutriDrip</span></a
+          >
+          <p>Not a substitute for emergency care. In an emergency call 108.</p>
+        </div>
+      </footer>
+    </div>
+
+    <script type="application/json" id="page-data">
+      {
+        "drip": {
+          "slug": "myers-revive",
+          "name": "Myers' Revive",
+          "tagline": "The default first drip",
+          "category": "Energy",
+          "volumeMl": 500,
+          "priceInr": 8400,
+          "durationMin": 45,
+          "durationToMin": 60,
+          "isPopular": true,
+          "carrier": { "name": "Normal saline 0.9%", "dose": 500, "unit": "ml" },
+          "items": [
+            {
+              "name": "Ascorbic acid",
+              "dose": 7500,
+              "unit": "mg",
+              "role": "ACTIVE",
+              "notes": "Antioxidant load",
+              "form": "Vial",
+              "separate": false
+            },
+            {
+              "name": "Magnesium sulphate",
+              "dose": 1000,
+              "unit": "mg",
+              "role": "ACTIVE",
+              "notes": "Muscle and sleep",
+              "form": "Ampoule",
+              "separate": false
+            },
+            {
+              "name": "B-complex",
+              "dose": 2,
+              "unit": "ml",
+              "role": "ACTIVE",
+              "notes": "Energy metabolism",
+              "form": "Vial",
+              "separate": false
+            },
+            {
+              "name": "Cyanocobalamin",
+              "dose": 1000,
+              "unit": "mcg",
+              "role": "ACTIVE",
+              "notes": "Nerve and blood",
+              "form": "Ampoule",
+              "separate": false
+            },
+            {
+              "name": "Calcium gluconate",
+              "dose": 500,
+              "unit": "mg",
+              "role": "ADDITIVE",
+              "notes": "Electrolyte balance",
+              "form": "Ampoule",
+              "separate": false
+            },
+            {
+              "name": "Pyridoxine",
+              "dose": 100,
+              "unit": "mg",
+              "role": "ADDITIVE",
+              "notes": "Cofactor",
+              "form": "Ampoule",
+              "separate": false
+            }
+          ]
+        },
+        "drips": [
+          {
+            "slug": "hydrate-plus",
+            "name": "Hydrate Plus",
+            "tagline": "Fast rehydration",
+            "category": "Hydration",
+            "priceInr": 5400,
+            "durationMin": 30,
+            "durationToMin": 40,
+            "isPopular": true,
+            "count": 3
+          },
+          {
+            "slug": "jetlag-reset",
+            "name": "Jetlag Reset",
+            "tagline": "Built around travel days",
+            "category": "Energy",
+            "priceInr": 6800,
+            "durationMin": 30,
+            "durationToMin": 40,
+            "isPopular": false,
+            "count": 3
+          },
+          {
+            "slug": "myers-revive",
+            "name": "Myers' Revive",
+            "tagline": "The default first drip",
+            "category": "Energy",
+            "priceInr": 8400,
+            "durationMin": 45,
+            "durationToMin": 60,
+            "isPopular": true,
+            "count": 6
+          },
+          {
+            "slug": "immune-shield",
+            "name": "Immune Shield",
+            "tagline": "High-dose vitamin C",
+            "category": "Immunity",
+            "priceInr": 9200,
+            "durationMin": 60,
+            "durationToMin": 80,
+            "isPopular": true,
+            "count": 3
+          },
+          {
+            "slug": "post-viral-rebuild",
+            "name": "Post-viral Rebuild",
+            "tagline": "After the infection clears",
+            "category": "Post-viral",
+            "priceInr": 9600,
+            "durationMin": 60,
+            "durationToMin": 80,
+            "isPopular": false,
+            "count": 4
+          },
+          {
+            "slug": "iron-restore",
+            "name": "Iron Restore",
+            "tagline": "Requires recent labs",
+            "category": "Energy",
+            "priceInr": 9800,
+            "durationMin": 90,
+            "durationToMin": 120,
+            "isPopular": false,
+            "count": 3
+          },
+          {
+            "slug": "athletic-recovery",
+            "name": "Athletic Recovery",
+            "tagline": "After the event, not before",
+            "category": "Athletic recovery",
+            "priceInr": 10200,
+            "durationMin": 55,
+            "durationToMin": 75,
+            "isPopular": false,
+            "count": 4
+          },
+          {
+            "slug": "deep-recharge",
+            "name": "Deep Recharge",
+            "tagline": "For sustained fatigue",
+            "category": "Energy",
+            "priceInr": 10600,
+            "durationMin": 60,
+            "durationToMin": 80,
+            "isPopular": false,
+            "count": 4
+          },
+          {
+            "slug": "glow-protocol",
+            "name": "Glow Protocol",
+            "tagline": "Given as a slow push",
+            "category": "Skin",
+            "priceInr": 11000,
+            "durationMin": 50,
+            "durationToMin": 70,
+            "isPopular": true,
+            "count": 3
+          }
+        ],
+        "zones": 14,
+        "lastSlot": "19:00",
+        "assets": {
+          "bag": {
+            "source": "out/kie-bag-1.png",
+            "size": { "w": 851, "h": 1426 },
+            "object": { "x0": 24, "y0": 24, "x1": 826, "y1": 1401 },
+            "shadow": { "x": -36, "y": 1411, "w": 1243, "h": 394 },
+            "label": null,
+            "hole": { "x": 423, "y": 91 },
+            "meniscus": 384,
+            "seam": 44,
+            "body": { "x0": 68, "x1": 782, "y0": 189, "y1": 1153 },
+            "fill": {
+              "meniscus": 384,
+              "strip": { "x": 103, "y": 368, "w": 640, "h": 44 },
+              "rows": [
+                [384, 103, 742],
+                [390, 104, 741],
+                [396, 104, 740],
+                [402, 105, 740],
+                [408, 105, 739],
+                [414, 106, 738],
+                [420, 106, 737],
+                [426, 107, 737],
+                [432, 107, 736],
+                [438, 108, 735],
+                [444, 108, 735],
+                [450, 109, 734],
+                [456, 110, 733],
+                [462, 110, 733],
+                [468, 111, 732],
+                [474, 111, 732],
+                [480, 112, 731],
+                [486, 112, 731],
+                [492, 113, 730],
+                [498, 113, 730],
+                [504, 114, 730],
+                [510, 114, 729],
+                [516, 115, 729],
+                [522, 115, 728],
+                [528, 116, 727],
+                [534, 116, 727],
+                [540, 117, 726],
+                [546, 117, 726],
+                [552, 117, 726],
+                [558, 118, 725],
+                [564, 118, 725],
+                [570, 119, 724],
+                [576, 119, 724],
+                [582, 119, 723],
+                [588, 120, 723],
+                [594, 120, 723],
+                [600, 120, 722],
+                [606, 121, 721],
+                [612, 121, 721],
+                [618, 121, 721],
+                [624, 122, 720],
+                [630, 122, 719],
+                [636, 122, 719],
+                [642, 123, 718],
+                [648, 123, 718],
+                [654, 123, 718],
+                [660, 123, 718],
+                [666, 123, 718],
+                [672, 124, 718],
+                [678, 124, 718],
+                [684, 124, 718],
+                [690, 124, 718],
+                [696, 124, 718],
+                [702, 124, 718],
+                [708, 125, 718],
+                [714, 125, 717],
+                [720, 125, 717],
+                [726, 125, 717],
+                [732, 125, 717],
+                [738, 125, 717],
+                [744, 125, 717],
+                [750, 125, 718],
+                [756, 125, 718],
+                [762, 125, 718],
+                [768, 125, 718],
+                [774, 125, 718],
+                [780, 125, 718],
+                [786, 125, 718],
+                [792, 125, 718],
+                [798, 125, 718],
+                [804, 125, 718],
+                [810, 125, 718],
+                [816, 125, 718],
+                [822, 126, 718],
+                [828, 126, 718],
+                [834, 127, 717],
+                [840, 127, 716],
+                [846, 128, 716],
+                [852, 129, 714],
+                [858, 130, 713],
+                [864, 131, 711],
+                [870, 133, 709],
+                [876, 135, 706],
+                [882, 137, 700],
+                [888, 138, 686],
+                [894, 140, 682],
+                [900, 141, 680],
+                [906, 143, 704],
+                [912, 143, 707],
+                [918, 142, 709],
+                [924, 140, 711],
+                [930, 137, 712],
+                [936, 134, 714],
+                [942, 130, 718],
+                [948, 127, 721],
+                [954, 125, 723],
+                [960, 122, 725],
+                [966, 120, 727],
+                [972, 118, 729],
+                [978, 116, 730],
+                [984, 115, 732],
+                [990, 114, 733],
+                [996, 112, 734],
+                [1002, 111, 736],
+                [1008, 110, 737],
+                [1014, 109, 738],
+                [1020, 107, 740],
+                [1026, 106, 741],
+                [1032, 105, 743],
+                [1038, 103, 744],
+                [1044, 102, 746],
+                [1050, 100, 748],
+                [1056, 99, 750],
+                [1062, 97, 751],
+                [1068, 96, 753],
+                [1074, 94, 755],
+                [1080, 92, 756],
+                [1086, 91, 758],
+                [1092, 89, 760],
+                [1098, 88, 761],
+                [1104, 86, 763],
+                [1110, 85, 765],
+                [1116, 83, 766],
+                [1122, 82, 768],
+                [1128, 80, 769],
+                [1134, 79, 771],
+                [1140, 78, 772],
+                [1146, 77, 773],
+                [1152, 77, 773],
+                [1158, 76, 774],
+                [1164, 76, 774],
+                [1170, 76, 774],
+                [1176, 77, 773],
+                [1182, 77, 772],
+                [1188, 78, 770],
+                [1194, 78, 764],
+                [1200, 79, 719],
+                [1206, 79, 705],
+                [1212, 79, 669],
+                [1218, 80, 719],
+                [1224, 81, 720],
+                [1230, 83, 733],
+                [1236, 363, 736],
+                [1242, 370, 733],
+                [1248, 371, 718]
+              ]
+            }
+          },
+          "vial": {
+            "source": "out/kie-containers-1.png",
+            "size": { "w": 414, "h": 830 },
+            "object": { "x0": 24, "y0": 24, "x1": 389, "y1": 805 },
+            "shadow": { "x": -16, "y": 765, "w": 1070, "h": 111 },
+            "label": { "y0": 421, "y1": 682 },
+            "hole": null
+          },
+          "ampoule": {
+            "source": "out/kie-containers-1.png",
+            "size": { "w": 269, "h": 968 },
+            "object": { "x0": 24, "y0": 24, "x1": 244, "y1": 943 },
+            "shadow": { "x": -16, "y": 903, "w": 1042, "h": 111 },
+            "label": { "y0": 564, "y1": 762 },
+            "hole": null
+          }
+        }
+      }
+    </script>
+    <script src="scrollcraft.js"></script>
+    <script src="gsap.min.js"></script>
+    <script src="ScrollTrigger.min.js"></script>
+    <script src="page.js"></script>
+    <script src="assembly.js"></script>
+  </body>
+</html>

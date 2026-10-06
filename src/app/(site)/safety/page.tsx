@@ -1,7 +1,6 @@
 import type { Metadata } from "next";
 import type { ReactNode } from "react";
 import { ButtonLink } from "@/components/ui/Button";
-import { FillSegments } from "@/components/ui/Fill";
 import { Section } from "@/components/ui/Marketing";
 import { CHECKLIST_STEPS, PHASE_ORDER, VITAL_RANGES } from "@/lib/clinical/checklist";
 import { QuizButton } from "@/components/layout/QuizButton";
@@ -10,6 +9,7 @@ import { PageHero } from "@/components/site/PageHero";
 import { Container, SectionHeader, delay } from "@/components/site/Layout";
 import { Photo } from "@/components/site/Photo";
 import { FloatChip } from "@/components/site/FloatChip";
+import { ScrollEffect } from "@/components/site/scroll/ScrollEffect";
 import {
   IconAlert,
   IconClipboard,
@@ -146,7 +146,15 @@ export default function SafetyPage() {
 
       {/* ---------------- The checklist itself ---------------- */}
       <Section tone="mist" labelledBy="safety-checklist">
-        <div className="grid grid-cols-1 items-start gap-12 lg:grid-cols-[minmax(0,0.92fr)_minmax(0,1.08fr)] lg:gap-16">
+        {/* The checklist works itself through as you read it (scroll/effects.ts,
+            "checklist"): rows tick, the card's phase bars fill, and on a phone a
+            strip under the header keeps count. Without the script, or under
+            reduced motion, the section is as it always was: the card's filled
+            segments are the mandatory steps. */}
+        <ScrollEffect
+          effect="checklist"
+          className="group/cl grid grid-cols-1 items-start gap-12 lg:grid-cols-[minmax(0,0.92fr)_minmax(0,1.08fr)] lg:gap-16"
+        >
           <div className="lg:sticky lg:top-[calc(var(--site-header-h)+40px)]">
             <span className="t-eyebrow" data-reveal>
               The checklist
@@ -164,52 +172,131 @@ export default function SafetyPage() {
               data-reveal
               style={delay(200)}
             >
+              <p
+                className="m-0 hidden items-baseline justify-between gap-3 border-b border-[var(--color-line)] pb-3.5 group-data-[live]/cl:flex"
+                aria-hidden
+              >
+                <b style={{ font: "600 22px/1.1 var(--font-display)", letterSpacing: "-0.02em" }}>
+                  Step <span data-cl-now>1</span> of {CHECKLIST_STEPS.length}
+                </b>
+                <span className="t-small text-[var(--color-ink-3)]">as you read</span>
+              </p>
               {byPhase.map((p) => (
-                <FillSegments key={p.phase} name={p.phase} done={p.mandatory} total={p.total} />
+                <div key={p.phase}>
+                  <div className="flex items-baseline justify-between mb-[7px]">
+                    <span className="t-body text-[var(--color-ink-2)]">{p.phase}</span>
+                    <span className="t-data text-[13px] leading-[1.5] text-[var(--color-ink-3)]" aria-hidden>
+                      <span data-cl-count>{p.mandatory}</span> / {p.total}
+                    </span>
+                  </div>
+                  <div
+                    className="flex gap-[3px]"
+                    role="img"
+                    aria-label={`${p.phase}: ${p.mandatory} of ${p.total} steps mandatory`}
+                  >
+                    {CHECKLIST_STEPS.filter((s) => s.phase === p.phase).map((s) => (
+                      <div
+                        key={s.key}
+                        className="relative flex-1 h-2 overflow-hidden rounded-[2px] bg-[var(--color-surface-2)] group-data-[live]/cl:bg-[var(--color-line-2)]"
+                      >
+                        <i
+                          data-cl-fill
+                          className="absolute inset-0 origin-left bg-[var(--color-primary)]"
+                          style={{ transform: `scaleX(${s.mandatory ? 1 : 0})` }}
+                        />
+                      </div>
+                    ))}
+                  </div>
+                </div>
               ))}
-              <p className="t-small text-[var(--color-ink-3)] mt-1">
+              <p className="t-small text-[var(--color-ink-3)] mt-1 group-data-[live]/cl:hidden">
                 Filled segments are the mandatory steps within each phase.
+              </p>
+              <p className="t-small text-[var(--color-ink-3)] mt-1 hidden group-data-[live]/cl:block">
+                Fills as you read.
               </p>
             </div>
           </div>
 
-          <div
-            className="overflow-hidden rounded-[var(--radius-xl)] border border-[var(--color-line)] bg-[var(--color-surface)]"
-            data-reveal
-            style={delay(120)}
-          >
-            {PHASE_ORDER.map((phase, pi) => (
-              <div key={phase}>
-                <div
-                  className={`flex items-center justify-between px-6 py-3 bg-[var(--color-surface-2)] border-b border-[var(--color-line)] ${
-                    pi > 0 ? "border-t" : ""
-                  }`}
-                >
-                  <span className="t-micro">{phase}</span>
-                  <span className="t-data text-[12.5px] text-[var(--color-ink-3)]">
-                    {CHECKLIST_STEPS.filter((s) => s.phase === phase).length} steps
-                  </span>
-                </div>
-                <ol className="list-none m-0 p-0">
-                  {CHECKLIST_STEPS.filter((s) => s.phase === phase).map((s, i) => (
-                    <li
-                      key={s.key}
-                      className="px-6 py-3 border-b border-[var(--color-line)] last:border-b-0 flex gap-3 items-baseline"
-                    >
-                      <span className="t-data text-[13px] text-[var(--color-ink-3)] flex-none w-[22px]">{i + 1}</span>
-                      <span className="t-body flex-1">{s.label}</span>
-                      {s.mandatory && (
-                        <span className="t-small font-medium text-[var(--color-critical-text)] flex-none">
-                          Mandatory
-                        </span>
-                      )}
-                    </li>
-                  ))}
-                </ol>
+          <div>
+            {/* Phones and tablets: the card above is not sticky there, so this is. */}
+            <div
+              aria-hidden
+              className="sticky top-[calc(var(--site-header-h)+8px)] z-[5] mb-3 hidden rounded-[14px] border border-[var(--color-line)] bg-[var(--color-surface)] px-4 pt-2.5 pb-3 shadow-[0_10px_24px_-14px_rgb(6_37_48/0.3)] max-lg:group-data-[live]/cl:block"
+            >
+              <div className="flex justify-between gap-3 text-[13px] font-medium leading-[1.3]">
+                <span data-cl-strip-phase>{PHASE_ORDER[0]}</span>
+                <span className="t-data text-[12.5px] text-[var(--color-ink-3)]">
+                  Step <span data-cl-now>1</span> of {CHECKLIST_STEPS.length}
+                </span>
               </div>
-            ))}
+              <div className="mt-2 h-1 overflow-hidden rounded-[2px] bg-[var(--color-surface-2)]">
+                <i
+                  data-cl-strip-bar
+                  className="block h-full origin-left bg-[var(--color-primary)]"
+                  style={{ transform: "scaleX(0)" }}
+                />
+              </div>
+            </div>
+            <div
+              data-cl-list
+              className="overflow-hidden rounded-[var(--radius-xl)] border border-[var(--color-line)] bg-[var(--color-surface)]"
+              data-reveal
+              style={delay(120)}
+            >
+              {PHASE_ORDER.map((phase, pi) => (
+                <div key={phase}>
+                  <div
+                    className={`flex items-center justify-between px-6 py-3 bg-[var(--color-surface-2)] border-b border-[var(--color-line)] ${
+                      pi > 0 ? "border-t" : ""
+                    }`}
+                  >
+                    <span className="t-micro">{phase}</span>
+                    <span className="t-data text-[12.5px] text-[var(--color-ink-3)]">
+                      {CHECKLIST_STEPS.filter((s) => s.phase === phase).length} steps
+                    </span>
+                  </div>
+                  <ol className="list-none m-0 p-0">
+                    {CHECKLIST_STEPS.filter((s) => s.phase === phase).map((s, i) => (
+                      <li
+                        key={s.key}
+                        data-cl-step
+                        data-cl-phase={phase}
+                        className="group/row px-6 py-3 border-b border-[var(--color-line)] last:border-b-0 flex gap-3 items-baseline transition-colors duration-200 data-[state=current]:bg-[var(--color-primary-soft)]"
+                      >
+                        <span className="t-data relative text-[13px] text-[var(--color-ink-3)] flex-none w-[22px] group-data-[state=current]/row:text-[var(--color-primary-text)]">
+                          <span className="transition-opacity duration-150 group-data-[state=done]/row:opacity-0">
+                            {i + 1}
+                          </span>
+                          <svg
+                            viewBox="0 0 16 16"
+                            aria-hidden
+                            className="absolute left-0 top-1/2 h-4 w-4 -translate-y-1/2 text-[var(--color-primary)] opacity-0 transition-opacity duration-150 group-data-[state=done]/row:opacity-100"
+                          >
+                            <path
+                              d="M3.5 8.5l3 3 6-7"
+                              fill="none"
+                              stroke="currentColor"
+                              strokeWidth="2"
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                            />
+                          </svg>
+                        </span>
+                        <span className="t-body flex-1">{s.label}</span>
+                        {s.mandatory && (
+                          <span className="t-small font-medium text-[var(--color-critical-text)] flex-none">
+                            Mandatory
+                          </span>
+                        )}
+                      </li>
+                    ))}
+                  </ol>
+                </div>
+              ))}
+            </div>
           </div>
-        </div>
+        </ScrollEffect>
       </Section>
 
       {/* ---------------- Reference ranges ---------------- */}

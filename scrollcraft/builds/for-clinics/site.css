@@ -1,0 +1,305 @@
+/* NutriDrip landing, prototype. Brand tokens from src/app/globals.css mapped
+   onto the engine's six roles; everything below them is page styling. The
+   engine's own selectors (.sc-stage, [data-sc-*]) are never restyled. */
+
+:root {
+  --sc-canvas: #ffffff;
+  --sc-surface: #ffffff;
+  --sc-ink: #0a0c0e;
+  --sc-ink-soft: #434a50;
+  --sc-accent: #0a7fa1;
+  --sc-accent-ink: #ffffff;
+  --sc-font-display: "Instrument Sans", system-ui, sans-serif;
+  --sc-font-text: "Inter", system-ui, sans-serif;
+  --sc-font-mono: "Noto Sans Mono", ui-monospace, monospace;
+  /* A light canvas: shadows halved and tinted to the deep teal, edge light white. */
+  --sc-shadow-color: 196 78% 10%;
+  --sc-edge: inset 0 1px 0 rgb(255 255 255 / 0.9);
+
+  --paper: #ffffff;
+  --mist: #f0f7f9;
+  --surface-2: #f5f7f9;
+  --line: #e3e7eb;
+  --line-2: #ccd3da;
+  --ink: #0a0c0e;
+  --ink-2: #434a50;
+  --ink-3: #6b7178;
+  --primary: #0a7fa1;
+  --primary-dark: #086780;
+  --primary-soft: #e4f6fc;
+  --primary-line: #b3e6f3;
+  --primary-text: #06596f;
+  --deep: #062530;
+  --ease-glide: cubic-bezier(0.16, 1, 0.3, 1);
+  --ease-drift: cubic-bezier(0.65, 0, 0.35, 1);
+
+  --gutter: 24px;
+  --capsule-h: 58px;
+  --capsule-gap: 10px;
+  --site-header-h: calc(var(--capsule-h) + var(--capsule-gap));
+  --section-y: clamp(72px, 8.5vw, 128px);
+}
+@media (min-width: 768px) {
+  :root {
+    --gutter: 40px;
+    --capsule-h: 62px;
+    --capsule-gap: 12px;
+  }
+}
+
+body {
+  font-size: 16px;
+  color: var(--ink);
+}
+.wrap {
+  width: 100%;
+  max-width: 1280px;
+  margin-inline: auto;
+  padding-inline: var(--gutter);
+}
+
+/* ------------------------------------------------------------ shared type */
+.h-section {
+  margin: 0;
+  font: 600 clamp(2rem, 1.2rem + 2.6vw, 3.4rem) / 1.04 var(--sc-font-display);
+  letter-spacing: -0.035em;
+  text-wrap: balance;
+  max-width: 18ch;
+}
+.lead {
+  margin: 0;
+  font: 400 clamp(1.03rem, 0.96rem + 0.28vw, 1.19rem) / 1.6 var(--sc-font-text);
+  color: var(--ink-2);
+  max-width: 52ch;
+  text-wrap: pretty;
+}
+.link {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 44px;
+  font: 600 15px/1.2 var(--sc-font-text);
+  color: var(--primary-text);
+  text-decoration: underline;
+  text-decoration-color: color-mix(in srgb, var(--primary) 35%, transparent);
+  text-underline-offset: 0.28em;
+  text-decoration-thickness: 1.5px;
+  transition: text-decoration-color 160ms var(--ease-glide);
+}
+.link:hover {
+  text-decoration-color: currentColor;
+}
+
+/* ----------------------------------------------------------------- buttons
+   A stand-in for the site's own .site .btn rules: teal pill with an arrow
+   circle for the primary, white pill with a hairline for the secondary. */
+.btn {
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 9px;
+  border: 1px solid transparent;
+  border-radius: 999px;
+  font: 600 14.5px/1.25 var(--sc-font-text);
+  text-decoration: none;
+  white-space: nowrap;
+  transition:
+    background-color 0.3s var(--ease-glide),
+    border-color 0.3s var(--ease-glide),
+    color 0.3s var(--ease-glide),
+    translate 0.4s var(--ease-glide),
+    box-shadow 0.4s var(--ease-glide),
+    scale 0.2s var(--ease-glide);
+}
+.btn:active {
+  scale: 0.97;
+}
+.btn--md {
+  min-height: 44px;
+  padding-inline: 16px;
+  font-size: 13px;
+}
+.btn--lg {
+  min-height: 52px;
+  padding-inline: 20px;
+}
+.btn--primary {
+  background: var(--primary);
+  border-color: var(--primary);
+  color: #fff;
+}
+.btn--primary.btn--lg {
+  gap: 14px;
+  padding-right: 6px;
+}
+.btn__arrow {
+  flex: none;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: rgb(255 255 255 / 0.16) no-repeat center / 16px
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20' fill='none' stroke='white' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M3 10h14M12 5l5 5-5 5'/%3E%3C/svg%3E");
+}
+.btn--secondary {
+  background: #fff;
+  border-color: var(--line-2);
+  color: var(--ink);
+}
+@media (hover: hover) {
+  .btn--primary:hover {
+    background: var(--primary-dark);
+    border-color: var(--primary-dark);
+    translate: 0 -1px;
+    box-shadow: 0 14px 28px -14px color-mix(in srgb, var(--primary) 70%, transparent);
+  }
+  .btn--secondary:hover {
+    background: var(--ink);
+    border-color: var(--ink);
+    color: #fff;
+  }
+}
+:focus-visible {
+  outline: 2px solid var(--primary);
+  outline-offset: 3px;
+}
+
+/* ------------------------------------------------------------- the mark */
+.logomark {
+  position: relative;
+  display: inline-block;
+  flex: none;
+  overflow: hidden;
+  width: var(--lm, 24px);
+  height: var(--lm, 24px);
+  border: 1px solid var(--primary-line);
+  border-radius: calc(var(--lm, 24px) / 3);
+  background: var(--primary-soft);
+}
+.logomark i {
+  position: absolute;
+  inset: auto 0 0 0;
+  height: 62%;
+  background: var(--primary);
+}
+.logo {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  text-decoration: none;
+  color: var(--ink);
+}
+.logo__word {
+  font: 600 16px/1 var(--sc-font-display);
+  letter-spacing: -0.01em;
+}
+.logo--light {
+  color: #fff;
+}
+
+/* --------------------------------------------- stand-in header and footer */
+.promo {
+  background: var(--ink);
+  color: rgb(255 255 255 / 0.85);
+}
+.promo__in {
+  max-width: 1280px;
+  margin: 0 auto;
+  padding: 8px var(--gutter);
+  display: flex;
+  gap: 12px;
+  justify-content: center;
+  flex-wrap: wrap;
+  font: 400 13px/1.5 var(--sc-font-text);
+  text-align: center;
+}
+.promo a {
+  color: #7ee3f8;
+  font-weight: 600;
+  text-decoration: none;
+}
+.promo__more {
+  display: none;
+}
+@media (min-width: 640px) {
+  .promo__more {
+    display: inline;
+  }
+}
+.sitehdr {
+  position: sticky;
+  top: 0;
+  z-index: 50;
+  margin-bottom: calc(-1 * var(--site-header-h));
+  padding: var(--capsule-gap) 12px 0;
+  pointer-events: none;
+}
+@media (min-width: 768px) {
+  .sitehdr {
+    padding-inline: 20px;
+  }
+}
+.capsule {
+  pointer-events: auto;
+  max-width: 1240px;
+  margin: 0 auto;
+  height: var(--capsule-h);
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 0 7px 0 16px;
+  background: #fff;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  box-shadow: 0 10px 30px -18px rgb(6 37 48 / 0.35);
+}
+@media (min-width: 768px) {
+  .capsule {
+    padding-left: 24px;
+  }
+}
+.capsule__nav {
+  display: none;
+  gap: 4px;
+  margin-left: 12px;
+}
+.capsule__nav a {
+  padding: 8px 14px;
+  border-radius: 999px;
+  font: 500 14px/1 var(--sc-font-text);
+  color: var(--ink-2);
+  text-decoration: none;
+}
+@media (min-width: 1280px) {
+  .capsule__nav {
+    display: flex;
+  }
+}
+.capsule__end {
+  margin-left: auto;
+  display: flex;
+  gap: 8px;
+}
+.capsule__signin {
+  display: none;
+}
+@media (min-width: 640px) {
+  .capsule__signin {
+    display: inline-flex;
+  }
+}
+.sitefoot {
+  background: var(--ink);
+  color: #949a9f;
+}
+.sitefoot__in {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 24px;
+  flex-wrap: wrap;
+  padding-block: 56px;
+  font-size: 13px;
+}

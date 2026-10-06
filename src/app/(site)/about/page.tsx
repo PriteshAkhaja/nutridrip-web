@@ -14,6 +14,7 @@ import { PageHero } from "@/components/site/PageHero";
 import { SectionHeader, delay } from "@/components/site/Layout";
 import { Photo } from "@/components/site/Photo";
 import { CountUp } from "@/components/site/CountUp";
+import { ScrollEffect } from "@/components/site/scroll/ScrollEffect";
 import { CtaPanel } from "@/components/site/CtaPanel";
 import { Arrow } from "@/components/ui/Arrow";
 
@@ -103,9 +104,13 @@ export default async function AboutPage() {
               A procedure, <span className="tone-2">not a treat.</span>
             </h2>
           </div>
-          <p
+          {/* The mission lights up word by word as it is read (scroll/effects.ts,
+              "lit"); without the script, or under reduced motion, it is simply ink. */}
+          <ScrollEffect
+            effect="lit"
+            as="p"
             className="m-0 text-[var(--color-ink)]"
-            data-reveal
+            data-reveal=""
             style={delay(140, {
               font: "500 clamp(20px, 1.2rem + 0.8vw, 28px)/1.5 var(--font-display)",
               letterSpacing: "-0.015em",
@@ -113,7 +118,7 @@ export default async function AboutPage() {
             })}
           >
             {copy["about.mission"]}
-          </p>
+          </ScrollEffect>
         </div>
       </Section>
 

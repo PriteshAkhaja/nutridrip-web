@@ -1,0 +1,123 @@
+<!doctype html>
+<html lang="en-IN">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <title>NutriDrip · How it works</title>
+    <link rel="icon" href="data:," />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      rel="stylesheet"
+      href="https://fonts.googleapis.com/css2?family=Instrument+Sans:wght@500;600&family=Inter:wght@400;500;600&family=Noto+Sans+Mono:wght@500&display=swap"
+    />
+    <link rel="stylesheet" href="site.css" />
+    <link rel="stylesheet" href="hiw.css" />
+  </head>
+  <body>
+    <header class="sitehdr">
+      <div class="capsule">
+        <a class="logo" href="/" aria-label="NutriDrip home"
+          ><span class="logomark"><i></i></span><span class="logo__word">NutriDrip</span></a
+        >
+        <nav class="capsule__nav" aria-label="Main">
+          <a href="/drips">Drips</a><a href="/how-it-works">How it works</a><a href="/pricing">Pricing</a
+          ><a href="/safety">Safety</a><a href="/zones">Zones</a><a href="/for-clinics">For clinics</a>
+        </nav>
+        <div class="capsule__end"><a class="btn btn--primary btn--md" href="/quiz">Take the quiz</a></div>
+      </div>
+    </header>
+    <main>
+      <section class="ctx">
+        <div class="wrap">
+          <span class="eyebrow">How it works</span>
+          <h1>From the quiz <span class="tone-2">to the report.</span></h1>
+          <p class="t-lead">The hero above stays as it is. The steps below are the one section that changes.</p>
+        </div>
+      </section>
+      <section class="sec" aria-labelledby="hiw-steps" data-steps>
+        <div class="wrap">
+          <div class="head">
+            <span class="eyebrow">Step by step</span>
+            <h2 id="hiw-steps" class="t-section">One session, <span class="tone-2">start to finish.</span></h2>
+          </div>
+          <div class="st st--thread">
+            <div class="st__media">
+              <div class="st__sticky">
+                <div class="frame" data-frame></div>
+                <div class="bars" aria-hidden="true" data-bars></div>
+              </div>
+            </div>
+            <ol class="list" data-st-list>
+              <span class="thread" aria-hidden="true" data-st-thread><i data-st-thread-ink></i></span>
+            </ol>
+          </div>
+        </div>
+      </section>
+      <div style="height: 50vh"></div>
+    </main>
+    <footer class="sitefoot">
+      <div class="wrap sitefoot__in">
+        <a class="logo logo--light" href="/"
+          ><span class="logomark"><i></i></span><span class="logo__word">NutriDrip</span></a
+        >
+        <p>Not a substitute for emergency care. In an emergency call 108.</p>
+      </div>
+    </footer>
+    <script src="gsap.min.js"></script>
+    <script src="ScrollTrigger.min.js"></script>
+    <script src="steps.js"></script>
+    <script>
+      fetch("data/steps.json")
+        .then(function (r) {
+          return r.json();
+        })
+        .then(function (steps) {
+          var esc = function (s) {
+            return String(s).replace(/[&<>"]/g, function (c) {
+              return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c];
+            });
+          };
+          document.querySelector("[data-frame]").innerHTML = steps
+            .map(function (s, i) {
+              return '<img data-st-pic src="media/' + i + '.webp" alt=""' + (i === 0 ? ' class="is-on"' : "") + ">";
+            })
+            .join("");
+          document.querySelector("[data-bars]").innerHTML = steps
+            .map(function (s, i) {
+              return '<span data-st-bar data-on="' + (i === 0 ? 1 : 0) + '"></span>';
+            })
+            .join("");
+          document.querySelector("[data-st-list]").insertAdjacentHTML(
+            "beforeend",
+            steps
+              .map(function (s, i) {
+                return (
+                  '<li class="item' +
+                  (i === 0 ? " is-on" : "") +
+                  '" data-st-item><div class="item__pic"><img src="media/' +
+                  i +
+                  '.webp" alt="" loading="lazy"></div>' +
+                  '<div class="item__top"><span class="dot t-data" data-st-dot>' +
+                  String(i + 1).padStart(2, "0") +
+                  '</span><span class="t-micro">' +
+                  esc(s.kicker) +
+                  "</span></div>" +
+                  "<h3>" +
+                  esc(s.title) +
+                  '</h3><p class="t-lead">' +
+                  esc(s.body) +
+                  "</p>" +
+                  (s.note ? '<p class="t-small note">' + esc(s.note) + "</p>" : "") +
+                  "</li>"
+                );
+              })
+              .join("")
+          );
+          if (!matchMedia("(prefers-reduced-motion: reduce)").matches)
+            mountSteps(document.querySelector("[data-steps]"));
+          document.body.dataset.ready = "1";
+        });
+    </script>
+  </body>
+</html>

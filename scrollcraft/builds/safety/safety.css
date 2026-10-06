@@ -1,0 +1,356 @@
+/* The /safety checklist section, as the live page draws it (Tailwind in
+   src/app/(site)/safety/page.tsx), plus the reading states. */
+:root {
+  --mist: #f0f7f9;
+  --critical-text: #8a2e28;
+  --radius-xl: 24px;
+}
+html {
+  scroll-behavior: auto;
+}
+body {
+  margin: 0;
+  background: #fff;
+  font-family: "Inter", system-ui, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  color: var(--ink);
+}
+* {
+  box-sizing: border-box;
+}
+.sec {
+  padding-block: var(--section-y);
+}
+.sec--mist {
+  background: var(--mist);
+}
+.eyebrow {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  font:
+    600 12px/1.2 "Inter",
+    sans-serif;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--primary-text);
+}
+.eyebrow::before {
+  content: "";
+  width: 18px;
+  height: 1.5px;
+  background: currentColor;
+  opacity: 0.55;
+}
+.t-section {
+  margin: 16px 0 0;
+  font:
+    600 clamp(2rem, 1.2rem + 2.6vw, 3.4rem)/1.04 "Instrument Sans",
+    sans-serif;
+  letter-spacing: -0.037em;
+}
+.tone-2 {
+  color: var(--ink-3);
+}
+.t-lead {
+  margin: 20px 0 0;
+  max-width: 52ch;
+  font:
+    400 clamp(1.03rem, 0.96rem + 0.28vw, 1.19rem)/1.6 "Inter",
+    sans-serif;
+  color: var(--ink-2);
+}
+.t-data {
+  font-family: "Noto Sans Mono", monospace;
+  font-weight: 500;
+  font-variant-numeric: tabular-nums;
+}
+.t-micro {
+  font:
+    500 11.5px/1.4 "Inter",
+    sans-serif;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--ink-3);
+}
+.t-body {
+  font:
+    400 14.5px/1.55 "Inter",
+    sans-serif;
+  margin: 0;
+}
+.t-small {
+  font:
+    400 13px/1.5 "Inter",
+    sans-serif;
+  margin: 0;
+}
+.ctx {
+  padding: calc(var(--site-header-h) + 72px) 0 72px;
+}
+.ctx h1 {
+  margin: 0;
+  font:
+    600 clamp(2.3rem, 1.4rem + 2.8vw, 4rem)/1.02 "Instrument Sans",
+    sans-serif;
+  letter-spacing: -0.042em;
+  max-width: 16ch;
+}
+
+.cl__grid {
+  display: grid;
+  gap: 48px;
+  align-items: start;
+}
+@media (min-width: 1024px) {
+  .cl__grid {
+    grid-template-columns: minmax(0, 0.92fr) minmax(0, 1.08fr);
+    gap: 64px;
+  }
+  .cl__aside {
+    position: sticky;
+    top: calc(var(--site-header-h) + 40px);
+  }
+}
+.card {
+  margin-top: 32px;
+  padding: 24px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-xl);
+  background: #fff;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+@media (min-width: 768px) {
+  .card {
+    padding: 28px;
+  }
+}
+.phase__top {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  margin-bottom: 7px;
+}
+.phase__name {
+  color: var(--ink-2);
+}
+.phase__n {
+  font-size: 13px;
+  line-height: 1.5;
+  color: var(--ink-3);
+}
+.segs {
+  display: flex;
+  gap: 3px;
+}
+.seg {
+  position: relative;
+  flex: 1;
+  height: 8px;
+  border-radius: 2px;
+  overflow: hidden;
+  background: var(--surface-2);
+}
+.seg i {
+  position: absolute;
+  inset: 0;
+  background: var(--primary);
+  transform-origin: 0 50%;
+  transform: scaleX(0);
+}
+/* At rest (no script, reduced motion): the mandatory steps are filled. */
+.seg[data-m="1"] i {
+  transform: scaleX(1);
+}
+.note {
+  color: var(--ink-3);
+  margin-top: 4px;
+}
+.note--live,
+.now,
+.strip {
+  display: none;
+}
+
+.list {
+  overflow: hidden;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-xl);
+  background: #fff;
+}
+.ph {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 24px;
+  background: var(--surface-2);
+  border-bottom: 1px solid var(--line);
+}
+.list ol + .ph {
+  border-top: 1px solid var(--line);
+}
+.list ol {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+.step {
+  display: flex;
+  gap: 12px;
+  align-items: baseline;
+  padding: 12px 24px;
+  border-bottom: 1px solid var(--line);
+}
+.list ol .step:last-child {
+  border-bottom: 0;
+}
+.step__n {
+  position: relative;
+  flex: none;
+  width: 22px;
+  font-size: 13px;
+  color: var(--ink-3);
+}
+.step__label {
+  flex: 1;
+}
+.step__m {
+  flex: none;
+  font-weight: 500;
+  color: var(--critical-text);
+}
+
+/* ---------------------------------------------------------------- live -- */
+/* Live, the bars show one thing, how far you have read: every unfilled
+   segment is the same grey. (The list marks each mandatory step.) */
+.cl--live .seg {
+  background: var(--line-2);
+}
+.cl--live .seg i {
+  transform: scaleX(0);
+}
+.cl--live .note--rest {
+  display: none;
+}
+.cl--live .note--live {
+  display: block;
+}
+.cl--live .now {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+  margin: 0;
+  padding-bottom: 14px;
+  border-bottom: 1px solid var(--line);
+}
+.now b {
+  font:
+    600 22px/1.1 "Instrument Sans",
+    sans-serif;
+  letter-spacing: -0.02em;
+}
+.now > span {
+  color: var(--ink-3);
+}
+
+.step {
+  transition: background-color 220ms var(--ease-glide);
+}
+.step__n .num,
+.step__n .tick {
+  transition: opacity 160ms var(--ease-glide);
+}
+.step__n .tick {
+  position: absolute;
+  left: 0;
+  top: 50%;
+  width: 16px;
+  height: 16px;
+  margin-top: -9px;
+  color: var(--primary);
+  opacity: 0;
+}
+.step[data-state="current"] {
+  background: var(--primary-soft);
+}
+.step[data-state="current"] .step__n {
+  color: var(--primary-text);
+}
+.step[data-state="done"] .num {
+  opacity: 0;
+}
+.step[data-state="done"] .tick {
+  opacity: 1;
+}
+
+/* Phones and tablets: the card is not sticky, so a strip is. */
+@media (max-width: 1023px) {
+  .cl--live .strip {
+    display: block;
+    position: sticky;
+    top: calc(var(--site-header-h) + 8px);
+    z-index: 5;
+    margin-bottom: 12px;
+    padding: 10px 16px 12px;
+    border: 1px solid var(--line);
+    border-radius: 14px;
+    background: #fff;
+    box-shadow: 0 10px 24px -14px rgb(6 37 48 / 0.3);
+  }
+  .strip__top {
+    display: flex;
+    justify-content: space-between;
+    gap: 12px;
+    font:
+      500 13px/1.3 "Inter",
+      sans-serif;
+  }
+  .strip__top .t-data {
+    color: var(--ink-3);
+    font-size: 12.5px;
+  }
+  .strip__bar {
+    margin-top: 8px;
+    height: 4px;
+    border-radius: 2px;
+    background: var(--surface-2);
+    overflow: hidden;
+  }
+  .strip__bar i {
+    display: block;
+    height: 100%;
+    background: var(--primary);
+    transform-origin: 0 50%;
+    transform: scaleX(0);
+  }
+}
+.bands {
+  padding-block: var(--section-y);
+}
+.bands__grid {
+  display: grid;
+  gap: 12px;
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 240px), 1fr));
+  margin-top: 40px;
+}
+.band {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  padding: 16px 20px;
+  border: 1px solid var(--line);
+  border-radius: 16px;
+}
+.band .t-data {
+  font-size: 22px;
+}
+@media (prefers-reduced-motion: reduce) {
+  .step,
+  .step__n .num,
+  .step__n .tick {
+    transition: none;
+  }
+}

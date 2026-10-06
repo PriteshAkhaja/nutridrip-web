@@ -1,0 +1,461 @@
+[
+  {
+    "slug": "hydrate-plus",
+    "name": "Hydrate Plus",
+    "tagline": "Fast rehydration",
+    "category": "Hydration",
+    "volumeMl": 500,
+    "priceInr": 5400,
+    "durationMin": 30,
+    "durationToMin": 40,
+    "isPopular": true,
+    "carrier": {
+      "name": "Ringer lactate",
+      "dose": 500,
+      "unit": "ml"
+    },
+    "items": [
+      {
+        "name": "Electrolyte concentrate",
+        "dose": 20,
+        "unit": "ml",
+        "role": "ACTIVE",
+        "notes": null,
+        "form": "Ampoule",
+        "separate": false
+      },
+      {
+        "name": "Pyridoxine",
+        "dose": 100,
+        "unit": "mg",
+        "role": "ADDITIVE",
+        "notes": null,
+        "form": "Ampoule",
+        "separate": false
+      },
+      {
+        "name": "Ondansetron",
+        "dose": 4,
+        "unit": "mg",
+        "role": "PREMED",
+        "notes": "If nausea present",
+        "form": "Ampoule",
+        "separate": true
+      }
+    ]
+  },
+  {
+    "slug": "jetlag-reset",
+    "name": "Jetlag Reset",
+    "tagline": "Built around travel days",
+    "category": "Energy",
+    "volumeMl": 500,
+    "priceInr": 6800,
+    "durationMin": 30,
+    "durationToMin": 40,
+    "isPopular": false,
+    "carrier": {
+      "name": "Normal saline 0.9%",
+      "dose": 500,
+      "unit": "ml"
+    },
+    "items": [
+      {
+        "name": "Ascorbic acid",
+        "dose": 5000,
+        "unit": "mg",
+        "role": "ACTIVE",
+        "notes": null,
+        "form": "Vial",
+        "separate": false
+      },
+      {
+        "name": "Electrolyte concentrate",
+        "dose": 20,
+        "unit": "ml",
+        "role": "ACTIVE",
+        "notes": null,
+        "form": "Ampoule",
+        "separate": false
+      },
+      {
+        "name": "Pyridoxine",
+        "dose": 100,
+        "unit": "mg",
+        "role": "ADDITIVE",
+        "notes": null,
+        "form": "Ampoule",
+        "separate": false
+      }
+    ]
+  },
+  {
+    "slug": "myers-revive",
+    "name": "Myers' Revive",
+    "tagline": "The default first drip",
+    "category": "Energy",
+    "volumeMl": 500,
+    "priceInr": 8400,
+    "durationMin": 45,
+    "durationToMin": 60,
+    "isPopular": true,
+    "carrier": {
+      "name": "Normal saline 0.9%",
+      "dose": 500,
+      "unit": "ml"
+    },
+    "items": [
+      {
+        "name": "Ascorbic acid",
+        "dose": 7500,
+        "unit": "mg",
+        "role": "ACTIVE",
+        "notes": "Antioxidant load",
+        "form": "Vial",
+        "separate": false
+      },
+      {
+        "name": "Magnesium sulphate",
+        "dose": 1000,
+        "unit": "mg",
+        "role": "ACTIVE",
+        "notes": "Muscle and sleep",
+        "form": "Ampoule",
+        "separate": false
+      },
+      {
+        "name": "B-complex",
+        "dose": 2,
+        "unit": "ml",
+        "role": "ACTIVE",
+        "notes": "Energy metabolism",
+        "form": "Vial",
+        "separate": false
+      },
+      {
+        "name": "Cyanocobalamin",
+        "dose": 1000,
+        "unit": "mcg",
+        "role": "ACTIVE",
+        "notes": "Nerve and blood",
+        "form": "Ampoule",
+        "separate": false
+      },
+      {
+        "name": "Calcium gluconate",
+        "dose": 500,
+        "unit": "mg",
+        "role": "ADDITIVE",
+        "notes": "Electrolyte balance",
+        "form": "Ampoule",
+        "separate": false
+      },
+      {
+        "name": "Pyridoxine",
+        "dose": 100,
+        "unit": "mg",
+        "role": "ADDITIVE",
+        "notes": "Cofactor",
+        "form": "Ampoule",
+        "separate": false
+      }
+    ]
+  },
+  {
+    "slug": "immune-shield",
+    "name": "Immune Shield",
+    "tagline": "High-dose vitamin C",
+    "category": "Immunity",
+    "volumeMl": 500,
+    "priceInr": 9200,
+    "durationMin": 60,
+    "durationToMin": 80,
+    "isPopular": true,
+    "carrier": {
+      "name": "Normal saline 0.9%",
+      "dose": 500,
+      "unit": "ml"
+    },
+    "items": [
+      {
+        "name": "Ascorbic acid",
+        "dose": 15000,
+        "unit": "mg",
+        "role": "ACTIVE",
+        "notes": null,
+        "form": "Vial",
+        "separate": false
+      },
+      {
+        "name": "Zinc sulphate",
+        "dose": 10,
+        "unit": "mg",
+        "role": "ACTIVE",
+        "notes": null,
+        "form": "Ampoule",
+        "separate": false
+      },
+      {
+        "name": "Sodium selenite",
+        "dose": 100,
+        "unit": "mcg",
+        "role": "ACTIVE",
+        "notes": null,
+        "form": "Ampoule",
+        "separate": false
+      }
+    ]
+  },
+  {
+    "slug": "post-viral-rebuild",
+    "name": "Post-viral Rebuild",
+    "tagline": "After the infection clears",
+    "category": "Post-viral",
+    "volumeMl": 500,
+    "priceInr": 9600,
+    "durationMin": 60,
+    "durationToMin": 80,
+    "isPopular": false,
+    "carrier": {
+      "name": "Normal saline 0.9%",
+      "dose": 500,
+      "unit": "ml"
+    },
+    "items": [
+      {
+        "name": "Ascorbic acid",
+        "dose": 10000,
+        "unit": "mg",
+        "role": "ACTIVE",
+        "notes": null,
+        "form": "Vial",
+        "separate": false
+      },
+      {
+        "name": "Alpha-lipoic acid",
+        "dose": 300,
+        "unit": "mg",
+        "role": "ACTIVE",
+        "notes": null,
+        "form": "Ampoule",
+        "separate": false
+      },
+      {
+        "name": "B-complex",
+        "dose": 2,
+        "unit": "ml",
+        "role": "ACTIVE",
+        "notes": null,
+        "form": "Vial",
+        "separate": false
+      },
+      {
+        "name": "Zinc sulphate",
+        "dose": 10,
+        "unit": "mg",
+        "role": "ADDITIVE",
+        "notes": null,
+        "form": "Ampoule",
+        "separate": false
+      }
+    ]
+  },
+  {
+    "slug": "iron-restore",
+    "name": "Iron Restore",
+    "tagline": "Requires recent labs",
+    "category": "Energy",
+    "volumeMl": 500,
+    "priceInr": 9800,
+    "durationMin": 90,
+    "durationToMin": 120,
+    "isPopular": false,
+    "carrier": {
+      "name": "Normal saline 0.9%",
+      "dose": 500,
+      "unit": "ml"
+    },
+    "items": [
+      {
+        "name": "Iron sucrose",
+        "dose": 200,
+        "unit": "mg",
+        "role": "ACTIVE",
+        "notes": null,
+        "form": "Ampoule",
+        "separate": false
+      },
+      {
+        "name": "Ascorbic acid",
+        "dose": 1000,
+        "unit": "mg",
+        "role": "ADDITIVE",
+        "notes": "Aids absorption",
+        "form": "Vial",
+        "separate": false
+      },
+      {
+        "name": "Pheniramine maleate",
+        "dose": 22.75,
+        "unit": "mg",
+        "role": "PREMED",
+        "notes": "Reaction cover",
+        "form": "Ampoule",
+        "separate": true
+      }
+    ]
+  },
+  {
+    "slug": "athletic-recovery",
+    "name": "Athletic Recovery",
+    "tagline": "After the event, not before",
+    "category": "Athletic recovery",
+    "volumeMl": 500,
+    "priceInr": 10200,
+    "durationMin": 55,
+    "durationToMin": 75,
+    "isPopular": false,
+    "carrier": {
+      "name": "Ringer lactate",
+      "dose": 500,
+      "unit": "ml"
+    },
+    "items": [
+      {
+        "name": "Taurine",
+        "dose": 1000,
+        "unit": "mg",
+        "role": "ACTIVE",
+        "notes": null,
+        "form": "Ampoule",
+        "separate": false
+      },
+      {
+        "name": "L-carnitine",
+        "dose": 1000,
+        "unit": "mg",
+        "role": "ACTIVE",
+        "notes": null,
+        "form": "Ampoule",
+        "separate": false
+      },
+      {
+        "name": "Magnesium sulphate",
+        "dose": 1000,
+        "unit": "mg",
+        "role": "ACTIVE",
+        "notes": null,
+        "form": "Ampoule",
+        "separate": false
+      },
+      {
+        "name": "Ascorbic acid",
+        "dose": 5000,
+        "unit": "mg",
+        "role": "ADDITIVE",
+        "notes": null,
+        "form": "Vial",
+        "separate": false
+      }
+    ]
+  },
+  {
+    "slug": "deep-recharge",
+    "name": "Deep Recharge",
+    "tagline": "For sustained fatigue",
+    "category": "Energy",
+    "volumeMl": 500,
+    "priceInr": 10600,
+    "durationMin": 60,
+    "durationToMin": 80,
+    "isPopular": false,
+    "carrier": {
+      "name": "Normal saline 0.9%",
+      "dose": 500,
+      "unit": "ml"
+    },
+    "items": [
+      {
+        "name": "L-carnitine",
+        "dose": 2000,
+        "unit": "mg",
+        "role": "ACTIVE",
+        "notes": null,
+        "form": "Ampoule",
+        "separate": false
+      },
+      {
+        "name": "Taurine",
+        "dose": 1000,
+        "unit": "mg",
+        "role": "ACTIVE",
+        "notes": null,
+        "form": "Ampoule",
+        "separate": false
+      },
+      {
+        "name": "Cyanocobalamin",
+        "dose": 1000,
+        "unit": "mcg",
+        "role": "ACTIVE",
+        "notes": null,
+        "form": "Ampoule",
+        "separate": false
+      },
+      {
+        "name": "B-complex",
+        "dose": 2,
+        "unit": "ml",
+        "role": "ACTIVE",
+        "notes": null,
+        "form": "Vial",
+        "separate": false
+      }
+    ]
+  },
+  {
+    "slug": "glow-protocol",
+    "name": "Glow Protocol",
+    "tagline": "Given as a slow push",
+    "category": "Skin",
+    "volumeMl": 500,
+    "priceInr": 11000,
+    "durationMin": 50,
+    "durationToMin": 70,
+    "isPopular": true,
+    "carrier": {
+      "name": "Normal saline 0.9%",
+      "dose": 500,
+      "unit": "ml"
+    },
+    "items": [
+      {
+        "name": "Glutathione",
+        "dose": 600,
+        "unit": "mg",
+        "role": "ACTIVE",
+        "notes": "Slow IV push",
+        "form": "Vial",
+        "separate": true
+      },
+      {
+        "name": "Ascorbic acid",
+        "dose": 5000,
+        "unit": "mg",
+        "role": "ACTIVE",
+        "notes": null,
+        "form": "Vial",
+        "separate": false
+      },
+      {
+        "name": "Biotin",
+        "dose": 5000,
+        "unit": "mcg",
+        "role": "ADDITIVE",
+        "notes": null,
+        "form": "Ampoule",
+        "separate": false
+      }
+    ]
+  }
+]

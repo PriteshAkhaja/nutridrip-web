@@ -8,6 +8,7 @@ import { DRIP_CATEGORIES } from "@/lib/models/types";
 import { PageHero } from "@/components/site/PageHero";
 import { Container, delay } from "@/components/site/Layout";
 import { DripCard } from "@/components/site/DripCard";
+import { FlipGrid } from "@/components/site/FlipGrid";
 import { CtaPanel } from "@/components/site/CtaPanel";
 import { QuizButton } from "@/components/layout/QuizButton";
 import { ButtonLink } from "@/components/ui/Button";
@@ -83,6 +84,7 @@ export default async function CataloguePage({
               instead of jumping back to the top like a new page would. */}
           <nav
             aria-label="Filter by goal"
+            data-goal-filter
             // The snap padding matches the side padding: a rail snaps its row
             // to the snap edge, and without it the first chip sat flush
             // against the side of a phone.
@@ -141,20 +143,26 @@ export default async function CataloguePage({
               </div>
             </div>
           ) : (
-            <div className="grid grid-cols-1 gap-x-6 gap-y-14 sm:grid-cols-2 lg:grid-cols-3">
+            // A goal filter glides the cards that stay to their new places.
+            <FlipGrid
+              trigger="[data-goal-filter]"
+              className="grid grid-cols-1 gap-x-6 gap-y-14 sm:grid-cols-2 lg:grid-cols-3"
+            >
               {drips.map((d, i) => (
-                <div key={d.slug} data-reveal style={delay((i % 3) * 90)}>
-                  <DripCard
-                    drip={d}
-                    variant="catalogue"
-                    // The first photograph is the page's largest paint: fetch it first.
-                    preload={i === 0}
-                    available={availableByDrip.get(d.id) ?? 0}
-                    sizes="(min-width: 1280px) 390px, (min-width: 1024px) 31vw, (min-width: 640px) 46vw, 92vw"
-                  />
+                <div key={d.slug} data-flip-id={d.slug}>
+                  <div data-reveal style={delay((i % 3) * 90)}>
+                    <DripCard
+                      drip={d}
+                      variant="catalogue"
+                      // The first photograph is the page's largest paint: fetch it first.
+                      preload={i === 0}
+                      available={availableByDrip.get(d.id) ?? 0}
+                      sizes="(min-width: 1280px) 390px, (min-width: 1024px) 31vw, (min-width: 640px) 46vw, 92vw"
+                    />
+                  </div>
                 </div>
               ))}
-            </div>
+            </FlipGrid>
           )}
         </Container>
       </section>

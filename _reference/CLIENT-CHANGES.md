@@ -1336,3 +1336,76 @@ Online payment switches on when the Razorpay keys are added (`.env.example` list
 | 39.1 | Tab closed at Razorpay's success: webhook 200 (twice), payment applied via the webhook, session booked and paid | ✅ |
 | 39.2 | Optimum refunds: setting shown; Razorpay records speed requested "optimum", processed "normal"; patient told 5–7 days, which matches | ✅ |
 | 39.3 | The cancel box's wording: typecheck, lint, Prettier | ✅ (not browser-checked: no paid session left to open it on) |
+
+## 40. The home page opens on the drip assembling itself
+
+**40 (5 Oct): the landing hero is replaced by one scroll-driven act; the header, the footer and every other section of the page are unchanged.**
+
+- **Added — the drip assembles itself as you scroll.** The page opens on the same headline, sub and quiz button, set over Myers' Revive's real containers (ampoules and vials, the form each ingredient's stock arrives in). Scrolling lines them up with their names and doses ("Six ingredients."), draws them one by one into a single point on the brand's deep teal, and the 500 ml NutriDrip bag grows out of it, its label printed with the drip's name and full composition. It fills to 500 ml with the number shown, turns once in the light, and two cards say how long it takes and who is responsible. Then an evening living room rises behind it and the bag lands on a real IV stand's hook, at the last bookable time ("7:00 PM", from the zones' hours and the site's clock setting), with the quiz and "Ask a clinician".
+- **Added — every name, dose, count and time comes from the database.** The drip's composition, each ingredient's container (from its stock lots: the form only, never a batch or expiry), the zone count and the last slot. If Myers' Revive is retired, the first "Most popular" drip assembles instead; with neither, the page shows the previous hero.
+- **Changed — the old hero's star rating ("4.9 · 1,284 verified sessions") and its three-figure row are gone with it**, as agreed (placeholder figures). The 15 min call and the zone count now appear in the act's closing line.
+- **Added — reduced motion:** no scroll animation; three still pictures (the hero, the filled bag with its full composition beside it, the room with the quiz).
+- New dependency: `gsap` (the scroll smoothing). Pictures: kie.ai photographs prepared for the page (`public/images/assembly/`), about 315 KB on first load, the rest loaded when the page is idle.
+
+| # | Test | Result |
+|---|---|---|
+| 40.1 | Typecheck, lint, 687 unit tests | ✅ |
+| 40.2 | The act on localhost:3000 at ten scroll positions, 1440 and 390 wide: every step reads, the bag lands on the hook, no console errors or failed requests | ✅ |
+| 40.3 | Reduced motion: three still frames, no pin | ✅ |
+| 40.4 | Leave the page and come back (client navigation): the act rebuilds once, no duplicates, no errors | ✅ |
+| 40.5 | No sideways scroll at 1440 or 390 | ✅ |
+| 40.6 | 768, 1024 and 1920 on the real route; keyboard order; contrast measured on the room; LCP/CLS on dev and production; a real phone | Not yet checked |
+
+**40, continued (5 Oct): the checks left open above, run in a headless browser.**
+
+- **Fixed — at 1024 wide the opening vials crossed the end of the headline.** They now measure the headline and keep to its right on a wide screen, and below it on a phone or tablet.
+- **Fixed — the closing quiz button and "Ask a clinician" could not be reached with the keyboard.** They were hidden until the room appeared; now they stay in the tab order, and focusing one moves the page to where it shows.
+
+| # | Test | Result |
+|---|---|---|
+| 40.7 | 768, 1024, 1920 wide on the real page, ten scroll positions each: every step reads; the stand and the bag stay in frame | ✅ |
+| 40.8 | Keyboard: header, hero quiz, Browse drips, closing quiz, Ask a clinician, then How it works; each on screen and uncovered when focused | ✅ |
+| 40.9 | Text contrast measured on the real pixels behind each line (production, 1440 and 390): lowest is the teal card's white text at 4.60:1 (the brand button colour, passes); the room's time and line 7.4 to 8.6:1 | ✅ |
+| 40.10 | Speed, production: largest paint 440 ms on desktop, 1.5 s on a phone with the CPU slowed 4x (it is the headline text); layout shift 0.000 on load and after scrolling the act. Dev: 0.9 s and 1.3 s, shift 0.000 | ✅ |
+| 40.11 | Smoothness, wheel-scrolling the act on this PC's graphics (Intel HD 530): median frame 17.5 ms (about 57 fps), 95% of frames under 18.3 ms. Occasional long frames match a page without the act (/how-it-works); the act's own cost is one 70 to 90 ms frame as the bag first appears | ✅ |
+| 40.12 | A real phone (iOS Safari scrolling and toolbar) | Not checked: needs a device |
+
+## 41. GSAP where it helps, and only there
+
+**41 (6 Oct):** GSAP is used for two more things. Everything else on the site keeps its existing CSS motion (entrances, the trust strip, counters, hovers): those run before the page's scripts load, which keeps the first screen fast.
+
+- **Added — every drip page assembles its own drip.** On `/drips/[slug]`, between the price card and "The formula", that drip's own ingredients, in the containers their stock arrives in ("Two ingredients.", "Six ingredients.", from the data), collapse into the point and become its labelled bag, which fills, turns, and lands on the stand in the room at the last bookable time with "Take the quiz to book this". The same component as the home page, opening on the row of containers rather than on a headline.
+- **Added — an ingredient given separately stays separate.** A pre-med or a push (Glow Protocol's glutathione, Hydrate Plus's ondansetron) does not go into the bag: it parks beside it (below it on a phone), captioned "Given separately", and is not printed on the bag's label. Screen readers get it in the composition list as "given separately".
+- **Changed — the phone booking bar steps aside while the assembly is on screen**, which carries its own quiz button; it returns after it, and still hides at the closing call to action.
+- **Added — filtering the catalogue by goal glides the cards.** On `/drips`, the cards that stay move to their new places instead of jumping, and new ones rise in (GSAP Flip). The filters are still links: shareable URLs that work without JavaScript. Nothing moves under reduced motion.
+- **Not changed — "How it works" step pictures** keep their CSS crossfade: a scroll-scrubbed version would cost more than it adds.
+
+| # | Test | Result |
+|---|---|---|
+| 41.1 | Typecheck, lint, Prettier, 687 unit tests | ✅ |
+| 41.2 | `/drips/myers-revive` at 1440 and `/drips/glow-protocol` at 390 and 1440, ten scroll positions each: the act reads, glutathione stays beside or below the bag captioned "Given separately", no console errors | ✅ |
+| 41.3 | Phone booking bar on `/drips/myers-revive`: hidden at the price card, hidden in the act, shown after it, hidden at the closing call to action | ✅ |
+| 41.4 | `/drips`, click "Energy": the URL changes, the four Energy cards glide to their places, no errors | ✅ |
+| 41.5 | The home page's act after these changes: unchanged | ✅ |
+| 41.6 | A real phone | Not checked: needs a device |
+
+## 42. One scroll moment on each story page, and reloads start at the top
+
+**42 (6 Oct):** each of the four story pages gets one moment that follows the reader; every other section of each page is unchanged. Without JavaScript, or with reduced motion, each section is exactly as before.
+
+- **Added — /safety: the checklist works itself through as you read it.** Steps tick as you pass them, the step being read is highlighted, and the card's four phase bars fill segment by segment ("Step 13 of 29"). On a phone, a slim strip under the header keeps the phase and the count.
+- **Added — /how-it-works: a thread draws down through the seven steps.** The numbered circles sit in a margin and fill as the thread reaches them; the picture beside the steps cross-dissolves in time with it. The home page's "How it works" is unchanged.
+- **Added — /for-clinics: the price splits as you scroll.** A bar for the whole session price (₹8,400) sits on top of the economics card; each share slides into its own row and lands on its bar. The whole bar is never shown empty.
+- **Added — /about: the mission statement lights up word by word as you read it.** Works on whatever text is set in the content editor.
+- **Changed — reloading a public page starts at the top.** Browsers normally reopen a reloaded page where you were, which on these pages meant halfway through an animation. Back and Forward still return you to where you were, a link to a section (e.g. `/for-clinics#enquire`) still opens there, and the staff consoles keep the normal behaviour.
+
+| # | Test | Result |
+|---|---|---|
+| 42.1 | Typecheck, lint, Prettier, 687 unit tests | ✅ |
+| 42.2 | Each moment on the real page at several scroll positions (1440; /safety also at 390): every step reads, no console errors | ✅ |
+| 42.3 | Reduced motion on all four pages: no animation, sections as before (/safety's card shows its 26 mandatory segments filled; /for-clinics' whole bar shows its three shares) | ✅ |
+| 42.4 | Reload halfway down `/`, `/safety` and `/drips/myers-revive`: starts at the top (was 8,443, 3,409 and 7,230 px down) | ✅ |
+| 42.5 | Back after leaving a page: `/safety` returned to 1,800 px, where it was left. Back within the site after opening a drip from `/drips`: returns to the same point as before this change | ✅ |
+| 42.6 | Reload `/for-clinics#enquire`: opens at the enquiry form | ✅ |
+| 42.7 | Home page's "How it works": still the plain version | ✅ |
+| 42.8 | Speed numbers for these four pages; a real phone | Not checked |

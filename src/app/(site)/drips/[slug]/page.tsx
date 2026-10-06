@@ -22,6 +22,12 @@ import { DripCard } from "@/components/site/DripCard";
 import { CtaPanel } from "@/components/site/CtaPanel";
 import { MobileBookBar } from "@/components/site/MobileBookBar";
 import { IconBox, IconCheck, IconDrop } from "@/components/site/Icons";
+import { DripAssembly } from "@/components/site/scroll/DripAssembly";
+import { getAssemblyDrip, lastBookableSlot } from "@/lib/data/assembly";
+import { getContent } from "@/lib/content";
+import { servedZones } from "@/lib/zones";
+import { getClockFormat } from "@/lib/settings/clock";
+import { clockOf } from "@/lib/time";
 
 export const dynamic = "force-dynamic";
 
@@ -52,7 +58,16 @@ export default async function DripDetailPage({ params }: { params: Promise<{ slu
   // Everything that does not depend on the drip is read alongside it, so the
   // page waits on two rounds of queries rather than three. latePolicy: the
   // late-change rule, with today's fees (set on the Billing page).
-  const [drip, latePolicy, zones, all] = await Promise.all([getDrip(slug), getLatePolicy(), getZones(), listDrips()]);
+  const [drip, latePolicy, zones, all, assembly, lastSlot, clockFormat, copy] = await Promise.all([
+    getDrip(slug),
+    getLatePolicy(),
+    getZones(),
+    listDrips(),
+    getAssemblyDrip(slug),
+    lastBookableSlot(),
+    getClockFormat(),
+    getContent(),
+  ]);
   if (!drip) notFound();
 
   const { results } = await checkAvailability([{ dripId: drip.id, quantity: 1 }], true);
@@ -293,6 +308,32 @@ export default async function DripDetailPage({ params }: { params: Promise<{ slu
           </div>
         </Container>
       </section>
+
+      {/* ================= THE DRIP ASSEMBLES ITSELF ================= */}
+      {/* Its own ingredients, in the containers their stock arrives in, become
+          this drip's bag. Opens on the spread (the hero above is the page's own). */}
+      {assembly ? (
+        <DripAssembly
+          id="assembly"
+          drip={assembly}
+          zones={servedZones(zones).length}
+          lastSlot={lastSlot ? clockOf(lastSlot, clockFormat) : null}
+          call={`${copy["home.stat2.value"]} ${copy["home.stat2.label"]}`}
+          actions={
+            <>
+              <QuizButton drip={drip.slug} size="lg">
+                Take the quiz to book this
+              </QuizButton>
+              <Link
+                href="/consult"
+                className="t-body inline-flex min-h-[44px] items-center font-semibold text-white underline decoration-white/45 underline-offset-[0.28em] hover:text-white"
+              >
+                Ask a clinician
+              </Link>
+            </>
+          }
+        />
+      ) : null}
 
       {/* ================= THE FORMULA ================= */}
       <Section tone="mist" id="formula" labelledBy="formula-title">
@@ -552,7 +593,7 @@ export default async function DripDetailPage({ params }: { params: Promise<{ slu
       )}
 
       {/* ================= PHONE BOOKING BAR ================= */}
-      <MobileBookBar targetId="book-card" hideWhenId="drip-cta">
+      <MobileBookBar targetId="book-card" hideWhenId="drip-cta" asideWhileId="assembly">
         <div className="flex min-w-0 flex-col">
           <span className="t-small text-[var(--color-ink-3)] truncate">{drip.name}</span>
           <span className="t-data text-[18px] leading-tight text-[var(--color-ink)]">{formatInr(drip.priceInr)}</span>

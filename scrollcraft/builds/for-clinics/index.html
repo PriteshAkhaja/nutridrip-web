@@ -1,0 +1,322 @@
+<!doctype html>
+<html lang="en-IN">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <title>NutriDrip · For clinics</title>
+    <link rel="icon" href="data:," />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      rel="stylesheet"
+      href="https://fonts.googleapis.com/css2?family=Instrument+Sans:wght@500;600&family=Inter:wght@400;500;600&family=Noto+Sans+Mono:wght@500&display=swap"
+    />
+    <link rel="stylesheet" href="site.css" />
+    <style>
+      :root {
+        --mist: #f0f7f9;
+        --radius-xl: 24px;
+      }
+      html {
+        scroll-behavior: auto;
+      }
+      body {
+        margin: 0;
+        background: #fff;
+        font-family: "Inter", system-ui, sans-serif;
+        -webkit-font-smoothing: antialiased;
+        color: var(--ink);
+      }
+      * {
+        box-sizing: border-box;
+      }
+      .eyebrow {
+        display: inline-flex;
+        align-items: center;
+        gap: 10px;
+        font:
+          600 12px/1.2 "Inter",
+          sans-serif;
+        letter-spacing: 0.14em;
+        text-transform: uppercase;
+        color: var(--primary-text);
+      }
+      .eyebrow::before {
+        content: "";
+        width: 18px;
+        height: 1.5px;
+        background: currentColor;
+        opacity: 0.55;
+      }
+      .t-section {
+        margin: 16px 0 0;
+        font:
+          600 clamp(2rem, 1.2rem + 2.6vw, 3.4rem)/1.04 "Instrument Sans",
+          sans-serif;
+        letter-spacing: -0.037em;
+        max-width: 19ch;
+      }
+      .tone-2 {
+        color: var(--ink-3);
+      }
+      .t-data {
+        font-family: "Noto Sans Mono", monospace;
+        font-weight: 500;
+        font-variant-numeric: tabular-nums;
+      }
+      .t-body {
+        font:
+          400 14.5px/1.55 "Inter",
+          sans-serif;
+        margin: 0;
+      }
+      .t-small {
+        font:
+          400 13px/1.5 "Inter",
+          sans-serif;
+        margin: 0;
+      }
+      .ctx {
+        padding: calc(var(--site-header-h) + 72px) 0 72px;
+      }
+      .ctx h1 {
+        margin: 0;
+        font:
+          600 clamp(2.3rem, 1.4rem + 2.8vw, 4rem)/1.02 "Instrument Sans",
+          sans-serif;
+        letter-spacing: -0.042em;
+        max-width: 18ch;
+      }
+      .sec {
+        padding-block: var(--section-y);
+        background: var(--mist);
+      }
+      .grid {
+        display: grid;
+        gap: 48px;
+        align-items: center;
+      }
+      @media (min-width: 1024px) {
+        .grid {
+          grid-template-columns: minmax(0, 1.05fr) minmax(0, 0.95fr);
+          gap: 64px;
+        }
+      }
+      .head {
+        margin-bottom: 40px;
+      }
+      .photo img {
+        width: 100%;
+        aspect-ratio: 4 / 3.3;
+        object-fit: cover;
+        border-radius: 32px;
+        display: block;
+      }
+      @media (min-width: 1024px) {
+        .photo img {
+          aspect-ratio: 4 / 4.6;
+        }
+      }
+
+      /* The economics card, as FillBar draws it, plus the whole bar on top. */
+      .card {
+        position: relative;
+        padding: 24px;
+        border: 1px solid var(--line);
+        border-radius: var(--radius-xl);
+        background: #fff;
+      }
+      @media (min-width: 768px) {
+        .card {
+          padding: 32px;
+        }
+      }
+      .rows {
+        display: flex;
+        flex-direction: column;
+        gap: 24px;
+      }
+      .row__top {
+        display: flex;
+        align-items: baseline;
+        justify-content: space-between;
+        gap: 16px;
+        margin-bottom: 7px;
+      }
+      .row__label {
+        display: flex;
+        flex-direction: column;
+        min-width: 0;
+        color: var(--ink-2);
+      }
+      .row__label b {
+        font-weight: 500;
+        color: var(--ink);
+      }
+      .row__label span {
+        color: var(--ink-3);
+      }
+      .row__value {
+        flex: none;
+        white-space: nowrap;
+        font-size: 14.5px;
+        line-height: 1.55;
+      }
+      .track {
+        position: relative;
+        height: 8px;
+        border-radius: 999px;
+        overflow: hidden;
+        background: var(--surface-2);
+      }
+      .track > i {
+        position: absolute;
+        top: 0;
+        bottom: 0;
+        left: 0;
+        border-radius: 999px;
+      }
+      .whole {
+        padding-bottom: 24px;
+        margin-bottom: 24px;
+        border-bottom: 1px solid var(--line);
+      }
+      /* At rest (no script, reduced motion): the whole bar shows its three shares. */
+      .whole .track {
+        display: flex;
+        gap: 2px;
+        background: transparent;
+      }
+      .whole .track > i {
+        position: static;
+        flex: none;
+        height: 100%;
+      }
+      .note {
+        margin-top: 24px;
+        padding-top: 20px;
+        border-top: 1px solid var(--line);
+        color: var(--ink-3);
+      }
+      /* Live: the pieces carry the colour; the rows' own fills wait underneath. */
+      /* Live: the rows' own fills wait underneath the pieces that land on them.
+     The whole bar keeps its shares (it is never shown empty beside ₹8,400). */
+      .split--live .rows .track > i {
+        visibility: hidden;
+      }
+      .split__piece {
+        position: absolute;
+        border-radius: 999px;
+        will-change: transform;
+        pointer-events: none;
+      }
+    </style>
+  </head>
+  <body>
+    <header class="sitehdr">
+      <div class="capsule">
+        <a class="logo" href="/" aria-label="NutriDrip home"
+          ><span class="logomark"><i></i></span><span class="logo__word">NutriDrip</span></a
+        >
+        <nav class="capsule__nav" aria-label="Main">
+          <a href="/drips">Drips</a><a href="/how-it-works">How it works</a><a href="/pricing">Pricing</a
+          ><a href="/safety">Safety</a><a href="/zones">Zones</a><a href="/for-clinics">For clinics</a>
+        </nav>
+        <div class="capsule__end"><a class="btn btn--primary btn--md" href="/quiz">Take the quiz</a></div>
+      </div>
+    </header>
+    <main>
+      <section class="ctx">
+        <div class="wrap">
+          <span class="eyebrow">For clinics</span>
+          <h1>Run IV therapy <span class="tone-2">without running a pharmacy.</span></h1>
+          <p class="t-body" style="margin-top: 20px; max-width: 60ch; color: var(--ink-2)">
+            The hero and "What you get" stay as they are. The economics card below is the one section that changes; the
+            onboarding weeks after it stay as they are.
+          </p>
+        </div>
+      </section>
+      <section class="sec" aria-labelledby="clinics-economics">
+        <div class="wrap grid">
+          <div>
+            <div class="head">
+              <span class="eyebrow">The economics</span>
+              <h2 id="clinics-economics" class="t-section">
+                Where a session's <span class="tone-2">₹8,400 goes.</span>
+              </h2>
+            </div>
+            <div class="card" data-split>
+              <div class="whole">
+                <div class="row__top">
+                  <span class="row__label t-body"
+                    ><b>A typical session</b><span class="t-small">Myers' Revive, the usual first drip</span></span
+                  ><span class="row__value t-data">₹8,400</span>
+                </div>
+                <div class="track" data-split-whole role="img" aria-label="₹8,400, split as below">
+                  <i style="width: calc(38% - 1.4px); background: var(--primary)"></i
+                  ><i style="width: calc(35% - 1.4px); background: var(--primary-line)"></i
+                  ><i style="width: calc(27% - 1.4px); background: var(--line-2)"></i>
+                </div>
+              </div>
+              <div class="rows">
+                <div data-split-row data-pct="38" data-color="var(--primary)">
+                  <div class="row__top">
+                    <span class="row__label t-body"
+                      ><b>Your margin per session</b
+                      ><span class="t-small">38%: room, staff time and aftercare</span></span
+                    ><span class="row__value t-data">₹3,200</span>
+                  </div>
+                  <div class="track" data-split-track role="img" aria-label="Your margin per session: ₹3,200">
+                    <i style="width: 38%; background: var(--primary)"></i>
+                  </div>
+                </div>
+                <div data-split-row data-pct="35" data-color="var(--primary-line)">
+                  <div class="row__top">
+                    <span class="row__label t-body"
+                      ><b>Consumables and drug cost</b><span class="t-small">Billed at cost on your order</span></span
+                    ><span class="row__value t-data">₹2,900</span>
+                  </div>
+                  <div class="track" data-split-track role="img" aria-label="Consumables and drug cost: ₹2,900">
+                    <i style="width: 35%; background: var(--primary-line)"></i>
+                  </div>
+                </div>
+                <div data-split-row data-pct="27" data-color="var(--line-2)">
+                  <div class="row__top">
+                    <span class="row__label t-body"
+                      ><b>Platform and physician review</b><span class="t-small">Our share: no monthly fee</span></span
+                    ><span class="row__value t-data">₹2,300</span>
+                  </div>
+                  <div class="track" data-split-track role="img" aria-label="Platform and physician review: ₹2,300">
+                    <i style="width: 27%; background: var(--line-2)"></i>
+                  </div>
+                </div>
+              </div>
+              <p class="t-small note">
+                Indicative, on the current list price. Your agreement fixes the split for twelve months.
+              </p>
+            </div>
+          </div>
+          <div class="photo">
+            <img src="media/pharmacist.jpg" alt="A pharmacist smiling as she takes a box down from a stocked shelf" />
+          </div>
+        </div>
+      </section>
+      <div style="height: 60vh"></div>
+    </main>
+    <footer class="sitefoot">
+      <div class="wrap sitefoot__in">
+        <a class="logo logo--light" href="/"
+          ><span class="logomark"><i></i></span><span class="logo__word">NutriDrip</span></a
+        >
+        <p>Not a substitute for emergency care. In an emergency call 108.</p>
+      </div>
+    </footer>
+    <script src="gsap.min.js"></script>
+    <script src="ScrollTrigger.min.js"></script>
+    <script src="split.js"></script>
+    <script>
+      if (!matchMedia("(prefers-reduced-motion: reduce)").matches) mountSplit(document.querySelector("[data-split]"));
+      document.body.dataset.ready = "1";
+    </script>
+  </body>
+</html>

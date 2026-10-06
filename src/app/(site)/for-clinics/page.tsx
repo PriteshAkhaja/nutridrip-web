@@ -10,6 +10,7 @@ import { PageHero } from "@/components/site/PageHero";
 import { SectionHeader, delay } from "@/components/site/Layout";
 import { Photo } from "@/components/site/Photo";
 import { CountUp } from "@/components/site/CountUp";
+import { ScrollEffect } from "@/components/site/scroll/ScrollEffect";
 
 export const dynamic = "force-dynamic";
 
@@ -79,8 +80,18 @@ const FAQ = [
   },
 ];
 
+/** Each share's colour, the same in the whole bar and in its own row. */
+function shareColor(label: string) {
+  return label.includes("margin")
+    ? "var(--color-primary)"
+    : label.includes("Consumables")
+      ? "var(--color-primary-line)"
+      : "var(--color-line-2)";
+}
+
 export default async function ForClinicsPage() {
   const total = ECONOMICS[0].value;
+  const [whole, ...shares] = ECONOMICS;
   const protocols = (await listDrips()).length;
 
   const figures = [
@@ -169,37 +180,69 @@ export default async function ForClinicsPage() {
               }
               className="md:mb-10"
             />
-            <div
-              className="rounded-[var(--radius-xl)] border border-[var(--color-line)] bg-[var(--color-surface)] p-6 md:p-8"
-              data-reveal
+            {/* The price splits as you scroll (scroll/effects.ts, "split"): the
+                whole session price sits on top, and each share slides into its
+                own row, landing on that row's bar. Without the script, or under
+                reduced motion, the whole bar simply shows its three shares. */}
+            <ScrollEffect
+              effect="split"
+              className="group/split relative rounded-[var(--radius-xl)] border border-[var(--color-line)] bg-[var(--color-surface)] p-6 md:p-8"
+              data-reveal=""
             >
+              <div className="mb-6 border-b border-[var(--color-line)] pb-6">
+                <div className="flex items-baseline justify-between gap-4 mb-[7px]">
+                  <span className="t-body flex min-w-0 flex-col">
+                    <span className="text-[var(--color-ink)] font-medium">{whole.label}</span>
+                    <span className="t-small text-[var(--color-ink-3)]">{whole.note}</span>
+                  </span>
+                  <span className="t-data text-[14.5px] leading-[1.55] whitespace-nowrap flex-none">
+                    {formatInr(whole.value)}
+                  </span>
+                </div>
+                <div
+                  data-split-whole
+                  className="flex h-2 gap-[2px]"
+                  role="img"
+                  aria-label={`${formatInr(whole.value)}, split as below`}
+                >
+                  {shares.map((e) => (
+                    <i
+                      key={e.label}
+                      className="block h-full rounded-full"
+                      style={{ width: `calc(${e.pct}% - 1.4px)`, background: shareColor(e.label) }}
+                    />
+                  ))}
+                </div>
+              </div>
               <div className="flex flex-col gap-6">
-                {ECONOMICS.slice(1).map((e) => (
-                  <FillBar
+                {shares.map((e) => (
+                  <div
                     key={e.label}
-                    label={
-                      <span className="flex flex-col">
-                        <span className="text-[var(--color-ink)] font-medium">{e.label}</span>
-                        <span className="t-small text-[var(--color-ink-3)]">{e.note}</span>
-                      </span>
-                    }
-                    value={formatInr(e.value)}
-                    pct={e.pct}
-                    height={8}
-                    color={
-                      e.label.includes("margin")
-                        ? "var(--color-primary)"
-                        : e.label.includes("Consumables")
-                          ? "var(--color-primary-line)"
-                          : "var(--color-line-2)"
-                    }
-                  />
+                    data-split-row
+                    data-pct={String(e.pct)}
+                    data-color={shareColor(e.label)}
+                    // While the split runs, the row's own fill waits under the share that lands on it.
+                    className="group-data-[live]/split:[&_[role=img]>div]:invisible"
+                  >
+                    <FillBar
+                      label={
+                        <span className="flex flex-col">
+                          <span className="text-[var(--color-ink)] font-medium">{e.label}</span>
+                          <span className="t-small text-[var(--color-ink-3)]">{e.note}</span>
+                        </span>
+                      }
+                      value={formatInr(e.value)}
+                      pct={e.pct}
+                      height={8}
+                      color={shareColor(e.label)}
+                    />
+                  </div>
                 ))}
               </div>
               <p className="t-small text-[var(--color-ink-3)] mt-6 pt-5 border-t border-[var(--color-line)]">
                 Indicative, on the current list price. Your agreement fixes the split for twelve months.
               </p>
-            </div>
+            </ScrollEffect>
           </div>
           <Photo
             image={SITE_IMAGES.pharmacist}

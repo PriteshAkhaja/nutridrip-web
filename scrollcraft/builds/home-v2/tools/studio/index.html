@@ -1,0 +1,624 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <title>Studio</title>
+    <style>
+      html,
+      body {
+        margin: 0;
+        background: #222;
+      }
+      canvas {
+        display: block;
+      }
+    </style>
+    <script type="importmap">
+      {
+        "imports": {
+          "three": "/node_modules/three/build/three.module.js",
+          "three/": "/node_modules/three/",
+          "three/examples/jsm/": "/node_modules/three/examples/jsm/",
+          "three-mesh-bvh": "/node_modules/three-mesh-bvh/src/index.js",
+          "three-gpu-pathtracer": "/node_modules/three-gpu-pathtracer/src/index.js"
+        }
+      }
+    </script>
+  </head>
+  <body>
+    <script type="module">
+      // A path-traced product studio for the assembly's containers and bag.
+      // Everything is modelled to size in centimetres and lit like studio glass:
+      // a bright sweep behind (bright field), black flags at the sides drawing the
+      // glass edges dark, a softbox key from the upper left and a strip on the right.
+      //
+      //   ?subject=containers|bag   &fill=1|0   &w=2400&h=1350   &samples=600   &rig=a|b
+      import * as THREE from "three";
+      import { WebGLPathTracer } from "three-gpu-pathtracer";
+
+      const q = new URLSearchParams(location.search);
+      const subject = q.get("subject") ?? "containers";
+      const W = Number(q.get("w") ?? 1200),
+        H = Number(q.get("h") ?? 675);
+      const SAMPLES = Number(q.get("samples") ?? 200);
+      const FILL = q.get("fill") !== "0";
+      const RIG = q.get("rig") ?? "a";
+
+      const renderer = new THREE.WebGLRenderer({ preserveDrawingBuffer: true, antialias: false });
+      renderer.setPixelRatio(1);
+      renderer.setSize(W, H);
+      renderer.toneMapping = THREE.NeutralToneMapping;
+      renderer.toneMappingExposure = Number(q.get("exposure") ?? 1);
+      renderer.outputColorSpace = THREE.SRGBColorSpace;
+      document.body.append(renderer.domElement);
+
+      const scene = new THREE.Scene();
+      scene.background = new THREE.Color(0x000000);
+      scene.environment = null;
+
+      // ---------------------------------------------------------------- materials
+      const M = {
+        glass: new THREE.MeshPhysicalMaterial({
+          color: 0xffffff,
+          metalness: 0,
+          roughness: 0.0,
+          transmission: 1,
+          ior: 1.5,
+          thickness: 1,
+        }),
+        liquid: new THREE.MeshPhysicalMaterial({
+          color: 0xffffff,
+          metalness: 0,
+          roughness: 0.0,
+          transmission: 1,
+          ior: 1.333,
+          thickness: 1,
+        }),
+        film: new THREE.MeshPhysicalMaterial({
+          color: 0xffffff,
+          metalness: 0,
+          roughness: 0.06,
+          transmission: 1,
+          ior: 1.45,
+          thickness: 0,
+          side: THREE.DoubleSide,
+        }),
+        frosted: new THREE.MeshPhysicalMaterial({
+          color: 0xffffff,
+          metalness: 0,
+          roughness: 0.42,
+          transmission: 0.92,
+          ior: 1.46,
+          thickness: 0.3,
+        }),
+        paper: new THREE.MeshPhysicalMaterial({
+          color: 0xf2f2ef,
+          metalness: 0,
+          roughness: 0.82,
+          side: THREE.DoubleSide,
+        }),
+        print: new THREE.MeshPhysicalMaterial({
+          color: 0xf4f4f2,
+          metalness: 0,
+          roughness: 0.45,
+          side: THREE.DoubleSide,
+        }),
+        rubber: new THREE.MeshPhysicalMaterial({ color: 0x8b9095, metalness: 0, roughness: 0.62 }),
+        alu: new THREE.MeshPhysicalMaterial({ color: 0xcfd3d7, metalness: 1, roughness: 0.32 }),
+        cap: new THREE.MeshPhysicalMaterial({
+          color: 0xf3f3f1,
+          metalness: 0,
+          roughness: 0.38,
+          clearcoat: 0.3,
+          clearcoatRoughness: 0.3,
+        }),
+        capPlastic: new THREE.MeshPhysicalMaterial({ color: 0xf1f1ee, metalness: 0, roughness: 0.5 }),
+        floor: new THREE.MeshPhysicalMaterial({
+          color: 0xd9dbdd,
+          metalness: 0,
+          roughness: 0.32,
+          specularIntensity: 0.6,
+        }),
+        flag: new THREE.MeshBasicMaterial({ color: 0x000000 }),
+        sweep: new THREE.MeshBasicMaterial({ color: 0xffffff }),
+      };
+
+      // ---------------------------------------------------------------- helpers
+      const lathe = (pts, mat, seg = 160) => {
+        const g = new THREE.LatheGeometry(
+          pts.map(([r, y]) => new THREE.Vector2(r, y)),
+          seg
+        );
+        g.computeVertexNormals();
+        return new THREE.Mesh(g, mat);
+      };
+      // Smooth a polyline profile with Catmull-Rom so lathed glass has no facets.
+      const smooth = (pts, n = 6) => {
+        const v = pts.map(([r, y]) => new THREE.Vector2(r, y));
+        const out = [];
+        for (let i = 0; i < v.length - 1; i++) {
+          const p0 = v[Math.max(0, i - 1)],
+            p1 = v[i],
+            p2 = v[i + 1],
+            p3 = v[Math.min(v.length - 1, i + 2)];
+          for (let k = 0; k < n; k++) {
+            const t = k / n,
+              t2 = t * t,
+              t3 = t2 * t;
+            const c = (a, b, cc, d) =>
+              0.5 * (2 * b + (-a + cc) * t + (2 * a - 5 * b + 4 * cc - d) * t2 + (-a + 3 * b - 3 * cc + d) * t3);
+            out.push([Math.max(0, c(p0.x, p1.x, p2.x, p3.x)), c(p0.y, p1.y, p2.y, p3.y)]);
+          }
+        }
+        out.push(pts[pts.length - 1]);
+        return out;
+      };
+
+      // ---------------------------------------------------------------- vial (10 ml)
+      function vial() {
+        const g = new THREE.Group();
+        const outer = smooth(
+          [
+            [0, 0.06],
+            [0.9, 0.0],
+            [1.14, 0.05],
+            [1.2, 0.22],
+            [1.2, 3.5],
+            [1.14, 3.86],
+            [0.92, 4.08],
+            [0.81, 4.22],
+            [0.8, 4.34],
+          ],
+          5
+        );
+        const lip = [
+          [0.86, 4.38],
+          [1.03, 4.44],
+          [1.05, 4.74],
+          [0.97, 4.82],
+          [0.64, 4.82],
+        ];
+        const inner = smooth(
+          [
+            [0.62, 4.8],
+            [0.62, 4.3],
+            [0.72, 4.12],
+            [0.98, 3.92],
+            [1.1, 3.6],
+            [1.1, 0.26],
+            [1.0, 0.14],
+            [0, 0.17],
+          ],
+          5
+        );
+        g.add(lathe([...outer, ...lip, ...inner], M.glass));
+        const fillY = 3.0;
+        g.add(
+          lathe(
+            smooth(
+              [
+                [0, 0.19],
+                [0.98, 0.19],
+                [1.09, 0.3],
+                [1.092, fillY + 0.03],
+                [1.04, fillY + 0.005],
+                [0, fillY],
+              ],
+              4
+            ),
+            M.liquid
+          )
+        );
+        // Stopper in the neck, flange on the lip.
+        g.add(
+          lathe(
+            [
+              [0, 4.25],
+              [0.6, 4.25],
+              [0.6, 4.84],
+              [1.0, 4.84],
+              [1.0, 4.96],
+              [0, 4.96],
+            ],
+            M.rubber,
+            96
+          )
+        );
+        // Aluminium crimp, its top rolled over the flange.
+        g.add(
+          lathe(
+            smooth(
+              [
+                [0.6, 5.0],
+                [0.98, 5.0],
+                [1.08, 4.95],
+                [1.085, 4.5],
+                [1.04, 4.36],
+                [1.0, 4.38],
+                [1.05, 4.52],
+                [1.05, 4.92],
+                [0.96, 4.97],
+                [0.6, 4.97],
+              ],
+              3
+            ),
+            M.alu,
+            128
+          )
+        );
+        // Flip-off cap.
+        g.add(
+          lathe(
+            smooth(
+              [
+                [0, 5.0],
+                [1.06, 5.0],
+                [1.1, 5.06],
+                [1.1, 5.3],
+                [1.07, 5.4],
+                [0.98, 5.44],
+                [0, 5.44],
+              ],
+              3
+            ),
+            M.cap,
+            128
+          )
+        );
+        // Wrap label: most of the way round, its seam at the back.
+        const lab = new THREE.Mesh(
+          new THREE.CylinderGeometry(1.214, 1.214, 1.75, 160, 1, true, Math.PI * 1.18, Math.PI * 1.64),
+          M.paper
+        );
+        lab.position.y = 1.85;
+        g.add(lab);
+        return g;
+      }
+
+      // ---------------------------------------------------------------- ampoule (2 ml)
+      function ampoule() {
+        const g = new THREE.Group();
+        // A conical shoulder about 5 mm tall into the scored constriction, a bulb, then the drawn tip.
+        const outer = smooth(
+          [
+            [0, 0.05],
+            [0.42, 0.0],
+            [0.53, 0.06],
+            [0.55, 0.22],
+            [0.55, 3.1],
+            [0.53, 3.3],
+            [0.45, 3.55],
+            [0.32, 3.78],
+            [0.22, 3.96],
+            [0.235, 4.06],
+            [0.33, 4.26],
+            [0.365, 4.46],
+            [0.33, 4.7],
+            [0.22, 5.05],
+            [0.14, 5.45],
+            [0.09, 5.85],
+            [0.055, 5.97],
+            [0, 6.0],
+          ],
+          5
+        );
+        const inner = smooth(
+          [
+            [0, 5.94],
+            [0.045, 5.9],
+            [0.06, 5.82],
+            [0.1, 5.45],
+            [0.18, 5.05],
+            [0.29, 4.7],
+            [0.32, 4.46],
+            [0.285, 4.26],
+            [0.19, 4.06],
+            [0.175, 3.96],
+            [0.275, 3.78],
+            [0.405, 3.55],
+            [0.485, 3.3],
+            [0.505, 3.1],
+            [0.505, 0.2],
+            [0.42, 0.08],
+            [0, 0.1],
+          ],
+          5
+        );
+        g.add(lathe([...outer, ...inner], M.glass));
+        const fillY = 2.95;
+        g.add(
+          lathe(
+            smooth(
+              [
+                [0, 0.12],
+                [0.42, 0.12],
+                [0.5, 0.22],
+                [0.502, fillY + 0.025],
+                [0.46, fillY + 0.004],
+                [0, fillY],
+              ],
+              4
+            ),
+            M.liquid
+          )
+        );
+        const band = new THREE.Mesh(new THREE.CylinderGeometry(0.556, 0.556, 1.15, 120, 1, true), M.print);
+        band.position.y = 1.75;
+        g.add(band);
+        return g;
+      }
+
+      // ---------------------------------------------------------------- the bag (500 ml)
+      // A pillow: front and back films meet at a flat welded seam; between them the
+      // carrier liquid is a closed volume with a flat meniscus. Crinkles live near
+      // the seam, where the film is gathered.
+      function bag(withLiquid) {
+        const g = new THREE.Group();
+        const BW = 12.2,
+          BH = 18.6,
+          X0 = -BW / 2,
+          Y0 = 6,
+          R = 1.0,
+          SEAM = 0.75,
+          T = 1.75;
+        const sdf = (x, y) => {
+          // Rounded-rect signed distance (negative inside).
+          const cx = x - 0,
+            cy = y - (Y0 + BH / 2);
+          const qx = Math.abs(cx) - (BW / 2 - R),
+            qy = Math.abs(cy) - (BH / 2 - R);
+          return Math.hypot(Math.max(qx, 0), Math.max(qy, 0)) + Math.min(Math.max(qx, qy), 0) - R;
+        };
+        const noise = (x, y) =>
+          Math.sin(x * 3.1 + Math.sin(y * 1.7) * 2) * Math.cos(y * 2.3 + x * 0.6) * 0.6 +
+          Math.sin(x * 7.3 - y * 5.1) * 0.25 +
+          Math.sin(x * 13 + y * 11) * 0.12;
+        const thick = (x, y) => {
+          const d = -sdf(x, y); // inside distance
+          if (d <= SEAM) return 0.025;
+          const t = Math.min(1, (d - SEAM) / 3.4);
+          const base = T * Math.pow(Math.sin((t * Math.PI) / 2), 0.62);
+          const crink = (1 - t) * (1 - t) * 0.16 * noise(x, y);
+          // The bottom gathers more, the way a hanging bag sags.
+          const sag = y < Y0 + 4 ? (Y0 + 4 - y) * 0.035 * Math.max(0, noise(x * 1.3, y * 1.6)) : 0;
+          return Math.max(0.025, base + crink - sag);
+        };
+        const NX = 150,
+          NY = 230;
+        function surface(sign, zfn, x0, x1, y0, y1) {
+          const pos = [],
+            idx = [];
+          for (let j = 0; j <= NY; j++)
+            for (let i = 0; i <= NX; i++) {
+              let x = x0 + ((x1 - x0) * i) / NX,
+                y = y0 + ((y1 - y0) * j) / NY;
+              // Pull points outside the rounded corners onto the outline.
+              const d = sdf(x, y);
+              if (d > 0) {
+                const e = 1e-3,
+                  gx = (sdf(x + e, y) - sdf(x - e, y)) / (2 * e),
+                  gy = (sdf(x, y + e) - sdf(x, y - e)) / (2 * e);
+                x -= gx * d;
+                y -= gy * d;
+              }
+              pos.push(x, y, sign * zfn(x, y));
+            }
+          for (let j = 0; j < NY; j++)
+            for (let i = 0; i < NX; i++) {
+              const a = j * (NX + 1) + i,
+                b = a + 1,
+                c = a + NX + 1,
+                dd = c + 1;
+              if (sign > 0) idx.push(a, b, dd, a, dd, c);
+              else idx.push(a, dd, b, a, c, dd);
+            }
+          const geo = new THREE.BufferGeometry();
+          geo.setAttribute("position", new THREE.Float32BufferAttribute(pos, 3));
+          geo.setIndex(idx);
+          geo.computeVertexNormals();
+          return geo;
+        }
+        const film = new THREE.Group();
+        film.add(new THREE.Mesh(surface(1, thick, X0, X0 + BW, Y0, Y0 + BH), M.film));
+        film.add(new THREE.Mesh(surface(-1, thick, X0, X0 + BW, Y0, Y0 + BH), M.film));
+        g.add(film);
+
+        // Hanging tab with its hole, welded flat.
+        const tab = new THREE.Shape();
+        const tw = 4.6,
+          th = 2.7,
+          ty = Y0 + BH - 0.4,
+          r = 0.5;
+        tab.moveTo(-tw / 2, ty);
+        tab.lineTo(-tw / 2, ty + th - r);
+        tab.quadraticCurveTo(-tw / 2, ty + th, -tw / 2 + r, ty + th);
+        tab.lineTo(tw / 2 - r, ty + th);
+        tab.quadraticCurveTo(tw / 2, ty + th, tw / 2, ty + th - r);
+        tab.lineTo(tw / 2, ty);
+        tab.lineTo(-tw / 2, ty);
+        const hole = new THREE.Path();
+        hole.absarc(0, ty + th * 0.55, 0.55, 0, Math.PI * 2, true);
+        tab.holes.push(hole);
+        const tabGeo = new THREE.ExtrudeGeometry(tab, { depth: 0.05, bevelEnabled: false, curveSegments: 48 });
+        tabGeo.translate(0, 0, -0.025);
+        g.add(new THREE.Mesh(tabGeo, M.film));
+
+        // Two ports and their caps.
+        for (const [px, kind] of [
+          [-0.95, "twist"],
+          [0.95, "septum"],
+        ]) {
+          const tube = new THREE.Mesh(new THREE.CylinderGeometry(0.36, 0.36, 3.0, 64), M.frosted);
+          tube.position.set(px, Y0 - 1.3, 0);
+          g.add(tube);
+          if (kind === "twist") {
+            const c = lathe(
+              smooth(
+                [
+                  [0, Y0 - 2.6],
+                  [0.5, Y0 - 2.6],
+                  [0.52, Y0 - 2.5],
+                  [0.52, Y0 - 1.75],
+                  [0.42, Y0 - 1.7],
+                  [0, Y0 - 1.7],
+                ],
+                3
+              ),
+              M.capPlastic,
+              64
+            );
+            c.position.x = px;
+            g.add(c);
+          } else {
+            const c = lathe(
+              smooth(
+                [
+                  [0, Y0 - 2.5],
+                  [0.36, Y0 - 2.5],
+                  [0.4, Y0 - 2.4],
+                  [0.4, Y0 - 2.05],
+                  [0.46, Y0 - 2.0],
+                  [0.46, Y0 - 1.85],
+                  [0, Y0 - 1.85],
+                ],
+                3
+              ),
+              M.capPlastic,
+              64
+            );
+            c.position.x = px;
+            g.add(c);
+          }
+        }
+
+        if (withLiquid) {
+          // The carrier: inside the films, below a flat meniscus.
+          const fillTop = Y0 + BH * 0.84;
+          const inset = (x, y) => Math.max(0.0005, thick(x, y) - 0.03);
+          const lx0 = X0 + SEAM + 0.05,
+            lx1 = X0 + BW - SEAM - 0.05,
+            ly0 = Y0 + SEAM + 0.05;
+          const sdfL = (x, y) => Math.max(sdf(x, y) + SEAM + 0.05, y - fillTop);
+          const liq = new THREE.Group();
+          const zfn = (x, y) => (sdfL(x, y) >= 0 ? 0.0005 : inset(x, y));
+          const front = surface(1, zfn, lx0, lx1, ly0, fillTop);
+          const back = surface(-1, zfn, lx0, lx1, ly0, fillTop);
+          // Close the top: the meniscus, from each front vertex on the top row to its back twin.
+          const top = new THREE.BufferGeometry();
+          const fp = front.attributes.position.array,
+            row = NY * (NX + 1);
+          const tp = [],
+            ti = [];
+          for (let i = 0; i <= NX; i++) {
+            const k = (row + i) * 3;
+            tp.push(fp[k], fp[k + 1], fp[k + 2], fp[k], fp[k + 1], -fp[k + 2]);
+          }
+          for (let i = 0; i < NX; i++) {
+            const a = i * 2,
+              b = a + 1,
+              c = a + 2,
+              d = a + 3;
+            ti.push(a, c, b, b, c, d);
+          }
+          top.setAttribute("position", new THREE.Float32BufferAttribute(tp, 3));
+          top.setIndex(ti);
+          top.computeVertexNormals();
+          for (const geo of [front, back, top]) liq.add(new THREE.Mesh(geo, M.liquid));
+          g.add(liq);
+        }
+        return g;
+      }
+
+      // ---------------------------------------------------------------- set
+      const set = new THREE.Group();
+      scene.add(set);
+      // Bright field: one evenly glowing panel behind the subject, and nothing else
+      // lit around it. Glass edges see the black surround, so they draw dark; the
+      // body sees the panel through itself, so it reads clear. No floor: shadows are
+      // composed from the silhouettes, as they are for the photographed set.
+      const glow = Number(q.get("glow") ?? 0.85);
+      const panelMat = new THREE.MeshStandardMaterial({ color: 0x000000, emissive: 0xffffff, emissiveIntensity: glow });
+      const panel = new THREE.Mesh(
+        new THREE.PlaneGeometry(
+          Number(q.get("pw") ?? (subject === "bag" ? 70 : 56)),
+          Number(q.get("ph") ?? (subject === "bag" ? 80 : 30))
+        ),
+        panelMat
+      );
+      panel.position.set(0, subject === "bag" ? 15 : 3, -60);
+      set.add(panel);
+      // A soft bounce card under the subject, so glass bottoms are not black.
+      const bounce = new THREE.Mesh(
+        new THREE.PlaneGeometry(18, 18),
+        new THREE.MeshStandardMaterial({
+          color: 0x000000,
+          emissive: 0xffffff,
+          emissiveIntensity: Number(q.get("bounce") ?? 0.35),
+        })
+      );
+      bounce.rotation.x = -Math.PI / 2;
+      bounce.position.set(0, subject === "bag" ? -14 : -9, 0);
+      set.add(bounce);
+
+      function areaLight(w, h, intensity, pos, target) {
+        const l = new THREE.RectAreaLight(0xffffff, intensity, w, h);
+        l.position.copy(pos);
+        l.lookAt(target);
+        scene.add(l);
+        return l;
+      }
+
+      let camera;
+      if (subject === "containers") {
+        const v = vial(),
+          a = ampoule();
+        v.position.x = -2.15;
+        a.position.x = 2.05;
+        set.add(v, a);
+        const target = new THREE.Vector3(0, 2.9, 0);
+        const k = Number(q.get("key") ?? 22),
+          st = Number(q.get("strip") ?? 34);
+        areaLight(28, 28, k, new THREE.Vector3(-34, 40, 34), target);
+        areaLight(3, 36, st, new THREE.Vector3(26, 10, 14), target);
+        // A small top softbox: caps and crimp catch a clean highlight.
+        areaLight(16, 16, k * 0.5, new THREE.Vector3(0, 40, 6), new THREE.Vector3(0, 0, 0));
+        camera = new THREE.PerspectiveCamera(Number(q.get("fov") ?? 7.2), W / H, 1, 1000);
+        camera.position.set(0, 7, 105);
+        camera.lookAt(0, 2.8, 0);
+      } else {
+        set.add(bag(FILL));
+        const target = new THREE.Vector3(0, 15, 0);
+        areaLight(70, 70, 6, new THREE.Vector3(-80, 85, 75), target);
+        areaLight(6, 80, 22, new THREE.Vector3(55, 18, 30), target);
+        camera = new THREE.PerspectiveCamera(Number(q.get("fov") ?? 9.6), W / H, 1, 1000);
+        camera.position.set(0, 15.5, 190);
+        camera.lookAt(0, 14.6, 0);
+      }
+      scene.updateMatrixWorld(true);
+
+      const pt = new WebGLPathTracer(renderer);
+      pt.bounces = 16;
+      pt.transmissiveBounces = 14;
+      pt.filterGlossyFactor = 0.25;
+      pt.multipleImportanceSampling = true;
+      pt.renderDelay = 0;
+      pt.fadeDuration = 0;
+      pt.minSamples = 0;
+      pt.tiles.set(3, 3);
+      pt.dynamicLowRes = false;
+      pt.setScene(scene, camera);
+
+      window.__samples = 0;
+      function loop() {
+        if (pt.samples < SAMPLES) {
+          pt.renderSample();
+          window.__samples = pt.samples;
+          requestAnimationFrame(loop);
+        } else {
+          window.__done = true;
+        }
+      }
+      loop();
+    </script>
+  </body>
+</html>

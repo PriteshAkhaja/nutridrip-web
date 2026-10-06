@@ -1,0 +1,580 @@
+/* The drip assembly act. Scoped to .root: the pictures assembly.ts builds use
+   plain class names (obj, bag, label...), styled here through :global under the
+   root, so nothing leaks into the rest of the site. Inside the components
+   layer, like the rest of the site's CSS, so utilities in the hero still win.
+   Moving layers are transform and opacity only: no blur, no filters. */
+@layer components {
+  .root {
+    position: relative;
+    /* The act's scroll length: 6.4 screens, the stage pinned through them. */
+    height: 640svh;
+    background: var(--color-paper);
+  }
+  .stage {
+    --ink-t: 0;
+    position: sticky;
+    top: 0;
+    height: 100dvh;
+    overflow: clip;
+    isolation: isolate;
+    color: var(--color-ink);
+    background:
+      radial-gradient(60% 34% at 50% 88%, rgb(255 255 255 / 0.95), rgb(255 255 255 / 0)),
+      linear-gradient(180deg, var(--color-paper) 0%, var(--color-paper) 40%, var(--color-surface-2) 100%);
+  }
+  .stage > * {
+    position: absolute;
+  }
+
+  /* The deep ground: --color-deep, the accent's own hue taken almost to black,
+     lifted at the centre where the bag stands. */
+  .ink {
+    inset: 0;
+    z-index: 0;
+    opacity: 0;
+    /* All from the tokens, so a change of brand carries here: a lift toward
+       --color-deep-line where the bag stands, --color-deep-2 into --color-deep,
+       and the edges taken a little toward black. The faint pool of light is
+       the dark-band accent, --color-primary-on-dark. */
+    background:
+      radial-gradient(
+        52% 40% at 50% 80%,
+        color-mix(in srgb, var(--color-primary-on-dark) 7%, transparent),
+        transparent 70%
+      ),
+      radial-gradient(
+        68% 58% at 50% 48%,
+        color-mix(in srgb, var(--color-deep-2) 80%, var(--color-deep-line)) 0%,
+        color-mix(in srgb, var(--color-deep-2) 50%, var(--color-deep)) 42%,
+        var(--color-deep) 70%,
+        color-mix(in srgb, var(--color-deep) 70%, #000) 100%
+      );
+  }
+  .room {
+    inset: 0;
+    z-index: 1;
+    overflow: hidden;
+    transform: translateY(100%);
+    visibility: hidden;
+  }
+  .roomImg {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    max-width: none;
+    object-fit: cover;
+  }
+  /* Density only where the time stamp sits. */
+  .roomScrim {
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(90deg, rgb(6 18 24 / 0.66) 0%, rgb(6 18 24 / 0.42) 36%, rgb(6 18 24 / 0) 60%);
+  }
+  /* The accent on paper, its lifted tint on the deep ground, as the system
+     does for every dark band. Decoration only, never a status hue. */
+  .ring {
+    left: 0;
+    top: 0;
+    z-index: 3;
+    width: 200px;
+    height: 200px;
+    margin: -100px 0 0 -100px;
+    opacity: 0;
+    pointer-events: none;
+  }
+  .ring i {
+    position: absolute;
+    inset: 0;
+    border-radius: 50%;
+    border: 1.5px solid color-mix(in srgb, var(--color-primary-on-dark) calc(var(--ink-t) * 100%), var(--color-primary));
+  }
+  .point {
+    left: 0;
+    top: 0;
+    z-index: 4;
+    width: 8px;
+    height: 8px;
+    margin: -4px 0 0 -4px;
+    border-radius: 50%;
+    background: #fff;
+    opacity: 0;
+  }
+  .glass {
+    inset: 0;
+    z-index: 4;
+    pointer-events: none;
+  }
+  .bagwrap {
+    inset: 0;
+    z-index: 5;
+    pointer-events: none;
+    perspective: 1600px;
+  }
+
+  /* ------------------------------------------------------------- the words */
+  .hero {
+    z-index: 6;
+    left: clamp(24px, 3vw, 40px);
+    top: calc(var(--site-header-h) + clamp(32px, 7svh, 76px));
+    width: min(620px, calc(100% - 48px));
+  }
+  .count,
+  .one {
+    z-index: 6;
+    left: clamp(24px, 3vw, 40px);
+    top: calc(var(--site-header-h) + clamp(28px, 6svh, 64px));
+    max-width: calc(100% - 48px);
+    margin: 0;
+    opacity: 0;
+    font: 600 clamp(40px, 1.4rem + 3.6vw, 84px) / 0.96 var(--font-display);
+    letter-spacing: -0.045em;
+    text-wrap: balance;
+  }
+  .count {
+    color: color-mix(in srgb, #fff calc(var(--ink-t) * 100%), var(--color-ink));
+  }
+  .one {
+    max-width: 11ch;
+    color: #fff;
+  }
+  .one span {
+    display: block;
+    color: var(--color-primary-on-dark);
+  }
+  .readout {
+    left: 0;
+    top: 0;
+    z-index: 7;
+    margin: 0;
+    opacity: 0;
+    white-space: nowrap;
+    color: #fff;
+    font: 500 15px/1 var(--font-mono);
+    font-variant-numeric: tabular-nums;
+  }
+  .readout span {
+    font-size: 28px;
+    letter-spacing: -0.02em;
+  }
+  .captions {
+    inset: 0;
+    z-index: 6;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+    pointer-events: none;
+  }
+  .captions li {
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 160px;
+    margin-left: -80px;
+    text-align: center;
+    opacity: 0;
+    color: color-mix(in srgb, #fff calc(var(--ink-t) * 100%), var(--color-ink));
+  }
+  .captions b {
+    display: block;
+    font: 600 14.5px/1.3 var(--font-sans);
+    text-wrap: balance;
+  }
+  .captions span {
+    display: block;
+    margin-top: 3px;
+    font: 500 13.5px/1.3 var(--font-mono);
+    font-variant-numeric: tabular-nums;
+    opacity: 0.78;
+  }
+  .captions em {
+    display: block;
+    margin-top: 3px;
+    font: 600 11px/1.2 var(--font-sans);
+    font-style: normal;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    opacity: 0.7;
+  }
+  .card {
+    left: 0;
+    top: 0;
+    z-index: 7;
+    width: min(300px, 40vw);
+    padding: 16px 20px;
+    border-radius: var(--radius-lg);
+    opacity: 0;
+    box-shadow: var(--shadow-float);
+  }
+  .card p {
+    margin: 0;
+    font: 500 15px/1.45 var(--font-sans);
+  }
+  .cardA {
+    background: #fff;
+    color: var(--color-ink);
+  }
+  .cardB {
+    background: var(--color-primary);
+    color: #fff;
+  }
+  .grounded {
+    left: clamp(24px, 3vw, 40px);
+    top: 0;
+    z-index: 8;
+    width: max-content;
+    max-width: calc(100% - 48px);
+    color: #fff;
+    opacity: 0;
+    pointer-events: none;
+  }
+  .time {
+    margin: 0;
+    white-space: nowrap;
+    font: 600 clamp(60px, 1.6rem + 6.4vw, 150px) / 0.9 var(--font-display);
+    letter-spacing: -0.05em;
+  }
+  .line {
+    margin: 18px 0 0;
+    max-width: 34ch;
+    color: rgb(255 255 255 / 0.9);
+    font: 500 clamp(1.05rem, 0.98rem + 0.3vw, 1.25rem) / 1.5 var(--font-sans);
+  }
+  .actions {
+    margin-top: 28px;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 12px 22px;
+  }
+  .formula {
+    display: none;
+  }
+  .srOnly {
+    width: 1px;
+    height: 1px;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0 0 0 0);
+    white-space: nowrap;
+  }
+
+  @media (max-width: 860px) {
+    .count,
+    .one {
+      font-size: clamp(34px, 9vw, 46px);
+    }
+    .captions li {
+      width: 140px;
+      margin-left: -70px;
+    }
+    .captions b {
+      font-size: 13px;
+    }
+    .captions span {
+      font-size: 12.5px;
+    }
+    .card {
+      width: calc(50% - 30px);
+      padding: 12px 14px;
+    }
+    .card p {
+      font-size: 13px;
+    }
+    .grounded {
+      top: auto;
+      bottom: 0;
+      width: auto;
+      padding-bottom: max(28px, env(safe-area-inset-bottom));
+    }
+    .roomScrim {
+      background: linear-gradient(0deg, rgb(6 18 24 / 0.8) 0%, rgb(6 18 24 / 0.5) 40%, rgb(6 18 24 / 0) 64%);
+    }
+  }
+
+  /* Reduced motion: no pin, no travel. Three still frames. */
+  .still {
+    height: auto;
+  }
+  .still .stage {
+    position: relative;
+    min-height: 600px;
+  }
+  .still .formula {
+    display: block;
+    z-index: 7;
+    top: 30%;
+    right: clamp(24px, 3vw, 40px);
+    width: min(320px, 30vw);
+    margin: 0;
+    padding: 0;
+    list-style: none;
+    color: #fff;
+  }
+  .formula li {
+    display: flex;
+    justify-content: space-between;
+    gap: 18px;
+    padding: 8px 0;
+    border-bottom: 1px solid rgb(255 255 255 / 0.14);
+    font: 500 15px/1.35 var(--font-sans);
+  }
+  .formula li span:last-child {
+    font: 500 14px/1.35 var(--font-mono);
+    font-variant-numeric: tabular-nums;
+    color: rgb(255 255 255 / 0.8);
+  }
+  @media (max-width: 860px) {
+    .still .formula {
+      top: auto;
+      bottom: 24px;
+      left: 24px;
+      right: 24px;
+      width: auto;
+    }
+  }
+
+  /* ------------------------------------------- the pictures (assembly.ts) */
+  .root :global(.obj) {
+    --u: calc(var(--s) * 1px);
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: calc(var(--w) * var(--u));
+    height: calc(var(--h) * var(--u));
+    transform-origin: 50% 50%;
+    will-change: transform, opacity;
+  }
+  .root :global(.obj img) {
+    position: absolute;
+    display: block;
+    max-width: none;
+    user-select: none;
+  }
+  .root :global(.obj .full) {
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+  }
+  .root :global(.px) {
+    position: absolute;
+    left: calc(var(--x) / var(--w) * 100%);
+    top: calc(var(--y) / var(--h) * 100%);
+    width: calc(var(--pw) / var(--w) * 100%);
+    height: calc(var(--ph) / var(--h) * 100%);
+  }
+  .root :global(.ctr .on-dark) {
+    opacity: var(--ink-t);
+  }
+  .root :global(.ctr .on-light) {
+    opacity: calc(1 - var(--ink-t));
+  }
+  /* A container's name, printed on the photographed blank label. */
+  .root :global(.clabel) {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+  }
+  .root :global(.clabel span) {
+    max-width: 86%;
+    color: rgb(10 12 14 / 0.9);
+    font: 600 calc(var(--u) * var(--fs, 44)) / 1.05 var(--font-display);
+    letter-spacing: -0.02em;
+  }
+
+  /* The bag: --row is the level (cutout pixels), --msx/--mdx fit the meniscus
+     to the film's width on that row, --rm warms it for the lamp-lit room. */
+  .root :global(.bag) {
+    --row: 0;
+    --msx: 1;
+    --mdx: 0;
+    --rm: 0;
+  }
+  .root :global(.bag .layer) {
+    position: absolute;
+    inset: 0;
+  }
+  .root :global(.bag > .layer.on-dark) {
+    opacity: calc(1 - var(--rm));
+  }
+  .root :global(.bag > .layer.room) {
+    opacity: var(--rm);
+  }
+  .root :global(.bag .clip) {
+    position: absolute;
+    inset: 0;
+    overflow: hidden;
+    transform: translateY(calc((var(--row) + 8) * var(--u)));
+  }
+  .root :global(.bag .clip > img) {
+    transform: translateY(calc((var(--row) + 8) * -1 * var(--u)));
+  }
+  .root :global(.bag .men) {
+    transform: translate(calc(var(--mdx) * var(--u)), calc((var(--row) - var(--men, 384)) * var(--u)))
+      scaleX(var(--msx));
+  }
+  .root :global(.bag .scale) {
+    color: var(--color-primary-on-dark);
+    font-family: var(--font-mono);
+  }
+  .root :global(.label) {
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    border-radius: calc(var(--u) * 10);
+  }
+  .root :global(.label__band) {
+    flex: none;
+    height: calc(var(--u) * 96);
+    display: flex;
+    align-items: center;
+    gap: calc(var(--u) * 16);
+    padding: 0 calc(var(--u) * 30);
+    background: var(--color-primary);
+    color: #fff;
+  }
+  .root :global(.label__band .word) {
+    font: 600 calc(var(--u) * 38) / 1 var(--font-display);
+    letter-spacing: -0.01em;
+  }
+  /* The LogoMark, drawn as it is in components/layout/Logo.tsx. */
+  .root :global(.mark) {
+    position: relative;
+    flex: none;
+    width: calc(var(--u) * 44);
+    height: calc(var(--u) * 44);
+    border: 1px solid var(--color-primary-line);
+    border-radius: calc(var(--u) * 14.67);
+    background: var(--color-primary-soft);
+    overflow: hidden;
+  }
+  .root :global(.mark)::after {
+    content: "";
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    height: 62%;
+    background: var(--color-primary);
+  }
+  .root :global(.label__field) {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    padding: calc(var(--u) * 30) calc(var(--u) * 32) calc(var(--u) * 26);
+    background: rgb(236 240 243 / 0.94);
+    color: var(--color-ink);
+  }
+  .root :global(.label__name) {
+    margin: 0;
+    font: 600 calc(var(--u) * 58) / 1 var(--font-display);
+    letter-spacing: -0.035em;
+  }
+  .root :global(.label__carrier) {
+    margin: calc(var(--u) * 12) 0 0;
+    color: var(--color-ink-2);
+    font: 500 calc(var(--u) * 21) / 1.3 var(--font-sans);
+  }
+  .root :global(.label__rule) {
+    height: calc(var(--u) * 2);
+    margin: calc(var(--u) * 22) 0 calc(var(--u) * 14);
+    background: var(--color-ink);
+    opacity: 0.85;
+  }
+  .root :global(.label__head) {
+    margin: 0 0 calc(var(--u) * 10);
+    color: var(--color-ink-3);
+    font: 600 calc(var(--u) * 15) / 1 var(--font-sans);
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+  }
+  .root :global(.label__list) {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+  .root :global(.label__list li) {
+    display: flex;
+    justify-content: space-between;
+    gap: calc(var(--u) * 12);
+    border-bottom: 1px solid rgb(10 12 14 / 0.12);
+    font: 500 calc(var(--u) * 19) / 1.6 var(--font-sans);
+  }
+  .root :global(.label__list li span:last-child) {
+    font-family: var(--font-mono);
+    font-variant-numeric: tabular-nums;
+  }
+  .root :global(.label__foot) {
+    margin-top: auto;
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+  }
+  .root :global(.label__route) {
+    color: var(--color-ink-2);
+    font: 600 calc(var(--u) * 17) / 1.2 var(--font-sans);
+  }
+  .root :global(.label__vol) {
+    font: 600 calc(var(--u) * 46) / 1 var(--font-display);
+    letter-spacing: -0.03em;
+  }
+  /* The film bulges: the print is a touch darker toward its edges. */
+  .root :global(.label)::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    background: linear-gradient(
+      90deg,
+      rgb(10 12 14 / 0.07),
+      rgb(10 12 14 / 0) 18%,
+      rgb(10 12 14 / 0) 82%,
+      rgb(10 12 14 / 0.09)
+    );
+  }
+  /* In the room, the print dims into the lamp light. */
+  .root :global(.label)::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    z-index: 2;
+    pointer-events: none;
+    background: rgb(70 46 22 / calc(var(--rm) * 0.34));
+  }
+  /* The turn's light: a dark edge band and a bright specular band crossing the
+     body inside the seam. Gradients on a moving layer; no blur. */
+  .root :global(.sweep) {
+    position: absolute;
+    overflow: hidden;
+    border-radius: calc(var(--u) * 60);
+  }
+  .root :global(.sweep i) {
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    left: 0;
+    width: 40%;
+    will-change: transform;
+    background: linear-gradient(
+      90deg,
+      rgb(255 255 255 / 0) 30%,
+      rgb(255 255 255 / 0.55) 46%,
+      rgb(255 255 255 / 0.08) 54%,
+      rgb(10 12 14 / 0) 60%,
+      rgb(10 12 14 / 0.22) 74%,
+      rgb(10 12 14 / 0) 90%
+    );
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  /* Before the client swaps in the still frames: never a 6-screen empty pin. */
+  .root {
+    height: auto;
+  }
+  .root .stage {
+    position: relative;
+  }
+}

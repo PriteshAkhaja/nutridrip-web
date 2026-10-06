@@ -33,8 +33,16 @@ import { QuizMock, ReportMock } from "@/components/site/Mockups";
 import { CtaPanel } from "@/components/site/CtaPanel";
 import { CardMarquee } from "@/components/site/CardMarquee";
 import { IconCheck, IconClipboard, IconHome, IconMessage, IconStethoscope, IconVial } from "@/components/site/Icons";
+import { DripAssembly } from "@/components/site/scroll/DripAssembly";
+import { getAssemblyDrip, lastBookableSlot } from "@/lib/data/assembly";
+import { servedZones } from "@/lib/zones";
+import { getClockFormat } from "@/lib/settings/clock";
+import { clockOf } from "@/lib/time";
 
 export const dynamic = "force-dynamic";
+
+/** The drip the home page assembles: the default first drip. */
+const HOME_DRIP = "myers-revive";
 
 const HERO_POINTS = [
   { icon: <IconStethoscope size={18} />, title: "A physician reviews you first", body: "Before anything is booked" },
@@ -44,12 +52,25 @@ const HERO_POINTS = [
 
 export default async function HomePage() {
   // latePolicy: the late-change rule, with today's fees (set on the Billing page).
-  const [latePolicy, drips, copy, zones] = await Promise.all([getLatePolicy(), listDrips(), getContent(), getZones()]);
+  const [latePolicy, drips, copy, zones, homeDrip, lastSlot, clockFormat] = await Promise.all([
+    getLatePolicy(),
+    listDrips(),
+    getContent(),
+    getZones(),
+    getAssemblyDrip(HOME_DRIP),
+    lastBookableSlot(),
+    getClockFormat(),
+  ]);
 
   // The drips the super admin ticked "Most popular" in the Drip builder (up to
   // four, one row). None ticked: the section is left out rather than filled
   // with a guess.
   const bestSellers = drips.filter((d) => d.isPopular).slice(0, POPULAR_ON_HOME);
+
+  // The drip that assembles itself at the top of the page. If the default one
+  // is retired or hidden, the first popular drip takes its place; with neither,
+  // the page opens on the plain hero below.
+  const assembly = homeDrip ?? (bestSellers[0] ? await getAssemblyDrip(bestSellers[0].slug) : null);
 
   const perCategory = new Map<string, number>();
   for (const d of drips) perCategory.set(d.category, (perCategory.get(d.category) ?? 0) + 1);
@@ -66,121 +87,170 @@ export default async function HomePage() {
 
   return (
     <>
-      {/* ================= HERO ================= */}
-      <section className="relative overflow-hidden bg-[linear-gradient(180deg,var(--color-paper)_0%,var(--color-paper)_45%,var(--color-mist)_100%)]">
-        <Container className="grid grid-cols-1 items-center gap-12 pt-[calc(var(--site-header-h)+40px)] pb-16 sm:pb-20 md:pt-[calc(var(--site-header-h)+56px)] lg:grid-cols-[minmax(0,0.94fr)_minmax(0,1.06fr)] lg:gap-14 lg:pt-[calc(var(--site-header-h)+64px)] lg:pb-24 xl:gap-20">
-          <div className="@container min-w-0">
-            <span
-              className="inline-flex items-center gap-2 rounded-full border border-[var(--color-primary-line)] bg-[var(--color-primary-soft)] px-3 py-[6px] text-[12.5px] font-semibold text-[var(--color-primary-text)]"
-              data-reveal="hero"
-            >
-              <IconCheck size={14} />
-              {copy["home.badge"]}
-            </span>
-
-            <h1
-              className="mt-6 max-w-[15ch]"
-              data-reveal="hero"
-              style={delay(60, {
-                font: "600 clamp(40px, 10.6cqi, 80px)/0.98 var(--font-display)",
-                letterSpacing: "-0.045em",
-                textWrap: "balance",
-              })}
-            >
-              {copy["home.headline"]}
-            </h1>
-
-            <p className="t-lead mt-6 max-w-[50ch]" data-reveal="hero" style={delay(120)}>
-              {copy["home.sub"]}
-            </p>
-
-            <div className="mt-9 flex flex-wrap gap-3" data-reveal="hero" style={delay(180)}>
-              <QuizButton size="lg">{copy["home.cta"]}</QuizButton>
-              <ButtonLink href="/drips" size="lg" variant="secondary">
-                Browse all {drips.length} drips
-              </ButtonLink>
-            </div>
-
-            <div className="mt-7 flex items-center gap-3 flex-wrap" data-reveal="hero" style={delay(220)}>
-              <Stars rating={AGGREGATE.rating} size={15} />
-              <span className="t-data text-[13px]">{AGGREGATE.rating}</span>
-              <span className="t-small text-[var(--color-ink-2)]">
-                {AGGREGATE.count.toLocaleString("en-IN")} verified sessions
+      {/* ================= HERO: the drip assembles itself ================= */}
+      {assembly ? (
+        <DripAssembly
+          drip={assembly}
+          heroId="home-title"
+          zones={servedZones(zones).length}
+          lastSlot={lastSlot ? clockOf(lastSlot, clockFormat) : null}
+          call={`${copy["home.stat2.value"]} ${copy["home.stat2.label"]}`}
+          nurse={`given at home by a ${HERO_POINTS[1].body.toLowerCase()} nurse`}
+          physician={`${HERO_POINTS[0].title}, ${HERO_POINTS[0].body.toLowerCase()}`}
+          hero={
+            <div className="@container min-w-0">
+              <span className="inline-flex items-center gap-2 rounded-full border border-[var(--color-primary-line)] bg-[var(--color-primary-soft)] px-3 py-[6px] text-[12.5px] font-semibold text-[var(--color-primary-text)]">
+                <IconCheck size={14} />
+                {copy["home.badge"]}
               </span>
+              <h1
+                id="home-title"
+                className="mt-6 max-w-[15ch]"
+                style={{
+                  font: "600 clamp(40px, 10.6cqi, 76px)/0.98 var(--font-display)",
+                  letterSpacing: "-0.045em",
+                  textWrap: "balance",
+                }}
+              >
+                {copy["home.headline"]}
+              </h1>
+              <p className="t-lead mt-6 max-w-[46ch]">{copy["home.sub"]}</p>
+              <div className="mt-9 flex flex-wrap gap-3">
+                <QuizButton size="lg">{copy["home.cta"]}</QuizButton>
+                <ButtonLink href="/drips" size="lg" variant="secondary" className="max-sm:hidden">
+                  Browse all {drips.length} drips
+                </ButtonLink>
+              </div>
             </div>
+          }
+          actions={
+            <>
+              <QuizButton size="lg">{copy["home.cta"]}</QuizButton>
+              <Link
+                href="/consult"
+                className="t-body inline-flex min-h-[44px] items-center font-semibold text-white underline decoration-white/45 underline-offset-[0.28em] hover:text-white"
+              >
+                Ask a clinician
+              </Link>
+            </>
+          }
+        />
+      ) : (
+        <section className="relative overflow-hidden bg-[linear-gradient(180deg,var(--color-paper)_0%,var(--color-paper)_45%,var(--color-mist)_100%)]">
+          <Container className="grid grid-cols-1 items-center gap-12 pt-[calc(var(--site-header-h)+40px)] pb-16 sm:pb-20 md:pt-[calc(var(--site-header-h)+56px)] lg:grid-cols-[minmax(0,0.94fr)_minmax(0,1.06fr)] lg:gap-14 lg:pt-[calc(var(--site-header-h)+64px)] lg:pb-24 xl:gap-20">
+            <div className="@container min-w-0">
+              <span
+                className="inline-flex items-center gap-2 rounded-full border border-[var(--color-primary-line)] bg-[var(--color-primary-soft)] px-3 py-[6px] text-[12.5px] font-semibold text-[var(--color-primary-text)]"
+                data-reveal="hero"
+              >
+                <IconCheck size={14} />
+                {copy["home.badge"]}
+              </span>
 
-            <dl
-              className="mt-10 grid max-w-[560px] grid-cols-3 gap-5 border-t border-[var(--color-line)] pt-8"
-              data-reveal="hero"
-              style={delay(260)}
-            >
-              {/* The label comes first in the markup, as a <dl> needs, and shows
+              <h1
+                className="mt-6 max-w-[15ch]"
+                data-reveal="hero"
+                style={delay(60, {
+                  font: "600 clamp(40px, 10.6cqi, 80px)/0.98 var(--font-display)",
+                  letterSpacing: "-0.045em",
+                  textWrap: "balance",
+                })}
+              >
+                {copy["home.headline"]}
+              </h1>
+
+              <p className="t-lead mt-6 max-w-[50ch]" data-reveal="hero" style={delay(120)}>
+                {copy["home.sub"]}
+              </p>
+
+              <div className="mt-9 flex flex-wrap gap-3" data-reveal="hero" style={delay(180)}>
+                <QuizButton size="lg">{copy["home.cta"]}</QuizButton>
+                <ButtonLink href="/drips" size="lg" variant="secondary">
+                  Browse all {drips.length} drips
+                </ButtonLink>
+              </div>
+
+              <div className="mt-7 flex items-center gap-3 flex-wrap" data-reveal="hero" style={delay(220)}>
+                <Stars rating={AGGREGATE.rating} size={15} />
+                <span className="t-data text-[13px]">{AGGREGATE.rating}</span>
+                <span className="t-small text-[var(--color-ink-2)]">
+                  {AGGREGATE.count.toLocaleString("en-IN")} verified sessions
+                </span>
+              </div>
+
+              <dl
+                className="mt-10 grid max-w-[560px] grid-cols-3 gap-5 border-t border-[var(--color-line)] pt-8"
+                data-reveal="hero"
+                style={delay(260)}
+              >
+                {/* The label comes first in the markup, as a <dl> needs, and shows
                   under its figure. justify-end packs a reversed column from the
                   top, so the figures share a line whatever their labels wrap to. */}
-              {figures.map((f) => (
-                <div key={f.label} className="flex flex-col-reverse justify-end gap-1">
-                  <dt className="t-small text-[var(--color-ink-3)]">{f.label}</dt>
-                  <dd className="m-0 t-data text-[clamp(22px,2.4vw,30px)] leading-[1.1] text-[var(--color-ink)]">
-                    <CountUp value={f.value} />
-                  </dd>
-                </div>
-              ))}
-            </dl>
-          </div>
+                {figures.map((f) => (
+                  <div key={f.label} className="flex flex-col-reverse justify-end gap-1">
+                    <dt className="t-small text-[var(--color-ink-3)]">{f.label}</dt>
+                    <dd className="m-0 t-data text-[clamp(22px,2.4vw,30px)] leading-[1.1] text-[var(--color-ink)]">
+                      <CountUp value={f.value} />
+                    </dd>
+                  </div>
+                ))}
+              </dl>
+            </div>
 
-          {/* The photograph, with the three promises floating over it on a
+            {/* The photograph, with the three promises floating over it on a
               tablet and up. On a phone they would cover the people in it, so
               they sit under it as a list instead. */}
-          <div className="relative min-w-0 sm:pb-10 lg:pb-0">
-            <Photo
-              image={SITE_IMAGES.homeHero}
-              sizes="(min-width: 1280px) 640px, (min-width: 1024px) 52vw, 100vw"
-              preload
-              reveal="settle"
-              radius="var(--radius-2xl)"
-              className="aspect-[4/3.2] rounded-[var(--radius-2xl)] bg-[var(--color-surface-2)] lg:aspect-[4/4.1]"
-            />
-            <FloatChip
-              className="absolute left-4 top-5 hidden sm:block lg:-left-8 lg:top-10"
-              reveal="hero"
-              style={delay(300)}
-              icon={HERO_POINTS[0].icon}
-              title={HERO_POINTS[0].title}
-              body={HERO_POINTS[0].body}
-            />
-            <FloatChip
-              className="absolute right-4 top-[46%] hidden sm:block lg:-right-6"
-              reveal="hero"
-              style={delay(380)}
-              drift="late"
-              icon={HERO_POINTS[2].icon}
-              title={HERO_POINTS[2].title}
-              body={HERO_POINTS[2].body}
-            />
-            <FloatChip
-              className="absolute -bottom-2 left-8 hidden sm:block lg:-bottom-7 lg:left-10"
-              reveal="hero"
-              style={delay(460)}
-              icon={HERO_POINTS[1].icon}
-              title={HERO_POINTS[1].title}
-              body={HERO_POINTS[1].body}
-            />
-            <ul className="mt-6 flex flex-col gap-3 list-none p-0 sm:hidden">
-              {HERO_POINTS.map((p) => (
-                <li key={p.title} className="flex items-center gap-3">
-                  <span className="w-9 h-9 rounded-full bg-[var(--color-primary-soft)] text-[var(--color-primary-text)] inline-flex items-center justify-center flex-none">
-                    {p.icon}
-                  </span>
-                  <span className="flex flex-col">
-                    <span className="text-[14.5px] font-semibold leading-tight">{p.title}</span>
-                    <span className="t-small text-[var(--color-ink-2)]">{p.body}</span>
-                  </span>
-                </li>
-              ))}
-            </ul>
-          </div>
-        </Container>
-      </section>
+            <div className="relative min-w-0 sm:pb-10 lg:pb-0">
+              <Photo
+                image={SITE_IMAGES.homeHero}
+                sizes="(min-width: 1280px) 640px, (min-width: 1024px) 52vw, 100vw"
+                preload
+                reveal="settle"
+                radius="var(--radius-2xl)"
+                className="aspect-[4/3.2] rounded-[var(--radius-2xl)] bg-[var(--color-surface-2)] lg:aspect-[4/4.1]"
+              />
+              <FloatChip
+                className="absolute left-4 top-5 hidden sm:block lg:-left-8 lg:top-10"
+                reveal="hero"
+                style={delay(300)}
+                icon={HERO_POINTS[0].icon}
+                title={HERO_POINTS[0].title}
+                body={HERO_POINTS[0].body}
+              />
+              <FloatChip
+                className="absolute right-4 top-[46%] hidden sm:block lg:-right-6"
+                reveal="hero"
+                style={delay(380)}
+                drift="late"
+                icon={HERO_POINTS[2].icon}
+                title={HERO_POINTS[2].title}
+                body={HERO_POINTS[2].body}
+              />
+              <FloatChip
+                className="absolute -bottom-2 left-8 hidden sm:block lg:-bottom-7 lg:left-10"
+                reveal="hero"
+                style={delay(460)}
+                icon={HERO_POINTS[1].icon}
+                title={HERO_POINTS[1].title}
+                body={HERO_POINTS[1].body}
+              />
+              <ul className="mt-6 flex flex-col gap-3 list-none p-0 sm:hidden">
+                {HERO_POINTS.map((p) => (
+                  <li key={p.title} className="flex items-center gap-3">
+                    <span className="w-9 h-9 rounded-full bg-[var(--color-primary-soft)] text-[var(--color-primary-text)] inline-flex items-center justify-center flex-none">
+                      {p.icon}
+                    </span>
+                    <span className="flex flex-col">
+                      <span className="text-[14.5px] font-semibold leading-tight">{p.title}</span>
+                      <span className="t-small text-[var(--color-ink-2)]">{p.body}</span>
+                    </span>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          </Container>
+        </section>
+      )}
 
       <TrustStrip
         items={[

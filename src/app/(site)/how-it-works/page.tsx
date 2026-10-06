@@ -11,7 +11,8 @@ import { SITE_IMAGES, type SiteImageKey } from "@/lib/site-images";
 import { PageHero } from "@/components/site/PageHero";
 import { SectionHeader, delay } from "@/components/site/Layout";
 import { Photo } from "@/components/site/Photo";
-import { StickySteps, type Step } from "@/components/site/StickySteps";
+import { type Step } from "@/components/site/StickySteps";
+import { ThreadSteps } from "@/components/site/ThreadSteps";
 import { QuizMock, ReportMock } from "@/components/site/Mockups";
 import { CountUp } from "@/components/site/CountUp";
 import { CtaPanel } from "@/components/site/CtaPanel";
@@ -124,7 +125,7 @@ export default async function HowItWorksPage() {
             </>
           }
         />
-        <StickySteps
+        <ThreadSteps
           steps={STEPS}
           media={[
             <QuizMock key="quiz" />,

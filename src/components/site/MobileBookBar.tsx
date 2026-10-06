@@ -23,12 +23,15 @@ const BAR_QUERY = "(width < 64rem)";
 export function MobileBookBar({
   targetId,
   hideWhenId,
+  asideWhileId,
   children,
 }: {
   /** The in-page card the bar stands in for. */
   targetId: string;
   /** A block near the end that already carries the call to action. */
   hideWhenId?: string;
+  /** A block that carries its own call to action while it is on screen (the drip assembly): the bar steps aside for it. */
+  asideWhileId?: string;
   children: ReactNode;
 }) {
   const [shown, setShown] = useState(false);
@@ -36,6 +39,7 @@ export function MobileBookBar({
   useEffect(() => {
     const card = document.getElementById(targetId);
     const end = hideWhenId ? document.getElementById(hideWhenId) : null;
+    const aside = asideWhileId ? document.getElementById(asideWhileId) : null;
     if (!card) return;
     const narrow = window.matchMedia(BAR_QUERY);
     let raf = 0;
@@ -44,7 +48,9 @@ export function MobileBookBar({
       raf = requestAnimationFrame(() => {
         const pastCard = card.getBoundingClientRect().bottom < 0;
         const atEnd = end ? end.getBoundingClientRect().top < window.innerHeight : false;
-        setShown(narrow.matches && pastCard && !atEnd);
+        const a = aside?.getBoundingClientRect();
+        const inAside = a ? a.top < window.innerHeight && a.bottom > 0 : false;
+        setShown(narrow.matches && pastCard && !atEnd && !inAside);
       });
     };
     const listen = () => {
@@ -64,7 +70,7 @@ export function MobileBookBar({
       window.removeEventListener("resize", read);
       cancelAnimationFrame(raf);
     };
-  }, [targetId, hideWhenId]);
+  }, [targetId, hideWhenId, asideWhileId]);
 
   return (
     <div

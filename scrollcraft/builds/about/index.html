@@ -1,0 +1,155 @@
+<!doctype html>
+<html lang="en-IN">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <title>NutriDrip · About</title>
+    <link rel="icon" href="data:," />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      rel="stylesheet"
+      href="https://fonts.googleapis.com/css2?family=Instrument+Sans:wght@500;600&family=Inter:wght@400;500;600&display=swap"
+    />
+    <link rel="stylesheet" href="site.css" />
+    <style>
+      :root {
+        --mist: #f0f7f9;
+      }
+      html {
+        scroll-behavior: auto;
+      }
+      body {
+        margin: 0;
+        background: #fff;
+        font-family: "Inter", system-ui, sans-serif;
+        -webkit-font-smoothing: antialiased;
+        color: var(--ink);
+      }
+      * {
+        box-sizing: border-box;
+      }
+      .eyebrow {
+        display: inline-flex;
+        align-items: center;
+        gap: 10px;
+        font:
+          600 12px/1.2 "Inter",
+          sans-serif;
+        letter-spacing: 0.14em;
+        text-transform: uppercase;
+        color: var(--primary-text);
+      }
+      .eyebrow::before {
+        content: "";
+        width: 18px;
+        height: 1.5px;
+        background: currentColor;
+        opacity: 0.55;
+      }
+      .t-section {
+        margin: 16px 0 0;
+        font:
+          600 clamp(2rem, 1.2rem + 2.6vw, 3.4rem)/1.04 "Instrument Sans",
+          sans-serif;
+        letter-spacing: -0.037em;
+      }
+      .tone-2 {
+        color: var(--ink-3);
+      }
+      .ctx {
+        padding: calc(var(--site-header-h) + 72px) 0 72px;
+      }
+      .ctx h1 {
+        margin: 0;
+        font:
+          600 clamp(2.3rem, 1.4rem + 2.8vw, 4rem)/1.02 "Instrument Sans",
+          sans-serif;
+        letter-spacing: -0.042em;
+        max-width: 16ch;
+      }
+      .sec {
+        padding-block: var(--section-y);
+        background: var(--mist);
+      }
+      .grid {
+        display: grid;
+        gap: 40px;
+        align-items: start;
+      }
+      @media (min-width: 1024px) {
+        .grid {
+          grid-template-columns: minmax(0, 0.8fr) minmax(0, 1.2fr);
+          gap: 80px;
+        }
+      }
+      .mission {
+        margin: 0;
+        color: var(--ink);
+        font:
+          500 clamp(20px, 1.2rem + 0.8vw, 28px)/1.5 "Instrument Sans",
+          sans-serif;
+        letter-spacing: -0.015em;
+        text-wrap: pretty;
+        /* From the muted ink (4.6:1 on mist, readable before it lights) to full ink. */
+        --lit-from: var(--ink-3);
+        --lit-to: var(--ink);
+      }
+    </style>
+  </head>
+  <body>
+    <header class="sitehdr">
+      <div class="capsule">
+        <a class="logo" href="/" aria-label="NutriDrip home"
+          ><span class="logomark"><i></i></span><span class="logo__word">NutriDrip</span></a
+        >
+        <nav class="capsule__nav" aria-label="Main">
+          <a href="/drips">Drips</a><a href="/how-it-works">How it works</a><a href="/pricing">Pricing</a
+          ><a href="/safety">Safety</a><a href="/zones">Zones</a><a href="/for-clinics">For clinics</a>
+        </nav>
+        <div class="capsule__end"><a class="btn btn--primary btn--md" href="/quiz">Take the quiz</a></div>
+      </div>
+    </header>
+    <main>
+      <section class="ctx">
+        <div class="wrap">
+          <span class="eyebrow">About</span>
+          <h1>IV nutrient therapy, run like a clinic.</h1>
+          <p style="margin-top: 20px; max-width: 60ch; color: var(--ink-2)">
+            The hero, "Who does what" and the company details stay as they are. The mission statement below is the one
+            section that changes.
+          </p>
+        </div>
+      </section>
+      <section class="sec" aria-labelledby="about-mission">
+        <div class="wrap grid">
+          <div>
+            <span class="eyebrow">What we are trying to do</span>
+            <h2 id="about-mission" class="t-section">A procedure, <span class="tone-2">not a treat.</span></h2>
+          </div>
+          <p class="mission" data-lit>
+            IV therapy is a medical procedure, and it is too often sold as a treat. Our aim is to make it something you
+            can ask hard questions about and get straight answers to — who approved it, what went into it, which batch,
+            and what happens if something goes wrong.
+          </p>
+        </div>
+      </section>
+      <div style="height: 70vh"></div>
+    </main>
+    <footer class="sitefoot">
+      <div class="wrap sitefoot__in">
+        <a class="logo logo--light" href="/"
+          ><span class="logomark"><i></i></span><span class="logo__word">NutriDrip</span></a
+        >
+        <p>Not a substitute for emergency care. In an emergency call 108.</p>
+      </div>
+    </footer>
+    <script src="gsap.min.js"></script>
+    <script src="ScrollTrigger.min.js"></script>
+    <script src="lit.js"></script>
+    <script>
+      if (!matchMedia("(prefers-reduced-motion: reduce)").matches) mountLit(document.querySelector("[data-lit]"));
+      document.body.dataset.ready = "1";
+    </script>
+  </body>
+</html>
