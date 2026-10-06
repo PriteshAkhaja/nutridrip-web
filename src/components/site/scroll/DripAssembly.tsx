@@ -218,7 +218,12 @@ export function DripAssembly({
   }
 
   return (
-    <section ref={ref} id={id} className={styles.root} aria-labelledby={titleId}>
+    <section
+      ref={ref}
+      id={id}
+      className={opening === "spread" ? styles.root + " " + styles.spread : styles.root}
+      aria-labelledby={titleId}
+    >
       <div className={styles.stage} data-asm-stage>
         {ground}
         {room}

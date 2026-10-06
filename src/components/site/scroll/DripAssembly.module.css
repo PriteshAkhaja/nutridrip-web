@@ -10,6 +10,12 @@
     height: 640svh;
     background: var(--color-paper);
   }
+  /* A drip page skips the score's first 20% (assembly.ts SPREAD_FROM): its
+     pinned travel is 80% of the home page's 540svh, plus the one screen the
+     stage itself takes. */
+  .spread {
+    height: calc(100svh + 540svh * 0.8);
+  }
   .stage {
     --ink-t: 0;
     position: sticky;

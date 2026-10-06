@@ -29,6 +29,8 @@ import { ASSEMBLY_ASSETS as A, BAG_CM, ROOM } from "./assembly-assets";
 
 const IMG = "/images/assembly/";
 const STILL_P = [0, 0.675, 1];
+/** Where a drip page's act starts in the score (see mountAssembly). */
+export const SPREAD_FROM = 0.2;
 
 const clamp = (v: number, a: number, b: number) => (v < a ? a : v > b ? b : v);
 const lerp = (a: number, b: number, t: number) => a + (b - a) * t;
@@ -603,6 +605,13 @@ export function mountAssembly(
   const sc = scenes[0];
   if (!sc) return () => {};
   const state = { p: 0 };
+  // A drip page opens on the containers already in their row, so the score's
+  // first stretch (the home hero lifting away, the row settling) has nothing
+  // to do there: it starts at SPREAD_FROM, just before the first container
+  // leaves, and the act is that much shorter (DripAssembly.module.css .spread),
+  // so every later step keeps its scroll distance.
+  const p0 = opening === "spread" ? SPREAD_FROM : 0;
+  const at = () => p0 + state.p * (1 - p0);
   let tmx = 0,
     tmy = 0,
     mx = 0,
@@ -614,9 +623,9 @@ export function mountAssembly(
     mx += (tmx - mx) * 0.08;
     my += (tmy - my) * 0.08;
     sc.pointer(mx, my);
-    sc.render(state.p, fine.matches);
+    sc.render(at(), fine.matches);
     // Everything after the first screen loads once the act starts to move.
-    if (state.p > 0.04) loadLater();
+    if (at() > 0.04) loadLater();
     if (Math.abs(tmx - mx) > 0.002 || Math.abs(tmy - my) > 0.002) queue();
   };
   const queue = () => {
@@ -647,7 +656,7 @@ export function mountAssembly(
   const ro = new ResizeObserver(() => onRefresh());
   ro.observe(stages[0]);
   const onPointer = (e: PointerEvent) => {
-    if (!fine.matches || state.p > 0.08) return;
+    if (!fine.matches || at() > 0.08) return;
     tmx = e.clientX / innerWidth - 0.5;
     tmy = e.clientY / innerHeight - 0.5;
     queue();

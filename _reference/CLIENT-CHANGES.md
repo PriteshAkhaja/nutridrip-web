@@ -1420,3 +1420,15 @@ Online payment switches on when the Razorpay keys are added (`.env.example` list
 |---|---|---|
 | 43.1 | All nine drip pages at 1440 and 390, eight moments each: nothing left behind, nothing crossed by the ring or the callout cards, nothing off screen, no console errors | ✅ |
 | 43.2 | Typecheck, lint, Prettier, 687 unit tests | ✅ |
+
+## 44. Drip pages: the merge starts as soon as the section locks
+
+**44 (6 Oct):** on every drip page, after the ingredients section locked in place, about 1.3 screens of scrolling went by with nothing moving before the first ingredient set off. That stretch is where the home page lifts its headline away; a drip page has no headline there, so it was empty.
+
+- **Fixed — a drip page's act skips that stretch and is one screen shorter.** The first ingredient now leaves after a short pause (about a fifth of a screen) to read the row; every later step keeps its scroll distance. The home page is unchanged.
+
+| # | Test | Result |
+|---|---|---|
+| 44.1 | `/drips/glow-protocol` and `/drips/myers-revive`: scroll after the section locks before the first ingredient moves, 1,160 px before, 200 px now; the act still ends on the room | ✅ |
+| 44.2 | All nine drip pages at 1440 and 390: every step present, no overlaps, nothing off screen, no console errors | ✅ |
+| 44.3 | Typecheck, lint, Prettier, 687 unit tests | ✅ |
