@@ -85,7 +85,7 @@ export function DripCard({
         ) : null}
         <span
           aria-hidden
-          className="absolute bottom-4 right-4 w-11 h-11 rounded-full bg-white text-[var(--color-ink)] inline-flex items-center justify-center shadow-[0_6px_20px_-8px_rgba(6,37,48,0.45)] transition-[transform,background-color,color] duration-500 ease-[var(--ease-glide)] group-hover:rotate-45 group-hover:bg-[var(--color-ink)] group-hover:text-white"
+          className="absolute bottom-4 right-4 w-11 h-11 rounded-full bg-white text-[var(--color-ink)] inline-flex items-center justify-center shadow-[0_6px_20px_-8px_color-mix(in_srgb,var(--color-deep)_45%,transparent)] transition-[transform,background-color,color] duration-500 ease-[var(--ease-glide)] group-hover:rotate-45 group-hover:bg-[var(--color-contrast)] group-hover:text-white"
         >
           <IconArrowUpRight size={18} />
         </span>

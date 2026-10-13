@@ -65,7 +65,7 @@ export function Switch({
           className={`absolute top-[3px] left-[3px] w-[20px] h-[20px] rounded-full bg-white transition-transform duration-150 ease-out ${
             checked ? "translate-x-[18px]" : "translate-x-0"
           }`}
-          style={{ boxShadow: "0 1px 3px rgba(16,24,32,0.32)" }}
+          style={{ boxShadow: "0 1px 3px color-mix(in srgb, var(--color-ink) 32%, transparent)" }}
         />
       </span>
 

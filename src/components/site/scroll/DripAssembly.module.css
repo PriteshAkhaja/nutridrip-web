@@ -75,7 +75,12 @@
   .roomScrim {
     position: absolute;
     inset: 0;
-    background: linear-gradient(90deg, rgb(6 18 24 / 0.66) 0%, rgb(6 18 24 / 0.42) 36%, rgb(6 18 24 / 0) 60%);
+    background: linear-gradient(
+      90deg,
+      color-mix(in srgb, var(--color-deep-shade) 66%, transparent) 0%,
+      color-mix(in srgb, var(--color-deep-shade) 42%, transparent) 36%,
+      color-mix(in srgb, var(--color-deep-shade) 0%, transparent) 60%
+    );
   }
   /* The accent on paper, its lifted tint on the deep ground, as the system
      does for every dark band. Decoration only, never a status hue. */
@@ -307,7 +312,12 @@
       padding-bottom: max(28px, env(safe-area-inset-bottom));
     }
     .roomScrim {
-      background: linear-gradient(0deg, rgb(6 18 24 / 0.8) 0%, rgb(6 18 24 / 0.5) 40%, rgb(6 18 24 / 0) 64%);
+      background: linear-gradient(
+        0deg,
+        color-mix(in srgb, var(--color-deep-shade) 80%, transparent) 0%,
+        color-mix(in srgb, var(--color-deep-shade) 50%, transparent) 40%,
+        color-mix(in srgb, var(--color-deep-shade) 0%, transparent) 64%
+      );
     }
   }
 
@@ -401,7 +411,7 @@
   }
   .root :global(.clabel span) {
     max-width: 86%;
-    color: rgb(10 12 14 / 0.9);
+    color: color-mix(in srgb, var(--color-ink) 90%, transparent);
     font: 600 calc(var(--u) * var(--fs, 44)) / 1.05 var(--font-display);
     letter-spacing: -0.02em;
   }
@@ -521,7 +531,7 @@
     display: flex;
     justify-content: space-between;
     gap: calc(var(--u) * 12);
-    border-bottom: 1px solid rgb(10 12 14 / 0.12);
+    border-bottom: 1px solid color-mix(in srgb, var(--color-ink) 12%, transparent);
     font: 500 calc(var(--u) * 19) / 1.6 var(--font-sans);
   }
   .root :global(.label__list li span:last-child) {
@@ -550,10 +560,10 @@
     pointer-events: none;
     background: linear-gradient(
       90deg,
-      rgb(10 12 14 / 0.07),
-      rgb(10 12 14 / 0) 18%,
-      rgb(10 12 14 / 0) 82%,
-      rgb(10 12 14 / 0.09)
+      color-mix(in srgb, var(--color-ink) 7%, transparent),
+      color-mix(in srgb, var(--color-ink) 0%, transparent) 18%,
+      color-mix(in srgb, var(--color-ink) 0%, transparent) 82%,
+      color-mix(in srgb, var(--color-ink) 9%, transparent)
     );
   }
   /* In the room, the print dims into the lamp light. */
@@ -584,9 +594,9 @@
       rgb(255 255 255 / 0) 30%,
       rgb(255 255 255 / 0.55) 46%,
       rgb(255 255 255 / 0.08) 54%,
-      rgb(10 12 14 / 0) 60%,
-      rgb(10 12 14 / 0.22) 74%,
-      rgb(10 12 14 / 0) 90%
+      color-mix(in srgb, var(--color-ink) 0%, transparent) 60%,
+      color-mix(in srgb, var(--color-ink) 22%, transparent) 74%,
+      color-mix(in srgb, var(--color-ink) 0%, transparent) 90%
     );
   }
 }

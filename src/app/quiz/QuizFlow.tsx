@@ -593,7 +593,7 @@ function LeaveQuiz({
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-4 bg-[rgb(15_23_42/0.45)]"
+      className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-4 bg-[color-mix(in_srgb,var(--color-ink)_45%,transparent)]"
       onClick={(e) => {
         if (e.target === e.currentTarget) onStay();
       }}
@@ -603,7 +603,7 @@ function LeaveQuiz({
         aria-modal="true"
         aria-labelledby={`${id}-title`}
         aria-describedby={`${id}-body`}
-        className="w-full max-w-[420px] rounded-[var(--radius-lg)] border border-[var(--color-line)] bg-[var(--color-surface)] p-5 flex flex-col gap-4 shadow-[0_12px_40px_rgb(15_23_42/0.18)]"
+        className="w-full max-w-[420px] rounded-[var(--radius-lg)] border border-[var(--color-line)] bg-[var(--color-surface)] p-5 flex flex-col gap-4 shadow-[0_12px_40px_color-mix(in_srgb,var(--color-ink)_18%,transparent)]"
       >
         <div className="flex flex-col gap-2">
           <span id={`${id}-title`} className="t-h3">

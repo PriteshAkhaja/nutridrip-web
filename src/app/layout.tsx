@@ -3,6 +3,8 @@ import { Instrument_Sans, Inter, Noto_Sans_Mono } from "next/font/google";
 import { connection } from "next/server";
 import { ClockProvider } from "@/components/ClockProvider";
 import { getClockFormat } from "@/lib/settings/clock";
+import { getBrandColor, getContrastColor, getDeepColor } from "@/lib/settings/theme";
+import { brandCss } from "@/lib/theme";
 import "./globals.css";
 
 const instrument = Instrument_Sans({
@@ -58,6 +60,8 @@ export const metadata: Metadata = {
     locale: "en_IN",
   },
   twitter: { card: "summary_large_image", title, description },
+  // Drawn per request in the brand colour (app/brand-mark.svg).
+  icons: { icon: [{ url: "/brand-mark.svg", type: "image/svg+xml" }] },
 };
 
 /**
@@ -105,7 +109,16 @@ export default async function RootLayout({ children }: { children: React.ReactNo
   // component through ClockProvider. Read per request, never at build time:
   // the build has no database, and a baked-in format would ignore the setting.
   await connection();
-  const clockFormat = await getClockFormat();
+  const [clockFormat, brandColor, deepColor, contrastColor] = await Promise.all([
+    getClockFormat(),
+    getBrandColor(),
+    getDeepColor(),
+    getContrastColor(),
+  ]);
+  // The brand colour (Admin → Settings) for every page of every role: one
+  // :root rule of computed hex values, outranking globals.css's layered
+  // tokens. Empty for the shipped teal.
+  const themeCss = brandCss(brandColor, deepColor, contrastColor);
 
   return (
     // data-scroll-behavior: Next 16 reads it to switch smooth scrolling off
@@ -120,6 +133,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
     >
       <head>
         <script dangerouslySetInnerHTML={{ __html: REVEAL_BOOT }} />
+        {themeCss ? <style id="nd-brand" dangerouslySetInnerHTML={{ __html: themeCss }} /> : null}
       </head>
       {/* Extensions (ColorZilla, Grammarly, password managers) stamp attributes
           onto <body> before React hydrates, which reads as a server/client

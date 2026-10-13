@@ -75,7 +75,7 @@ export function PaymentSheet({
 
   return (
     <div
-      className="pay-scrim fixed inset-0 z-[60] flex items-end sm:items-center justify-center sm:p-6 bg-[rgb(15_23_42/0.5)]"
+      className="pay-scrim fixed inset-0 z-[60] flex items-end sm:items-center justify-center sm:p-6 bg-[color-mix(in_srgb,var(--color-ink)_50%,transparent)]"
       onClick={(e) => {
         if (e.target === e.currentTarget && dismissable) (phase === "done" ? onContinue : onClose)();
       }}
@@ -86,7 +86,7 @@ export function PaymentSheet({
         aria-live="polite"
         aria-labelledby={`${id}-title`}
         aria-describedby={phase === "done" ? undefined : `${id}-body`}
-        className="pay-sheet relative w-full sm:max-w-[440px] rounded-t-[24px] sm:rounded-[24px] bg-[var(--color-surface)] overflow-hidden shadow-[0_-10px_40px_rgb(15_23_42/0.16)] sm:shadow-[0_28px_70px_rgb(15_23_42/0.28)]"
+        className="pay-sheet relative w-full sm:max-w-[440px] rounded-t-[24px] sm:rounded-[24px] bg-[var(--color-surface)] overflow-hidden shadow-[0_-10px_40px_color-mix(in_srgb,var(--color-ink)_16%,transparent)] sm:shadow-[0_28px_70px_color-mix(in_srgb,var(--color-ink)_28%,transparent)]"
       >
         {/* A wash of the state's colour behind the mark; it cross-fades as the state changes. */}
         <div
@@ -385,7 +385,7 @@ function StatusMark({ phase }: { phase: PayState["phase"] }) {
       <span className={size} aria-hidden>
         <span className="absolute inset-0 rounded-full border-[5px] border-[var(--color-primary-line)]" />
         <span className="pay-orbit absolute inset-0 rounded-full" />
-        <span className="pay-pop w-11 h-11 rounded-full bg-[var(--color-surface)] shadow-[0_2px_10px_rgb(10_127_161/0.18)] inline-flex items-center justify-center">
+        <span className="pay-pop w-11 h-11 rounded-full bg-[var(--color-surface)] shadow-[0_2px_10px_color-mix(in_srgb,var(--color-primary)_18%,transparent)] inline-flex items-center justify-center">
           <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
             <rect x="4.5" y="9" width="11" height="8" rx="2" stroke="var(--color-primary)" strokeWidth="1.8" />
             <path d="M7 9V6.8a3 3 0 016 0V9" stroke="var(--color-primary)" strokeWidth="1.8" strokeLinecap="round" />

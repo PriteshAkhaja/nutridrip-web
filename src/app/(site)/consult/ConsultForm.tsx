@@ -81,7 +81,10 @@ export function ConsultForm({ response, zones }: { response: string; zones: Zone
   }
 
   return (
-    <Card padding="p-6 md:p-8" className="shadow-[0_32px_64px_-36px_rgba(6,37,48,0.35)]">
+    <Card
+      padding="p-6 md:p-8"
+      className="shadow-[0_32px_64px_-36px_color-mix(in_srgb,var(--color-deep)_35%,transparent)]"
+    >
       <form
         className="flex flex-col gap-5"
         onSubmit={(e) => {
@@ -154,7 +157,7 @@ export function ConsultForm({ response, zones }: { response: string; zones: Zone
                   onClick={() => toggle(t)}
                   className={`t-small rounded-full px-[14px] py-[8px] border min-h-[44px] sm:min-h-[36px] cursor-pointer transition-colors ${
                     on
-                      ? "border-[var(--color-ink)] bg-[var(--color-ink)] text-white"
+                      ? "border-[var(--color-contrast)] bg-[var(--color-contrast)] text-white"
                       : "border-[var(--color-line-2)] bg-[var(--color-surface)] text-[var(--color-ink)] hover:border-[var(--color-ink-3)]"
                   }`}
                 >

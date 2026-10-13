@@ -274,6 +274,6 @@ export function AuditFilters({
 const chip = (on: boolean) =>
   `t-small rounded-full px-[14px] py-[7px] border no-underline hover:no-underline ${
     on
-      ? "border-[var(--color-ink)] bg-[var(--color-ink)] text-white"
+      ? "border-[var(--color-contrast)] bg-[var(--color-contrast)] text-white"
       : "border-[var(--color-line-2)] bg-[var(--color-surface)] text-[var(--color-ink)]"
   }`;

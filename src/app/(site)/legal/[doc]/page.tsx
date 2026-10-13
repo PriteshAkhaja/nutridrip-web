@@ -162,7 +162,7 @@ export default async function LegalPage({ params }: { params: Promise<{ doc: str
                       className={
                         "inline-flex min-h-[40px] items-center rounded-full border px-4 text-[13.5px] font-medium no-underline hover:no-underline transition-colors duration-200 " +
                         (active
-                          ? "border-[var(--color-ink)] bg-[var(--color-ink)] text-white"
+                          ? "border-[var(--color-contrast)] bg-[var(--color-contrast)] text-white"
                           : "border-[var(--color-line-2)] bg-[var(--color-surface)] text-[var(--color-ink)] hover:border-[var(--color-ink)]")
                       }
                     >

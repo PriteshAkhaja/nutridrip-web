@@ -83,7 +83,7 @@ export function LoginForm({ next }: { next: string | null }) {
             }}
             className={`flex-1 min-h-[36px] rounded-[6px] text-[13px] font-semibold transition-colors duration-150 ${
               mode === m
-                ? "bg-[var(--color-surface)] text-[var(--color-ink)] shadow-[0_1px_2px_rgba(10,12,14,.06)]"
+                ? "bg-[var(--color-surface)] text-[var(--color-ink)] shadow-[0_1px_2px_color-mix(in_srgb,var(--color-ink)_6%,transparent)]"
                 : "text-[var(--color-ink-2)]"
             }`}
           >

@@ -26,7 +26,7 @@ export function FaqBrowser({ categories }: { categories: FaqCategory[] }) {
   const chip = (on: boolean) =>
     `t-small font-medium rounded-full px-4 border min-h-[44px] sm:min-h-[40px] cursor-pointer transition-colors ${
       on
-        ? "border-[var(--color-ink)] bg-[var(--color-ink)] text-white"
+        ? "border-[var(--color-contrast)] bg-[var(--color-contrast)] text-white"
         : "border-[var(--color-line-2)] bg-[var(--color-surface)] text-[var(--color-ink)] hover:border-[var(--color-ink)]"
     }`;
 

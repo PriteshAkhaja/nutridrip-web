@@ -65,7 +65,10 @@ export function ClinicEnquiryForm() {
   }
 
   return (
-    <Card padding="p-6 md:p-8" className="shadow-[0_32px_64px_-36px_rgba(6,37,48,0.35)]">
+    <Card
+      padding="p-6 md:p-8"
+      className="shadow-[0_32px_64px_-36px_color-mix(in_srgb,var(--color-deep)_35%,transparent)]"
+    >
       <form
         className="flex flex-col gap-4"
         onSubmit={(e) => {

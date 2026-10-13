@@ -39,7 +39,7 @@ export function CtaPanel({
                   leftward beside the text. */}
               <div
                 aria-hidden
-                className="absolute inset-0 bg-[linear-gradient(0deg,var(--color-deep)_0%,rgb(6_37_48/0)_55%)] md:bg-[linear-gradient(90deg,var(--color-deep)_0%,rgb(6_37_48/0.55)_32%,rgb(6_37_48/0)_70%)]"
+                className="absolute inset-0 bg-[linear-gradient(0deg,var(--color-deep)_0%,color-mix(in_srgb,var(--color-deep)_0%,transparent)_55%)] md:bg-[linear-gradient(90deg,var(--color-deep)_0%,color-mix(in_srgb,var(--color-deep)_55%,transparent)_32%,color-mix(in_srgb,var(--color-deep)_0%,transparent)_70%)]"
               />
             </div>
           ) : null}

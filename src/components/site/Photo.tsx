@@ -37,6 +37,7 @@ export function Photo({
   fill = false,
   position,
   radius,
+  thumb,
   children,
 }: {
   image: SiteImage;
@@ -60,17 +61,29 @@ export function Photo({
   position?: string;
   /** The frame's corner radius. */
   radius?: string;
+  /**
+   * A fixed-size thumbnail, its side in CSS pixels (`sizes` is then unused).
+   * It gets a 1x/2x srcset, so at most a 128px file instead of every width up
+   * to 3840px, and with it a URL of its own. next/image tracks images by URL:
+   * the Drips menu's hidden, lazy thumbnail of a drip's photo shared the hero's
+   * URL, and made that drip page's eager, preloaded hero report as lazy LCP.
+   */
+  thumb?: number;
   children?: ReactNode;
 }) {
   const focal = position ?? image.position;
+  // A thumbnail is cropped to a square, so a landscape photograph needs to be
+  // wider than the square to cover its height without being scaled up.
+  const thumbW = thumb ? Math.ceil(thumb * Math.max(1, image.width / image.height)) : 0;
   const img = (
     <Image
       src={image.src}
       alt={decorative ? "" : image.alt}
-      fill
-      sizes={sizes}
+      {...(thumb
+        ? { width: thumbW, height: Math.round((thumbW * image.height) / image.width) }
+        : { fill: true, sizes })}
       preload={preload}
-      className={`object-cover ${zoom ? "transition-transform duration-[1100ms] ease-[var(--ease-glide)] group-hover:scale-[1.045]" : ""} ${imgClassName}`}
+      className={`object-cover ${thumb ? "h-full w-full" : ""} ${zoom ? "transition-transform duration-[1100ms] ease-[var(--ease-glide)] group-hover:scale-[1.045]" : ""} ${imgClassName}`}
       style={{ objectPosition: focal }}
     />
   );

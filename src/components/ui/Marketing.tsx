@@ -57,7 +57,7 @@ export function Section({
     paper: "bg-[var(--color-paper)]",
     soft: "bg-[var(--color-surface-2)]",
     mist: "bg-[var(--color-mist)]",
-    ink: "bg-[var(--color-ink)] text-white on-dark",
+    ink: "bg-[var(--color-contrast)] text-white on-dark",
     deep: "bg-[var(--color-deep)] text-white on-dark",
   }[tone];
   return (
@@ -232,7 +232,7 @@ function Mark({ on, emphasis }: { on: boolean; emphasis: boolean }) {
       style={{
         width: 24,
         height: 24,
-        background: on ? (emphasis ? "var(--color-primary)" : "var(--color-ink)") : "transparent",
+        background: on ? (emphasis ? "var(--color-primary)" : "var(--color-contrast)") : "transparent",
         border: on ? "none" : "1.5px solid var(--color-line-2)",
         color: on ? "#FFFFFF" : "var(--color-ink-3)",
       }}
@@ -280,7 +280,7 @@ export function FaqList({
             </span>
             <span
               aria-hidden
-              className="flex-none mt-[1px] w-7 h-7 rounded-full border border-[var(--color-line-2)] text-[var(--color-ink-2)] inline-flex items-center justify-center transition-[transform,background-color,border-color,color] duration-300 group-open:rotate-45 group-open:bg-[var(--color-ink)] group-open:border-[var(--color-ink)] group-open:text-white"
+              className="flex-none mt-[1px] w-7 h-7 rounded-full border border-[var(--color-line-2)] text-[var(--color-ink-2)] inline-flex items-center justify-center transition-[transform,background-color,border-color,color] duration-300 group-open:rotate-45 group-open:bg-[var(--color-contrast)] group-open:border-[var(--color-contrast)] group-open:text-white"
             >
               <svg width="12" height="12" viewBox="0 0 12 12" style={{ display: "block" }}>
                 <path d="M6 1.5v9M1.5 6h9" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />

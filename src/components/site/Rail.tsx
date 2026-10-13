@@ -100,7 +100,7 @@ export function Rail({
   const btn =
     tone === "dark"
       ? "border-white/25 text-white hover:bg-white hover:text-[var(--color-ink)]"
-      : "border-[var(--color-line-2)] text-[var(--color-ink)] bg-[var(--color-surface)] hover:bg-[var(--color-ink)] hover:text-white hover:border-[var(--color-ink)]";
+      : "border-[var(--color-line-2)] text-[var(--color-ink)] bg-[var(--color-surface)] hover:bg-[var(--color-contrast)] hover:text-white hover:border-[var(--color-contrast)]";
 
   return (
     <div

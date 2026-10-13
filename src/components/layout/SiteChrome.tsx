@@ -37,13 +37,13 @@ export async function SiteHeader() {
     <>
       <a
         href="#main"
-        className="sr-only focus:not-sr-only focus:fixed focus:left-4 focus:top-3 focus:z-[70] focus:rounded-[var(--radius-sm)] focus:bg-[var(--color-ink)] focus:px-4 focus:py-3 focus:text-white focus:no-underline"
+        className="sr-only focus:not-sr-only focus:fixed focus:left-4 focus:top-3 focus:z-[70] focus:rounded-[var(--radius-sm)] focus:bg-[var(--color-contrast)] focus:px-4 focus:py-3 focus:text-white focus:no-underline"
       >
         Skip to content
       </a>
       {/* The one-line promise. It scrolls away with the page; only the bar
           below it stays. */}
-      <div className="bg-[var(--color-ink)] text-white">
+      <div className="bg-[var(--color-contrast)] text-white">
         <div className="mx-auto max-w-[1280px] px-6 md:px-10 py-2 flex items-center justify-center gap-x-3 gap-y-1 flex-wrap text-center">
           {/* The zone count goes on a phone, where the line would otherwise
               wrap to three rows before the page has started. */}
@@ -146,7 +146,7 @@ export async function SiteFooter() {
   const served = servedZones(zones);
 
   return (
-    <footer className="relative overflow-hidden bg-[var(--color-ink)] text-white">
+    <footer className="relative overflow-hidden bg-[var(--color-contrast)] text-white">
       {/* Where a nurse can come, read out slowly: the one piece of news every
           page can carry. */}
       {served.length > 0 ? (
@@ -164,7 +164,7 @@ export async function SiteFooter() {
             <Marquee
               label="Zones we serve"
               className="min-w-0 flex-1"
-              fade="var(--color-ink)"
+              fade="var(--color-contrast)"
               duration={Math.max(36, served.length * 4)}
               gap={32}
               items={served.map((z) => (

@@ -1432,3 +1432,88 @@ Online payment switches on when the Razorpay keys are added (`.env.example` list
 | 44.1 | `/drips/glow-protocol` and `/drips/myers-revive`: scroll after the section locks before the first ingredient moves, 1,160 px before, 200 px now; the act still ends on the room | ✅ |
 | 44.2 | All nine drip pages at 1440 and 390: every step present, no overlaps, nothing off screen, no console errors | ✅ |
 | 44.3 | Typecheck, lint, Prettier, 687 unit tests | ✅ |
+
+## 45. The brand colour can be changed in Admin → Settings
+
+**45 (12 Oct):** the super admin can set the brand colour for the whole product — the website, the patient and nurse apps, and every console — from **Admin → Settings → Brand colour**.
+
+- **Added — pick one colour; every shade is worked out from it.** Buttons and their hover, links, the pale highlight grounds and hairlines, small accent text, the dark bands (the merge section, closing panels, the featured pricing card), the light section grounds, shadows and the browser-tab icon all follow it. It takes effect on every page as soon as it is saved: no rebuild.
+- **Added — two rules guard it.** White button text must stay readable (at least 4.5:1); a colour too pale for that is refused, with a darker shade that works offered in one click. And the brand cannot sit close to the red, amber or green that mark patient status on vitals and alerts.
+- **Added — a live preview** of the logo, buttons, a link, a progress bar, a light ground and a dark band before saving, seven suggested colours, and **Reset to NutriDrip teal**. Every change is written to the audit trail.
+- **Not changed by it:** the clinical colours (safe, caution, critical, info), body text and greys, and photographs (the merge section's bag and vials are photographs; the printed bag label and the ring follow the colour). The phone home-screen icon (`apple-icon.png`) stays teal.
+
+| # | Test | Result |
+|---|---|---|
+| 45.1 | 16 unit tests: colour parsing, the two rules, every derived shade keeps its contrast for seven different colours, nothing but hex values can reach the page | ✅ |
+| 45.2 | The site in teal, blue and violet (home, the merge, a drip page, safety, pricing, sign-in): every accent follows, "Mandatory" stays clinical red | ✅ (colour applied in the browser, not saved to the database) |
+| 45.3 | Favicon drawn per request; exactly the original mark when no colour is set | ✅ |
+| 45.4 | Typecheck, lint, 703 unit tests | ✅ |
+| 45.5 | Saving from the Settings page and the consoles in a new colour | Not checked: needs a super-admin sign-in and writes to the database |
+
+**45, continued (12 Oct): two colours, not one.**
+
+- **Added — the dark sections get their own colour.** Settings now has **Brand colours**: the brand colour (buttons, links, highlights) and the dark sections colour (the merge section, closing panels, the featured pricing card). By default the dark sections still follow the brand colour; untick "Follow the brand colour" to pick one. It must stay dark enough for white text (at least 12:1); a lighter one is refused, with a darker shade offered in one click. The lifted brand tint used on dark sections is recalculated against it. "Reset to NutriDrip colours" restores both. Text stays near-black: it is not a setting.
+- **Changed — the preview's button and link now react to hover**, showing the hover shade, instead of a separate "On hover" sample.
+
+| # | Test | Result |
+|---|---|---|
+| 45.6 | 4 more unit tests: dark colours accepted and too-light ones refused with a working shade offered; the chosen colour used as given with readable companions; unset or refused falls back to the derived one; over the shipped brand only the dark tokens change | ✅ |
+| 45.7 | Typecheck, lint, 707 unit tests | ✅ |
+| 45.8 | The settings form in a browser | Not checked: needs a super-admin sign-in |
+
+**45, continued (12 Oct): the black buttons get their own colour.**
+
+- **Added — a third picker, Contrast colour.** The near-black that fills secondary buttons on hover, selected filter chips (drips, FAQs, consult topics, legal tabs, the audit filters), the open FAQ icon, carousel and drip-card arrows on hover, the top announcement bar and the footer used to be the text colour itself, so it could not change without changing all text. It is now its own colour, black by default. It must stay near-black (white on it at least 13:1, and the footer's grey text readable); a lighter colour is refused with a darker shade offered. Body text stays black.
+
+| # | Test | Result |
+|---|---|---|
+| 45.9 | 2 more unit tests: near-black shades accepted, lighter refused with a working shade offered; written as its own token only when set | ✅ |
+| 45.10 | `/drips` and `/` with a navy contrast colour (applied in the browser): top bar, footer and button hover follow; text unchanged | ✅ |
+| 45.11 | Typecheck, lint, 709 unit tests | ✅ |
+
+**45, continued (12 Oct): the Brand colours card, redesigned.**
+
+- **Changed — three clear colour rows.** Each has a large swatch (click it to pick), its name, what it colours, its code, and its state ("Default", "Custom", "Follows brand"). Suggested colours sit under the brand colour; a refused colour shows why, with a one-click shade that works.
+- **Added — the preview is a small page**, top bar to footer, in the picked colours: header, hero with both buttons (they react to hover), filters, a progress bar, a light band, a dark band and the footer.
+- **Added — "Shades worked out":** the ten shades the system derives from the three picks, each labelled with its use.
+- **Added — a save bar** with the state of the card ("NutriDrip colours live", "Custom colours live", "Unsaved changes"), Save and Reset together, and the save or error message in place.
+- Checked at 1440, 1024 and 390 wide (no sideways scroll; on a phone the colour code moves under its name).
+
+**45, continued (13 Oct): the colours checked across the whole product.**
+
+- **Checked — every page of every role in a custom set** (violet brand, derived dark sections, navy contrast colour; applied in the browser, not saved): 12 public pages, the patient app (7 screens), the nurse app (4), the doctor console (11), the clinic console (5) and the admin console (22) — 61 pages. Each page was screenshotted and every element scanned for a colour still on the shipped teal.
+- **Fixed — three colours the theme could not reach:** the photo fade on the closing panel (8 public pages) still used the shipped deep teal, the /safety phone progress strip's shadow, and the payment sheet's success icon shadow. All three now follow the theme.
+- What stays as it is, as intended: the clinical colours (Critical red, overdue amber, escalation panels), the apricot vitality ring, and the swatches on the Settings page itself.
+
+| # | Test | Result |
+|---|---|---|
+| 45.12 | 61 pages across all six roles in a custom theme: no leftover shipped teal anywhere except the Settings swatches (intended) | ✅ |
+| 45.13 | Typecheck, lint, 709 unit tests | ✅ |
+
+**45, continued (13 Oct): every page, every component, in the saved colours.**
+
+- **Changed — the greys, the text ink and the info tone now lean toward the brand.** As shipped they lean a few degrees toward the teal, so with another brand they read as a cool blue-grey: hover fills (the Drips menu, nav pills), panels, borders, muted text, and info notices such as the quiz's "Answering again". With a custom brand they take its hue at exactly the same brightness, so every text contrast is unchanged. Red, amber and green never move, and the info tone keeps the shipped blue if a brand sits near one of them. With no brand set, nothing changes.
+- **Fixed — filled black shapes now use the contrast colour:** the ticks in the "NutriDrip vs a drip bar vs a hospital day-care" table, and the fade at the edges of the footer's zones ticker (it faded to black on a navy footer).
+- **Fixed — the last hard-coded inks and slates:** the drip assembly label and its shading, the pop-up and modal shadows, the quiz and payment backdrops, the console's phone-menu backdrop, the sign-in toggle's shadow, the switch knob's shadow, the Drips menu chevron's hover, the goal-tile and room shading, and the phone home-screen icon (now drawn from the brand colour).
+- **Added — Settings shows the greys too:** a second row in "Shades worked out" (panels and hover, borders, muted text, notices, info). On wide screens both rows use five columns, so the labels no longer run together.
+
+| # | Test | Result |
+|---|---|---|
+| 45.14 | 10 more unit tests: greys and info keep their shipped contrast for six brands, stay exactly as shipped for the shipped brand, and never come near red, amber or green for any accepted brand | ✅ |
+| 45.15 | Every page each role can reach by its links (82, all six roles) in the saved violet/navy theme: no shipped teal, grey or info colour left, no vivid teal or blue the theme does not own, no shape filled with text ink | ✅ (only the Settings colour swatches, intended) |
+| 45.16 | 17 pages only reachable from data, opened directly: all eight nurse session steps, the patient report, the clinic statement, the AI studio and its form, the quiz in retake mode | ✅ |
+| 45.17 | Drips menu open, cards and buttons hovered, keyboard focus, an FAQ open, the phone menu; the tab and home-screen icons | ✅ |
+| 45.18 | Settings "Shades worked out" card at 1440, 1024 and 390 wide: no sideways scroll, even spacing | ✅ |
+| 45.19 | Typecheck, lint, 718 unit tests | ✅ |
+| 45.20 | The invoice page in a browser | Not checked: opening it creates the invoice (a real record and number) and the dev data has none yet. Its source uses theme colours only. |
+| 45.21 | The invoice (opened once by hand, so it now exists), as the clinic and the super admin see it, on screen and as printed: no shipped colour left, no ink-filled shape | ✅ |
+
+**45, continued (13 Oct): the drip pages' "lazy LCP" warning.**
+
+- **Fixed — the Drips menu's Most booked thumbnails are now real thumbnails.** Each was the drip's full photograph at every width up to 3840px, shown at 56px. Hidden and lazy inside the closed menu, it shared the page's main photo's address, so on Hydrate Plus, Myers' Revive and Immune Shield the dev server warned that the main photo (eager and preloaded all along) was a lazy Largest Contentful Paint. Each thumbnail now fetches one small file (128px, or 256px for a landscape photo so the square crop stays sharp on a 2× screen).
+
+| # | Test | Result |
+|---|---|---|
+| 45.22 | Hydrate Plus, Myers' Revive and Immune Shield at 1440 and 390: no LCP warning; the main photo is the LCP, loaded eagerly | ✅ |
+| 45.23 | The menu open: three 56 × 56 thumbnails, cropped, sharp at 2× | ✅ |
+| 45.24 | Typecheck, lint | ✅ |

@@ -15,6 +15,15 @@ const PlatformSettingsSchema = new Schema(
      * booking screen and dispatch both apply it. Bounds as NURSE_DAY_LIMIT_MIN/MAX.
      */
     nurseDayLimit: { type: Number, min: 1, max: 12, default: 6 },
+    /**
+     * The brand colour for the whole product, "#rrggbb" (lib/theme). Null: the
+     * shipped teal. Every accent shade is derived from it; clinical colours never are.
+     */
+    brandColor: { type: String, default: null, match: /^#[0-9a-f]{6}$/ },
+    /** The dark sections' ground (lib/theme). Null: derived from the brand colour. */
+    deepColor: { type: String, default: null, match: /^#[0-9a-f]{6}$/ },
+    /** Filled near-black UI: buttons on hover, selected chips, the footer (lib/theme). Null: ink. */
+    contrastColor: { type: String, default: null, match: /^#[0-9a-f]{6}$/ },
     updatedBy: { type: Schema.Types.ObjectId, ref: "User" },
   },
   { timestamps: true }

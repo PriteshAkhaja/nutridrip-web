@@ -222,7 +222,7 @@ export default function SafetyPage() {
             {/* Phones and tablets: the card above is not sticky there, so this is. */}
             <div
               aria-hidden
-              className="sticky top-[calc(var(--site-header-h)+8px)] z-[5] mb-3 hidden rounded-[14px] border border-[var(--color-line)] bg-[var(--color-surface)] px-4 pt-2.5 pb-3 shadow-[0_10px_24px_-14px_rgb(6_37_48/0.3)] max-lg:group-data-[live]/cl:block"
+              className="sticky top-[calc(var(--site-header-h)+8px)] z-[5] mb-3 hidden rounded-[14px] border border-[var(--color-line)] bg-[var(--color-surface)] px-4 pt-2.5 pb-3 shadow-[0_10px_24px_-14px_color-mix(in_srgb,var(--color-deep)_30%,transparent)] max-lg:group-data-[live]/cl:block"
             >
               <div className="flex justify-between gap-3 text-[13px] font-medium leading-[1.3]">
                 <span data-cl-strip-phase>{PHASE_ORDER[0]}</span>

@@ -50,7 +50,7 @@ export default async function CataloguePage({
   const chip = (active: boolean) =>
     `inline-flex min-h-[40px] items-center gap-[9px] rounded-full px-4 border no-underline hover:no-underline transition-colors duration-200 ${
       active
-        ? "border-[var(--color-ink)] bg-[var(--color-ink)] text-white"
+        ? "border-[var(--color-contrast)] bg-[var(--color-contrast)] text-white"
         : "border-[var(--color-line-2)] bg-[var(--color-surface)] text-[var(--color-ink)] hover:border-[var(--color-ink)]"
     }`;
 

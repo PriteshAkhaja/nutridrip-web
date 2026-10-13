@@ -4,15 +4,23 @@ import { adminNav } from "@/lib/nav";
 import { ConsoleShell } from "@/components/layout/ConsoleShell";
 import { getClockFormat } from "@/lib/settings/clock";
 import { getNurseDayLimit } from "@/lib/settings/nurse-day";
+import { getBrandColor, getContrastColor, getDeepColor } from "@/lib/settings/theme";
 import { ClockForm } from "./ClockForm";
 import { NurseDayForm } from "./NurseDayForm";
+import { BrandForm } from "./BrandForm";
 
 export const metadata: Metadata = { title: "Settings" };
 export const dynamic = "force-dynamic";
 
 export default async function SettingsPage() {
   const session = await requirePermission("settings.manage");
-  const [nav, clockFormat, nurseDayLimit] = await Promise.all([adminNav(), getClockFormat(), getNurseDayLimit()]);
+  const [nav, clockFormat, nurseDayLimit, brandColor] = await Promise.all([
+    adminNav(),
+    getClockFormat(),
+    getNurseDayLimit(),
+    getBrandColor(),
+  ]);
+  const [deepColor, contrastColor] = await Promise.all([getDeepColor(), getContrastColor()]);
 
   return (
     <ConsoleShell
@@ -31,6 +39,7 @@ export default async function SettingsPage() {
       <div className="flex flex-col gap-6">
         <ClockForm format={clockFormat} />
         <NurseDayForm limit={nurseDayLimit} />
+        <BrandForm color={brandColor} deep={deepColor} contrast={contrastColor} />
       </div>
     </ConsoleShell>
   );

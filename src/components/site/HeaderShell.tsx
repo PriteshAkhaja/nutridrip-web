@@ -205,7 +205,7 @@ export function NavLinks({ links, dripsMenu }: { links: NavLink[]; dripsMenu?: R
               aria-expanded={open}
               aria-controls={MENU_ID}
               aria-label="Drips by goal"
-              className="mr-[6px] inline-flex h-7 w-6 cursor-pointer items-center justify-center rounded-full text-inherit transition-colors duration-200 hover:bg-black/5"
+              className="mr-[6px] inline-flex h-7 w-6 cursor-pointer items-center justify-center rounded-full text-inherit transition-colors duration-200 hover:bg-[color-mix(in_srgb,var(--color-ink)_6%,transparent)]"
               onClick={() => setOpen(!open)}
               onFocus={() => glideTo(group.current)}
             >

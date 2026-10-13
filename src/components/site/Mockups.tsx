@@ -67,7 +67,7 @@ export function QuizMock() {
         ))}
       </div>
       <div className="mt-4 flex justify-end sm:mt-5">
-        <span className="inline-flex min-h-[40px] items-center rounded-[var(--radius-sm)] bg-[var(--color-ink)] px-5 text-[13.5px] font-semibold text-white">
+        <span className="inline-flex min-h-[40px] items-center rounded-[var(--radius-sm)] bg-[var(--color-contrast)] px-5 text-[13.5px] font-semibold text-white">
           Next
         </span>
       </div>

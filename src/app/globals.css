@@ -13,10 +13,12 @@
    enough that white button labels clear AA on it. Neutrals lean a few degrees
    toward it — cool rather than warm — so they read as chosen.
 
-   Clinical colours (safe / caution / critical / info) are NOT part of that
-   identity and are deliberately untouched — recolouring an out-of-range vital
-   to suit a brand would be unsafe. Apricot likewise stays on the vitality
-   ring, because that is a data colour, not decoration.
+   Clinical colours (safe / caution / critical) are NOT part of that identity
+   and are deliberately untouched — recolouring an out-of-range vital to suit a
+   brand would be unsafe. Apricot likewise stays on the vitality ring, because
+   that is a data colour, not decoration. When the super admin sets a brand
+   colour (lib/theme), the neutrals, the ink and the calm info tone lean toward
+   it instead of the teal, at the same brightness; the three above never move.
    ========================================================================== */
 
 @theme {
@@ -31,6 +33,10 @@
   --color-ink: #0a0c0e;
   --color-ink-2: #434a50;
   --color-ink-3: #6b7178;
+  /* Near-black for UI that is filled, not written: secondary buttons on hover,
+     selected filter chips, the announcement bar, the footer. Ink by default;
+     the super admin can set it (lib/theme, Admin → Settings). Body text stays ink. */
+  --color-contrast: var(--color-ink);
 
   /* The one accent — the old site's cyan-teal (#0B9EC8 there), darkened to
      #0A7FA1 so white labels on it clear 4.60:1 rather than the original 3.12:1 */
@@ -104,8 +110,8 @@
   --radius-pill: 999px;
 
   /* Elevation — only two. Cards never lift. */
-  --shadow-pop: 0 4px 16px rgba(10, 12, 14, 0.08);
-  --shadow-modal: 0 24px 64px rgba(10, 12, 14, 0.18);
+  --shadow-pop: 0 4px 16px color-mix(in srgb, var(--color-ink) 8%, transparent);
+  --shadow-modal: 0 24px 64px color-mix(in srgb, var(--color-ink) 18%, transparent);
 
   /* --------------------------------------------------------------------------
      Public site. Everything below extends the palette above rather than
@@ -118,6 +124,10 @@
   --color-deep-2: #0b3340;
   --color-deep-line: #1d4653;
   --color-mist: #f0f7f9;
+  /* The dark sections colour taken further toward black: the shading laid over
+     photographs so white words read on them (goal tiles, the merge's room).
+     Follows --color-deep, so it follows the theme. */
+  --color-deep-shade: color-mix(in srgb, var(--color-deep) 62%, #000);
 
   /* Photography frames and large panels. Controls keep the small radii. */
   --radius-xl: 24px;
@@ -125,7 +135,9 @@
 
   /* Floating layers laid over photography (the chips on a hero image). Cards
      on the page still never lift. */
-  --shadow-float: 0 24px 48px -16px rgba(6, 37, 48, 0.3), 0 2px 8px rgba(6, 37, 48, 0.06);
+  --shadow-float:
+    0 24px 48px -16px color-mix(in srgb, var(--color-deep) 30%, transparent),
+    0 2px 8px color-mix(in srgb, var(--color-deep) 6%, transparent);
 }
 
 :root {
@@ -884,14 +896,14 @@
 }
 @layer components {
   .site-capsule {
-    box-shadow: 0 1px 2px rgb(6 37 48 / 0.05);
+    box-shadow: 0 1px 2px color-mix(in srgb, var(--color-deep) 5%, transparent);
   }
   .site-capsule::after {
     content: "";
     position: absolute;
     inset: -1px;
     border-radius: inherit;
-    box-shadow: 0 16px 36px -18px rgb(6 37 48 / 0.3);
+    box-shadow: 0 16px 36px -18px color-mix(in srgb, var(--color-deep) 30%, transparent);
     opacity: 0;
     pointer-events: none;
     transition: opacity 0.35s var(--ease-glide);
@@ -1027,7 +1039,7 @@
   inset: 0;
   z-index: -1;
   border-radius: inherit;
-  background: var(--color-ink);
+  background: var(--color-contrast);
   scale: 1 0;
   transform-origin: 50% 100%;
   transition: scale 0.45s var(--ease-glide);
@@ -1055,8 +1067,8 @@
      ring through the anti-aliased edge where the clipped fill meets the border. */
   .site .btn-secondary:hover:not(:disabled) {
     color: #fff;
-    border-color: var(--color-ink);
-    background-color: var(--color-ink);
+    border-color: var(--color-contrast);
+    background-color: var(--color-contrast);
     transition:
       color 0.3s var(--ease-glide),
       border-color 0.3s var(--ease-glide),

@@ -63,6 +63,7 @@ export function DripsMenu({ drips }: { drips: DripCard[] }) {
                     <Photo
                       image={dripImage(d.slug, d.category)}
                       sizes="56px"
+                      thumb={56}
                       zoom
                       decorative
                       radius="12px"

@@ -137,7 +137,7 @@ export function ConsoleRail({
       <div
         aria-hidden
         onClick={() => close()}
-        className={`lg:hidden fixed inset-0 z-[60] bg-[rgba(10,12,14,0.4)] transition-opacity duration-200 ease-out ${
+        className={`lg:hidden fixed inset-0 z-[60] bg-[color-mix(in_srgb,var(--color-ink)_40%,transparent)] transition-opacity duration-200 ease-out ${
           open ? "opacity-100" : "opacity-0 pointer-events-none"
         }`}
       />

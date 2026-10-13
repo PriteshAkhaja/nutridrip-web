@@ -29,7 +29,7 @@ export function GoalTile({
       <Photo image={image} sizes={sizes} zoom decorative className="aspect-[4/5] rounded-[var(--radius-xl)]">
         <div
           aria-hidden
-          className="absolute inset-0 bg-[linear-gradient(0deg,rgb(4_24_31/0.86)_0%,rgb(4_24_31/0.42)_38%,rgb(4_24_31/0)_62%)]"
+          className="absolute inset-0 bg-[linear-gradient(0deg,color-mix(in_srgb,var(--color-deep-shade)_86%,transparent)_0%,color-mix(in_srgb,var(--color-deep-shade)_42%,transparent)_38%,color-mix(in_srgb,var(--color-deep-shade)_0%,transparent)_62%)]"
         />
         <div className="absolute inset-x-0 bottom-0 flex items-end justify-between gap-4 p-6">
           <div className="flex flex-col gap-1 text-white min-w-0">
