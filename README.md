@@ -15,6 +15,8 @@ npm run seed                   # demo dataset: 9 drips, 25 products, 31 batches,
 npm run dev                    # http://localhost:3000
 ```
 
+**Before going live, set your own `JWT_SECRET`.** It signs every login, and the value in `.env.example` is public, so with it anyone could sign in as any account. In production (`npm start`) the app refuses to run with that value, or with one under 16 characters, and the error says how to make a good one: `node -e "console.log(require('crypto').randomBytes(32).toString('hex'))"`. Development accepts the example, so a fresh clone runs.
+
 MongoDB must be a **replica set** — order confirm and dispatch run inside transactions, and so does every change to the nurse schedule (booking a session, moving one, a physician's approval, assigning a nurse), so two patients can never be given the same last free nurse. A standalone `mongod` fails on those.
 
 ### Checking it still works

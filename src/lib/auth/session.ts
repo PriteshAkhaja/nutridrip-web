@@ -2,6 +2,7 @@ import { cache } from "react";
 import { cookies } from "next/headers";
 import { SignJWT, jwtVerify } from "jose";
 import type { Role } from "@/lib/models/types";
+import { assertSecretFor } from "@/lib/auth/secret";
 
 const DEV_SECRET = "dev-only-insecure-secret-change-me-32chars";
 const COOKIE = "nd_session";
@@ -14,12 +15,8 @@ const EXPIRY_HOURS = Number(process.env.SESSION_EXPIRY_HOURS ?? 24);
  */
 function secret(): Uint8Array {
   const raw = process.env.JWT_SECRET;
-  if (!raw || raw.length < 16) {
-    if (process.env.NODE_ENV === "production") {
-      throw new Error("JWT_SECRET must be set to at least 16 characters in production");
-    }
-    return new TextEncoder().encode(DEV_SECRET);
-  }
+  assertSecretFor(raw, process.env.NODE_ENV);
+  if (!raw || raw.length < 16) return new TextEncoder().encode(DEV_SECRET);
   return new TextEncoder().encode(raw);
 }
 

@@ -1626,3 +1626,14 @@ Online payment switches on when the Razorpay keys are added (`.env.example` list
 | 46.19 | The real command on a throwaway database and folder (15 checks): a dry run changes nothing; `--delete` removes only the old unused file; the one in use, the recent one and the unseen one stay; the unseen one is marked; stale records cleared; a second run deletes nothing more; `--days 1` and `--days 0`; bad options refused | ✅ |
 | 46.20 | On the dev site (10 checks): replacing, restoring and deleting a drip each record the retirement and none deletes a file; a details-only restore retires nothing | ✅ |
 | 46.21 | Typecheck, lint, 776 unit tests | ✅ |
+
+**46, continued (15 Oct): production now refuses the example login secret; the example settings file is short.**
+
+- **Fixed — a security gap found while checking the package.** `JWT_SECRET` signs every login. The check refused only secrets under 16 characters, but the placeholder in `.env.example` is 47 characters and public, so a deployment that copied the example and forgot to change that line would have run with a secret anyone could use to forge a login as any account, a super admin included. In production the app now also refuses that placeholder, the development stand-in, and anything still saying "change-me"; the error says how to make a good secret. Both places that read the secret (the session signing key and the key that seals session codes) make the same single check. Development is unchanged, so a fresh clone still runs.
+- **Changed — `.env.example` is 29 lines, not 99.** Every setting is still listed, with a one-line note. The setup steps for Google Maps, Razorpay (keys, webhook URL and events, capture) and the photo storage folder are in the README ("Setting up the optional services"), together with a note to set your own `JWT_SECRET` before going live.
+
+| # | Test | Result |
+|---|---|---|
+| 46.22 | 12 unit tests: the rule (long enough, not the example's value, not "change-me"); both keys in production and development; the placeholder is read from `.env.example` itself so the two cannot drift; each place making the call was weakened on purpose and caught | ✅ |
+| 46.23 | The files a zip would contain (629) scanned for the real values of every setting in `.env`, and for key-shaped text: only the public placeholder found, no private key | ✅ |
+| 46.24 | Typecheck, lint, 788 unit tests | ✅ |

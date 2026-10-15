@@ -1,4 +1,5 @@
 import { createCipheriv, createDecipheriv, createHash, randomBytes } from "node:crypto";
+import { assertSecretFor } from "@/lib/auth/secret";
 
 /**
  * A session code, locked so the patient's own screen can show it.
@@ -14,9 +15,7 @@ import { createCipheriv, createDecipheriv, createHash, randomBytes } from "node:
  */
 function key(): Buffer {
   const raw = process.env.JWT_SECRET;
-  if ((!raw || raw.length < 16) && process.env.NODE_ENV === "production") {
-    throw new Error("JWT_SECRET must be set to at least 16 characters in production");
-  }
+  assertSecretFor(raw, process.env.NODE_ENV);
   return createHash("sha256")
     .update(`nd-session-code:${raw && raw.length >= 16 ? raw : "development-only"}`)
     .digest();
