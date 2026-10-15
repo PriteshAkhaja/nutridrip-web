@@ -5,7 +5,7 @@ import { formatInr } from "@/lib/inventory/units";
 import { ClinicEnquiryForm } from "./EnquiryForm";
 import { listDrips } from "@/lib/data/drips";
 import { Section, FaqList } from "@/components/ui/Marketing";
-import { SITE_IMAGES } from "@/lib/site-images";
+import { siteImages } from "@/lib/media/resolve";
 import { PageHero } from "@/components/site/PageHero";
 import { SectionHeader, delay } from "@/components/site/Layout";
 import { Photo } from "@/components/site/Photo";
@@ -90,6 +90,7 @@ function shareColor(label: string) {
 }
 
 export default async function ForClinicsPage() {
+  const img = await siteImages();
   const total = ECONOMICS[0].value;
   const [whole, ...shares] = ECONOMICS;
   const protocols = (await listDrips()).length;
@@ -132,7 +133,7 @@ export default async function ForClinicsPage() {
             ))}
           </dl>
         }
-        image={SITE_IMAGES.dripStand}
+        image={img("for-clinics.hero")}
       />
 
       {/* ---------------- What you get ---------------- */}
@@ -245,7 +246,7 @@ export default async function ForClinicsPage() {
             </ScrollEffect>
           </div>
           <Photo
-            image={SITE_IMAGES.pharmacist}
+            image={img("for-clinics.economics")}
             sizes="(min-width: 1024px) 42vw, 100vw"
             reveal
             radius="var(--radius-2xl)"

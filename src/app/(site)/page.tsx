@@ -20,7 +20,9 @@ import { getZones } from "@/lib/zones-store";
 import { fillZoneCount } from "@/lib/zones";
 import { CHECKLIST_STEPS } from "@/lib/clinical/checklist";
 import { APPROVAL_VALID_DAYS } from "@/lib/clinical/validity";
-import { SITE_IMAGES, goalImage } from "@/lib/site-images";
+import { goalImage } from "@/lib/site-images";
+import { fixedImage, siteImages } from "@/lib/media/resolve";
+import { goalTileSlot, type SlotKey } from "@/lib/media/slots";
 import { Container, SectionHeader, delay } from "@/components/site/Layout";
 import { Photo } from "@/components/site/Photo";
 import { FloatChip } from "@/components/site/FloatChip";
@@ -51,6 +53,7 @@ const HERO_POINTS = [
 ];
 
 export default async function HomePage() {
+  const img = await siteImages();
   // latePolicy: the late-change rule, with today's fees (set on the Billing page).
   const [latePolicy, drips, copy, zones, homeDrip, lastSlot, clockFormat] = await Promise.all([
     getLatePolicy(),
@@ -81,8 +84,8 @@ export default async function HomePage() {
     { value: fillZoneCount(copy["home.stat3.value"], zones), label: copy["home.stat3.label"] },
   ];
 
-  const photoFill = (key: keyof typeof SITE_IMAGES) => (
-    <Photo key={key} image={SITE_IMAGES[key]} sizes="(min-width: 1024px) 44vw, 92vw" fill />
+  const photoFill = (slot: SlotKey) => (
+    <Photo key={slot} image={img(slot)} sizes="(min-width: 1024px) 44vw, 92vw" fill />
   );
 
   return (
@@ -202,7 +205,7 @@ export default async function HomePage() {
               they sit under it as a list instead. */}
             <div className="relative min-w-0 sm:pb-10 lg:pb-0">
               <Photo
-                image={SITE_IMAGES.homeHero}
+                image={fixedImage("homeHero")}
                 sizes="(min-width: 1280px) 640px, (min-width: 1024px) 52vw, 100vw"
                 preload
                 reveal="settle"
@@ -311,8 +314,8 @@ export default async function HomePage() {
           ]}
           media={[
             <QuizMock key="quiz" />,
-            photoFill("physicianPhone"),
-            photoFill("vitalsHome"),
+            photoFill("home.step-physician"),
+            photoFill("home.step-nurse"),
             <ReportMock key="report" />,
           ]}
         />
@@ -390,7 +393,10 @@ export default async function HomePage() {
                 name={c.name}
                 blurb={c.blurb}
                 count={perCategory.get(c.slug) ?? 0}
-                image={goalImage(c.slug)}
+                image={(() => {
+                  const s = goalTileSlot(c.slug);
+                  return s ? img(s) : goalImage(c.slug);
+                })()}
               />
             </div>
           ))}
@@ -402,7 +408,7 @@ export default async function HomePage() {
         <div className="grid grid-cols-1 items-center gap-16 lg:grid-cols-[minmax(0,0.92fr)_minmax(0,1.08fr)] lg:gap-20">
           <div className="relative pb-8 lg:pb-0">
             <Photo
-              image={SITE_IMAGES.vialsMono}
+              image={img("home.safety")}
               sizes="(min-width: 1024px) 44vw, 100vw"
               reveal
               radius="var(--radius-2xl)"
@@ -520,7 +526,7 @@ export default async function HomePage() {
             </div>
           </div>
           <Photo
-            image={SITE_IMAGES.dripWindowLight}
+            image={img("home.not-for-everyone")}
             sizes="(min-width: 1024px) 40vw, 100vw"
             className="order-first min-h-[260px] sm:min-h-[320px] lg:order-none lg:min-h-full"
           />
@@ -580,7 +586,7 @@ export default async function HomePage() {
           </>
         }
         note="No card needed to get a protocol reviewed."
-        image={SITE_IMAGES.dripLineWindow}
+        image={img("home.closing")}
       />
     </>
   );

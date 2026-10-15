@@ -8,7 +8,7 @@ import { getZones } from "@/lib/zones-store";
 import { ZONE_COUNT_TOKEN, fillZoneCount } from "@/lib/zones";
 import { Section, FaqList } from "@/components/ui/Marketing";
 import { ButtonLink } from "@/components/ui/Button";
-import { SITE_IMAGES } from "@/lib/site-images";
+import { siteImages } from "@/lib/media/resolve";
 import { PageHero } from "@/components/site/PageHero";
 import { SectionHeader, delay } from "@/components/site/Layout";
 import { CtaPanel } from "@/components/site/CtaPanel";
@@ -80,6 +80,7 @@ export default async function PricingPage() {
   // The late-change rule, with today's fees (set on the Billing page).
   const [latePolicy, zones] = await Promise.all([getLatePolicy(), getZones()]);
   const drips = await listDrips();
+  const img = await siteImages();
   const base = drips.find((d) => d.slug === "myers-revive")?.priceInr ?? 8400;
 
   return (
@@ -98,7 +99,7 @@ export default async function PricingPage() {
             <span className="t-data text-[0.95em] text-[var(--color-ink)]">Myers&apos; Revive</span> as the base.
           </>
         }
-        image={SITE_IMAGES.dripBag}
+        image={img("pricing.hero")}
         imageAspect="aspect-[4/3] lg:aspect-[5/4.6]"
       />
 
@@ -222,7 +223,7 @@ export default async function PricingPage() {
             </ButtonLink>
           </>
         }
-        image={SITE_IMAGES.dripChamber}
+        image={img("pricing.closing")}
       />
     </>
   );

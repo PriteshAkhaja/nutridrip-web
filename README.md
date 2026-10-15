@@ -251,6 +251,21 @@ Two findings were argued down rather than fixed. The loader's counter pads with 
 
 ---
 
+## Setting up the optional services
+
+`.env.example` lists every setting with a one-line note. The steps behind the optional ones:
+
+- **Address lookup (Google Maps)** — without it the address form still works (the patient types the address and can share coordinates from their device). With it they get address search, a draggable pin, and city and pincode fill in. Coordinates matter beyond convenience: `pickNurse()` ranks nurses by distance, so a patient with no latitude makes every nurse score the same. Two separate keys, on purpose:
+  - **Server key** (`GOOGLE_MAPS_SERVER_KEY`, secret, used by `/api/geocode`): Google Cloud → APIs & Services → Credentials → Create API key. Enable *Places API (New)* and *Geocoding API*. Restrict it to your server's IP and to those two APIs.
+  - **Browser key** (`NEXT_PUBLIC_GOOGLE_MAPS_BROWSER_KEY`, public, renders the map only): enable *Maps JavaScript API*. It must be restricted to your domains as HTTP referrers (for example `http://localhost:3000/*` and `https://yourdomain.com/*`) and to that one API, or strangers can spend it.
+  - **Map ID** (`NEXT_PUBLIC_GOOGLE_MAPS_MAP_ID`): empty uses Google's `DEMO_MAP_ID`, fine for development. For production create a free one (Google Maps Platform → Map Management → type JavaScript, Vector).
+- **Razorpay** (what it does is in the next section):
+  - **Keys:** Razorpay Dashboard → Account & Settings → API Keys → Generate. Test keys start `rzp_test_` (no real money moves; use Razorpay's test cards and the UPI id `success@razorpay`); live keys start `rzp_live_` and need the account's KYC activated. The key id is public (sent to the browser to open Checkout); the secret never leaves the server.
+  - **Webhook:** Dashboard → Account & Settings → Webhooks → Add New Webhook. URL `https://<your domain>/api/payments/webhook`; secret: any long random string, the same as `RAZORPAY_WEBHOOK_SECRET`; events `payment.captured`, `payment.failed`, `order.paid`, `refund.processed`, `refund.failed`. It is the safety net for a patient who closes the page at the wrong moment and how "refund processed" reaches people. Payments still confirm without it, but set it up before going live. On a laptop Razorpay cannot reach localhost: use a tunnel (ngrok, cloudflared) to test it.
+  - **Capture:** Dashboard → Account & Settings → Payment Capture: set automatic capture (if left manual, the app captures each payment itself).
+  - **Refund speed:** `RAZORPAY_REFUND_SPEED="optimum"` asks for instant refunds where the bank supports it, at a per-refund charge from Razorpay; the default `normal` is free and takes 5–7 working days.
+- **Uploaded photos** (Admin → Site images) are saved in `STORAGE_DIR`, or `./storage` beside the app, laid out by page and drip. Use a folder on a permanent disk (a VPS keeps it; serverless hosting does not) and **back it up with the database**. Old files are deleted only by `npm run clean-media`, after a 30-day grace period.
+
 ## Payments (Razorpay)
 
 Online payment is Razorpay, over its REST API (`src/lib/payments`, no SDK). It is **off until `RAZORPAY_KEY_ID` and `RAZORPAY_KEY_SECRET` are set** — then everything below switches on; without them the app runs as before (book without paying, clinics record transfers). `.env.example` lists every setting and the dashboard steps (keys, webhook, capture).

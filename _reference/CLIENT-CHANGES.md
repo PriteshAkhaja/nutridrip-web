@@ -1517,3 +1517,112 @@ Online payment switches on when the Razorpay keys are added (`.env.example` list
 | 45.22 | Hydrate Plus, Myers' Revive and Immune Shield at 1440 and 390: no LCP warning; the main photo is the LCP, loaded eagerly | ✅ |
 | 45.23 | The menu open: three 56 × 56 thumbnails, cropped, sharp at 2× | ✅ |
 | 45.24 | Typecheck, lint | ✅ |
+
+## 46. Site images: every photo on the website can be replaced (14 Oct)
+
+- **Added — Admin → Site images** (super admin only). Every photograph on the website, page by page (Home, How it works, Drips, every drip page, Pricing, Safety, Zones, For clinics, About, FAQs: 35 places), plus each drip's own photo. Each place is its own slot: the same picture on two pages is two slots, so changing one page never changes another.
+- **Added — each drip has its own photo**, shown on its card, its page and the Drips menu. Until one is uploaded, a drip shows the photo for its goal, as before.
+- **Replace, Details, Restore original.** Replace checks the photo before it is sent (JPEG, PNG, WebP or AVIF; at least 1200 px on the long side; up to 15 MB) and asks what it shows (read to screen-reader users and search engines). Click the picture to set where the subject sits, so phone and desktop crops keep it. Restore original puts the shipped photo back; the upload is kept on the server.
+- **Handled automatically:** each upload is turned upright, resized to what the layouts need, compressed, stripped of camera data (location included), and given a blur preview. It goes live at once, and every change is in the audit trail.
+- **Where the files live:** a `storage/` folder on the server, organised by page and drip (`images/site/<page>/<place>/`, `images/drips/<drip>/`). It is not in the code or the zip: back it up with the database. Moving to Amazon S3 later replaces one module.
+- Not replaceable, on purpose: the drip animation's bag, vials and room (the animation is measured against them) and the logo (drawn, not photographed).
+
+| # | Test | Result |
+|---|---|---|
+| 46.1 | 15 unit tests: every place is wired to a page and starts as today's photo; upload rules; storage paths cannot leave the images folder; focus point; what a place shows | ✅ |
+| 46.2 | End to end on the dev server (31 checks): upload, organised folder, served and optimised, shown on its page only, details, five refusals with reasons, signed-out and clinic refused, paths outside the folder refused, a drip's photo on its card, page and menu, the admin screen at 1440 and 390, restore | ✅ |
+| 46.3 | Typecheck, lint, 733 unit tests | ✅ |
+| 46.4 | 15 more unit tests on real images in a temporary folder: stored size and format, the preview, the picture turned upright (checked by colour, not only size), camera data stripped, transparency on white, one name per upload, refusals write nothing, paths cannot leave the folder. Each was shown to fail when the code was broken | ✅ |
+
+**46, continued (14 Oct): sharper previews on Site images.**
+
+- **Fixed — the photos on Admin → Site images looked soft.** Each preview loaded the smallest file that just covered its card, at the site's standard quality. They now load a larger file at higher quality (30–60 KB each), so they look as sharp as the website. The public pages are unchanged: their photos already loaded 1.5–2× wider than their size.
+
+**46, continued (14 Oct): "Restore original" is for the developer, not the client, for now.**
+
+- **Changed — the Restore original button is hidden and the server refuses it** unless the server is started with `SITE_IMAGES_RESET=1`. The client's deployment does not have it, so Replace and Details are all that show; whoever runs the server can turn it on in their own settings, and it comes back with no code change. (An uploaded photo is never deleted either way: Restore only stops a page using it.)
+
+| # | Test | Result |
+|---|---|---|
+| 46.5 | Switch off, as the client has it: restore refused (403), no button, the replaced photo stays live. Switch on: the button appears, restore works, the shipped photo returns. Switch removed and the server restarted: refused again. 3 unit tests: only exactly `1` turns it on, the API itself checks it before deleting, the example settings leave it off | ✅ |
+
+**46, continued (14 Oct): Restore original stays with the client.**
+
+- **Corrected:** the note above that hid Restore original from the client behind `SITE_IMAGES_RESET` is withdrawn. Restore original is back for the super admin, as in entry 46, with no switch. Test 46.5 above no longer applies.
+
+**46, continued (14 Oct): one place removed from Site images.**
+
+- **Changed — "Home → First screen (when the drip animation is off)" is no longer listed.** That photo only appears if no drip is Live and public; otherwise the drip animation takes the first screen, so a replacement would never be seen. The home page keeps it as a fixed fallback. Site images now has 34 places plus each drip's own photo. The same picture on How it works and About stays editable there.
+
+**46, continued (14 Oct): position a photo by dragging it.**
+
+- **Changed — Details and Replace on Site images now work by dragging the photo** inside its frame, like repositioning a cover photo, instead of clicking a dot. The hand shows a grab, the picture follows the pointer and stops at its edge (never an empty gap), and the arrow keys do the same without a mouse (Shift for bigger steps). It works with a finger on a phone. Saved as before.
+
+| # | Test | Result |
+|---|---|---|
+| 46.5 | 5 unit tests on the drag maths: the picture follows the pointer, a direction with nothing to slide stays put, held inside 0–100, saved in a form the server accepts | ✅ |
+| 46.6 | In a browser (11 checks): no drag while just viewing; hint and grab hand; drag moves the picture; held at the edge; arrow keys; saved and kept after a reload; used on the live page; restored; phone width with no sideways scroll | ✅ |
+
+**46, continued (14 Oct): each place on Site images has its own size rule; Reset position.**
+
+- **Changed — the photo size rule is per place, not one for all.** The old rule (1200 px long side, 600 px short) was the same for a small About card and a tall How it works step. Each place now needs what it is drawn at: a photo smaller than that is **refused** (it would look blurry on any screen), with the place's own size in the message; a photo between that and twice that size is **allowed with an amber note** ("a little soft on high-resolution screens, such as a phone or a MacBook"). Every card shows its best size ("Best photo: 1180 × 1360 px or larger"). The same 900 × 500 photo can be fine for one place and refused for another. The server applies the same rule, whatever the browser says. The sizes were measured on the live pages; every photo the site ships with meets its own place's minimum.
+- **Added — Reset position** next to Save and Cancel while editing: puts the photo back where it started (centred for an uploaded photo, its original placing for a shipped one) without touching the photo or the description. Greyed out while it is already there.
+
+| # | Test | Result |
+|---|---|---|
+| 46.7 | 9 unit tests: size per place (rounding, refuse / note / nothing, different per place, judged by place on the server, known for every place and drip, met by each shipped photo); 2 on where Reset position goes | ✅ |
+| 46.8 | In a browser (8 checks): each card's own best size; a 256 × 171 photo refused naming the place's size; 900 × 500 fine with an amber note for a small card and refused for a tall one; an ample photo clean; the server refuses the same | ✅ |
+| 46.9 | In a browser (6 checks): Reset position greyed at the start, wakes after a drag, restores, greys again, leaves the description alone, saves nothing | ✅ |
+
+**46, continued (14 Oct): `npm run seed` keeps every replaced photo.**
+
+- **Checked — website photos and brand colours already survived a reseed:** the seed clears the demo data (people, drips, orders, bookings…) but never the replaced photos, the platform settings that hold the colours, or the uploaded files in `storage/`.
+- **Fixed — drip photos did not.** They were saved against each drip's database id, and the seed recreates every drip with a new id, so after a reseed every drip would have gone back to its goal photo. They are now saved against the drip's address (`hydrate-plus`), which the seed recreates the same and the drip editor cannot change.
+
+| # | Test | Result |
+|---|---|---|
+| 46.10 | `npm run seed` run twice on a throwaway database (never the dev one), with a website photo, a drip photo and brand colours saved in between: all kept, the drip given a new id and its photo still found by its address; throwaway database dropped | ✅ |
+| 46.11 | 2 unit tests that fail if the seed ever clears the photos, the settings or the uploads folder, or stops recreating the drips under the same addresses; a drip photo on the live dev server keyed by address, shown on its card and page, an unknown drip refused, restored | ✅ |
+| 46.12 | Typecheck, lint, 763 unit tests | ✅ |
+
+**46, continued (14 Oct): a new drip appears on Site images by itself; deleting a drip takes its photo.**
+
+- **Checked — adding a drip needs nothing else.** A drip made in the Drip builder gets its own card under Site images → Each drip on the next load (it starts Live), shows its goal's photo until one is uploaded, and a photo uploaded for it shows on its card and its page at once. Tested with a real drip, created and removed.
+- **Fixed — deleting a drip left its photo behind,** so a drip made later under the same address would have inherited it. A deleted drip now takes its saved photo with it (the uploaded file stays in storage). A retired drip keeps its photo, so it returns with the drip.
+
+| # | Test | Result |
+|---|---|---|
+| 46.13 | A new drip: card appears, marked Original, takes a photo, shows on the catalogue and its page; removed afterwards (10 checks) | ✅ |
+| 46.14 | A drip deleted with a photo: the photo record goes, and a new drip under the same address starts clean (7 checks). The `npm run seed` check (46.10) re-run against the app's real collection name | ✅ |
+
+**46, continued (14 Oct): Site images redesigned as a photo library.**
+
+- **Changed — the screen is now a library, not a list of identical cards.** A summary row (photos, changed, last update); search by page, section or drip name; an All / Changed / Original switch; the pages down the side, with a dot on any page that has a change and the current page following the scroll (a row of chips on a phone); and each page's photos as tiles in the order they appear on it. A tile shows a Replaced or Edited badge, and "Edit photo" on hover.
+- **Added — one editor for a photo, opened beside the library** (full screen on a phone), so the admin never loses their place:
+  - the photo shown as each screen shows it, **desktop and phone side by side** in their real shapes, since a place can crop differently on each; drag either and both move; the arrow keys work; it says which way a photo can move, or that there is nothing to move
+  - a quality read-out (Sharp / Good / Too small) with the numbers
+  - a drop zone to drag a photo into, with its size and progress while it uploads
+  - the description, Reset position, and Restore original kept apart and asked about first
+  - closing with unsaved changes asks first; Escape and Tab behave
+- **Added — after Save the panel says "Saving…" until the library has the new photo, then a confirmation with a View button.** The screen never briefly shows the old photo as if nothing happened.
+- **Fixed — the first row of photos loads at once** (the dev server was warning that the largest image on the page loaded lazily).
+- Every place also has its phone size recorded (measured on the live pages at 390 wide) for the previews.
+
+| # | Test | Result |
+|---|---|---|
+| 46.15 | In a browser (28 checks): no sideways scroll at 1920, 1440, 1024, 768 and 390 wide; summary; filter; search and its empty state; the page list following the scroll; the editor opening with both previews in the page's own shapes; dragging one moves the other; unsaved-changes prompt; refusing a too-small file naming the place's size; the same 900 × 500 photo allowed with a note for a small card and refused for a tall step; upload, tile badge, live on the page; restore; phone width | ✅ |
+| 46.16 | Run three times in a row to rule out timing luck; the drip scripts (new drip, deleted drip) re-run against the new screen | ✅ |
+| 46.17 | Typecheck, lint, 763 unit tests | ✅ |
+
+**46, continued (15 Oct): what happens to a replaced photo.**
+
+- **Added — a replaced photo's old file is kept for 30 days, then can be deleted.** Replacing a photo, restoring the original, or deleting a drip that had its own photo no longer leaves the old file on the server for ever, and no longer deletes it at once either. The moment it stops being used is recorded, and the file waits out a 30-day grace period (so a mistake can still be undone by hand).
+- **Added — `npm run clean-media`, run by whoever looks after the server (for example monthly).** By default it only reports what it would delete. `-- --delete` does it; `-- --days N` changes the grace period; `-- --days 0 --delete` clears everything unused now. It never touches a file a photo uses, counts the grace period from when the file stopped being used (not from its upload), re-checks each file just before deleting it, and starts the clock on any file it has not seen before instead of deleting it on a first sighting.
+- It is not run automatically, so nothing is ever deleted unless someone runs it with `--delete`.
+
+| # | Test | Result |
+|---|---|---|
+| 46.18 | 13 unit tests on the rule (in use never touched; a full grace period; counted from when it stopped being used; a first sighting only starts the clock; no-grace; stale records cleared; sizes), the file listing, and that nothing but the command deletes a file; the rule was broken three ways on purpose and each was caught | ✅ |
+| 46.19 | The real command on a throwaway database and folder (15 checks): a dry run changes nothing; `--delete` removes only the old unused file; the one in use, the recent one and the unseen one stay; the unseen one is marked; stale records cleared; a second run deletes nothing more; `--days 1` and `--days 0`; bad options refused | ✅ |
+| 46.20 | On the dev site (10 checks): replacing, restoring and deleting a drip each record the retirement and none deletes a file; a details-only restore retires nothing | ✅ |
+| 46.21 | Typecheck, lint, 776 unit tests | ✅ |

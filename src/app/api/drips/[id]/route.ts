@@ -1,5 +1,7 @@
 import { connectDB } from "@/lib/db/mongoose";
-import { AuditLog, Booking, Drip, Order } from "@/lib/models";
+import { AuditLog, Booking, Drip, Order, SiteMedia } from "@/lib/models";
+import { dripSlot } from "@/lib/media/slots";
+import { retireFile } from "@/lib/media/retire";
 import { getSession } from "@/lib/auth/session";
 import { can } from "@/lib/auth/rbac";
 import { DripInput, durationRangeError, resolveIngredients } from "@/lib/inventory/drip-input";
@@ -164,6 +166,12 @@ export async function DELETE(_req: Request, { params }: { params: Promise<{ id: 
     }
 
     await Drip.deleteOne({ _id: id });
+    // Its replaced photo goes with it, so a drip made later under the same address
+    // does not inherit it. The uploaded file stays in storage for the grace period.
+    const photo = await SiteMedia.findOneAndDelete({ slot: dripSlot(drip.slug) }).lean<{
+      file?: string | null;
+    } | null>();
+    await retireFile(photo?.file, dripSlot(drip.slug), "drip-deleted");
     await AuditLog.create({
       actorId: session!.sub,
       actorRole: session!.role,

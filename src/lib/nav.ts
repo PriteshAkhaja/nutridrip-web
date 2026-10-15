@@ -17,6 +17,7 @@ export async function adminNav(activeCounts = true): Promise<NavItem[]> {
       { section: "Platform", label: "People", href: "/admin/users" },
       { section: "Platform", label: "Quiz builder", href: "/admin/quiz" },
       { section: "Platform", label: "Site copy", href: "/admin/content" },
+      { section: "Platform", label: "Site images", href: "/admin/images", permission: "settings.manage" },
       { section: "Platform", label: "Service zones", href: "/admin/zones", permission: "zones.manage" },
       { section: "Platform", label: "Doctor calls", href: "/admin/calls", permission: "calls.view" },
       { section: "Platform", label: "Enquiries", href: "/admin/leads" },
@@ -65,6 +66,7 @@ export async function adminNav(activeCounts = true): Promise<NavItem[]> {
     { section: "Platform", label: "People", href: "/admin/users", badge: users },
     { section: "Platform", label: "Quiz builder", href: "/admin/quiz" },
     { section: "Platform", label: "Site copy", href: "/admin/content" },
+    { section: "Platform", label: "Site images", href: "/admin/images", permission: "settings.manage" },
     { section: "Platform", label: "Service zones", href: "/admin/zones", permission: "zones.manage" },
     { section: "Platform", label: "Doctor calls", href: "/admin/calls", permission: "calls.view" },
     {

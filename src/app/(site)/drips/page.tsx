@@ -12,7 +12,7 @@ import { FlipGrid } from "@/components/site/FlipGrid";
 import { CtaPanel } from "@/components/site/CtaPanel";
 import { QuizButton } from "@/components/layout/QuizButton";
 import { ButtonLink } from "@/components/ui/Button";
-import { SITE_IMAGES } from "@/lib/site-images";
+import { siteImages } from "@/lib/media/resolve";
 
 export const metadata: Metadata = { title: "Drips" };
 export const dynamic = "force-dynamic";
@@ -27,6 +27,7 @@ export default async function CataloguePage({
 }) {
   const { goal, q } = await searchParams;
   const all = await listDrips();
+  const img = await siteImages();
   // Goal narrows first, then the search runs inside it — so the chips and the
   // box compose rather than fight each other.
   const byGoal = goal ? all.filter((d) => d.category === goal) : all;
@@ -179,7 +180,7 @@ export default async function CataloguePage({
             </ButtonLink>
           </>
         }
-        image={SITE_IMAGES.dripStand}
+        image={img("drips.closing")}
       />
     </>
   );

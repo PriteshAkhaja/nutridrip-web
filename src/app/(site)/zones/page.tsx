@@ -7,7 +7,7 @@ import { QuizButton } from "@/components/layout/QuizButton";
 import { getClockFormat } from "@/lib/settings/clock";
 import { clockText } from "@/lib/time";
 import { Section } from "@/components/ui/Marketing";
-import { SITE_IMAGES } from "@/lib/site-images";
+import { siteImages } from "@/lib/media/resolve";
 import { PageHero } from "@/components/site/PageHero";
 import { SectionHeader, delay } from "@/components/site/Layout";
 import { CountUp } from "@/components/site/CountUp";
@@ -27,6 +27,7 @@ export async function generateMetadata(): Promise<Metadata> {
 }
 
 export default async function ZonesPage() {
+  const img = await siteImages();
   const clockFmt = await getClockFormat();
   // Paused zones are not offered, so they are not listed either.
   const zones = servedZones(await getZones());
@@ -48,7 +49,7 @@ export default async function ZonesPage() {
           </>
         }
         lede={`${zones.length} ${zones.length === 1 ? "zone" : "zones"} across Bengaluru. Enter your pincode when you book and you get a straight yes or no, not a waitlist — a zone we cannot staff reliably is marked limited here rather than quietly dropped from your options.`}
-        image={SITE_IMAGES.bengaluruDusk}
+        image={img("zones.hero")}
         below={
           <dl className="grid max-w-[520px] grid-cols-3 gap-5 border-t border-[var(--color-line)] pt-7">
             {figures.map((f) => (
@@ -138,7 +139,7 @@ export default async function ZonesPage() {
             </ButtonLink>
           </>
         }
-        image={SITE_IMAGES.cityStreet}
+        image={img("zones.closing")}
       />
     </>
   );

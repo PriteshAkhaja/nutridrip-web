@@ -9,7 +9,8 @@ import { listDrips } from "@/lib/data/drips";
 import { servedZones } from "@/lib/zones";
 import { getZones } from "@/lib/zones-store";
 import { QuizButton } from "@/components/layout/QuizButton";
-import { SITE_IMAGES } from "@/lib/site-images";
+import { siteImages } from "@/lib/media/resolve";
+import type { SlotKey } from "@/lib/media/slots";
 import { PageHero } from "@/components/site/PageHero";
 import { SectionHeader, delay } from "@/components/site/Layout";
 import { Photo } from "@/components/site/Photo";
@@ -27,25 +28,26 @@ export const metadata: Metadata = {
 // The figures below are counted live, and the paragraphs are editable copy.
 export const dynamic = "force-dynamic";
 
-const ROLES = [
+const ROLES: Array<{ title: string; slot: SlotKey; body: string }> = [
   {
     title: "Physicians",
-    image: SITE_IMAGES.physician,
+    slot: "about.physicians",
     body: "Registered doctors read every health quiz and approve, change or decline the protocol. They write multi-week treatment plans, clear a session that was stopped on out-of-range vitals, and review anything a nurse files. Their name and council registration number sit on your session report.",
   },
   {
     title: "Nurses",
-    image: SITE_IMAGES.nursePrep,
+    slot: "about.nurses",
     body: "Council-registered nurses come to you, take baseline vitals, capture consent and work the checklist in order. They cannot skip a mandatory step and cannot clear their own vitals block — that is deliberate, and it is why they are trusted with the rest.",
   },
   {
     title: "Pharmacy and operations",
-    image: SITE_IMAGES.pharmacist,
+    slot: "about.pharmacy",
     body: "The team behind the scenes keeps stock by batch and expiry, dispatches from the soonest expiry first, seals the kits, and can name every patient who received a given batch if a manufacturer recalls it.",
   },
 ];
 
 export default async function AboutPage() {
+  const img = await siteImages();
   const [copy, drips, zones] = await Promise.all([getContent(), listDrips(), getZones()]);
 
   // Counted, not claimed. Nothing here is a customer or revenue figure, because
@@ -137,7 +139,7 @@ export default async function AboutPage() {
           {ROLES.map((r, i) => (
             <article key={r.title} className="flex flex-col" data-reveal style={delay(i * 100)}>
               <Photo
-                image={r.image}
+                image={img(r.slot)}
                 sizes="(min-width: 768px) 30vw, 100vw"
                 className="aspect-[4/3.6] rounded-[var(--radius-xl)] bg-[var(--color-surface-2)]"
               />
@@ -213,7 +215,7 @@ export default async function AboutPage() {
             </ButtonLink>
           </>
         }
-        image={SITE_IMAGES.homeHero}
+        image={img("about.closing")}
       />
     </>
   );

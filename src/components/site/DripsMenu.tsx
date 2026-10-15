@@ -61,7 +61,7 @@ export function DripsMenu({ drips }: { drips: DripCard[] }) {
                     className="group flex items-center gap-3 rounded-[14px] p-2 no-underline transition-colors duration-200 hover:bg-white hover:no-underline"
                   >
                     <Photo
-                      image={dripImage(d.slug, d.category)}
+                      image={d.image ?? dripImage(d.slug, d.category)}
                       sizes="56px"
                       thumb={56}
                       zoom

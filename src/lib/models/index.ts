@@ -25,5 +25,7 @@ export { default as Zone } from "./Zone";
 export { default as DoctorHours } from "./DoctorHours";
 export { default as Consultation } from "./Consultation";
 export { default as PlatformSettings } from "./PlatformSettings";
+export { default as SiteMedia } from "./SiteMedia";
+export { default as MediaRetired } from "./MediaRetired";
 export { default as Payment } from "./Payment";
 export { default as Lock } from "./Lock";

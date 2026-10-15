@@ -56,3 +56,7 @@ __MACOSX/
 
 # zip files
 *.zip
+
+# Uploaded photographs (Admin → Site images): the client's content, kept on the
+# server and backed up with the database, never committed.
+/storage/

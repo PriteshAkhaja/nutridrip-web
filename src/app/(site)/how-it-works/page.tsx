@@ -7,7 +7,8 @@ import { getLatePolicy } from "@/lib/billing/settings";
 import { latePolicySentence } from "@/lib/billing/late-policy";
 import { getContent } from "@/lib/content";
 import { QuizButton } from "@/components/layout/QuizButton";
-import { SITE_IMAGES, type SiteImageKey } from "@/lib/site-images";
+import { siteImages } from "@/lib/media/resolve";
+import type { SlotKey } from "@/lib/media/slots";
 import { PageHero } from "@/components/site/PageHero";
 import { SectionHeader, delay } from "@/components/site/Layout";
 import { Photo } from "@/components/site/Photo";
@@ -29,6 +30,7 @@ export const metadata: Metadata = {
 export const dynamic = "force-dynamic";
 
 export default async function HowItWorksPage() {
+  const img = await siteImages();
   // The late-change rule, with today's fees (set on the Billing page).
   const latePolicy = await getLatePolicy();
   const copy = await getContent();
@@ -80,9 +82,7 @@ export default async function HowItWorksPage() {
     },
   ];
 
-  const photo = (key: SiteImageKey) => (
-    <Photo key={key} image={SITE_IMAGES[key]} sizes="(min-width: 1024px) 44vw, 92vw" fill />
-  );
+  const photo = (slot: SlotKey) => <Photo key={slot} image={img(slot)} sizes="(min-width: 1024px) 44vw, 92vw" fill />;
 
   return (
     <>
@@ -102,7 +102,7 @@ export default async function HowItWorksPage() {
             </ButtonLink>
           </>
         }
-        image={SITE_IMAGES.vialCheck}
+        image={img("how-it-works.hero")}
         imageOverlay={
           <FloatChip
             className="absolute bottom-5 left-5 right-5 sm:right-auto"
@@ -129,11 +129,11 @@ export default async function HowItWorksPage() {
           steps={STEPS}
           media={[
             <QuizMock key="quiz" />,
-            photo("physicianPhone"),
-            photo("citySkyline"),
-            photo("cityStreet"),
-            photo("vitalsHome"),
-            photo("homeHero"),
+            photo("how-it-works.step-physician"),
+            photo("how-it-works.step-slot"),
+            photo("how-it-works.step-nurse"),
+            photo("how-it-works.step-proof"),
+            photo("how-it-works.step-session"),
             <ReportMock key="report" />,
           ]}
         />
@@ -190,7 +190,7 @@ export default async function HowItWorksPage() {
             </ButtonLink>
           </>
         }
-        image={SITE_IMAGES.dripLineWindow}
+        image={img("how-it-works.closing")}
       />
     </>
   );

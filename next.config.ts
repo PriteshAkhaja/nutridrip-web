@@ -23,6 +23,9 @@ const nextConfig: NextConfig = {
     // wider than ~640 CSS px. A 1440 step spares a 2x laptop or a 3x phone the
     // 1920 file, and nothing asks for sizes the sources cannot fill.
     deviceSizes: [640, 750, 828, 1080, 1200, 1440, 1920],
+    // 75 is every public photo. 90 is for Admin → Site images, where the admin
+    // judges a photograph and a soft preview misleads (quality is an allow-list in Next 16).
+    qualities: [75, 90],
   },
 };
 

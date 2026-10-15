@@ -88,9 +88,9 @@ export function Photo({
     />
   );
   const frame: CSSProperties = {
-    backgroundImage: `url("${image.blur}")`,
-    backgroundSize: "cover",
-    backgroundPosition: focal,
+    ...(image.blur
+      ? { backgroundImage: `url("${image.blur}")`, backgroundSize: "cover", backgroundPosition: focal }
+      : null),
     ...(radius ? { borderRadius: radius } : null),
   };
 

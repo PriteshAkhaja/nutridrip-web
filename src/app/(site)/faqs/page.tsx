@@ -6,7 +6,7 @@ import { FaqBrowser } from "./FaqBrowser";
 import { QuizButton } from "@/components/layout/QuizButton";
 import { getLatePolicy } from "@/lib/billing/settings";
 import { getZones } from "@/lib/zones-store";
-import { SITE_IMAGES } from "@/lib/site-images";
+import { siteImages } from "@/lib/media/resolve";
 import { PageHero } from "@/components/site/PageHero";
 import { Container } from "@/components/site/Layout";
 import { CtaPanel } from "@/components/site/CtaPanel";
@@ -18,6 +18,7 @@ export const metadata: Metadata = {
 };
 
 export default async function FaqsPage() {
+  const img = await siteImages();
   // The late-change answer carries today's fees.
   const [policy, zones] = await Promise.all([getLatePolicy(), getZones()]);
   const categories = faqCategories(policy, zones);
@@ -58,7 +59,7 @@ export default async function FaqsPage() {
             </QuizButton>
           </>
         }
-        image={SITE_IMAGES.physicianPhone}
+        image={img("faqs.closing")}
       />
     </>
   );

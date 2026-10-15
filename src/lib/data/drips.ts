@@ -1,6 +1,8 @@
 import { cache } from "react";
 import { connectDB } from "@/lib/db/mongoose";
 import { Drip } from "@/lib/models";
+import { dripPhotos } from "@/lib/media/resolve";
+import type { SiteImage } from "@/lib/site-images";
 
 export type DripCard = {
   id: string;
@@ -25,6 +27,12 @@ export type DripCard = {
   /** Headline ingredients for the catalogue card. */
   headline: string[];
   ingredientCount: number;
+  /**
+   * Its photograph on the website: its own upload (Admin → Site images), else
+   * the shipped picture for it. Set by the public reads (listDrips, getDrip);
+   * the consoles' lists leave it out.
+   */
+  image?: SiteImage;
 };
 
 export type DripDetail = DripCard & {
@@ -137,8 +145,14 @@ export const POPULAR_ON_HOME = 4;
  */
 export const listDrips = cache(async (): Promise<DripCard[]> => {
   await connectDB();
-  const drips = await Drip.find({ isActive: true, isPublic: true }).sort({ priceInr: 1 }).lean<LeanDrip[]>();
-  return drips.map(toCard);
+  const [drips, photo] = await Promise.all([
+    Drip.find({ isActive: true, isPublic: true }).sort({ priceInr: 1 }).lean<LeanDrip[]>(),
+    dripPhotos(),
+  ]);
+  return drips.map((d) => {
+    const card = toCard(d);
+    return { ...card, image: photo(card) };
+  });
 });
 
 /**
@@ -171,15 +185,20 @@ export async function listBookableDrips(recommendedIds: string[]): Promise<DripC
 export const getDrip = cache(async (slug: string): Promise<DripDetail | null> => {
   await connectDB();
   // A drip kept off the website has no public page either.
-  const d = await Drip.findOne({ slug, isActive: true, isPublic: true }).lean<LeanDrip | null>();
+  const [d, photo] = await Promise.all([
+    Drip.findOne({ slug, isActive: true, isPublic: true }).lean<LeanDrip | null>(),
+    dripPhotos(),
+  ]);
   if (!d) return null;
+  const card = toCard(d);
 
   // Doses across units are not comparable, so the bar is scaled within the
   // formula's own maximum — it shows relative weight, not an absolute quantity.
   const max = Math.max(...d.ingredients.map((i) => i.dose), 1);
 
   return {
-    ...toCard(d),
+    ...card,
+    image: photo(card),
     infusionNotes: d.infusionNotes,
     bestFor: d.bestFor ?? [],
     goodToKnow: d.goodToKnow ?? [],

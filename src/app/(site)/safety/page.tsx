@@ -4,7 +4,7 @@ import { ButtonLink } from "@/components/ui/Button";
 import { Section } from "@/components/ui/Marketing";
 import { CHECKLIST_STEPS, PHASE_ORDER, VITAL_RANGES } from "@/lib/clinical/checklist";
 import { QuizButton } from "@/components/layout/QuizButton";
-import { SITE_IMAGES } from "@/lib/site-images";
+import { siteImages } from "@/lib/media/resolve";
 import { PageHero } from "@/components/site/PageHero";
 import { Container, SectionHeader, delay } from "@/components/site/Layout";
 import { Photo } from "@/components/site/Photo";
@@ -84,7 +84,8 @@ const GUARANTEES: Array<{ title: string; body: string; icon: ReactNode }> = [
   },
 ];
 
-export default function SafetyPage() {
+export default async function SafetyPage() {
+  const img = await siteImages();
   const byPhase = PHASE_ORDER.map((phase) => ({
     phase,
     total: CHECKLIST_STEPS.filter((s) => s.phase === phase).length,
@@ -102,7 +103,7 @@ export default function SafetyPage() {
           </>
         }
         lede="IV therapy is a medical procedure, not a wellness treat. What makes it safe is not the ingredients — it is the physician who reviews you, the checklist that bounds the session, and the fact that a nurse cannot skip a step even when they are running late. Here is exactly how that works."
-        image={SITE_IMAGES.vitalsHome}
+        image={img("safety.hero")}
         imageOverlay={
           <FloatChip
             className="absolute bottom-5 left-5 right-5 sm:right-auto"
@@ -337,7 +338,7 @@ export default function SafetyPage() {
             </div>
           </div>
           <Photo
-            image={SITE_IMAGES.vialsMono}
+            image={img("safety.ranges")}
             sizes="(min-width: 1024px) 40vw, 100vw"
             reveal
             radius="var(--radius-2xl)"

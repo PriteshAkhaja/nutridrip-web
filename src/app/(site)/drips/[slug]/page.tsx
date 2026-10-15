@@ -14,7 +14,8 @@ import { getLatePolicy } from "@/lib/billing/settings";
 import { fillLatePolicy } from "@/lib/billing/late-policy";
 import { getZones } from "@/lib/zones-store";
 import { fillZoneCount } from "@/lib/zones";
-import { SITE_IMAGES, dripImage } from "@/lib/site-images";
+import { dripImage } from "@/lib/site-images";
+import { siteImages } from "@/lib/media/resolve";
 import { Container, SectionHeader, delay } from "@/components/site/Layout";
 import { Photo } from "@/components/site/Photo";
 import { Rail } from "@/components/site/Rail";
@@ -82,7 +83,8 @@ export default async function DripDetailPage({ params }: { params: Promise<{ slu
   const ownReviews = forThisDrip.length >= 2;
   const reviews = (ownReviews ? forThisDrip : TESTIMONIALS).slice(0, 6);
   const actives = drip.ingredients.filter((i) => i.role === "ACTIVE");
-  const image = dripImage(drip.slug, drip.category);
+  const image = drip.image ?? dripImage(drip.slug, drip.category);
+  const img = await siteImages();
 
   const facts: Array<[string, string]> = [
     ["Duration", drip.durationLabel],
@@ -438,7 +440,7 @@ export default async function DripDetailPage({ params }: { params: Promise<{ slu
       <Section labelledBy="session-title">
         <div className="grid grid-cols-1 items-center gap-12 lg:grid-cols-[minmax(0,0.95fr)_minmax(0,1.05fr)] lg:gap-20">
           <Photo
-            image={SITE_IMAGES.vitalsHome}
+            image={img("drip-page.session")}
             sizes="(min-width: 1024px) 44vw, 100vw"
             reveal
             radius="var(--radius-2xl)"
@@ -563,7 +565,7 @@ export default async function DripDetailPage({ params }: { params: Promise<{ slu
             Take the health quiz
           </QuizButton>
         }
-        image={SITE_IMAGES.nursePrep}
+        image={img("drip-page.closing")}
       />
 
       {/* ================= RELATED ================= */}

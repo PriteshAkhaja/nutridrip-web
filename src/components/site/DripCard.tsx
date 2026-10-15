@@ -54,7 +54,7 @@ export function DripCard({
   /** For the one card whose photograph is the page's largest paint. */
   preload?: boolean;
 }) {
-  const image = dripImage(drip.slug, drip.category);
+  const image = drip.image ?? dripImage(drip.slug, drip.category);
   const catalogue = variant === "catalogue";
 
   return (
