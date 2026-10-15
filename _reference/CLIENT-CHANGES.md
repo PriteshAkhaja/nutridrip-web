@@ -1637,3 +1637,10 @@ Online payment switches on when the Razorpay keys are added (`.env.example` list
 | 46.22 | 12 unit tests: the rule (long enough, not the example's value, not "change-me"); both keys in production and development; the placeholder is read from `.env.example` itself so the two cannot drift; each place making the call was weakened on purpose and caught | ✅ |
 | 46.23 | The files a zip would contain (629) scanned for the real values of every setting in `.env`, and for key-shaped text: only the public placeholder found, no private key | ✅ |
 | 46.24 | Typecheck, lint, 788 unit tests | ✅ |
+
+**46, continued (15 Oct): the package checked as the client will receive it.**
+
+- **Checked — `nutridrip-new.zip` (650 files):** no `.env` or key files, nothing missing, every file identical to the project, no real key or secret inside. Unzipped into an empty folder: `npm ci`, typecheck, lint and all 788 tests pass, and `npm run build` succeeds. The built copy was then run in production mode against a throwaway database: the site opens, the super admin signs in, a photo uploads to the folder set by `STORAGE_DIR`, is served at `/media`, shows on Pricing and resizes through the image optimiser, a visitor who is not signed in cannot upload, a path outside the photo folder is refused; and with the example `JWT_SECRET`, production refuses to sign anyone in and says how to make a proper one. 19 checks.
+- **Fixed — a build warning from the photo storage code.** The build warned that reading the photo folder from the working directory made it trace the whole project into the output. The folder is now marked as chosen at run time; the build has no warning.
+- **Worth knowing for the build machine:** `npm run build` downloads three Google fonts (Inter, Instrument Sans, Noto Sans Mono), so it needs internet access. One of three builds failed on that download and the next two succeeded.
+- The zip contains an empty `storage/` folder skeleton, which is harmless.

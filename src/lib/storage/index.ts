@@ -17,7 +17,11 @@ import { isSafeKey } from "@/lib/media/rules";
  */
 
 function root(): string {
-  return path.resolve(process.env.STORAGE_DIR?.trim() || path.join(process.cwd(), "storage"));
+  // The folder is chosen at run time, so the build must not try to trace it into the output.
+  return path.resolve(
+    /*turbopackIgnore: true*/ process.env.STORAGE_DIR?.trim() ||
+      path.join(/*turbopackIgnore: true*/ process.cwd(), "storage")
+  );
 }
 
 function pathOf(key: string): string {
