@@ -1,4 +1,4 @@
-import sharp from "sharp";
+import sharp, { type Metadata } from "sharp";
 import { randomBytes } from "node:crypto";
 import { fileName, needFor, slotFolder, storedSize, uploadProblem } from "@/lib/media/rules";
 import { frameOf } from "@/lib/media/slots";
@@ -15,7 +15,7 @@ export type Processed = { file: string; width: number; height: number; blur: str
  * for the admin when the file cannot be used.
  */
 export async function processUpload(data: Buffer, slot: string, dripSlug?: string | null): Promise<Processed> {
-  let meta: sharp.Metadata;
+  let meta: Metadata;
   try {
     meta = await sharp(data).metadata();
   } catch {

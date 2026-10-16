@@ -1,7 +1,7 @@
 import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
-import sharp from "sharp";
+import sharp, { type SharpOptions } from "sharp";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import { UploadError, processUpload } from "@/lib/media/process";
 import { deleteFile, getFile, putFile } from "@/lib/storage";
@@ -17,7 +17,7 @@ afterAll(() => {
   fs.rmSync(dir, { recursive: true, force: true });
 });
 
-const photo = (w: number, h: number, extra: Partial<sharp.SharpOptions["create"]> = {}) =>
+const photo = (w: number, h: number, extra: Partial<SharpOptions["create"]> = {}) =>
   sharp({ create: { width: w, height: h, channels: 3, background: "#4488cc", ...extra } });
 
 describe("storage", () => {
