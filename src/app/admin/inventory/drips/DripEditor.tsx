@@ -7,6 +7,7 @@ import { Input, Select, Textarea, Checkbox } from "@/components/ui/Field";
 import { Card } from "@/components/ui/Card";
 import { Pill } from "@/components/ui/Pill";
 import { DRIP_CATEGORIES, INGREDIENT_ROLES, UNITS } from "@/lib/models/types";
+import { SITE_TINTS } from "@/lib/tints";
 
 type Master = { id: string; name: string; canonicalUnit: string; category: string };
 type Kit = { id: string; name: string; isDefault: boolean; itemCount: number };
@@ -34,6 +35,8 @@ export type DripDraft = {
   tags: string[];
   /** One emoji, the drip's own mark. Never a colour — see the model. */
   icon: string;
+  /** Its colour on the public site, from SITE_TINTS. "" means the default. */
+  tint: string;
   isPopular: boolean;
   benefits: Array<{ title: string; description: string }>;
   withKit: boolean;
@@ -75,6 +78,7 @@ export const emptyDrip = (): DripDraft => ({
   category: "",
   tags: [],
   icon: "",
+  tint: "",
   isPopular: false,
   benefits: [],
   withKit: true,
@@ -139,6 +143,7 @@ export function DripEditor({
         volumeMl: d.volumeMl ? Number(d.volumeMl) : null,
         tags: d.tags,
         icon: d.icon || null,
+        tint: d.tint || null,
         isPopular: d.isPopular,
         benefits: d.benefits
           .filter((b) => b.title.trim())
@@ -347,6 +352,38 @@ export function DripEditor({
           placeholder="none"
         />
       </div>
+
+      {/* The public site only: the liquid in its bag, its card, the band on
+          its label. A fixed palette with no clinical hue, each colour named,
+          so a drip never looks like a status. */}
+      <fieldset className="mt-4 border-0 p-0 m-0">
+        <legend className="t-micro block mb-2">Colour on the website</legend>
+        <div className="flex flex-wrap gap-2" role="radiogroup">
+          {[{ value: "", name: "Default" }, ...SITE_TINTS].map((t) => {
+            const on = d.tint === t.value;
+            return (
+              <label
+                key={t.value || "default"}
+                className={`inline-flex min-h-[36px] cursor-pointer items-center gap-2 rounded-full border px-3 text-[13px] ${on ? "border-[var(--color-ink)] font-semibold" : "border-[var(--color-line-2)]"}`}
+              >
+                <input
+                  type="radio"
+                  name="drip-tint"
+                  className="sr-only"
+                  checked={on}
+                  onChange={() => setD({ ...d, tint: t.value })}
+                />
+                <span
+                  aria-hidden
+                  className="h-4 w-4 flex-none rounded-full border border-black/10"
+                  style={{ background: t.value || "repeating-linear-gradient(45deg, #fff 0 3px, #d6dbe0 3px 6px)" }}
+                />
+                {t.name}
+              </label>
+            );
+          })}
+        </div>
+      </fieldset>
 
       {/* Tags feed the search as well as the card, so "NAD+" finds a drip whose
           name never says it. */}

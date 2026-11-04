@@ -1,3 +1,8 @@
+/* The public site's stylesheets (src/components/site/v3/styles/scoped) live in
+   `site`: above Tailwind's preflight, below every component and utility, so a
+   site rule can never repaint a utility on a page not yet redesigned. This
+   statement must come first: the first declaration fixes the order. */
+@layer theme, base, site, components, utilities;
 @import "tailwindcss";
 
 /* Everything below lives inside a cascade layer on purpose. Unlayered CSS

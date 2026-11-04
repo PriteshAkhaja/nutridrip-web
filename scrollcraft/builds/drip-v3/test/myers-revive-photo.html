@@ -1,0 +1,640 @@
+<!doctype html>
+<html lang="en-IN">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
+    <title>Myers&#39; Revive · NutriDrip</title>
+    <meta
+      name="description"
+      content="Magnesium-forward Myers&#39; cocktail. B-complex, magnesium and ascorbic acid in a saline carrier."
+    />
+    <base href="" />
+    <link rel="icon" href="data:," />
+    <link rel="preload" href="/fonts/v3/outfit-latin-wght-normal.woff2" as="font" type="font/woff2" crossorigin />
+    <link rel="preload" href="/fonts/v3/geist-latin-wght-normal.woff2" as="font" type="font/woff2" crossorigin />
+    <link rel="stylesheet" href="/scrollcraft.css" />
+    <link rel="stylesheet" href="/site.css" />
+    <link rel="stylesheet" href="/glass.css" />
+    <link rel="stylesheet" href="/drip.css" />
+  </head>
+  <body style="--tint: #7b5bd6">
+    <div id="sc-root">
+      <span data-sc-progress></span>
+      <a class="nd-skip" href="#main">Skip to content</a>
+      <header class="nd-bar">
+        <div class="nd-bar__in">
+          <a class="nd-mark-link" href="/" aria-label="NutriDrip, IV nutrient therapy, home"
+            ><span class="nd-mark"
+              ><b>NutriDrip<sup>™</sup></b
+              ><small>IV NUTRIENT THERAPY</small></span
+            ></a
+          >
+          <nav class="nd-bar__nav" aria-label="Site">
+            <a href="/drips" aria-current="page">Drips</a><a href="/how-it-works">How it works</a
+            ><a href="/pricing">Pricing</a><a href="/safety">Safety</a><a href="/iv-vs-tablets">IV vs Tablets</a
+            ><a href="/zones">Zones</a><a href="/for-clinics">For clinics</a>
+          </nav>
+          <div class="nd-bar__end">
+            <button
+              class="nd-ledger-btn nd-menu-btn"
+              type="button"
+              aria-expanded="false"
+              aria-controls="nd-ledger"
+              data-menu-btn
+            >
+              Menu
+            </button>
+            <div class="nd-bar__book"><a class="nd-btn nd-btn--account" href="/login">Sign in</a></div>
+            <div class="nd-bar__book">
+              <div class="nd-cta">
+                <a class="nd-btn" href="/quiz">Take the quiz</a
+                ><span class="nd-cta__free">Physician-reviewed before every session</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </header>
+      <div class="nd-ledger" id="nd-ledger" role="dialog" aria-label="Menu">
+        <h2>NutriDrip</h2>
+        <div class="nd-ledger__pages">
+          <a href="/drips">All drips</a><a href="/how-it-works">How it works</a><a href="/pricing">Pricing</a
+          ><a href="/safety">Safety</a><a href="/iv-vs-tablets">IV vs Tablets</a><a href="/zones">Zones</a
+          ><a href="/about">About</a><a href="/for-clinics">For clinics</a>
+        </div>
+      </div>
+      <main id="main">
+        <p class="dp-proto">Prototype test: Myers' Revive with a stand-in photo, as if an admin had uploaded one.</p>
+        <div class="dp nd-wrap">
+          <!-- The companion bag. As each ingredient below is read, its bottle drops
+       in, the liquid rises and the label prints its line. -->
+          <div class="dp__bagcol" aria-hidden="true">
+            <div class="dp__bagstick">
+              <div class="dp__rig">
+                <div class="dp__drops">
+                  <div class="dp__glass" data-glass="0">
+                    <div class="vial__glass" style="aspect-ratio: 349/900; --band: #f5dc6a">
+                      <img src="/site/v3/vial-vitc-blank.webp" alt="" />
+                      <div class="vlabel vlabel--vial" style="--lt: 36.7%; --lh: 279px">
+                        <p class="vlabel__word">NutriDrip<sup>™</sup></p>
+                        <p class="vlabel__sub">IV NUTRIENT THERAPY</p>
+                        <p class="vlabel__band"><b>ASCORBIC</b><b>ACID</b><b>(C)</b></p>
+                        <div class="vlabel__low">
+                          <p class="vlabel__dose">7,500 mg<small>(7.5 g)</small></p>
+                          <i class="vlabel__rule"></i
+                          ><svg class="vlabel__inf" viewBox="0 0 100 50" aria-hidden="true">
+                            <path
+                              d="M50 25C40 11 33 7 25 7 15 7 7 15 7 25s8 18 18 18c8 0 15-4 25-18s17-18 25-18c10 0 18 8 18 18s-8 18-18 18c-8 0-15-4-25-18Z"
+                              fill="none"
+                              stroke="currentColor"
+                              stroke-width="5"
+                              stroke-linejoin="round"
+                            />
+                          </svg>
+                          <p class="vlabel__foot">For IV Use Only</p>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                  <div class="dp__glass" data-glass="1">
+                    <div class="vial__glass" style="aspect-ratio: 196/900; --band: #bbd4ee">
+                      <img src="/site/v3/ampoule-blank.webp" alt="" /><i class="vring"></i>
+                      <div class="vlabel" style="--lt: 49.6%; --lh: 370px">
+                        <p class="vlabel__word">NutriDrip<sup>™</sup></p>
+                        <p class="vlabel__sub">IV NUTRIENT THERAPY</p>
+                        <p class="vlabel__band"><b>MAGNESIUM</b><b>SULPHATE</b></p>
+                        <div class="vlabel__low">
+                          <p class="vlabel__dose">1,000 mg<small>(1 g)</small></p>
+                          <i class="vlabel__rule"></i
+                          ><svg class="vlabel__inf" viewBox="0 0 100 50" aria-hidden="true">
+                            <path
+                              d="M50 25C40 11 33 7 25 7 15 7 7 15 7 25s8 18 18 18c8 0 15-4 25-18s17-18 25-18c10 0 18 8 18 18s-8 18-18 18c-8 0-15-4-25-18Z"
+                              fill="none"
+                              stroke="currentColor"
+                              stroke-width="5"
+                              stroke-linejoin="round"
+                            />
+                          </svg>
+                          <p class="vlabel__foot">For IV Use Only</p>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                  <div class="dp__glass" data-glass="2">
+                    <div class="vial__glass" style="aspect-ratio: 338/900; --band: #cdbfef">
+                      <img src="/site/v3/vial-calcium-blank.webp" alt="" /><i class="vcap" style="--cap: #8c6fd8"></i>
+                      <div class="vlabel vlabel--vial" style="--lt: 35.8%; --lh: 288px">
+                        <p class="vlabel__word">NutriDrip<sup>™</sup></p>
+                        <p class="vlabel__sub">IV NUTRIENT THERAPY</p>
+                        <p class="vlabel__band"><b>B-COMPLEX</b></p>
+                        <div class="vlabel__low">
+                          <p class="vlabel__dose">2 mL</p>
+                          <i class="vlabel__rule"></i
+                          ><svg class="vlabel__inf" viewBox="0 0 100 50" aria-hidden="true">
+                            <path
+                              d="M50 25C40 11 33 7 25 7 15 7 7 15 7 25s8 18 18 18c8 0 15-4 25-18s17-18 25-18c10 0 18 8 18 18s-8 18-18 18c-8 0-15-4-25-18Z"
+                              fill="none"
+                              stroke="currentColor"
+                              stroke-width="5"
+                              stroke-linejoin="round"
+                            />
+                          </svg>
+                          <p class="vlabel__foot">For IV Use Only</p>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                  <div class="dp__glass" data-glass="3">
+                    <div class="vial__glass" style="aspect-ratio: 196/900; --band: #f0c4d6">
+                      <img src="/site/v3/ampoule-blank.webp" alt="" /><i class="vring"></i>
+                      <div class="vlabel" style="--lt: 49.6%; --lh: 370px">
+                        <p class="vlabel__word">NutriDrip<sup>™</sup></p>
+                        <p class="vlabel__sub">IV NUTRIENT THERAPY</p>
+                        <p class="vlabel__band"><b>CYANOCOBALAMIN</b><b>(B12)</b></p>
+                        <div class="vlabel__low">
+                          <p class="vlabel__dose">1,000 mcg<small>(1 mg)</small></p>
+                          <i class="vlabel__rule"></i
+                          ><svg class="vlabel__inf" viewBox="0 0 100 50" aria-hidden="true">
+                            <path
+                              d="M50 25C40 11 33 7 25 7 15 7 7 15 7 25s8 18 18 18c8 0 15-4 25-18s17-18 25-18c10 0 18 8 18 18s-8 18-18 18c-8 0-15-4-25-18Z"
+                              fill="none"
+                              stroke="currentColor"
+                              stroke-width="5"
+                              stroke-linejoin="round"
+                            />
+                          </svg>
+                          <p class="vlabel__foot">For IV Use Only</p>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                  <div class="dp__glass" data-glass="4">
+                    <div class="vial__glass" style="aspect-ratio: 196/900; --band: #b6e2dd">
+                      <img src="/site/v3/ampoule-blank.webp" alt="" /><i class="vring"></i>
+                      <div class="vlabel" style="--lt: 49.6%; --lh: 370px">
+                        <p class="vlabel__word">NutriDrip<sup>™</sup></p>
+                        <p class="vlabel__sub">IV NUTRIENT THERAPY</p>
+                        <p class="vlabel__band"><b>CALCIUM</b><b>GLUCONATE</b></p>
+                        <div class="vlabel__low">
+                          <p class="vlabel__dose">500 mg</p>
+                          <i class="vlabel__rule"></i
+                          ><svg class="vlabel__inf" viewBox="0 0 100 50" aria-hidden="true">
+                            <path
+                              d="M50 25C40 11 33 7 25 7 15 7 7 15 7 25s8 18 18 18c8 0 15-4 25-18s17-18 25-18c10 0 18 8 18 18s-8 18-18 18c-8 0-15-4-25-18Z"
+                              fill="none"
+                              stroke="currentColor"
+                              stroke-width="5"
+                              stroke-linejoin="round"
+                            />
+                          </svg>
+                          <p class="vlabel__foot">For IV Use Only</p>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                  <div class="dp__glass" data-glass="5">
+                    <div class="vial__glass" style="aspect-ratio: 196/900; --band: #c5cdf2">
+                      <img src="/site/v3/ampoule-blank.webp" alt="" /><i class="vring"></i>
+                      <div class="vlabel" style="--lt: 49.6%; --lh: 370px">
+                        <p class="vlabel__word">NutriDrip<sup>™</sup></p>
+                        <p class="vlabel__sub">IV NUTRIENT THERAPY</p>
+                        <p class="vlabel__band"><b>PYRIDOXINE</b><b>(B6)</b></p>
+                        <div class="vlabel__low">
+                          <p class="vlabel__dose">100 mg</p>
+                          <i class="vlabel__rule"></i
+                          ><svg class="vlabel__inf" viewBox="0 0 100 50" aria-hidden="true">
+                            <path
+                              d="M50 25C40 11 33 7 25 7 15 7 7 15 7 25s8 18 18 18c8 0 15-4 25-18s17-18 25-18c10 0 18 8 18 18s-8 18-18 18c-8 0-15-4-25-18Z"
+                              fill="none"
+                              stroke="currentColor"
+                              stroke-width="5"
+                              stroke-linejoin="round"
+                            />
+                          </svg>
+                          <p class="vlabel__foot">For IV Use Only</p>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                <div class="nd-bag dp__bag" data-dp-bag>
+                  <div class="nd-bag__fill">
+                    <div class="liq">
+                      <div class="liq__level" data-liq-level>
+                        <div class="liq__wave liq__wave--back">
+                          <svg viewBox="0 0 200 12" preserveAspectRatio="none" aria-hidden="true">
+                            <path
+                              class="liq__body"
+                              d="M0 6Q12.5 2 25 6T50 6T75 6T100 6T125 6T150 6T175 6T200 6V12H0Z"
+                            />
+                            <path class="liq__shine" d="M0 6Q12.5 2 25 6T50 6T75 6T100 6T125 6T150 6T175 6T200 6" />
+                          </svg>
+                        </div>
+                        <div class="liq__wave">
+                          <svg viewBox="0 0 200 12" preserveAspectRatio="none" aria-hidden="true">
+                            <path
+                              class="liq__body"
+                              d="M0 6Q12.5 2 25 6T50 6T75 6T100 6T125 6T150 6T175 6T200 6V12H0Z"
+                            />
+                            <path class="liq__shine" d="M0 6Q12.5 2 25 6T50 6T75 6T100 6T125 6T150 6T175 6T200 6" />
+                          </svg>
+                        </div>
+                      </div>
+                    </div>
+                    <i class="liq__drop"></i><i class="liq__drop"></i><i class="liq__drop"></i><i class="liq__drop"></i>
+                    <i class="liq__ring"></i><i class="liq__ring"></i>
+                  </div>
+                  <img class="nd-bag__img" src="/site/v3/bag-empty.webp" width="577" height="1200" alt="" />
+                  <!-- The client's compact label (wordmark, name, volume) in the upper
+               middle, with a ruled row for each ingredient. Each row prints
+               as its bottle lands (page.js printLine), in the home label's
+               two columns, name and dose. -->
+                  <div class="dpl">
+                    <p class="bl-word">NutriDrip<sup>™</sup></p>
+                    <p class="bl-sub">IV NUTRIENT THERAPY</p>
+                    <p class="bl-band">Myers&#39; Revive</p>
+                    <ul class="build__lines">
+                      <li data-line="c"><span>Normal saline 0.9%</span><b>500 mL</b></li>
+                      <li data-line="0"><span>Ascorbic acid</span><b>7,500 mg</b></li>
+                      <li data-line="1"><span>Magnesium sulphate</span><b>1,000 mg</b></li>
+                      <li data-line="2"><span>B-complex</span><b>2 mL</b></li>
+                      <li data-line="3"><span>Cyanocobalamin</span><b>1,000 mcg</b></li>
+                      <li data-line="4"><span>Calcium gluconate</span><b>500 mg</b></li>
+                      <li data-line="5"><span>Pyridoxine</span><b>100 mg</b></li>
+                    </ul>
+                    <p class="bl-foot">
+                      <svg viewBox="0 0 100 50" aria-hidden="true">
+                        <path
+                          d="M50 25C40 11 33 7 25 7 15 7 7 15 7 25s8 18 18 18c8 0 15-4 25-18s17-18 25-18c10 0 18 8 18 18s-8 18-18 18c-8 0-15-4-25-18Z"
+                          fill="none"
+                          stroke="currentColor"
+                          stroke-width="5"
+                          stroke-linejoin="round"
+                        /></svg
+                      ><i></i><b>500 mL</b>
+                    </p>
+                  </div>
+                </div>
+              </div>
+              <p class="dp__count"><span data-dp-count>0</span> of 7 read</p>
+            </div>
+          </div>
+
+          <div class="dp__main">
+            <header class="dp__hero">
+              <p class="nd-crumb"><a href="/drips">All drips</a> · Energy</p>
+              <h1 class="nd-q">Myers&#39; Revive</h1>
+              <p class="nd-lede">
+                Magnesium-forward Myers&#39; cocktail. B-complex, magnesium and ascorbic acid in a saline carrier.
+              </p>
+              <figure class="dp__photo">
+                <img
+                  src="/images/site/drip-bag.jpg"
+                  alt="An IV bag and its drip chamber hanging from a stand in soft light"
+                  width="1400"
+                  height="2100"
+                  style="object-position: 50% 28%"
+                />
+              </figure>
+              <p class="dp__meta">45–60 min · one 500 mL bag · The default first drip</p>
+              <div class="dp__buy">
+                <p class="dp__price"><b>₹8,400</b> per session</p>
+                <div class="nd-cta">
+                  <a class="nd-btn" href="/quiz?drip=myers-revive">Take the quiz to book this</a
+                  ><span class="nd-cta__free">A physician reads every answer</span>
+                </div>
+              </div>
+              <p class="dp__for">
+                <span>Best for</span> <i>Persistent fatigue</i><i>Poor sleep</i><i>High workload weeks</i>
+              </p>
+            </header>
+
+            <section class="dp__sec" aria-labelledby="in-h">
+              <h2 id="in-h" class="nd-q nd-q--sm">What's inside</h2>
+              <p class="nd-body">
+                Every ingredient, at the dose the protocol starts from. The physician who reads your quiz can change any
+                of them for you.
+              </p>
+              <ol class="ings" data-ings>
+                <li class="ing ing--carrier" data-ing data-kind="carrier">
+                  <span class="ing__dot" aria-hidden="true"></span>
+                  <div>
+                    <h3>Normal saline 0.9% <span class="ing__dose">500 mL</span></h3>
+                    <p class="ing__where">The bag itself</p>
+                    <p>The carrier every other ingredient goes into.</p>
+                  </div>
+                </li>
+                <li class="ing ing--bag" data-ing data-kind="bag" data-k="0">
+                  <span class="ing__dot" aria-hidden="true"></span>
+                  <div>
+                    <h3>Ascorbic acid <span class="ing__dose">7,500 mg</span></h3>
+                    <p class="ing__where">In the 500 mL bag</p>
+                    <p>Vitamin C</p>
+                  </div>
+                </li>
+                <li class="ing ing--bag" data-ing data-kind="bag" data-k="1">
+                  <span class="ing__dot" aria-hidden="true"></span>
+                  <div>
+                    <h3>Magnesium sulphate <span class="ing__dose">1,000 mg</span></h3>
+                    <p class="ing__where">In the 500 mL bag</p>
+                  </div>
+                </li>
+                <li class="ing ing--bag" data-ing data-kind="bag" data-k="2">
+                  <span class="ing__dot" aria-hidden="true"></span>
+                  <div>
+                    <h3>B-complex <span class="ing__dose">2 mL</span></h3>
+                    <p class="ing__where">In the 500 mL bag</p>
+                  </div>
+                </li>
+                <li class="ing ing--bag" data-ing data-kind="bag" data-k="3">
+                  <span class="ing__dot" aria-hidden="true"></span>
+                  <div>
+                    <h3>Cyanocobalamin <span class="ing__dose">1,000 mcg</span></h3>
+                    <p class="ing__where">In the 500 mL bag</p>
+                    <p>Vitamin B12</p>
+                  </div>
+                </li>
+                <li class="ing ing--bag" data-ing data-kind="bag" data-k="4">
+                  <span class="ing__dot" aria-hidden="true"></span>
+                  <div>
+                    <h3>Calcium gluconate <span class="ing__dose">500 mg</span></h3>
+                    <p class="ing__where">In the 500 mL bag</p>
+                  </div>
+                </li>
+                <li class="ing ing--bag" data-ing data-kind="bag" data-k="5">
+                  <span class="ing__dot" aria-hidden="true"></span>
+                  <div>
+                    <h3>Pyridoxine <span class="ing__dose">100 mg</span></h3>
+                    <p class="ing__where">In the 500 mL bag</p>
+                    <p>Vitamin B6</p>
+                  </div>
+                </li>
+              </ol>
+            </section>
+
+            <section class="dp__sec" aria-labelledby="w-h">
+              <h2 id="w-h" class="nd-q nd-q--sm">What it's for</h2>
+              <ul class="dp__session">
+                <li>
+                  <b>Energy metabolism</b
+                  ><span>B-complex and B12 are the cofactors the body burns through on high-workload weeks.</span>
+                </li>
+                <li>
+                  <b>Muscle and sleep</b
+                  ><span>Magnesium is given slowly; a warm flush is expected and is not an adverse event.</span>
+                </li>
+                <li><b>Antioxidant load</b><span>7,500 mg of ascorbic acid in a saline carrier.</span></li>
+                <li>
+                  <b>A starting point</b><span>The usual first drip, before anything more specific is considered.</span>
+                </li>
+              </ul>
+            </section>
+
+            <section class="dp__sec" aria-labelledby="t-h">
+              <h2 id="t-h" class="nd-q nd-q--sm">Before your drip</h2>
+              <div class="dp__tests">
+                <div>
+                  <p class="nd-tag">For everyone</p>
+                  <ul class="dp__tlist">
+                    <li>
+                      <b>A health quiz</b
+                      ><span>About three minutes, read by a registered physician before anything is booked.</span>
+                    </li>
+                    <li>
+                      <b>Baseline vitals</b
+                      ><span
+                        >Blood pressure, heart rate, SpO₂ and temperature at every session. A reading outside its range
+                        stops the infusion until the physician clears it.</span
+                      >
+                    </li>
+                    <li>
+                      <b>A sealed kit</b
+                      ><span>Your nurse checks the seal and every vial's expiry in front of you.</span>
+                    </li>
+                  </ul>
+                </div>
+                <div>
+                  <p class="nd-tag">For this drip</p>
+                  <ul class="dp__tlist">
+                    <li>
+                      <b>Nothing extra</b
+                      ><span>The quiz and the checks for everyone are enough for Myers&#39; Revive.</span>
+                    </li>
+                  </ul>
+                </div>
+              </div>
+              <p class="nd-small" style="margin-top: 1rem">
+                <a class="nd-link" href="/safety">Where the safety actually sits</a>
+              </p>
+            </section>
+
+            <section class="dp__sec" aria-labelledby="s-h">
+              <h2 id="s-h" class="nd-q nd-q--sm">The session</h2>
+              <ul class="dp__session">
+                <li><b>A small cannula</b><span>One small cannula in a vein in your arm.</span></li>
+                <li><b>45 to 60 minutes</b><span>At home, observed every 10 minutes.</span></li>
+                <li><b>Everything in one bag</b><span>500 mL, all of it in one bag.</span></li>
+                <li><b>Your report</b><span>Every dose and batch number in your account, the same day.</span></li>
+              </ul>
+            </section>
+
+            <section class="dp__sec dp__cost" aria-labelledby="c-h">
+              <h2 id="c-h" class="nd-q nd-q--sm">Price</h2>
+              <div class="dp__costgrid">
+                <p><b class="nd-num">₹8,400</b><span>per session: the kit, the nurse and the report included</span></p>
+                <p>
+                  <b class="nd-num">4 h</b
+                  ><span
+                    >free to move or cancel before your slot. Inside that, moving or cancelling carries a ₹500 late
+                    fee.</span
+                  >
+                </p>
+              </div>
+              <ul class="dp__notes">
+                <li>Most patients feel the lift within 24 hours</li>
+                <li>Magnesium can cause a brief warm sensation</li>
+              </ul>
+              <p class="dp__offer">No card needed to get a protocol reviewed.</p>
+              <div class="nd-cta">
+                <a class="nd-btn" href="/quiz?drip=myers-revive">Take the quiz to book this</a
+                ><span class="nd-cta__free">The physician decides how many sessions suit you</span>
+              </div>
+            </section>
+
+            <section class="dp__sec" aria-labelledby="f-h">
+              <h2 id="f-h" class="nd-q nd-q--sm">Questions people ask</h2>
+              <div class="nd-faq">
+                <details>
+                  <summary>Does a real doctor look at my quiz?</summary>
+                  <div>
+                    <p>
+                      Yes. A registered physician reads every submission and either approves the protocol, changes the
+                      doses, or declines it. Their name and council registration number appear on your session report.
+                    </p>
+                  </div>
+                </details>
+                <details>
+                  <summary>Do I have to take the quiz every time I book?</summary>
+                  <div>
+                    <p>
+                      No. One approval covers all your bookings for 90 days. It lapses after that because a
+                      physician&#39;s approval is a judgement about you on the day: weight, medication and kidney
+                      function all move.
+                    </p>
+                  </div>
+                </details>
+                <details>
+                  <summary>What if the nurse finds something wrong?</summary>
+                  <div>
+                    <p>
+                      The 29-step checklist gates the session. If your vitals fall outside the reference range the
+                      infusion does not start. The nurse escalates to the reviewing physician, and a session that does
+                      not run is refunded in full.
+                    </p>
+                  </div>
+                </details>
+                <details>
+                  <summary>Can I cancel or reschedule?</summary>
+                  <div>
+                    <p>
+                      Move or cancel freely up to 4 hours before your slot. Inside that, moving or cancelling carries a
+                      ₹500 late fee, because the nurse is already dispatched with your batch drawn.
+                    </p>
+                  </div>
+                </details>
+                <details>
+                  <summary>Do you serve my pincode?</summary>
+                  <div>
+                    <p>
+                      We cover 14 zones across Bengaluru. Enter your pincode at booking and you get a straight yes or
+                      no, not a waitlist.
+                    </p>
+                  </div>
+                </details>
+                <details>
+                  <summary>What happens to my health data?</summary>
+                  <div>
+                    <p>
+                      Your record is visible to you, the reviewing physician and the attending nurse. Nobody else.
+                      Access attempts are logged, and you can export or delete your record from your profile at any
+                      time.
+                    </p>
+                  </div>
+                </details>
+              </div>
+              <p class="nd-small" style="margin-top: 1.2rem">
+                Also in energy: <a class="nd-link" href="/drips/jetlag-reset">Jetlag Reset</a> ·
+                <a class="nd-link" href="/drips/iron-restore">Iron Restore</a> ·
+                <a class="nd-link" href="/drips/deep-recharge">Deep Recharge</a>
+              </p>
+            </section>
+          </div>
+        </div>
+
+        <section class="sc-section nd-book" id="book">
+          <div class="nd-wrap nd-grid2">
+            <div class="nd-book__intro">
+              <h2 class="nd-q">Ready to book?</h2>
+              <p class="nd-lede">
+                Three minutes of questions, read by a registered physician. If Myers&#39; Revive is not right for you,
+                they will say so, and tell you what is.
+              </p>
+              <ul class="nd-book__facts">
+                <li><b>A physician reviews you first</b>, before anything is booked.</li>
+                <li><b>A nurse comes to your home</b> in 14 zones across Bengaluru.</li>
+                <li><b>Free to move or cancel</b> up to 4 hours before your slot.</li>
+              </ul>
+            </div>
+            <div class="nd-slip">
+              <div class="nd-slip__head">
+                <div>
+                  <p class="nd-tag">Your drip</p>
+                  <p class="nd-slip__drip">Myers&#39; Revive</p>
+                  <p class="nd-slip__free">45–60 min · at your home</p>
+                </div>
+                <p class="nd-slip__price">per session<b>₹8,400</b></p>
+              </div>
+              <p class="nd-body nd-slip__body">
+                The quiz asks what a physician needs to know before they will put their name to a protocol. Answer it,
+                and the physician confirms Myers&#39; Revive or suggests what fits you better.
+              </p>
+              <div class="nd-cta">
+                <a class="nd-btn" href="/quiz?drip=myers-revive">Take the quiz to book this</a
+                ><span class="nd-cta__free">No card needed to get a protocol reviewed</span>
+              </div>
+            </div>
+          </div>
+        </section>
+      </main>
+      <footer class="nd-foot">
+        <div class="nd-wrap">
+          <div class="nd-foot__grid">
+            <div>
+              <a class="nd-mark-link" href="/"
+                ><span class="nd-mark"
+                  ><b>NutriDrip<sup>™</sup></b
+                  ><small>IV NUTRIENT THERAPY</small></span
+                ></a
+              >
+              <p class="nd-small" style="margin-top: 1rem; max-width: 36ch">
+                IV nutrient therapy at home in Bengaluru, reviewed by a registered physician and given by a
+                council-registered nurse.
+              </p>
+              <p class="nd-small" style="margin-top: 0.8rem">
+                NutriDrip Health Pvt. Ltd. · Clinical establishment reg. KA/CEA/2024/11872
+              </p>
+            </div>
+            <div>
+              <h3>Now serving</h3>
+              <ul class="nd-foot__zones">
+                <li>Koramangala</li>
+                <li>HSR Layout</li>
+                <li>Indiranagar</li>
+                <li>Ejipura</li>
+                <li>Domlur</li>
+                <li>Jayanagar</li>
+                <li>JP Nagar</li>
+                <li>BTM Layout</li>
+                <li>Richmond Town</li>
+                <li>Frazer Town</li>
+                <li>Sadashivanagar</li>
+                <li>Whitefield</li>
+                <li>Sarjapur Road</li>
+                <li>Hebbal</li>
+              </ul>
+            </div>
+            <nav aria-label="Pages">
+              <h3>Pages</h3>
+              <ul>
+                <li><a href="/drips">Drips</a></li>
+                <li><a href="/how-it-works">How it works</a></li>
+                <li><a href="/pricing">Pricing</a></li>
+                <li><a href="/safety">Safety</a></li>
+                <li><a href="/iv-vs-tablets">IV vs Tablets</a></li>
+                <li><a href="/zones">Zones</a></li>
+                <li><a href="/for-clinics">For clinics</a></li>
+                <li><a href="/about">About</a></li>
+                <li><a href="/faqs">FAQs</a></li>
+                <li><a href="/consult">Ask a clinician</a></li>
+                <li><a href="/legal/terms">Terms</a></li>
+                <li><a href="/legal/privacy">Privacy</a></li>
+              </ul>
+            </nav>
+          </div>
+          <div class="nd-foot__legal">
+            <p>
+              <b>IV nutrient therapy is a medical procedure.</b> Every protocol is reviewed by a registered physician
+              before anything is booked, and may not be suitable for everyone. Not a substitute for emergency care. In
+              an emergency call 108.
+            </p>
+          </div>
+        </div>
+      </footer>
+      <div class="nd-sticky" aria-label="Booking">
+        <a class="nd-btn" href="/quiz?drip=myers-revive">Take the health quiz</a
+        ><span class="nd-sticky__free">A physician reads every answer</span>
+      </div>
+    </div>
+    <script src="/scrollcraft.js"></script>
+    <script src="/page.js"></script>
+  </body>
+</html>

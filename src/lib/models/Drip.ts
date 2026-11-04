@@ -1,5 +1,6 @@
 import { Schema, model, models } from "mongoose";
 import { DRIP_CATEGORIES, INGREDIENT_ROLES, UNITS } from "./types";
+import { SITE_TINT_VALUES } from "../tints";
 
 const DripIngredientSchema = new Schema(
   {
@@ -81,6 +82,15 @@ const DripSchema = new Schema(
      * without spending a colour.
      */
     icon: String,
+
+    /**
+     * The drip's colour on the public site only (its bag's liquid, its card,
+     * its label band), from SITE_TINTS (lib/tints). Added with the client's
+     * design on 2026-10-30, and held to the rule above: the palette has no
+     * clinical hue, and the consoles never show it. Null means the default
+     * (tintFor).
+     */
+    tint: { type: String, enum: [...SITE_TINT_VALUES, null], default: null },
 
     /** Shown as a badge on the catalogue. One flag, not a ranking. */
     isPopular: { type: Boolean, default: false },

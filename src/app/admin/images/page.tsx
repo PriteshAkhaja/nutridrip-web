@@ -5,7 +5,7 @@ import { ConsoleShell } from "@/components/layout/ConsoleShell";
 import { connectDB } from "@/lib/db/mongoose";
 import { Drip, SiteMedia } from "@/lib/models";
 import { SITE_IMAGES, dripImage } from "@/lib/site-images";
-import { DRIP_FRAME, DRIP_PHONE, PAGES, SLOTS, dripSlot, type SlotKey } from "@/lib/media/slots";
+import { DRIP_FRAME, DRIP_PHONE, PAGES, SLOTS, coverOf, dripSlot, type SlotKey } from "@/lib/media/slots";
 import { applyMedia, needFor, startPosition, type MediaRecord } from "@/lib/media/rules";
 import { getClockFormat } from "@/lib/settings/clock";
 import { shortDateClock } from "@/lib/time";
@@ -59,7 +59,8 @@ export default async function SiteImagesPage() {
       image: { src: img.src, alt: img.alt, position: img.position, width: img.width, height: img.height },
       status: !r ? "original" : r.file ? "replaced" : "edited",
       updated: r?.updatedAt ? shortDateClock(r.updatedAt, clockFormat) : null,
-      need: needFor(frame),
+      // The same rule the upload is judged by: the largest it is drawn at any width.
+      need: needFor(coverOf(slot) ?? frame),
       frame,
       phone,
       startPosition: startPosition(shipped.position, !!r?.file),
@@ -72,6 +73,7 @@ export default async function SiteImagesPage() {
       key: p.key,
       name: p.name,
       path: p.path,
+      note: "note" in p ? p.note : undefined,
       items: (Object.keys(SLOTS) as SlotKey[])
         .filter((k) => SLOTS[k].page === p.key)
         .map((k) => item(k, SLOTS[k].label, SITE_IMAGES[SLOTS[k].fallback], SLOTS[k].frame, SLOTS[k].phone)),
@@ -80,7 +82,7 @@ export default async function SiteImagesPage() {
       key: "drips-own",
       name: "Each drip",
       path: "/drips",
-      note: "Shown on the drip's card, its page and the Drips menu. Until one is uploaded, a drip shows the photo for its goal.",
+      note: "Only an uploaded photo is shown: in place of the bag on the drip's card (the home page and the Drips list), and under the description on its page. Until one is uploaded, the site shows the drip's bag in its colour; the picture here is a stand-in, not on the site.",
       items: drips.map((d) => {
         const category = d.category || "Wellness";
         return item(dripSlot(d.slug), d.name, dripImage(d.slug, category), DRIP_FRAME, DRIP_PHONE, {

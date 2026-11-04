@@ -50,6 +50,7 @@ import { componentsFromRecipe } from "../src/lib/clinical/plan-input";
 import { componentsForConsent, CURRENT_CONSENT_VERSION, currentConsentDocument } from "../src/lib/clinical/consent";
 import { seedQuizQuestions } from "../src/lib/clinical/quiz-store";
 import { chargesGst, getBillingConfig } from "../src/lib/billing/settings";
+import { SEED_TINTS } from "../src/lib/tints";
 
 const DAY = 86_400_000;
 const days = (n: number) => new Date(Date.now() + n * DAY);
@@ -1396,6 +1397,8 @@ async function seedDrips(byKey: Map<string, { _id: unknown; name: string }>, kit
       isPublic: true,
       // The home page's "Most popular" row reads this tick.
       isPopular: POPULAR_SLUGS.has(d.slug),
+      // Its colour on the public site, as approved on the prototype.
+      tint: SEED_TINTS[d.slug] ?? null,
       requiresApproval: d.requiresApproval ?? true,
       withKit: true,
       kitId,

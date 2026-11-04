@@ -1,0 +1,646 @@
+<!doctype html>
+<html lang="en-IN">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
+    <title>Drips · NutriDrip</title>
+    <meta
+      name="description"
+      content="Every NutriDrip drip with every dose: what is in the bag, what is given beside it, how long it takes and what it costs."
+    />
+    <base href="" />
+    <link rel="icon" href="data:," />
+    <link rel="preload" href="/fonts/v3/outfit-latin-wght-normal.woff2" as="font" type="font/woff2" crossorigin />
+    <link rel="preload" href="/fonts/v3/geist-latin-wght-normal.woff2" as="font" type="font/woff2" crossorigin />
+    <link rel="stylesheet" href="/scrollcraft.css" />
+    <link rel="stylesheet" href="/site.css" />
+    <link rel="stylesheet" href="/drips.css" />
+  </head>
+  <body>
+    <div id="sc-root">
+      <span data-sc-progress></span>
+      <a class="nd-skip" href="#main">Skip to content</a>
+      <header class="nd-bar">
+        <div class="nd-bar__in">
+          <a class="nd-mark-link" href="/" aria-label="NutriDrip, IV nutrient therapy, home"
+            ><span class="nd-mark"
+              ><b>NutriDrip<sup>™</sup></b
+              ><small>IV NUTRIENT THERAPY</small></span
+            ></a
+          >
+          <nav class="nd-bar__nav" aria-label="Site">
+            <a href="/drips" aria-current="page">Drips</a><a href="/how-it-works">How it works</a
+            ><a href="/pricing">Pricing</a><a href="/safety">Safety</a><a href="/iv-vs-tablets">IV vs Tablets</a
+            ><a href="/zones">Zones</a><a href="/for-clinics">For clinics</a>
+          </nav>
+          <div class="nd-bar__end">
+            <button
+              class="nd-ledger-btn nd-menu-btn"
+              type="button"
+              aria-expanded="false"
+              aria-controls="nd-ledger"
+              data-menu-btn
+            >
+              Menu
+            </button>
+            <div class="nd-bar__book"><a class="nd-btn nd-btn--account" href="/login">Sign in</a></div>
+            <div class="nd-bar__book">
+              <div class="nd-cta">
+                <a class="nd-btn" href="/quiz">Take the quiz</a
+                ><span class="nd-cta__free">Physician-reviewed before every session</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </header>
+      <div class="nd-ledger" id="nd-ledger" role="dialog" aria-label="Menu">
+        <h2>NutriDrip</h2>
+        <div class="nd-ledger__pages">
+          <a href="/drips">All drips</a><a href="/how-it-works">How it works</a><a href="/pricing">Pricing</a
+          ><a href="/safety">Safety</a><a href="/iv-vs-tablets">IV vs Tablets</a><a href="/zones">Zones</a
+          ><a href="/about">About</a><a href="/for-clinics">For clinics</a>
+        </div>
+      </div>
+      <main id="main">
+        <section class="nd-pagehead dl-head">
+          <div class="nd-wrap">
+            <p class="nd-crumb"><a href="/">Home</a> · Drips</p>
+            <h1 class="nd-q">Nine drips, every dose published.</h1>
+            <p class="nd-lede">
+              Each is a fixed recipe a physician can adjust for you. Prices are per session, everything included.
+            </p>
+            <div class="dl-tools">
+              <form class="dl-search" role="search" action="/drips" method="get" data-search-form>
+                <label class="visually-hidden" for="dl-q">Search drips</label>
+                <input
+                  id="dl-q"
+                  name="q"
+                  type="search"
+                  placeholder="Search by name, goal or ingredient"
+                  autocomplete="off"
+                  enterkeyhint="search"
+                />
+                <input type="hidden" name="goal" value="" data-goal-field />
+              </form>
+              <nav class="dl-goals" aria-label="Filter by goal">
+                <ul>
+                  <li>
+                    <a class="dl-chip" href="/drips" aria-current="page" data-goal-chip="">All<span>9</span></a>
+                  </li>
+                  <li>
+                    <a class="dl-chip" href="/drips?goal=Energy" data-goal-chip="Energy">Energy<span>4</span></a>
+                  </li>
+                  <li>
+                    <a class="dl-chip" href="/drips?goal=Immunity" data-goal-chip="Immunity">Immunity<span>1</span></a>
+                  </li>
+                  <li>
+                    <a class="dl-chip" href="/drips?goal=Skin" data-goal-chip="Skin">Skin<span>1</span></a>
+                  </li>
+                  <li>
+                    <a class="dl-chip" href="/drips?goal=Hydration" data-goal-chip="Hydration"
+                      >Hydration<span>1</span></a
+                    >
+                  </li>
+                  <li>
+                    <a class="dl-chip" href="/drips?goal=Athletic%20recovery" data-goal-chip="Athletic recovery"
+                      >Athletic recovery<span>1</span></a
+                    >
+                  </li>
+                  <li>
+                    <a class="dl-chip" href="/drips?goal=Post-viral" data-goal-chip="Post-viral"
+                      >Post-viral<span>1</span></a
+                    >
+                  </li>
+                </ul>
+              </nav>
+            </div>
+            <p class="dl-count" aria-live="polite" data-count>Showing all 9 drips</p>
+          </div>
+        </section>
+
+        <section class="dl-list" aria-label="Drips">
+          <div class="nd-wrap">
+            <div class="dl-grid" data-grid>
+              <article
+                class="fcard"
+                style="--tint: #16a6b6"
+                aria-labelledby="fc-hydrate-plus"
+                data-card
+                data-goal="Hydration"
+                data-search="hydrate plus hydration ringer lactate electrolyte concentrate pyridoxine ondansetron fast rehydration"
+              >
+                <div class="fcard__top">
+                  <div class="fcard__bag" data-sc-tilt="6">
+                    <div class="nd-bag" style="--tint: #16a6b6; --fill: 1" aria-hidden="true">
+                      <div class="nd-bag__fill"></div>
+                      <img
+                        class="nd-bag__img"
+                        src="/site/v3/bag-empty.webp"
+                        width="577"
+                        height="1200"
+                        alt=""
+                        loading="lazy"
+                        decoding="async"
+                      />
+                    </div>
+                  </div>
+                  <div class="fcard__head">
+                    <h3 id="fc-hydrate-plus">Hydrate Plus</h3>
+                    <p class="fcard__cat">Hydration<span>30–40 min</span></p>
+                    <p class="fcard__price">₹5,400</p>
+                    <p class="fcard__prem">Most booked</p>
+                  </div>
+                </div>
+                <div>
+                  <p class="fcard__k">Inside the bag</p>
+                  <ul>
+                    <li>Ringer lactate 500 mL</li>
+                    <li>Electrolyte concentrate 20 mL</li>
+                    <li>Pyridoxine 100 mg</li>
+                  </ul>
+                </div>
+                <div>
+                  <p class="fcard__k">Given separately</p>
+                  <ul class="fcard__sep">
+                    <li>Ondansetron 4 mg (if nausea present)</li>
+                  </ul>
+                </div>
+                <p class="fcard__for">Fast rehydration.</p>
+
+                <a class="nd-link fcard__link" href="/drips/hydrate-plus"
+                  >Every dose, in full<span class="visually-hidden"> for Hydrate Plus</span></a
+                >
+              </article>
+              <article
+                class="fcard"
+                style="--tint: #4b96e6"
+                aria-labelledby="fc-jetlag-reset"
+                data-card
+                data-goal="Energy"
+                data-search="jetlag reset energy normal saline 0.9% ascorbic acid electrolyte concentrate pyridoxine built around travel days"
+              >
+                <div class="fcard__top">
+                  <div class="fcard__bag" data-sc-tilt="6">
+                    <div class="nd-bag" style="--tint: #4b96e6; --fill: 1" aria-hidden="true">
+                      <div class="nd-bag__fill"></div>
+                      <img
+                        class="nd-bag__img"
+                        src="/site/v3/bag-empty.webp"
+                        width="577"
+                        height="1200"
+                        alt=""
+                        loading="lazy"
+                        decoding="async"
+                      />
+                    </div>
+                  </div>
+                  <div class="fcard__head">
+                    <h3 id="fc-jetlag-reset">Jetlag Reset</h3>
+                    <p class="fcard__cat">Energy<span>30–40 min</span></p>
+                    <p class="fcard__price">₹6,800</p>
+                  </div>
+                </div>
+                <div>
+                  <p class="fcard__k">Inside the bag</p>
+                  <ul>
+                    <li>Normal saline 0.9% 500 mL</li>
+                    <li>Ascorbic acid 5,000 mg</li>
+                    <li>Electrolyte concentrate 20 mL</li>
+                    <li>Pyridoxine 100 mg</li>
+                  </ul>
+                </div>
+
+                <p class="fcard__for">Built around travel days.</p>
+
+                <a class="nd-link fcard__link" href="/drips/jetlag-reset"
+                  >Every dose, in full<span class="visually-hidden"> for Jetlag Reset</span></a
+                >
+              </article>
+              <article
+                class="fcard"
+                style="--tint: #7b5bd6"
+                aria-labelledby="fc-myers-revive"
+                data-card
+                data-goal="Energy"
+                data-search="myers revive energy normal saline 0.9% ascorbic acid magnesium sulphate b-complex cyanocobalamin calcium gluconate pyridoxine the default first drip"
+              >
+                <div class="fcard__top">
+                  <div class="fcard__bag" data-sc-tilt="6">
+                    <div class="nd-bag" style="--tint: #7b5bd6; --fill: 1" aria-hidden="true">
+                      <div class="nd-bag__fill"></div>
+                      <img
+                        class="nd-bag__img"
+                        src="/site/v3/bag-empty.webp"
+                        width="577"
+                        height="1200"
+                        alt=""
+                        loading="lazy"
+                        decoding="async"
+                      />
+                    </div>
+                  </div>
+                  <div class="fcard__head">
+                    <h3 id="fc-myers-revive">Myers&#39; Revive</h3>
+                    <p class="fcard__cat">Energy<span>45–60 min</span></p>
+                    <p class="fcard__price">₹8,400</p>
+                    <p class="fcard__prem">Most booked</p>
+                  </div>
+                </div>
+                <div>
+                  <p class="fcard__k">Inside the bag</p>
+                  <ul>
+                    <li>Normal saline 0.9% 500 mL</li>
+                    <li>Ascorbic acid 7,500 mg</li>
+                    <li>Magnesium sulphate 1,000 mg</li>
+                    <li>B-complex 2 mL</li>
+                    <li>Cyanocobalamin 1,000 mcg</li>
+                    <li>Calcium gluconate 500 mg</li>
+                    <li>Pyridoxine 100 mg</li>
+                  </ul>
+                </div>
+
+                <p class="fcard__for">The default first drip.</p>
+
+                <a class="nd-link fcard__link" href="/drips/myers-revive"
+                  >Every dose, in full<span class="visually-hidden"> for Myers&#39; Revive</span></a
+                >
+              </article>
+              <article
+                class="fcard"
+                style="--tint: #c13e8d"
+                aria-labelledby="fc-immune-shield"
+                data-card
+                data-goal="Immunity"
+                data-search="immune shield immunity normal saline 0.9% ascorbic acid zinc sulphate sodium selenite high-dose vitamin c"
+              >
+                <div class="fcard__top">
+                  <div class="fcard__bag" data-sc-tilt="6">
+                    <div class="nd-bag" style="--tint: #c13e8d; --fill: 1" aria-hidden="true">
+                      <div class="nd-bag__fill"></div>
+                      <img
+                        class="nd-bag__img"
+                        src="/site/v3/bag-empty.webp"
+                        width="577"
+                        height="1200"
+                        alt=""
+                        loading="lazy"
+                        decoding="async"
+                      />
+                    </div>
+                  </div>
+                  <div class="fcard__head">
+                    <h3 id="fc-immune-shield">Immune Shield</h3>
+                    <p class="fcard__cat">Immunity<span>60–80 min</span></p>
+                    <p class="fcard__price">₹9,200</p>
+                    <p class="fcard__prem">Most booked</p>
+                  </div>
+                </div>
+                <div>
+                  <p class="fcard__k">Inside the bag</p>
+                  <ul>
+                    <li>Normal saline 0.9% 500 mL</li>
+                    <li>Ascorbic acid 15,000 mg</li>
+                    <li>Zinc sulphate 10 mg</li>
+                    <li>Sodium selenite 100 mcg</li>
+                  </ul>
+                </div>
+
+                <p class="fcard__for">High-dose vitamin C.</p>
+
+                <a class="nd-link fcard__link" href="/drips/immune-shield"
+                  >Every dose, in full<span class="visually-hidden"> for Immune Shield</span></a
+                >
+              </article>
+              <article
+                class="fcard"
+                style="--tint: #a47ddb"
+                aria-labelledby="fc-post-viral-rebuild"
+                data-card
+                data-goal="Post-viral"
+                data-search="post-viral rebuild post-viral normal saline 0.9% ascorbic acid alpha-lipoic acid b-complex zinc sulphate after the infection clears"
+              >
+                <div class="fcard__top">
+                  <div class="fcard__bag" data-sc-tilt="6">
+                    <div class="nd-bag" style="--tint: #a47ddb; --fill: 1" aria-hidden="true">
+                      <div class="nd-bag__fill"></div>
+                      <img
+                        class="nd-bag__img"
+                        src="/site/v3/bag-empty.webp"
+                        width="577"
+                        height="1200"
+                        alt=""
+                        loading="lazy"
+                        decoding="async"
+                      />
+                    </div>
+                  </div>
+                  <div class="fcard__head">
+                    <h3 id="fc-post-viral-rebuild">Post-viral Rebuild</h3>
+                    <p class="fcard__cat">Post-viral<span>60–80 min</span></p>
+                    <p class="fcard__price">₹9,600</p>
+                  </div>
+                </div>
+                <div>
+                  <p class="fcard__k">Inside the bag</p>
+                  <ul>
+                    <li>Normal saline 0.9% 500 mL</li>
+                    <li>Ascorbic acid 10,000 mg</li>
+                    <li>Alpha-lipoic acid 300 mg</li>
+                    <li>B-complex 2 mL</li>
+                    <li>Zinc sulphate 10 mg</li>
+                  </ul>
+                </div>
+
+                <p class="fcard__for">After the infection clears.</p>
+
+                <a class="nd-link fcard__link" href="/drips/post-viral-rebuild"
+                  >Every dose, in full<span class="visually-hidden"> for Post-viral Rebuild</span></a
+                >
+              </article>
+              <article
+                class="fcard"
+                style="--tint: #8c3e8a"
+                aria-labelledby="fc-iron-restore"
+                data-card
+                data-goal="Energy"
+                data-search="iron restore energy normal saline 0.9% iron sucrose ascorbic acid pheniramine maleate requires recent labs"
+              >
+                <div class="fcard__top">
+                  <div class="fcard__bag" data-sc-tilt="6">
+                    <div class="nd-bag" style="--tint: #8c3e8a; --fill: 1" aria-hidden="true">
+                      <div class="nd-bag__fill"></div>
+                      <img
+                        class="nd-bag__img"
+                        src="/site/v3/bag-empty.webp"
+                        width="577"
+                        height="1200"
+                        alt=""
+                        loading="lazy"
+                        decoding="async"
+                      />
+                    </div>
+                  </div>
+                  <div class="fcard__head">
+                    <h3 id="fc-iron-restore">Iron Restore</h3>
+                    <p class="fcard__cat">Energy<span>90–120 min</span></p>
+                    <p class="fcard__price">₹9,800</p>
+                  </div>
+                </div>
+                <div>
+                  <p class="fcard__k">Inside the bag</p>
+                  <ul>
+                    <li>Normal saline 0.9% 500 mL</li>
+                    <li>Iron sucrose 200 mg</li>
+                    <li>Ascorbic acid 1,000 mg</li>
+                  </ul>
+                </div>
+                <div>
+                  <p class="fcard__k">Given separately</p>
+                  <ul class="fcard__sep">
+                    <li>Pheniramine maleate 22.75 mg (reaction cover)</li>
+                  </ul>
+                </div>
+                <p class="fcard__for">Requires recent labs.</p>
+
+                <a class="nd-link fcard__link" href="/drips/iron-restore"
+                  >Every dose, in full<span class="visually-hidden"> for Iron Restore</span></a
+                >
+              </article>
+              <article
+                class="fcard"
+                style="--tint: #4a4fb5"
+                aria-labelledby="fc-athletic-recovery"
+                data-card
+                data-goal="Athletic recovery"
+                data-search="athletic recovery athletic recovery ringer lactate taurine l-carnitine magnesium sulphate ascorbic acid after the event not before"
+              >
+                <div class="fcard__top">
+                  <div class="fcard__bag" data-sc-tilt="6">
+                    <div class="nd-bag" style="--tint: #4a4fb5; --fill: 1" aria-hidden="true">
+                      <div class="nd-bag__fill"></div>
+                      <img
+                        class="nd-bag__img"
+                        src="/site/v3/bag-empty.webp"
+                        width="577"
+                        height="1200"
+                        alt=""
+                        loading="lazy"
+                        decoding="async"
+                      />
+                    </div>
+                  </div>
+                  <div class="fcard__head">
+                    <h3 id="fc-athletic-recovery">Athletic Recovery</h3>
+                    <p class="fcard__cat">Athletic recovery<span>55–75 min</span></p>
+                    <p class="fcard__price">₹10,200</p>
+                  </div>
+                </div>
+                <div>
+                  <p class="fcard__k">Inside the bag</p>
+                  <ul>
+                    <li>Ringer lactate 500 mL</li>
+                    <li>Taurine 1,000 mg</li>
+                    <li>L-carnitine 1,000 mg</li>
+                    <li>Magnesium sulphate 1,000 mg</li>
+                    <li>Ascorbic acid 5,000 mg</li>
+                  </ul>
+                </div>
+
+                <p class="fcard__for">After the event, not before.</p>
+
+                <a class="nd-link fcard__link" href="/drips/athletic-recovery"
+                  >Every dose, in full<span class="visually-hidden"> for Athletic Recovery</span></a
+                >
+              </article>
+              <article
+                class="fcard"
+                style="--tint: #b65cc8"
+                aria-labelledby="fc-deep-recharge"
+                data-card
+                data-goal="Energy"
+                data-search="deep recharge energy normal saline 0.9% l-carnitine taurine cyanocobalamin b-complex for sustained fatigue"
+              >
+                <div class="fcard__top">
+                  <div class="fcard__bag" data-sc-tilt="6">
+                    <div class="nd-bag" style="--tint: #b65cc8; --fill: 1" aria-hidden="true">
+                      <div class="nd-bag__fill"></div>
+                      <img
+                        class="nd-bag__img"
+                        src="/site/v3/bag-empty.webp"
+                        width="577"
+                        height="1200"
+                        alt=""
+                        loading="lazy"
+                        decoding="async"
+                      />
+                    </div>
+                  </div>
+                  <div class="fcard__head">
+                    <h3 id="fc-deep-recharge">Deep Recharge</h3>
+                    <p class="fcard__cat">Energy<span>60–80 min</span></p>
+                    <p class="fcard__price">₹10,600</p>
+                  </div>
+                </div>
+                <div>
+                  <p class="fcard__k">Inside the bag</p>
+                  <ul>
+                    <li>Normal saline 0.9% 500 mL</li>
+                    <li>L-carnitine 2,000 mg</li>
+                    <li>Taurine 1,000 mg</li>
+                    <li>Cyanocobalamin 1,000 mcg</li>
+                    <li>B-complex 2 mL</li>
+                  </ul>
+                </div>
+
+                <p class="fcard__for">For sustained fatigue.</p>
+
+                <a class="nd-link fcard__link" href="/drips/deep-recharge"
+                  >Every dose, in full<span class="visually-hidden"> for Deep Recharge</span></a
+                >
+              </article>
+              <article
+                class="fcard"
+                style="--tint: #db5b93"
+                aria-labelledby="fc-glow-protocol"
+                data-card
+                data-goal="Skin"
+                data-search="glow protocol skin normal saline 0.9% glutathione ascorbic acid biotin given as a slow push"
+              >
+                <div class="fcard__top">
+                  <div class="fcard__bag" data-sc-tilt="6">
+                    <div class="nd-bag" style="--tint: #db5b93; --fill: 1" aria-hidden="true">
+                      <div class="nd-bag__fill"></div>
+                      <img
+                        class="nd-bag__img"
+                        src="/site/v3/bag-empty.webp"
+                        width="577"
+                        height="1200"
+                        alt=""
+                        loading="lazy"
+                        decoding="async"
+                      />
+                    </div>
+                  </div>
+                  <div class="fcard__head">
+                    <h3 id="fc-glow-protocol">Glow Protocol</h3>
+                    <p class="fcard__cat">Skin<span>50–70 min</span></p>
+                    <p class="fcard__price">₹11,000</p>
+                    <p class="fcard__prem">Most booked</p>
+                  </div>
+                </div>
+                <div>
+                  <p class="fcard__k">Inside the bag</p>
+                  <ul>
+                    <li>Normal saline 0.9% 500 mL</li>
+                    <li>Ascorbic acid 5,000 mg</li>
+                    <li>Biotin 5,000 mcg</li>
+                  </ul>
+                </div>
+                <div>
+                  <p class="fcard__k">Given separately</p>
+                  <ul class="fcard__sep">
+                    <li>Glutathione 600 mg (slow iv push)</li>
+                  </ul>
+                </div>
+                <p class="fcard__for">Given as a slow push.</p>
+
+                <a class="nd-link fcard__link" href="/drips/glow-protocol"
+                  >Every dose, in full<span class="visually-hidden"> for Glow Protocol</span></a
+                >
+              </article>
+            </div>
+            <div class="dl-none" data-none hidden>
+              <p data-none-text></p>
+              <a class="nd-btn nd-btn--ghost" href="/drips" data-clear>Clear the search</a>
+            </div>
+          </div>
+        </section>
+
+        <section class="sc-section dl-end" aria-labelledby="end-h">
+          <div class="nd-wrap">
+            <div class="dl-end__in" data-sc-in>
+              <h2 id="end-h" class="nd-q nd-q--sm">Not sure which?</h2>
+              <p class="nd-body">
+                Take the health quiz. A registered physician reads it, then approves a protocol, changes the doses, or
+                tells you what would suit you better.
+              </p>
+              <div class="dl-end__acts">
+                <div class="nd-cta">
+                  <a class="nd-btn" href="/quiz">Take the health quiz</a
+                  ><span class="nd-cta__free">A physician reads every answer</span>
+                </div>
+                <a class="nd-btn nd-btn--ghost" href="/consult">Ask a clinician</a>
+              </div>
+            </div>
+          </div>
+        </section>
+      </main>
+      <footer class="nd-foot">
+        <div class="nd-wrap">
+          <div class="nd-foot__grid">
+            <div>
+              <a class="nd-mark-link" href="/"
+                ><span class="nd-mark"
+                  ><b>NutriDrip<sup>™</sup></b
+                  ><small>IV NUTRIENT THERAPY</small></span
+                ></a
+              >
+              <p class="nd-small" style="margin-top: 1rem; max-width: 36ch">
+                IV nutrient therapy at home in Bengaluru, reviewed by a registered physician and given by a
+                council-registered nurse.
+              </p>
+              <p class="nd-small" style="margin-top: 0.8rem">
+                NutriDrip Health Pvt. Ltd. · Clinical establishment reg. KA/CEA/2024/11872
+              </p>
+            </div>
+            <div>
+              <h3>Now serving</h3>
+              <ul class="nd-foot__zones">
+                <li>Koramangala</li>
+                <li>HSR Layout</li>
+                <li>Indiranagar</li>
+                <li>Ejipura</li>
+                <li>Domlur</li>
+                <li>Jayanagar</li>
+                <li>JP Nagar</li>
+                <li>BTM Layout</li>
+                <li>Richmond Town</li>
+                <li>Frazer Town</li>
+                <li>Sadashivanagar</li>
+                <li>Whitefield</li>
+                <li>Sarjapur Road</li>
+                <li>Hebbal</li>
+              </ul>
+            </div>
+            <nav aria-label="Pages">
+              <h3>Pages</h3>
+              <ul>
+                <li><a href="/drips">Drips</a></li>
+                <li><a href="/how-it-works">How it works</a></li>
+                <li><a href="/pricing">Pricing</a></li>
+                <li><a href="/safety">Safety</a></li>
+                <li><a href="/iv-vs-tablets">IV vs Tablets</a></li>
+                <li><a href="/zones">Zones</a></li>
+                <li><a href="/for-clinics">For clinics</a></li>
+                <li><a href="/about">About</a></li>
+                <li><a href="/faqs">FAQs</a></li>
+                <li><a href="/consult">Ask a clinician</a></li>
+                <li><a href="/legal/terms">Terms</a></li>
+                <li><a href="/legal/privacy">Privacy</a></li>
+              </ul>
+            </nav>
+          </div>
+          <div class="nd-foot__legal">
+            <p>
+              <b>IV nutrient therapy is a medical procedure.</b> Every protocol is reviewed by a registered physician
+              before anything is booked, and may not be suitable for everyone. Not a substitute for emergency care. In
+              an emergency call 108.
+            </p>
+          </div>
+        </div>
+      </footer>
+    </div>
+    <script src="/scrollcraft.js"></script>
+    <script src="/page.js"></script>
+  </body>
+</html>

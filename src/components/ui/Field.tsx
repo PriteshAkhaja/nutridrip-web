@@ -1,12 +1,12 @@
 import type { InputHTMLAttributes, SelectHTMLAttributes, TextareaHTMLAttributes, ReactNode, WheelEvent } from "react";
 
-const CONTROL =
+export const CONTROL =
   "min-h-[44px] w-full px-[14px] rounded-[var(--radius-sm)] border bg-[var(--color-surface)] " +
   "text-[14.5px] text-[var(--color-ink)] transition-colors duration-150 ease-out " +
   "placeholder:text-[var(--color-ink-3)] " +
   "disabled:bg-[var(--color-surface-2)] disabled:text-[var(--color-ink-3)] disabled:border-[var(--color-line)]";
 
-function borderFor(error?: string) {
+export function borderFor(error?: string) {
   return error
     ? "border-[var(--color-critical)] bg-[var(--color-critical-soft)]"
     : "border-[var(--color-line-2)] focus:border-[var(--color-primary)]";

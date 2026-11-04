@@ -1,15 +1,24 @@
-# /about: the mission lights up as you read it
+# About: brief (2026-11-03)
 
-**Scope (user, 6 Oct 2026):** GSAP only where required. One section gets a
-moment: **"A procedure, not a treat"** (the mission statement). Everything else on
-the page stays as it is.
+Self-authored under explicit creative delegation. Built straight in the route.
 
-**Peak.** *"The mission statement lit up word by word as I read it."* The page's
-quietest moment, on purpose: it is a page about who we are.
-
-**Device.** The paragraph is editable copy (`about.mission`), so its words are
-wrapped at run time, whatever an admin writes. Each turns from the muted ink
-(`--color-ink-3`, 4.6:1 on mist, readable before it lights) to full ink in
-reading order as the paragraph crosses the screen (a GSAP stagger, scrubbed).
-The text never changes, so screen readers read one sentence. Reduced motion:
-the paragraph in full ink, as today.
+- **Treatment:** Full (AGENTS.md). One pinned act, the peak.
+- **Shape:** the client's `about.html` (head, four-figure row, slip). Its
+  subject, a named founder with a story and figures, exists only in the
+  client's artifact (PAGES.md 3c), so it is left out until the client sends
+  it in writing; the nav keeps "About". The page carries ours: headline,
+  intro and mission (`content.ts`), figures counted live (the home page's
+  counts), the three teams, the registered entity.
+- **Peak, the line:** a table of what each team (Physician, Nurse,
+  Operations) can and cannot do, filled row by row as you scroll, each row
+  computed from `PERMISSIONS` / `can()` (`lib/auth/rbac.ts`), the
+  clear-vitals route's own role check, and the checklist's sequence rule
+  (the last row: no one can skip a mandatory step). Its reason shows under
+  the table.
+- **Distinct from the other pages:** a matrix that fills, not a card that
+  travels (How it works) nor a readout that changes state (Safety).
+- **Photos:** the client's page promises "We only use real photographs of
+  our doctors", so a team card shows its photo only once one is uploaded
+  (`uploadedSiteImages`); the stand-ins never show here. `about.closing`
+  retired.
+- **Reduced motion and no script:** the table complete, each reason in its row.

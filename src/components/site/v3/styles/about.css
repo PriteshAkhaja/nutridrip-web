@@ -1,0 +1,414 @@
+/* About: the client's page shape (head, the four-figure row, the slip) with
+   our content, and this page's own act, the line: what each team can and
+   cannot do in the app, filled in row by row. Every class is the page's own
+   (ab-). Scoped to .sc-site by scripts/scope-site-css.mjs: edit here, then
+   run `npm run site-css`. */
+
+/* ---------------------------------------------------------------- head */
+.ab-head .nd-q {
+  max-width: 18ch;
+}
+.ab-head .nd-lede {
+  max-width: 54ch;
+}
+.ab-head__go {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  gap: 1rem 1.25rem;
+  margin-top: 2rem;
+}
+
+/* ------------------------------------------------- the four-figure row */
+.ab-facts {
+  background: #fff;
+}
+.ab-facts__row {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  margin: 0;
+}
+.ab-facts__row > div {
+  display: flex;
+  flex-direction: column-reverse;
+  justify-content: flex-end;
+  gap: 0.5rem;
+  padding: 0.25rem clamp(1rem, 2.5vw, 2rem);
+  border-left: 1px solid var(--nd-line);
+}
+.ab-facts__row > div:first-child {
+  border-left: 0;
+  padding-left: 0;
+}
+.ab-facts__row dt {
+  color: var(--sc-ink-soft);
+  font-size: 0.95rem;
+  line-height: 1.35;
+  max-width: 18ch;
+}
+.ab-facts__row dd {
+  margin: 0;
+  display: flex;
+  align-items: baseline;
+  gap: 0.4rem;
+}
+.ab-facts__row dd .nd-num {
+  font-size: clamp(2.5rem, 1.8rem + 2.4vw, 3.6rem);
+  font-weight: 600;
+  line-height: 1;
+  letter-spacing: -0.03em;
+}
+.ab-facts__row dd small {
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--sc-ink-soft);
+}
+.ab-facts__note {
+  margin-top: 1.6rem;
+}
+@media (max-width: 860px) {
+  .ab-facts__row {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    row-gap: 1.6rem;
+  }
+  .ab-facts__row > div:nth-child(3) {
+    border-left: 0;
+    padding-left: 0;
+  }
+}
+
+/* ------------------------------------------------------------- mission */
+.ab-mission__grid {
+  display: grid;
+  grid-template-columns: minmax(0, 0.8fr) minmax(0, 1.2fr);
+  gap: clamp(1.5rem, 5vw, 5rem);
+  align-items: start;
+}
+.ab-mission__grid .nd-q {
+  margin-top: 0.8rem;
+}
+.ab-mission__text {
+  font: 500 clamp(1.2rem, 1rem + 0.8vw, 1.7rem)/1.5 var(--sc-font-display);
+  letter-spacing: -0.015em;
+  text-wrap: pretty;
+}
+@media (max-width: 860px) {
+  .ab-mission__grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+/* --------------------------------------------------------------- teams */
+.ab-teams {
+  background: #fff;
+}
+.ab-teams__head .nd-q {
+  margin-top: 0.8rem;
+  max-width: 22ch;
+}
+.ab-teams__grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: clamp(1rem, 2.5vw, 1.75rem);
+  margin-top: clamp(1.75rem, 3.5vw, 2.5rem);
+}
+/* The three cards share one height, whatever their text runs to. */
+.ab-team {
+  display: flex;
+  flex-direction: column;
+}
+.ab-team {
+  border: 1px solid var(--nd-line);
+  border-radius: 18px;
+  padding: clamp(1.1rem, 2.2vw, 1.5rem);
+  background: var(--sc-canvas);
+}
+/* The team's photograph (Admin → Site images), only once a real one is uploaded. */
+.ab-team__pic {
+  aspect-ratio: 384 / 346;
+  margin-bottom: 1.2rem;
+  background-color: var(--nd-line);
+}
+.ab-team__h {
+  font-size: 1.3rem;
+  letter-spacing: -0.015em;
+}
+.ab-team__b {
+  margin-top: 0.6rem;
+  color: var(--sc-ink-soft);
+  text-wrap: pretty;
+}
+@media (max-width: 860px) {
+  .ab-teams__grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .ab-team__pic {
+    aspect-ratio: 342 / 308;
+  }
+}
+
+/* ------------------------------------------------------------ the line */
+.ab-line {
+  background: var(--sc-canvas);
+}
+.ab-line__stage {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  padding-top: var(--bar-h);
+  background: var(--sc-canvas);
+}
+.ab-line__in {
+  display: grid;
+  gap: clamp(1rem, 2.6svh, 1.75rem);
+}
+.ab-line__head {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  gap: 1rem clamp(2rem, 5vw, 5rem);
+  align-items: end;
+}
+.ab-line__head .nd-body {
+  max-width: 50ch;
+}
+.ab-matrix {
+  width: 100%;
+  border-collapse: collapse;
+  background: #fff;
+  border: 1px solid var(--nd-line);
+  border-radius: 18px;
+  overflow: hidden;
+  font-size: 1rem;
+}
+.ab-matrix thead th {
+  padding: 0.95rem 0.5rem 0.8rem;
+  font: 600 1rem/1.2 var(--sc-font-display);
+  text-align: center;
+  border-bottom: 1px solid var(--nd-line);
+  width: 17%;
+}
+.ab-matrix thead td {
+  border-bottom: 1px solid var(--nd-line);
+}
+.ab-matrix tbody th {
+  text-align: left;
+  padding: 0.8rem 1rem 0.8rem clamp(1rem, 2vw, 1.5rem);
+  font: 600 1.02rem/1.3 var(--sc-font-display);
+  letter-spacing: -0.005em;
+}
+.ab-matrix tbody td {
+  text-align: center;
+  padding: 0.6rem 0.5rem;
+}
+.ab-matrix tbody tr + tr > * {
+  border-top: 1px solid #e6ebe8;
+}
+.ab-matrix__why {
+  display: block;
+  margin-top: 0.3rem;
+  font: 400 0.9rem/1.45 var(--sc-font-text);
+  color: var(--sc-ink-soft);
+  letter-spacing: 0;
+  max-width: 60ch;
+}
+/* Can: a filled mark with a tick. Cannot: an empty ring with a dash. Each with its word. */
+.ab-matrix__mark {
+  display: inline-grid;
+  place-items: center;
+  width: 1.45rem;
+  height: 1.45rem;
+  border-radius: 50%;
+  vertical-align: middle;
+}
+.is-yes .ab-matrix__mark {
+  background: var(--sc-ink);
+}
+.is-yes .ab-matrix__mark::after {
+  content: "";
+  width: 0.32rem;
+  height: 0.62rem;
+  border: solid #fff;
+  border-width: 0 2px 2px 0;
+  transform: translateY(-1px) rotate(45deg);
+}
+.is-no .ab-matrix__mark {
+  border: 1.5px solid #9aa6a2;
+}
+.is-no .ab-matrix__mark::after {
+  content: "";
+  width: 0.55rem;
+  height: 1.5px;
+  background: #9aa6a2;
+}
+.ab-matrix__word {
+  display: block;
+  margin-top: 0.3rem;
+  font-size: 0.76rem;
+  font-weight: 600;
+  color: var(--sc-ink-soft);
+}
+.is-yes .ab-matrix__word {
+  color: var(--sc-ink);
+}
+
+/* The reasons under the table, one at a time; shown only while the act runs. */
+.ab-line__why {
+  display: none;
+}
+
+/* Live (the script runs): rows not reached are faint, and the reasons leave
+   the rows for the list under the table, read there by a screen reader too. */
+.ab-matrix.is-live .ab-matrix__why {
+  display: none;
+}
+.ab-matrix.is-live + .ab-line__why {
+  display: grid;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+.ab-line__why li {
+  grid-area: 1 / 1;
+  opacity: 0;
+  transform: translateY(6px);
+  transition:
+    opacity 260ms var(--sc-ease-out),
+    transform 260ms var(--sc-ease-out);
+  font-size: 1.02rem;
+  color: var(--sc-ink-soft);
+  max-width: 66ch;
+}
+.ab-line__why li.is-now {
+  opacity: 1;
+  transform: none;
+}
+.ab-matrix.is-live tbody tr {
+  transition: background-color 240ms var(--sc-ease-out);
+}
+.ab-matrix.is-live tbody tr th {
+  transition: color 240ms var(--sc-ease-out);
+}
+.ab-matrix.is-live tbody tr:not(.is-in) th {
+  color: #9aa6a2;
+}
+.ab-matrix.is-live tbody td > * {
+  transition:
+    opacity 260ms var(--sc-ease-out),
+    transform 320ms cubic-bezier(0.2, 0.7, 0.2, 1);
+}
+.ab-matrix.is-live tbody tr:not(.is-in) td > * {
+  opacity: 0;
+  transform: scale(0.6);
+}
+.ab-matrix.is-live tbody tr.is-now {
+  background: #eef5f1;
+}
+
+@media (min-width: 861px) and (max-height: 820px) {
+  .ab-matrix tbody th {
+    padding-block: 0.55rem;
+  }
+  .ab-matrix tbody td {
+    padding-block: 0.4rem;
+  }
+  .ab-matrix__word {
+    margin-top: 0.15rem;
+  }
+}
+@media (max-width: 860px) {
+  .ab-line__stage {
+    justify-content: flex-start;
+    padding-top: calc(var(--bar-h) + 0.9rem);
+  }
+  .ab-line__head {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .ab-line__head .nd-q {
+    font-size: 1.3rem;
+  }
+  .ab-line__head .nd-body {
+    display: none;
+  }
+  .ab-matrix {
+    border-radius: 14px;
+  }
+  .ab-matrix thead th {
+    width: 18%;
+    padding: 0.7rem 0.2rem 0.6rem;
+    font-size: 0.76rem;
+  }
+  .ab-matrix tbody th {
+    padding: 0.6rem 0.5rem 0.6rem 0.8rem;
+    font-size: 0.86rem;
+    line-height: 1.3;
+  }
+  .ab-matrix tbody td {
+    padding: 0.45rem 0.2rem;
+  }
+  .ab-matrix__mark {
+    width: 1.15rem;
+    height: 1.15rem;
+  }
+  .is-yes .ab-matrix__mark::after {
+    width: 0.26rem;
+    height: 0.5rem;
+  }
+  .is-no .ab-matrix__mark::after {
+    width: 0.45rem;
+  }
+  .ab-matrix__word {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip: rect(0 0 0 0);
+    white-space: nowrap;
+  }
+  .ab-line__why li {
+    font-size: 0.9rem;
+    line-height: 1.45;
+  }
+}
+@media (max-width: 860px) and (max-height: 700px) {
+  .ab-matrix tbody th {
+    padding-block: 0.45rem;
+  }
+}
+/* Reduced motion: a still table, every row filled, each reason in its row. */
+.is-static .ab-line__stage {
+  height: auto;
+  padding-block: calc(var(--bar-h) + 1rem) 4rem;
+}
+@media (max-width: 860px) {
+  .is-static .ab-line__head .nd-body {
+    display: block;
+  }
+}
+/* A phone on its side reads the still version (motion.ts, SHORT_SCREEN), so
+   the act reserves no pinned height from first paint. */
+@media (max-height: 500px) {
+  .ab-line.act-res {
+    height: auto;
+  }
+}
+
+/* -------------------------------------------------------- read more */
+.ab-more__card {
+  display: grid;
+  gap: 0.7rem;
+  align-content: start;
+}
+.ab-more__h {
+  font: 600 1.3rem/1.25 var(--sc-font-display);
+  letter-spacing: -0.015em;
+}
+.ab-more__links {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.3rem 1.4rem;
+}
+.ab-more__links .nd-link {
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;
+}

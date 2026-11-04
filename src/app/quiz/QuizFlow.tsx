@@ -12,7 +12,7 @@ import {
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/Button";
 import { Textarea } from "@/components/ui/Field";
-import { LogoMark } from "@/components/layout/Logo";
+import { Wordmark } from "@/components/site/v3/Wordmark";
 import type { Answer, Answers, QuizQuestion } from "@/lib/clinical/quiz";
 import {
   answerProblem,
@@ -42,6 +42,10 @@ import {
  * Questions sit side by side like cards in a slider: Continue slides the current
  * one out to the left as the next comes in from the right, Back the other way.
  * On a phone the card follows the finger, with the next one showing at its edge.
+ *
+ * It wears the client's design (ClientTheme on the page, `.nd-quiz` in
+ * account.css): `--qz-mark` is the brand green for the progress, a chosen
+ * answer's marker and a finished section's tick.
  */
 export function QuizFlow({
   questions,
@@ -359,15 +363,16 @@ export function QuizFlow({
     <div className="min-h-dvh bg-[var(--color-paper)] flex flex-col">
       {/* ---------------- Progress ---------------- */}
       <header className="sticky top-0 bg-[var(--color-paper)] border-b border-[var(--color-line)] z-20">
-        <div className="mx-auto w-full max-w-[560px] md:max-w-[720px] px-5 py-4">
+        <div className="mx-auto w-full max-w-[560px] md:max-w-[760px] px-5 py-4">
           <div className="flex items-center justify-between gap-3 mb-3">
-            <div className="flex items-center gap-[10px]">
-              <LogoMark size={22} />
-              <span className="t-micro">
+            {/* Not a link: leaving goes through Close, which asks first. */}
+            <Wordmark />
+            <div className="flex items-center gap-3">
+              {/* On a phone the section steps below say the same, and the
+                  row has no room for it beside the wordmark. */}
+              <span className="t-micro sr-only sm:not-sr-only">
                 Section {stepIndex + 1} of {steps.length}
               </span>
-            </div>
-            <div className="flex items-center gap-2">
               <span className="t-data text-[13px] text-[var(--color-ink-2)]">
                 {index + 1} / {visible.length}
               </span>
@@ -386,9 +391,9 @@ export function QuizFlow({
               </button>
             </div>
           </div>
-          <div className="h-[6px] rounded-full bg-[var(--color-surface-2)] overflow-hidden">
+          <div className="h-[6px] rounded-full bg-[var(--color-line)] overflow-hidden">
             <div
-              className="h-full rounded-full bg-[var(--color-primary)] transition-all duration-150 ease-out"
+              className="h-full rounded-full bg-[var(--qz-mark,var(--color-primary))] transition-all duration-150 ease-out"
               style={{ width: `${((index + 1) / visible.length) * 100}%` }}
             />
           </div>
@@ -415,9 +420,9 @@ export function QuizFlow({
                     aria-label={`${st.name}: ${finished ? "finished" : `${st.done} of ${st.total} answered`}${
                       open ? "" : ", answer the sections before it first"
                     }`}
-                    className="flex-none inline-flex items-center gap-2 min-h-[40px] px-3 rounded-full border text-[13px] whitespace-nowrap transition-colors duration-150 enabled:cursor-pointer disabled:cursor-not-allowed"
+                    className="flex-none inline-flex items-center gap-2 min-h-[40px] px-3 rounded-full border-[1.5px] text-[13px] whitespace-nowrap transition-colors duration-150 enabled:cursor-pointer disabled:cursor-not-allowed"
                     style={{
-                      borderColor: current ? "var(--color-primary)" : "var(--color-line)",
+                      borderColor: current ? "var(--color-primary)" : "var(--color-line-2)",
                       background: current ? "var(--color-primary-soft)" : "var(--color-surface)",
                       color: open ? "var(--color-ink)" : "var(--color-ink-3)",
                       fontWeight: current ? 600 : 500,
@@ -427,7 +432,7 @@ export function QuizFlow({
                       <svg aria-hidden width="14" height="14" viewBox="0 0 12 12" fill="none" className="flex-none">
                         <path
                           d="M2.5 6.2 5 8.6l4.5-5.2"
-                          stroke="var(--color-primary)"
+                          stroke="var(--qz-mark, var(--color-primary))"
                           strokeWidth="1.8"
                           strokeLinecap="round"
                           strokeLinejoin="round"
@@ -456,7 +461,7 @@ export function QuizFlow({
           browser. Without it a swipe right was also the browser's "back a
           page" gesture, and the patient left the quiz with their answers. */}
       <main
-        className="flex-1 mx-auto w-full max-w-[560px] md:max-w-[720px] px-5 py-8 flex flex-col overflow-x-clip touch-pan-y"
+        className="flex-1 mx-auto w-full max-w-[560px] md:max-w-[760px] px-5 py-8 flex flex-col overflow-x-clip touch-pan-y"
         onTouchStart={onTouchStart}
         onTouchMove={onTouchMove}
         onTouchEnd={onTouchEnd}
@@ -655,7 +660,11 @@ function QuestionCard({
       <h1
         tabIndex={-1}
         className="mb-2 outline-none"
-        style={{ font: "600 26px/1.25 var(--font-display)", letterSpacing: "-0.02em", textWrap: "pretty" }}
+        style={{
+          font: "600 clamp(1.6rem, 1.25rem + 1.2vw, 2.1rem)/1.2 var(--font-display)",
+          letterSpacing: "-0.025em",
+          textWrap: "pretty",
+        }}
       >
         {q.question}
       </h1>
@@ -695,9 +704,9 @@ function QuestionCard({
                 type="button"
                 aria-pressed={selected}
                 onClick={() => onAnswer(q.type === "multi" ? toggleMulti(q, picked, o.value) : o.value)}
-                className="text-left min-h-[56px] px-5 rounded-[var(--radius-md)] border cursor-pointer flex items-center gap-4 transition-colors duration-150"
+                className="text-left min-h-[56px] px-5 rounded-[var(--radius-md)] border-[1.5px] cursor-pointer flex items-center gap-4 transition-colors duration-150"
                 style={{
-                  borderColor: selected ? "var(--color-primary)" : "var(--color-line)",
+                  borderColor: selected ? "var(--color-primary)" : "var(--color-line-2)",
                   background: selected ? "var(--color-primary-soft)" : "var(--color-surface)",
                 }}
               >
@@ -709,7 +718,7 @@ function QuestionCard({
                     className="w-[18px] h-[18px] rounded-[4px] flex-none inline-flex items-center justify-center"
                     style={{
                       border: selected ? "none" : "1.5px solid var(--color-line-2)",
-                      background: selected ? "var(--color-primary)" : "var(--color-surface)",
+                      background: selected ? "var(--qz-mark, var(--color-primary))" : "var(--color-surface)",
                     }}
                   >
                     {selected && (
@@ -728,7 +737,9 @@ function QuestionCard({
                   <span
                     className="w-[18px] h-[18px] rounded-full flex-none"
                     style={{
-                      border: selected ? "6px solid var(--color-primary)" : "1.5px solid var(--color-line-2)",
+                      border: selected
+                        ? "6px solid var(--qz-mark, var(--color-primary))"
+                        : "1.5px solid var(--color-line-2)",
                       background: "var(--color-surface)",
                     }}
                   />

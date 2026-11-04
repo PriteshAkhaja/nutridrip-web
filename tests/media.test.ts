@@ -1,17 +1,16 @@
 import fs from "node:fs";
 import path from "node:path";
 import { describe, expect, it } from "vitest";
-import { SITE_IMAGES, goalImage } from "@/lib/site-images";
-import { CATEGORIES } from "@/lib/data/marketing";
+import { SITE_IMAGES } from "@/lib/site-images";
 import {
-  frameOf,
+  coverOf,
   DRIP_FRAME,
   PAGES,
   SLOTS,
   dripSlugOf,
   dripSlot,
-  goalTileSlot,
   isSlotKey,
+  type SlotDef,
   type SlotKey,
 } from "@/lib/media/slots";
 import {
@@ -61,18 +60,13 @@ describe("the slots", () => {
     };
     walk(dir);
     const source = files.map((f) => fs.readFileSync(f, "utf8")).join("\n");
-    // The goal tiles are reached through goalTileSlot(category), not by name.
-    for (const k of keys.filter((k) => !k.startsWith("home.goal-"))) expect(source, k).toContain(`"${k}"`);
+    for (const k of keys) expect(source, k).toContain(`"${k}"`);
     expect(source).not.toMatch(/SITE_IMAGES\./);
   });
 
-  it("give every home goal tile a slot that starts as today's tile", () => {
-    for (const c of CATEGORIES) {
-      const slot = goalTileSlot(c.slug);
-      expect(slot, c.slug).not.toBeNull();
-      expect(SITE_IMAGES[SLOTS[slot!].fallback]).toBe(goalImage(c.slug));
-    }
-    expect(goalTileSlot("Not a goal")).toBeNull();
+  it("leave the home page out: its pictures are planes of the scroll composition", () => {
+    expect(PAGES.map((p): string => p.key)).not.toContain("home");
+    expect(keys.some((k) => k.startsWith("home."))).toBe(false);
   });
 
   it("key a drip by its slug, which a reseed keeps (its id it does not)", () => {
@@ -81,7 +75,7 @@ describe("the slots", () => {
     for (const bad of ["drip.", "drip.Hydrate-Plus", "drip.../etc", "drip.a/b", "hydrate-plus"])
       expect(dripSlugOf(bad), bad).toBeNull();
     expect(isSlotKey(dripSlot("hydrate-plus"))).toBe(false);
-    expect(isSlotKey("home.closing")).toBe(true);
+    expect(isSlotKey("how-it-works.hero")).toBe(true);
     expect(isSlotKey("home.hero")).toBe(false);
   });
 });
@@ -122,7 +116,7 @@ describe("the focus point", () => {
 describe("where files are kept", () => {
   it("is a folder per page and place, and per drip by its name", () => {
     expect(slotFolder("home.goal-energy")).toBe("images/site/home/goal-energy");
-    expect(slotFolder("how-it-works.step-slot")).toBe("images/site/how-it-works/step-slot");
+    expect(slotFolder("how-it-works.hero")).toBe("images/site/how-it-works/hero");
     expect(slotFolder("drip.hydrate-plus", "hydrate-plus")).toBe("images/drips/hydrate-plus");
     expect(slotFolder("drip.hydrate-plus", "../../etc")).toBe("images/drips/etc");
   });
@@ -228,12 +222,14 @@ describe("what each place needs", () => {
     expect(needFor({ w: 588, h: 676 })).toEqual({ min: { w: 590, h: 680 }, ideal: { w: 1180, h: 1360 } });
   });
   it("is different for each place, so one photo can suit one and not another", () => {
-    const small = needFor(SLOTS["about.physicians"].frame);
-    const tall = needFor(SLOTS["how-it-works.step-slot"].frame);
-    expect(small.min.h).toBeLessThan(tall.min.h);
-    expect(sizeProblem(900, 500, small)).toBeNull();
-    expect(sizeProblem(900, 500, tall)).toMatch(/needs at least 590 × 680 px/);
-    expect(sizeProblem(250, 170, small)).toMatch(/250 × 170 px/);
+    const team = needFor(coverOf("about.physicians")!);
+    const hero = needFor(coverOf("how-it-works.hero")!);
+    expect(team.min.h).toBeGreaterThan(hero.min.h);
+    expect(sizeProblem(800, 600, hero)).toBeNull();
+    expect(sizeProblem(800, 600, team)).toMatch(/needs at least 740 × 670 px/);
+    expect(sizeProblem(760, 700, team)).toBeNull();
+    expect(sizeProblem(760, 700, hero)).toMatch(/needs at least 780 × 590 px/);
+    expect(sizeProblem(250, 170, team)).toMatch(/250 × 170 px/);
   });
   it("refuses a photo below the place's size, notes one below twice it, and says nothing to a large one", () => {
     const need = needFor({ w: 500, h: 400 });
@@ -250,14 +246,25 @@ describe("what each place needs", () => {
     expect(uploadProblem(good)).toMatch(/1200 px on the long side/);
   });
   it("is known for every place and every drip, and no other", () => {
-    for (const k of keys) expect(frameOf(k), k).toEqual(SLOTS[k].frame);
-    expect(frameOf(dripSlot("hydrate-plus"))).toEqual(DRIP_FRAME);
-    expect(frameOf("nowhere.at-all")).toBeNull();
+    for (const k of keys) {
+      const cover = coverOf(k)!;
+      const s: SlotDef = SLOTS[k];
+      // Every size the place is drawn at fits inside what an upload must cover.
+      for (const f of [s.frame, s.phone, s.largest ?? s.frame]) {
+        expect(cover.w, k).toBeGreaterThanOrEqual(f.w);
+        expect(cover.h, k).toBeGreaterThanOrEqual(f.h);
+      }
+    }
+    // One column just under 861 px draws the hero larger than the desktop does.
+    expect(coverOf("how-it-works.hero")).toEqual({ w: 774, h: 582 });
+    expect(coverOf("safety.hero")).toEqual({ w: 1120, h: 581 });
+    expect(coverOf(dripSlot("hydrate-plus"))).toEqual(DRIP_FRAME);
+    expect(coverOf("nowhere.at-all")).toBeNull();
   });
   it("is met by the photo each place ships with, so the shipped site would pass its own rule", () => {
     for (const k of keys) {
       const shipped = SITE_IMAGES[SLOTS[k].fallback];
-      const need = needFor(SLOTS[k].frame);
+      const need = needFor(coverOf(k)!);
       expect(
         sizeProblem(shipped.width, shipped.height, need),
         `${k}: ${shipped.src} is ${shipped.width} × ${shipped.height}`

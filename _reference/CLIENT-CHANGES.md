@@ -1644,3 +1644,450 @@ Online payment switches on when the Razorpay keys are added (`.env.example` list
 - **Fixed — a build warning from the photo storage code.** The build warned that reading the photo folder from the working directory made it trace the whole project into the output. The folder is now marked as chosen at run time; the build has no warning.
 - **Worth knowing for the build machine:** `npm run build` downloads three Google fonts (Inter, Instrument Sans, Noto Sans Mono), so it needs internet access. One of three builds failed on that download and the next two succeeded.
 - The zip contains an empty `storage/` folder skeleton, which is harmless.
+
+## 47. The public site in the client's design: the home page and IV vs Tablets (2 Nov)
+
+The client sent their own design as an HTML file.
+- The home page is rebuilt to it, and a new IV vs Tablets page is added.
+- Every public page gets the new header and footer.
+- Everything shown still comes from the database and the editable copy.
+
+**Added**
+- **The home page in the client's design.** Ten sections, each a question a visitor asks, from "What is this?" to "Ready to book?". The client's layered first screen, a drip chamber clip, and the chosen drip built on screen:
+  - Its own ampoules and vials go into the bag, and the bag fills ingredient by ingredient.
+  - Its label prints the doses.
+  - Prices, doses, durations, zones, the late-change fee and the safety figures are live.
+- **IV vs Tablets** (`/iv-vs-tablets`). One dose followed down each route, then how tablets are absorbed, when tablets are enough, when a physician may choose IV, and the limits. Linked from the header, the menu, the footer and the home page.
+- **A colour for each drip** (Admin → Drips → a drip → "Colour on the website").
+  - It colours the drip's bag, card and label on the public site.
+  - Nine named colours, none of them green, amber or red, so a drip can never look like a clinical status.
+  - Seeded drips have theirs; "Default" picks one.
+- **Editable copy** (Admin → Content): the home page's "Why IV and not tablets?" and every line of the IV vs Tablets page.
+
+**Changed**
+- **The header and footer on every public page.**
+  - The NutriDrip™ wordmark, and the page links now including IV vs Tablets.
+  - A question button: it ticks off the home page's questions as they are read, and reads "Menu" on other pages.
+  - "Sign in" (or your dashboard), and the quiz.
+  - Invoices and the staff screens keep the old logo. Pages not yet redesigned keep their own content and type for now.
+- **The client's IV vs Tablets text, made accurate.** Please have a physician confirm the reworded lines.
+  - The tablet's meter drained to made-up amounts. It is gone; each stage is named in words instead ("Full dose" … "Part of the dose"), under the client's "Illustration, not to scale".
+  - "Over 45 to 60 minutes" is now our drips' real range, 30 to 120 minutes.
+  - "Given only after tests" now says what we do: a physician approves every drip after the health quiz, it starts only once vitals are in range, and some drips need recent lab tests.
+  - "Emergency drugs are at the chair" now says the nurse brings an anaphylaxis kit to every session.
+  - "When it fits your results" now reads "when it fits your answers and your vitals".
+- **Admin → Content.** The old home page's badge, the "4.9 avg. nurse rating" placeholder and three other lines no page shows any more are removed.
+- **Admin → Site images.** The home page's photos are no longer listed. Every picture on the new home page is part of its scroll composition (the room, the prep table, the bags, the glass), cut and placed per screen, like the drip assembly's before it, so they are not replaceable. Other pages are unchanged.
+
+**Worth knowing**
+- The client's product photos print their own doses: Vitamin C "1500 mg", Magnesium "5,000 mg", Calcium "1,000 mg", and the B-complex amounts. The Vitamin C one also prints "Immunity, Antioxidant, Rejuvenate". Our drips use other doses. Waiting on a decision: keep them as they are, or set our doses over them.
+
+| # | Test | Result |
+|---|---|---|
+| 47.1 | Every frame of the home page against the approved prototype, at 1440: the same, apart from the timing of the counting figures | ✅ |
+| 47.2 | Both pages at 390, 768, 1024, 1440 and 1920: no sideways overflow, no console errors, no text under the header in a pinned section | ✅ |
+| 47.3 | Leaving a scroll page by a link inside the site leaves nothing running: 0 engine instances, 0 animation frames per second, no leftover classes. Coming back starts exactly one | ✅ |
+| 47.4 | The scroll-craft checks on the production build, desktop, phone and reduced motion. Home: 79, 43 and 35 frames. IV vs Tablets: 13, 7 and 6. No failures, console errors or failed requests | ✅ |
+| 47.5 | Production speed. Home: largest paint 0.8 s on desktop, 1.5 s on a phone at 4× slower CPU. IV vs Tablets: 0.3 s and 0.4 s. Layout shift on load: 0 for a returning visitor. A first visit shows 0.002 in the test browser only: the welcome screen keeps room for a scrollbar the test browser does not draw | ✅ |
+| 47.6 | Keyboard: 64 stops on the home page, every one visible when focused | ✅ |
+| 47.7 | Every other public page under the new header, at 1440 and 390: heading below the bar, no overflow, no errors | ✅ |
+| 47.8 | Typecheck, lint, 788 unit tests | ✅ |
+
+**47, continued (2 Nov): every bottle in the home page's build shows our own dose.**
+
+- **Changed — the client's printed bottle photos are gone.** They printed doses our drips do not use (Vitamin C "1500 mg", Magnesium "5,000 mg", Calcium "1,000 mg") and the claim "Immunity, Antioxidant, Rejuvenate". Now:
+  - Every bottle is the client's glass with its print lifted off, labelled with the drip's real dose ("Ascorbic acid (C) 7,500 mg" in Myers' Revive), in the client's label design.
+  - Each ingredient sits in the container our stock records: B-complex is a vial, Calcium gluconate an ampoule.
+  - The products the client photographed keep their colour: Vitamin C's lemon, magnesium's blue, B-complex's lavender, calcium's teal, B12's pink.
+  - A vial's cap takes its label's colour; Vitamin C keeps its yellow cap.
+- **Fixed — a label could sit a fraction of a pixel past its paper** on some screen widths: its scale was taken from a size rounded to whole pixels.
+
+| # | Test | Result |
+|---|---|---|
+| 47.9 | Every bottle label in all 9 drips, at 360, 390, 768, 1024, 1440 and 1920, and with the fonts arriving 2 s late: 240 labels, each band inside its paper and its words clear of the band's edges | ✅ |
+| 47.10 | The home page at 1440 and 390 after the change: no overflow, no console errors | ✅ |
+| 47.11 | Typecheck, lint, 788 unit tests | ✅ |
+
+## 48. Each drip's page in the client's design (3 Nov)
+
+**Added**
+- **Each drip's page in the client's design** (`/drips/<drip>`). Beside the page stands the drip's own bag, which fills as you read:
+  - As each ingredient in "What's inside" is read, its bottle (an ampoule or a vial, as our stock records it) appears over the bag and drops in, and the liquid rises.
+  - The bag's label prints that ingredient's name and dose on its row. The label keeps one size; rows not yet read are faint lines.
+  - Anything given separately stands beside the bag, never in it.
+  - Scrolling fast puts everything skipped into the bag at once, and only the last bottle falls.
+- Then: what the drip is for, the checks before a drip (the drip's own lab checks where it has them), the session, the price with today's late-change rule, the questions people ask, and the booking slip.
+
+**Changed**
+- **Left off the drip page:** the drip's photograph, the reviews and the rating (placeholders, not real), the comparison table, and the kit list.
+- **Stock** shows only when it matters: "Only 2 left today" in amber, or "Out of stock" in red.
+- **Admin → Site images.** The drip page's two photos (the session and the closing panel) are no longer listed: the page has no photographs. A drip's own photo can still be replaced, and still shows on its card and in the Drips menu.
+- **The booking slip** has the same spacing on every page.
+
+| # | Test | Result |
+|---|---|---|
+| 48.1 | The drip page against the approved prototype at 1440: the bag, the label and a fast scroll measure the same (at most one bottle in the air, the bag full about 2.3 s after stopping) | ✅ |
+| 48.2 | At 390, 768, 1024, 1440 and 1920: no sideways overflow, no console errors; every label line fits, in all 9 drips | ✅ |
+| 48.3 | Links inside the site (home, a drip, another drip, IV vs Tablets, Back, home): one engine at a time, nothing left running, each drip page builds its own bag | ✅ |
+| 48.4 | Reduced motion: every ingredient read, the bag full and still, the label printed | ✅ |
+| 48.5 | Production speed: largest paint 1.1 s on desktop, and on a phone at 4× slower CPU; layout shift 0.0001 | ✅ |
+| 48.6 | Keyboard: 39 stops, every one visible when focused | ✅ |
+| 48.7 | The home page, which now shares its bottles and liquid with the drip page: 236 bottle labels at 8 widths all inside their paper, the build pours smoothly, no errors | ✅ |
+| 48.8 | Typecheck, lint, 788 unit tests | ✅ |
+
+## 49. The Drips list in the client's design, and the admin's drip photos (3 Nov)
+
+**Added**
+- **The Drips list** (`/drips`), in the client's design:
+  - The home page's drip cards as a grid: each drip's bag in its colour, price, time, every ingredient and dose, and what is given separately.
+  - A search box (name, goal or ingredient) and a chip for each goal, with its count.
+  - The list narrows as you type or tap, and the cards glide to their places.
+  - A filtered list is a link you can share, and Back steps through the filters.
+  - It closes with "Not sure which?": the health quiz, or ask a clinician.
+- **A drip's photo, when the admin uploads one** (Admin → Site images → Each drip):
+  - It shows in place of the bag on the drip's card, on the home page and in the Drips list.
+  - It shows under the description on the drip's own page; the bag beside the list still fills as you read.
+  - Until a photo is uploaded, the drip shows its bag.
+
+**Changed**
+- **Admin → Site images.**
+  - The note on drip photos now says where an upload shows.
+  - The crop preview matches the drip page's wide frame.
+  - The Drips list's closing photo is no longer listed: the page has no photographs.
+- **Stock** on the Drips list shows only when it matters, as on a drip's page: "Only 2 left today" or "Out of stock".
+- **The small "Home" and "All drips" links** above a page's title are underlined again, as in the client's design.
+
+| # | Test | Result |
+|---|---|---|
+| 49.1 | The Drips list against the approved prototype at 1440 and 390: heading, search, chips and first card in the same places | ✅ |
+| 49.2 | At 390, 768, 1024, 1440 and 1920: no sideways overflow, no console errors | ✅ |
+| 49.3 | Filtering, driven: each goal, a search inside a goal, "Clear the search", Back, and a shared link. No server request while filtering. With JavaScript off, the chips and the search still work | ✅ |
+| 49.4 | Links inside the site (home, Drips, a drip, Back, IV vs Tablets, home): one engine at a time, nothing left running; the cards keep the list's layout after a visit to the home page | ✅ |
+| 49.5 | Reduced motion: the list filters without moving, the close shows in full | ✅ |
+| 49.6 | Production speed: largest paint 0.5 s on desktop, 1.0 s on a phone at 4× slower CPU; layout shift 0 to 0.002. Keyboard: 45 stops, every one visible | ✅ |
+| 49.7 | The home page's cards with the shared card: unchanged; a drip page without a photo: unchanged | ✅ |
+| 49.8 | Typecheck, lint, 788 unit tests | ✅ |
+
+**Worth knowing**
+- No drip has an uploaded photo yet, so every card shows its bag. To see the photo version, upload one in Admin → Site images → Each drip; it appears on the drip's card and its page. The approved previews used stand-in photos.
+
+## 50. How it works in the client's design (3 Nov)
+
+**Added**
+- **How it works** (`/how-it-works`), in the client's design (they drew no page for it, so it uses their type, buttons and slip):
+  - **First screen:** "From the quiz to the report." with the quiz button and a photo. The photo can still be replaced in Admin → Site images.
+  - **The relay:** your booking is a card that moves between three desks (Physician, You, Nurse) as you scroll. Each of the seven steps stamps its line on the card, and after the last the card turns over to show what your report holds.
+  - **The steps follow the app as it works today:** the physician reads your answers and calls you, you can hold a slot while they decide, and the code is read out at the door.
+  - **"When a step says no":** a decline, an approval older than 90 days, a vital out of range, no phone for the code, a seal or expiry problem, and moving or cancelling. Each says what happens next, including the refund where one is due.
+  - **The checklist's 29 steps in their four phases**, each phase as long as its count, with a link to the Safety page.
+  - **"Ready to book?"** closes the page, as on the other new pages.
+
+**Changed**
+- **Admin → Site images, How it works:** only the first screen's photo is listed now. The page no longer shows the five step photos or the closing photo; none had been replaced.
+- **Phone booking bar:** while hidden it can no longer be reached with the Tab key, on every new page.
+- **The slip on a narrow phone** puts the price under the drip on every page. Before, this happened only after a visit to IV vs Tablets.
+
+| # | Test | Result |
+|---|---|---|
+| 50.1 | At 390, 768, 1024, 1440 and 1920: no sideways overflow, no console errors, no overlapping text | ✅ |
+| 50.2 | The relay at each step on desktop and phone: the right desk, the right line stamped, the card turned over at the end | ✅ |
+| 50.3 | Reduced motion: every step readable in a list, the finished card beside it | ✅ |
+| 50.4 | Links inside the site (home, How it works, IV vs Tablets, Back, Drips, home): one engine at a time, nothing left running; the slip shows the drip picked on the home page | ✅ |
+| 50.5 | Production speed: largest paint 0.5–0.6 s on desktop, 0.5 s on a phone at 4× slower CPU; layout shift 0.004 or less. Keyboard: 30 stops, every one visible | ✅ |
+| 50.6 | IV vs Tablets, now on the shared slip: no overflow or errors at 390 and 1440 | ✅ |
+| 50.7 | Typecheck, lint, 788 unit tests | ✅ |
+
+## 51. Safety in the client's design (3 Nov)
+
+**Added**
+- **Safety** (`/safety`), in the shape of the client's page, with what the app really does in it:
+  - **First screen:** "Reviewed before you're treated. Watched while you're treated.", the quiz button, and a wide photo that can be replaced in Admin → Site images.
+  - **Six things that hold at every session:** the named physician, the checklist, vitals that stop the drip, your code before your doses, batch numbers, and reported problems reaching the physician.
+  - **The vitals gate:** as you scroll, example readings move against the real limits for blood pressure, heart rate, oxygen and temperature.
+    - When blood pressure crosses its limit, the next three checklist steps lock and the physician is alerted.
+    - Then the physician clears it, and a new out-of-range reading takes the clearance back.
+    - The words beside it say what happens at each stage, including the refund if the session is stopped.
+  - **The whole checklist:** all 29 steps in their four phases, with the mandatory ones marked.
+  - **When IV therapy is not right for you:** what the physician will decline, and what they will want to know first.
+  - **At the chair, every session:** the anaphylaxis kit, your consent, observation before the nurse leaves, clinical waste, your record, and that this is not emergency care (call 108).
+  - **"Ready to book?"** closes the page.
+
+**Changed**
+- **Admin → Site images, Safety:** the first screen's photo is now a wide strip, so its crop preview and minimum size changed. The second photo (beside the reference ranges) is no longer listed; it had not been replaced.
+- **Left out on purpose:** the client's page lists blood tests for everyone, 45 to 60 minutes, two-point identification, a follow-up call and the waste-management rules. The app does none of these yet, so they are not on the page.
+
+| # | Test | Result |
+|---|---|---|
+| 51.1 | At 390, 768, 1024, 1440 and 1920: no sideways overflow, no console errors, no overlapping text | ✅ |
+| 51.2 | The gate at each stage on desktop, tablet and phone: the readings, the words "In range" / "Out of range", the steps "Ready" / "Blocked" / "Cleared" | ✅ |
+| 51.3 | Reduced motion: the four stages as a list, the panel at its blocked stage | ✅ |
+| 51.4 | Links inside the site (home, Safety, IV vs Tablets, Back, Drips, home): one engine at a time, nothing left running | ✅ |
+| 51.5 | Keyboard: 30 stops, each on screen when focused | ✅ |
+
+## 52. About in the client's design (3 Nov)
+
+**Added**
+- **About** (`/about`), in the client's design:
+  - **First screen:** your headline and introduction (editable in Admin → Content), the quiz button and "Ask a clinician".
+  - **The four-figure row**, counted from the live service: drips, zones, checklist steps and how long an approval lasts. The numbers count up as they appear.
+  - **"A procedure, not a treat."** Your mission paragraph, set large.
+  - **The three teams:** physicians, nurses, and pharmacy and operations.
+  - **"The line, as the app draws it":** as you scroll, a table fills row by row with what a physician, a nurse and operations can and cannot do. Each row comes straight from the app's permissions, for example:
+    - only a physician approves a protocol or clears a session stopped on vitals;
+    - only the nurse works the checklist;
+    - operations dispatch stock and trace a recall;
+    - no one can skip a mandatory step.
+  - **The registered company** with the legal pages, and links to Safety, How it works and FAQs.
+  - **"Ready to book?"** closes the page.
+
+**Changed**
+- **The client's page is about Dr. Manoj Kumar Bhoomigari**, with a founding story and four figures (2020, 776, 6,000+, 4). None of this is in our records, so it is not on the page yet. When the client sends the name, story, a real photo, consent to publish and a source for each figure, it can be added.
+- **Team photos (Admin → Site images, About)** show only once a real photo is uploaded. The client's page says "We only use real photographs of our doctors", so the stand-in pictures never show. The closing photo is no longer listed.
+
+| # | Test | Result |
+|---|---|---|
+| 52.1 | At 390, 768, 1024, 1440 and 1920: no sideways overflow, no console errors, no overlapping text | ✅ |
+| 52.2 | The table fills row by row on desktop and phone, each row's reason shown under it | ✅ |
+| 52.3 | Reduced motion: the whole table, each reason in its row | ✅ |
+| 52.4 | Links inside the site (home, About, IV vs Tablets, Back, Drips, home): one engine at a time, nothing left running | ✅ |
+
+## 53. For clinics in the client's design (3 Nov)
+
+**Added**
+- **For clinics** (`/for-clinics`), in the client's design:
+  - **A dark first screen:** "Run IV therapy without running a pharmacy.", a photo (replaceable in Admin → Site images), and the number of protocols on the panel today.
+  - **What the partnership covers:** six numbered points:
+    - you do not run a pharmacy;
+    - physician review is ours;
+    - our nurses or your own;
+    - recall traceability;
+    - your own console;
+    - pay per order, or on account with 30-day invoices once agreed.
+  - **"What happens to a clinic's order":** one example order on four cards that stack as you scroll:
+    - ordered, with stock shown both pooled and in whole vials;
+    - confirmed, with the exact vials reserved, soonest expiry first;
+    - dispatched, with the ledger written;
+    - a recall traced.
+    The drips and ingredients come from today's panel; the batch codes are examples and are marked so.
+  - **Onboarding in four weeks**, the clinics' questions, and the enquiry form, which sends exactly what it sent before.
+
+**Changed**
+- **Figures with no source are gone:**
+  - the ₹8,400 session split and the 38% margin;
+  - "24 hr order to delivery" and "no monthly platform fee";
+  - the 4 PM dispatch cut-off and 2–8 °C.
+  If the client confirms any of them, they can come back.
+- **Admin → Site images, For clinics:** the photo beside the economics is no longer listed; it had not been replaced.
+
+| # | Test | Result |
+|---|---|---|
+| 53.1 | At 390, 768, 1024, 1440 and 1920: no sideways overflow, no console errors. The only overlaps are the order's cards covering one another, as designed | ✅ |
+| 53.2 | The cards stack on desktop and phone; under reduced motion they sit one after another | ✅ |
+| 53.3 | The form lines up its fields, keeps the send button off until a name and an email or phone are in, and posts to the same place. Not submitted: that writes to the database | ✅ |
+| 53.4 | Links inside the site: one engine at a time, nothing left running. Keyboard: 42 stops, every one visible | ✅ |
+
+## 54. Production check for Safety, About and For clinics (3 Nov)
+
+| # | Test | Result |
+|---|---|---|
+| 54.1 | Largest paint on a production build: Safety 0.69 s, About 0.39 s, For clinics 0.41 s on desktop; 0.72 s, 0.59 s and 0.69 s on a phone at 4× slower CPU. Layout shift 0.0003 or less on all three | ✅ |
+| 54.2 | Typecheck, lint, 788 unit tests | ✅ |
+
+## 55. Pricing, Zones, Ask a clinician, FAQs and Legal in the client's design (3 Nov)
+
+The client drew no page for these five, so they use the client's type, buttons, colours and slip. Following the plan for quieter pages, Pricing, Zones and Ask a clinician only fade their sections in; FAQs and Legal have no motion at all.
+
+**Added**
+- **Pricing** (`/pricing`):
+  - **The real range** ("₹5,400 to ₹11,000"), then every drip's price per session, with its goal and time, straight from the panel.
+  - **What the price covers:** the physician, the nurse visit, the sealed kit and the drip.
+  - **"Free to move or cancel up to 4 hours before your slot"**, with today's late fee from the Billing page.
+  - **When money comes back:** a decline, a session stopped on vitals or a held slot that lapses refund everything; a late cancellation keeps only the late fee.
+  - **The booking questions** from the FAQs.
+- **Zones** (`/zones`):
+  - **A pincode check in the first screen:** type six digits and get a straight yes (the zone, its hours, a link to it) or no, by the same rule booking uses.
+  - **Every zone:** its pincodes, hours and cover, marked Full cover or Limited.
+- **Ask a clinician** (`/consult`): the same form and questions in the client's form style, beside what it is and is not. It sends exactly what it sent before.
+- **FAQs** (`/faqs`): the same answers, search and topics, in the client's style; a search still opens every match.
+- **Legal** (`/legal/terms`, `/privacy`, `/grievance`): the same text, restyled.
+
+**Changed**
+- **Pricing no longer shows the course plans** ("Course of 4, save 10%", "Course of 8, save 20%", "price locked for 6 months"). The app sells sessions one at a time at the drip's price, so a patient could not have bought them. If the client wants course pricing, it needs building first.
+- **Zones no longer says "45 min typical nurse travel".** That figure is the gap the app leaves between a nurse's sessions, not a travel time.
+- **Admin → Site images:** Pricing, Zones and FAQs are no longer listed. None of their photos had been replaced, and the new pages have no photographs.
+- **Not changed, for the client to decide:** three statements in the legal pages do not match the app today.
+  - **Terms, "What we will not do":** says "A course is priced in advance"; no course pricing exists.
+  - **Privacy:** says "Ask from your profile and we will export everything"; the profile has no export or delete.
+  - **Privacy:** says only you, the physician and the nurse see your record; operations staff also see who and where you are and your sessions, though nothing clinical.
+
+| # | Test | Result |
+|---|---|---|
+| 55.1 | All five at 390, 768, 1024, 1440 and 1920: no sideways overflow, no console errors | ✅ |
+| 55.2 | Zones' pincode check, driven: an incomplete pincode asks for six digits; 560034 and "560 034" both say Koramangala and link to its card; 110001 says not yet | ✅ |
+| 55.3 | Ask a clinician, driven (not sent): the button stays off until a name and a phone or email are in; the pincode hint, the topics and the time all work | ✅ |
+| 55.4 | FAQs, driven: search across topics, a topic chip, no matches with "Clear the search" | ✅ |
+| 55.5 | Links through all twelve public pages inside the site: at most one engine, none on FAQs and Legal, nothing left behind, no errors | ✅ |
+| 55.6 | Production: largest paint 0.24 to 0.46 s on desktop and 0.36 to 0.59 s on a phone at 4× slower CPU. Layout shift 0 to 0.0001, except FAQs at 0.03 on a cold first load while the fonts arrive (0.0025 after). Every keyboard stop visible | ✅ |
+| 55.7 | Typecheck, lint, 788 unit tests | ✅ |
+
+## 56. Polish across the new pages (3 Nov)
+
+**Changed**
+- **Breadcrumbs, on every page:** a small "Home" pill with a house icon, chevrons between the steps, and the current page in bold.
+  - **The drip page** shows its goal too: Home › Drips › Skin › Glow Protocol, and the goal opens the list filtered to it.
+  - **On a narrow phone,** a four-step trail drops the last step, because the page's heading repeats it.
+  - **Search engines** now get the same trail, so a result can show "NutriDrip › Safety".
+- **Questions open and close smoothly** everywhere they appear: home, a drip's page, Pricing, For clinics and FAQs. With reduced motion they open instantly, as before.
+- **About:** the three team cards are the same height.
+- **Safety, the vitals panel:**
+  - Each reading is a slim upright marker, ink when in range and red when out.
+  - When a reading is over its limit, the stretch from the limit to the reading is drawn in red, so how far over it is shows as plainly as the number.
+- **Legal:** "On this page" marks the section you are reading, on Terms, Privacy and Grievance officer, and a clicked item marks itself straight away.
+- **Forms:**
+  - The name fields have example text.
+  - For clinics: "Sessions a month" fits on one line beside City and Rooms. Both number boxes accept digits only and no longer show spinner arrows.
+
+| # | Test | Result |
+|---|---|---|
+| 56.1 | Breadcrumbs on a light head, the dark For clinics head, the drip page, and a phone; the search-engine trail lists the right pages | ✅ |
+| 56.2 | A question opens and closes smoothly, ends at its full or closed height, and turns back if clicked again halfway | ✅ |
+| 56.3 | About's team cards: all three 312 px at 1440 | ✅ |
+| 56.4 | Legal contents on all three documents: follows the reading, marks the last section at the bottom, marks a clicked section | ✅ |
+| 56.5 | For clinics form at 1440, 768 and 390: the row's labels and boxes line up; letters typed into Rooms or Sessions are dropped. Not submitted | ✅ |
+| 56.6 | Five pages walked again at 390: no sideways overflow, no errors. Typecheck, lint, 788 unit tests | ✅ |
+
+## 57. Site images sized for the new pages (4 Nov)
+
+- **Fixed: Admin → Site images now uses the photo sizes of the redesigned pages.** How it works, For clinics and About were still sized for the old layouts.
+- **Changed:** an upload must now be big enough for the largest place it is shown, not only the desktop:
+  - **Where it is largest:** just under tablet width, where the page turns into one column. There the How it works and For clinics photos are drawn at 774 × 582 and a team photo at 734 × 661, larger than on a laptop.
+  - **New minimums:** How it works and For clinics 780 × 590 px, About 740 × 670 px, Safety 1120 × 590 px.
+  - **Why:** a photo smaller than that would have been stretched on a tablet.
+- **Changed:** the editor's desktop and phone previews show the real sizes. The photo guide no longer mentions pages that no longer have photos (Pricing, the closing section).
+
+| # | Test | Result |
+|---|---|---|
+| 57.1 | Each photo's box measured at every width from 390 to 1920 on How it works, Safety, For clinics, About and a drip's page; the admin's sizes match | ✅ |
+| 57.2 | Admin → Site images as the super admin: all 15 thumbnails load, no errors, the editor opens with the new previews. Nothing saved | ✅ |
+| 57.3 | Typecheck, lint, 788 unit tests | ✅ |
+
+## 58. A "page not found" page in the client's design (4 Nov)
+
+- **Added: a page for addresses that do not exist.** Until now a mistyped address or an old link showed Next.js's plain black-and-white 404, with no way back.
+  - **What it has:** the site's header and footer, what happened in plain words, a way on, and the main pages, each with one line on what it is for.
+  - **The way on:** the quiz for a visitor; for anyone signed in, their own dashboard. A nurse following a stale link is sent back to their work, not to the quiz.
+  - **A dead drip link** (a drip that was retired or hidden, or a mistyped address) says "That drip is not on the list" and points to all drips. The browser tab says "Drip not found".
+  - **No first-visit intro:** nobody waits through the animation to learn the link is dead.
+  - **Still a real 404:** search engines are told the page does not exist and keep it out of results.
+  - **No scroll motion.** A link's arrow moves on hover, and not under reduced motion.
+
+| # | Test | Result |
+|---|---|---|
+| 58.1 | A mistyped address, a missing drip, a missing legal page and an address under About: status 404, the right words, one header and one footer, at 390, 768, 1024, 1440 and 1920; no sideways overflow | ✅ |
+| 58.2 | Signed in as a nurse, a missing session: the button reads "Emma's dashboard" and goes to /nurse | ✅ |
+| 58.3 | A link on the 404 goes to its page (Pricing). No intro. Layout shift 0; text appears in 0.55–1.2 s on the dev server | ✅ |
+| 58.4 | Typecheck, lint, 788 unit tests | ✅ |
+
+## 59. Sign-in page checked (4 Nov)
+
+- **Fixed: sign-in could send a person to another website.** The page goes on to the address in `?next=` once you are signed in, and accepted any address there. A link to the real sign-in page could therefore pass someone who had just signed in to a look-alike site. Only an address on this site is followed now; anything else falls back to the person's own home.
+- **Fixed: the form jumped when switching between "Patient · phone" and "Staff · email".** On a laptop or desktop it moved about 44 px each way, and again when the code boxes opened. Both columns now start on one line near the top, and the form only grows downward.
+- **Fixed:** the two sign-in tabs tell screen readers which one is open, and they are 40 px tall instead of 36.
+
+| # | Test | Result |
+|---|---|---|
+| 59.1 | Addresses that leave the site (`https://…`, `//…`, `/\…`, with a tab or newline, `javascript:`) are refused; a path on the site is kept. Unit tests | ✅ |
+| 59.2 | At 390, 768, 1024, 1440 and 1920: switching tabs leaves the heading where it was; no overflow, no errors. Nothing submitted | ✅ |
+| 59.3 | Typecheck, lint, unit tests | ✅ |
+
+## 60. Sign-in and sign-up in the client's design (4 Nov)
+
+- **Changed: the sign-in page (`/login`) and a new patient's address step (`/welcome`) now look like the website.** Before, they used the app's old look, so someone tapping "Sign in" or "Take the quiz" on the new site landed on what looked like another product.
+  - **The look:** the NutriDrip™ wordmark, the site's fonts (Outfit and Geist), its pale green background, the form on a white card, and black pill buttons.
+  - **Behaviour is unchanged.** The forms, codes, checks and address picker work exactly as before. The staff consoles and the patient app are untouched.
+- **Added: sign-up is now said plainly.** "Sign up" is the same page: a mobile number used for the first time becomes a patient account when its code is verified. The page now says "New to NutriDrip? The first code we send creates your account."
+- **Added: "Back to the site"** at the top of sign-in, and Terms, Privacy and Grievance officer links at the foot of both pages.
+- **Changed:** the address step's label reads "Your account · last step" instead of "Step 1 of 1".
+- **Outside production,** the demo accounts sit beside the card on a desktop and under it on a phone; picking one fills the form, as before.
+
+| # | Test | Result |
+|---|---|---|
+| 60.1 | Sign-in at 390, 768, 1024, 1440 and 1920, both tabs: the site's fonts, pill buttons, no overflow, no errors; the heading stays put when the tab changes | ✅ |
+| 60.2 | A demo account fills the form and, on a phone, scrolls up to it. Nothing submitted | ✅ |
+| 60.3 | `/welcome` as a seeded patient with no address, at the same widths: the map, fields and served-zone note in the new look. Nothing saved | ✅ |
+| 60.4 | Layout shift at most 0.002. Typecheck, lint, 791 unit tests | ✅ |
+| 60.5 | The six-digit code boxes were not seen on screen: they only open after a real code is sent, which writes to the database. They take the same tokens | Not run |
+
+- **Fixed:** the "Patient · phone" and "Staff · email" tabs on sign-in now show the pointer (hand) cursor on hover, like every other button on the page.
+
+## 61. The client's tab icon (4 Nov)
+
+- **Changed: the browser-tab icon** on the public site, the 404, sign-in, `/welcome` and the quiz is now the client's own: the pale drop on a near-black square, exactly as their pages set it. It used to be the consoles' teal vessel.
+- **Unchanged:** the consoles and the patient app keep their vessel icon, which follows the brand colour the super admin sets.
+- **Known, not changed:** the phone home-screen icon (`app/apple-icon.tsx`) is never offered to the browser, on any page, because the root layout sets its icons by hand and Next then drops the file-based one. This was true before today.
+
+| # | Test | Result |
+|---|---|---|
+| 61.1 | Home, Drips, How it works, Pricing, both 404s, sign-in, the quiz, and `/welcome` as a seeded patient each declare `/site/mark.svg` | ✅ |
+| 61.2 | The admin console declares `/brand-mark.svg` as before; a console 404 shows the site's 404 and its icon | ✅ |
+| 61.3 | Typecheck, lint, 791 unit tests | ✅ |
+
+## 62. Sign-in password field (4 Nov)
+
+- **Added:** the password field on sign-in has a placeholder ("Your password") and an eye button that shows what was typed and hides it again. It starts hidden, and screen readers hear "Show password" / "Hide password".
+- **Changed:** Edge's own reveal button is hidden there, so there is only one eye.
+
+| # | Test | Result |
+|---|---|---|
+| 62.1 | At 1440 and 390: the eye sits inside the field, 44 px square, centred; a long password stops before it; show, hide, and clicking the label all work. Nothing submitted | ✅ |
+| 62.2 | Typecheck, lint, 791 unit tests | ✅ |
+
+- **Fixed: focus on sign-in and `/welcome` fields.** A focused field drew two outlines: its own dark border and a green ring 3 px outside it. It now shows focus the way the site's own forms do (Consult, Zones): the dark border and a soft green halo against it. Buttons keep their green ring for the keyboard. Checked by click and by Tab at 1440.
+
+## 63. Responsive check of every visitor page (4 Nov)
+
+Every visitor page (the 13 public pages with two drip pages, the 404, sign-in and `/welcome`) was loaded and scrolled top to bottom in headless Chrome. Phones were 360, 390 and three phones held sideways (667, 844 and 932 wide). Tablets were 768, 820 and 1024x768 (landscape); laptops were 1280x720, 1366x768 and 1440x900. At each step the sweep checked for sideways scrolling, text off the screen, text cut by its box, text over text, the header or the phone's quiz bar covering content, broken images and page errors. Nothing was typed or submitted.
+
+- **Fixed: the home page on a phone held sideways.** On a screen under 500 px tall, the "six steps" and "what happens on the day" scenes did not fit while pinned. The heading sat under the header and the last steps were cut off. On such screens those two scenes now scroll as ordinary sections with every step shown. Every other size is unchanged.
+- **Known, not changed: other scenes on a phone held sideways.** About's "line" scene (667 and 932 wide), IV vs tablets' routes (667 wide), How it works' step cards (932 wide), and the home page's build and drip scenes (932 wide) still clip some text on a screen that short.
+
+| # | Test | Result |
+|---|---|---|
+| 63.1 | Portrait phones, tablets and laptops (8 sizes x 17 pages): no sideways scroll, no text off screen or cut, no header or bar covering content, no broken images, no page errors | ✅ |
+| 63.2 | The menu opens and fits at every size that shows it; on a sideways phone the home page's menu scrolls inside itself | ✅ |
+| 63.3 | Home at 667x375 and 844x390: the steps and the day show in full; at 390 and 1280 the page behaves as before | ✅ |
+| 63.4 | Phones held sideways, other pages: see "Known, not changed" | Open |
+| 63.5 | Typecheck, lint, 791 unit tests | ✅ |
+
+## 64. Public pages: the remaining responsive fixes (4 Nov)
+
+Closes 63.4.
+
+- **Fixed: phones held sideways, every page.** On a screen under 500 px tall, About's "line", IV vs tablets' routes and How it works' step cards now show as their still version. That is the same layout as with reduced motion: every row, stop and step on screen. The home page takes its phone layout there; on large phones (932 wide) it had been using the desktop layout, which cut the build and the drip scenes. Nothing changes on screens 500 px tall or more.
+- **Fixed: home page with reduced motion on a desktop.** The drips row could not pan and was cut off at the screen's edge: only 3 of the 9 drips could be seen at 1440, 1 at 1024. It is now a grid, 4 to a row at 1440 and 3 at 1024, as on a tablet.
+- **Fixed: home page with reduced motion on a short laptop (1024x768).** The build's last step ran into "Myers' Revive · ₹8,400 per session". The steps and the closing card now stack in the left column.
+- **Known, not changed:** on a portrait iPad (820 wide), the IV vs tablets diagram sits in the middle of a very tall screen. That was the design's choice; nothing is cut.
+
+| # | Test | Result |
+|---|---|---|
+| 64.1 | All 17 visitor pages at 667x375, 844x390 and 932x430: no text cut, nothing off screen, no sideways scroll | ✅ |
+| 64.2 | Home, How it works, About and IV vs tablets at 390, 820, 1024 and 1280: same results as before the change | ✅ |
+| 64.3 | Those four with reduced motion at 390, 1024 and 1440: all 9 drips reachable, no text over text | ✅ |
+| 64.4 | The build with reduced motion at 1024x768, 1280x720, 1366x768, 1440x900 and 1920x1080: steps and closing card at least 40 px apart, clear of the bag | ✅ |
+| 64.5 | Typecheck, lint, 791 unit tests | ✅ |
+
+## 65. The quiz in the client's design (4 Nov)
+
+- **Changed: the health quiz** (`/quiz`) now matches the site and sign-in.
+  - **The look:** the NutriDrip™ wordmark, Outfit and Geist, the pale green background, white answer rows, and black pill buttons.
+  - **Progress:** the bar, a chosen answer's dot and a finished section's tick are in the brand green.
+  - **Chosen answers and the current section:** a dark edge on a pale green tint, like the chosen options on the Consult form.
+  - **Question headings:** larger on tablets and desktops.
+  - **Section chips:** now fit on one row on tablets and desktops.
+- **Unchanged:** the questions, the order, follow-ups, swiping, Back and Continue, the "Leave the quiz?" check and what is sent at the end. The wordmark is not a link, so leaving still goes through that check.
+
+| # | Test | Result |
+|---|---|---|
+| 65.1 | At 360, 390, 768, 1024 and 1440 as a seeded patient (retake): first question, an answer picked, the next question and the leave dialog. No sideways scroll, no errors. Nothing was sent; "See my results" was not pressed | ✅ |
+| 65.2 | Sign-in still renders the same after its frame was split into a shared theme | ✅ |
+| 65.3 | Typecheck, lint, 791 unit tests | ✅ |

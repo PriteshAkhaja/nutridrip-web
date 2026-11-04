@@ -52,6 +52,7 @@ export default async function DripBuilderPage() {
       volumeMl?: number | null;
       tags?: string[];
       icon?: string | null;
+      tint?: string | null;
       isPopular?: boolean;
       benefits?: Array<{ title: string; description?: string }>;
       ingredients: Array<{ masterId: unknown; name?: string; dose: number; unit: Unit; role: string; notes?: string }>;
@@ -122,6 +123,7 @@ export default async function DripBuilderPage() {
               volumeMl: d.volumeMl != null ? String(d.volumeMl) : "",
               tags: d.tags ?? [],
               icon: d.icon ?? "",
+              tint: d.tint ?? "",
               isPopular: Boolean(d.isPopular),
               benefits: (d.benefits ?? []).map((b) => ({ title: b.title, description: b.description ?? "" })),
               withKit: d.withKit,

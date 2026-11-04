@@ -89,6 +89,7 @@ export async function PATCH(req: Request, { params }: { params: Promise<{ id: st
       "tags",
       "icon",
       "isPopular",
+      "tint",
       "benefits",
       "hsnCode",
       "gstRate",

@@ -3,8 +3,10 @@ import { notFound } from "next/navigation";
 import type { Metadata } from "next";
 import { getLatePolicy } from "@/lib/billing/settings";
 import { LATE_POLICY_TOKEN, fillLatePolicy } from "@/lib/billing/late-policy";
-import { PageHero } from "@/components/site/PageHero";
-import { Container, delay } from "@/components/site/Layout";
+// The page's own styles, scoped to .sc-site (scripts/scope-site-css.mjs).
+import "@/components/site/v3/styles/scoped/legal.css";
+import { Crumbs } from "@/components/site/v3/Crumbs";
+import { LegalToc } from "@/components/site/legal/LegalToc";
 
 /**
  * Drawn on each visit, like the rest of the site. It was built once, at build
@@ -122,7 +124,7 @@ type DocKey = keyof typeof DOCS;
 export async function generateMetadata({ params }: { params: Promise<{ doc: string }> }): Promise<Metadata> {
   const { doc } = await params;
   const entry = DOCS[doc as DocKey];
-  return entry ? { title: entry.title, description: entry.lede } : {};
+  return entry ? { title: entry.title, description: entry.lede } : { title: "Page not found" };
 }
 
 export default async function LegalPage({ params }: { params: Promise<{ doc: string }> }) {
@@ -143,91 +145,63 @@ export default async function LegalPage({ params }: { params: Promise<{ doc: str
     ["grievance", "Grievance officer"],
   ];
 
+  // In the client's tokens (no client page), and no motion: somebody here is
+  // reading (AGENTS.md, "None"). The wording is the documents' own.
   return (
-    <>
-      <PageHero
-        eyebrow="Legal"
-        title={entry.title}
-        lede={entry.lede}
-        below={
-          <nav aria-label="Legal documents">
-            <ul className="flex flex-wrap gap-2 list-none m-0 p-0">
-              {tabs.map(([key, label]) => {
-                const active = key === doc;
-                return (
-                  <li key={key}>
-                    <Link
-                      href={"/legal/" + key}
-                      aria-current={active ? "page" : undefined}
-                      className={
-                        "inline-flex min-h-[40px] items-center rounded-full border px-4 text-[13.5px] font-medium no-underline hover:no-underline transition-colors duration-200 " +
-                        (active
-                          ? "border-[var(--color-contrast)] bg-[var(--color-contrast)] text-white"
-                          : "border-[var(--color-line-2)] bg-[var(--color-surface)] text-[var(--color-ink)] hover:border-[var(--color-ink)]")
-                      }
-                    >
-                      {label}
-                    </Link>
-                  </li>
-                );
-              })}
-            </ul>
+    <div className="nd-legal">
+      <section className="nd-pagehead lg-head">
+        <div className="nd-wrap">
+          <Crumbs trail={[{ name: entry.title }]} />
+          <h1 className="nd-q">{entry.title}</h1>
+          <p className="nd-lede">{entry.lede}</p>
+          <nav aria-label="Legal documents" className="lg-tabs">
+            {tabs.map(([key, label]) => (
+              <Link
+                key={key}
+                href={"/legal/" + key}
+                prefetch={false}
+                aria-current={key === doc ? "page" : undefined}
+                className="lg-tab"
+              >
+                {label}
+              </Link>
+            ))}
           </nav>
-        }
-      />
+        </div>
+      </section>
 
-      <section className="pb-[var(--section-y)]">
-        <Container className="grid grid-cols-1 items-start gap-10 lg:grid-cols-[220px_minmax(0,1fr)] lg:gap-16">
+      <section className="lg-body">
+        <div className="nd-wrap lg-grid">
           {/* The contents, held beside the text on a wide screen. */}
-          <nav aria-label="On this page" className="hidden lg:block lg:sticky lg:top-[calc(var(--site-header-h)+32px)]">
-            <span className="t-micro">On this page</span>
-            <ol className="list-none m-0 p-0 mt-4 flex flex-col border-l border-[var(--color-line)]">
-              {entry.sections.map((s) => (
-                <li key={s.heading}>
-                  <a
-                    href={"#" + slug(s.heading)}
-                    className="-ml-px block border-l border-transparent py-2 pl-4 t-small text-[var(--color-ink-2)] no-underline hover:no-underline hover:border-[var(--color-ink)] hover:text-[var(--color-ink)]"
-                  >
-                    {s.heading}
-                  </a>
-                </li>
-              ))}
-            </ol>
-          </nav>
+          <LegalToc items={entry.sections.map((s) => ({ id: slug(s.heading), label: s.heading }))} />
 
-          <article className="max-w-[74ch] flex flex-col gap-4">
+          <article className="lg-doc">
             {entry.sections.map((s, i) => (
               <section
                 key={s.heading}
                 id={slug(s.heading)}
                 aria-labelledby={slug(s.heading) + "-title"}
-                className="scroll-mt-28 rounded-[var(--radius-xl)] border border-[var(--color-line)] bg-[var(--color-surface)] p-7 md:p-9"
-                data-reveal
-                style={delay(Math.min(i, 3) * 70)}
+                className="lg-sec"
               >
-                <span className="t-data text-[12.5px] text-[var(--color-primary-text)]">
-                  {String(i + 1).padStart(2, "0")}
-                </span>
-                <h2 id={slug(s.heading) + "-title"} className="t-title mt-2">
+                <p className="lg-sec__n nd-num">{String(i + 1).padStart(2, "0")}</p>
+                <h2 id={slug(s.heading) + "-title"} className="lg-sec__h">
                   {s.heading}
                 </h2>
-                <div className="flex flex-col gap-3 mt-4">
-                  {s.body.map((p, j) => (
-                    <p key={j} className="t-body-lg text-[var(--color-ink-2)]" style={{ textWrap: "pretty" }}>
-                      {fillLatePolicy(p, latePolicy)}
-                    </p>
-                  ))}
-                </div>
+                {s.body.map((p, j) => (
+                  <p key={j} className="lg-sec__p">
+                    {fillLatePolicy(p, latePolicy)}
+                  </p>
+                ))}
               </section>
             ))}
 
-            <p className="t-small text-[var(--color-ink-3)] mt-6">
+            <p className="nd-small lg-foot">
               Last reviewed 1 September 2026. NutriDrip Health Pvt. Ltd., clinical establishment registration{" "}
-              <span className="t-data text-[13px]">KA/CEA/2024/11872</span>.
+              <span className="nd-num">KA/CEA/2024/11872</span>.
             </p>
           </article>
-        </Container>
+        </div>
       </section>
-    </>
+    </div>
   );
 }

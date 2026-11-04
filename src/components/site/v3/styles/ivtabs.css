@@ -1,0 +1,550 @@
+/* The client's ivtabs.css, unchanged, then the v3 patches (tools/ivtabs-patch.css). */
+.routes__stage {
+  background: #fff;
+  padding-top: var(--bar-h);
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+.routes__grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  height: calc(100svh - var(--bar-h) - 7rem);
+  max-width: 78rem;
+  margin-inline: auto;
+  width: 100%;
+  padding-inline: clamp(1rem, 5vw, 4rem);
+  gap: 0;
+}
+.route {
+  position: relative;
+  padding: 1.5rem clamp(1rem, 3vw, 2.5rem);
+  display: grid;
+  grid-template-rows: auto 1fr;
+  gap: 1.5rem;
+}
+.route--tab {
+  border-right: 1px solid var(--nd-line);
+}
+.route__head {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  grid-template-rows: auto auto;
+  column-gap: 1rem;
+  align-items: center;
+}
+.route__k {
+  font: 600 clamp(1.5rem, 1.1rem + 1.2vw, 2.2rem)/1 var(--sc-font-display);
+  letter-spacing: -0.03em;
+}
+.route__meter {
+  grid-row: span 2;
+  width: 18px;
+  height: 64px;
+  border-radius: 9px;
+  border: 1.5px solid var(--sc-ink);
+  position: relative;
+  overflow: hidden;
+}
+.route__meter span {
+  position: absolute;
+  inset: 0;
+  background: var(--sc-accent);
+  transform-origin: 50% 100%;
+  transition: transform 380ms var(--sc-ease-out);
+}
+.route--tab .route__meter span {
+  background: #c9861a;
+}
+.route__lv {
+  font-size: 0.92rem;
+  color: var(--sc-ink-soft);
+  font-weight: 600;
+}
+.route__path {
+  list-style: none;
+  margin: 0;
+  padding: 0 0 0 2.4rem;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+}
+.route--iv .route__path {
+  justify-content: flex-start;
+  gap: clamp(3rem, 18vh, 12rem);
+}
+.route__path::before {
+  content: "";
+  position: absolute;
+  left: 10px;
+  top: 14px;
+  bottom: 14px;
+  width: 3px;
+  border-radius: 3px;
+  background: var(--nd-line);
+}
+.route--iv .route__path::before {
+  bottom: auto;
+  height: calc(clamp(3rem, 18vh, 12rem) + 1.4rem);
+  background: color-mix(in oklab, var(--sc-accent) 40%, #fff);
+}
+.route__path li {
+  position: relative;
+  color: #5b6764;
+  transition: color 240ms var(--sc-ease-out);
+  max-width: 34ch;
+}
+.route__path li::before {
+  content: "";
+  position: absolute;
+  left: -2.4rem;
+  top: 6px;
+  width: 17px;
+  height: 17px;
+  border-radius: 50%;
+  border: 3px solid #9aa6a2;
+  background: #fff;
+  translate: 3px 0;
+}
+.route__path li.is-on {
+  color: var(--sc-ink);
+}
+.route__path .sm {
+  display: none;
+}
+.route__path li.is-on::before {
+  border-color: var(--sc-ink);
+}
+.route__path b {
+  font: 600 1.12rem/1.3 var(--sc-font-display);
+}
+.route__path p {
+  font-size: 0.93rem;
+  color: var(--sc-ink-soft);
+  margin-top: 0.2rem;
+  max-height: 0;
+  overflow: hidden;
+  opacity: 0;
+  transition: opacity 240ms var(--sc-ease-out);
+}
+.route__path li.is-now p,
+.route__path li.is-on:last-child p {
+  max-height: 12rem;
+  opacity: 1;
+}
+.route__dose {
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 22px;
+  height: 22px;
+  margin: -11px 0 0 -11px;
+  border-radius: 50%;
+  background: #c9861a;
+  box-shadow: 0 0 0 5px color-mix(in oklab, #c9861a 22%, transparent);
+  scale: calc(0.55 + var(--lvl, 1) * 0.45);
+  transition: scale 300ms var(--sc-ease-out);
+  pointer-events: none;
+}
+.route--iv .route__dose {
+  background: var(--sc-accent);
+  box-shadow: 0 0 0 5px color-mix(in oklab, var(--sc-accent) 22%, transparent);
+}
+.routes__end {
+  max-width: 78rem;
+  margin: 0 auto;
+  width: 100%;
+  padding: 0 clamp(1rem, 5vw, 4rem) 1rem;
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 0.4rem 2rem;
+  align-items: center;
+  opacity: 0;
+  visibility: hidden;
+}
+.routes__sum {
+  font: 600 clamp(1.1rem, 0.9rem + 0.7vw, 1.5rem)/1.25 var(--sc-font-display);
+  letter-spacing: -0.015em;
+}
+.routes__end .nd-small {
+  grid-column: 1;
+}
+.routes__end .nd-cta {
+  grid-column: 2;
+  grid-row: 1 / span 2;
+}
+@media (max-width: 860px) {
+  .routes__stage {
+    justify-content: flex-start;
+    padding-top: calc(var(--bar-h) + 0.5rem);
+  }
+  .routes__grid {
+    grid-template-columns: 1fr;
+    height: auto;
+    padding-inline: 1rem;
+  }
+  .route {
+    padding: 0.8rem 0 1rem;
+    gap: 0.7rem;
+    grid-template-rows: auto auto;
+  }
+  .route--tab {
+    border-right: 0;
+    border-bottom: 1px solid var(--nd-line);
+  }
+  .route__meter {
+    width: 56px;
+    height: 14px;
+    grid-row: 1;
+  }
+  .route__meter span {
+    transform-origin: 0 50%;
+  }
+  .route__k {
+    font-size: 1.3rem;
+  }
+  .route__lv {
+    grid-column: 1;
+    font-size: 0.82rem;
+  }
+  .route__path {
+    flex-direction: row;
+    padding: 2rem 0 0;
+    gap: 0;
+    min-height: 9.5rem;
+  }
+  .route--iv .route__path {
+    gap: 0;
+    justify-content: flex-start;
+    min-height: 6.5rem;
+  }
+  .route--iv .route__path li {
+    flex: 0 0 50%;
+  }
+  .route__path::before {
+    left: 10px;
+    right: 10px;
+    top: 11px;
+    bottom: auto;
+    width: auto;
+    height: 3px;
+  }
+  .route--iv .route__path::before {
+    right: 50%;
+    height: 3px;
+    width: auto;
+  }
+  .route__path li {
+    flex: 1;
+    max-width: none;
+    padding-right: 0.3rem;
+  }
+  .route__path li::before {
+    left: 0;
+    top: -2rem;
+    translate: 1px 1px;
+  }
+  .route__path b {
+    font-size: 0.86rem;
+    display: block;
+  }
+  .route__path .sm {
+    display: inline;
+  }
+  .route__path .lg {
+    display: none;
+  }
+  .route__path p {
+    position: absolute;
+    left: 0;
+    width: calc(100vw - 2rem);
+    font-size: 0.85rem;
+    line-height: 1.4;
+    margin-top: 0.3rem;
+  }
+  .route__path li.is-on:last-child:not(.is-now) p {
+    opacity: 0;
+  }
+  .routes__end {
+    grid-template-columns: 1fr;
+    padding: 0.6rem 1rem 1rem;
+  }
+  .routes__end .nd-cta {
+    grid-column: 1;
+    grid-row: auto;
+  }
+}
+.is-static .routes__stage {
+  height: auto;
+  padding-block: 2rem 3rem;
+  position: relative;
+}
+/* A phone on its side reads the still version (motion.ts, SHORT_SCREEN), so
+   the act reserves no pinned height from first paint. */
+@media (max-height: 500px) {
+  .routes.act-res {
+    height: auto;
+  }
+}
+.is-static .routes__grid {
+  height: auto;
+}
+.is-static .route__path li {
+  opacity: 1;
+}
+.is-static .route__path p {
+  max-height: none;
+  opacity: 1;
+  position: static;
+  width: auto;
+}
+.is-static .routes__end {
+  opacity: 1;
+  visibility: visible;
+}
+.is-static .route__path {
+  min-height: 0;
+}
+@media (max-width: 860px) {
+  .is-static .route__path {
+    flex-direction: column;
+    gap: 1rem;
+    padding: 0 0 0 2rem;
+  }
+  .is-static .route__path::before {
+    left: 10px;
+    top: 14px;
+    bottom: 14px;
+    width: 3px;
+    height: auto;
+    right: auto;
+  }
+  .is-static .route__path li::before {
+    left: -2rem;
+    top: 4px;
+  }
+}
+
+.ivt__grid {
+  display: grid;
+  grid-template-columns: 1fr 1.1fr;
+  gap: clamp(2rem, 6vw, 5rem);
+  align-items: center;
+}
+.ivt__grid--flip .ivt__pic {
+  order: 2;
+}
+.ivt__pic {
+  width: 100%;
+  border-radius: 20px;
+  aspect-ratio: 16 / 10;
+  object-fit: cover;
+  box-shadow: var(--sc-e2);
+}
+.ivt__card {
+  background: #fff;
+  border: 1px solid var(--nd-line);
+  border-radius: 22px;
+  padding: clamp(1.25rem, 3vw, 2.25rem);
+  display: grid;
+  gap: 1rem;
+  align-content: start;
+}
+.ivt__list {
+  margin: 0;
+  padding-left: 1.2rem;
+  display: grid;
+  gap: 0.5rem;
+  color: var(--sc-ink-soft);
+}
+@media (max-width: 860px) {
+  .ivt__grid {
+    grid-template-columns: 1fr;
+  }
+  .ivt__grid--flip .ivt__pic {
+    order: 0;
+  }
+}
+.is-static .route__path li {
+  color: var(--sc-ink);
+}
+.is-static .route__dose {
+  display: none;
+}
+
+/* ------------------------------------------------------------------ v3 */
+/* v3: the pinned act's height is reserved from first paint (.act-res, in
+   site.css, shared by every page with an act). */
+
+/* v3: the client drew the tablet route in #C9861A, the app's clinical
+   caution hue (--color-caution #c07a22). Clinical hues are kept for genuine
+   status, so the tablet route is drawn in slate; the IV route keeps the
+   brand accent. */
+.routes {
+  --route-tab: #5e6b67;
+}
+.route--tab .route__meter span {
+  background: var(--route-tab);
+}
+.route--tab .route__dose {
+  background: var(--route-tab);
+  box-shadow: 0 0 0 5px color-mix(in oklab, var(--route-tab) 22%, transparent);
+}
+
+/* v3: each line runs between its first and last node centres, and through
+   them, measured by page.js: --l0 (start), --lh (length) and --lc (the cross
+   axis). The client's fixed lengths left the IV line short of "Bloodstream",
+   ran the tablet line past its last node, and set the phone line 3px below
+   the node centres. */
+.route__path::before {
+  left: calc(var(--lc, 11.5px) - 1.5px);
+  top: var(--l0, 14px);
+  bottom: auto;
+  width: 3px;
+  height: var(--lh, calc(100% - 28px));
+}
+.route--iv .route__path::before {
+  height: var(--lh, calc(clamp(3rem, 18vh, 12rem) + 1.4rem));
+}
+@media (max-width: 860px) {
+  .route__path::before,
+  .route--iv .route__path::before {
+    top: calc(var(--lc, 12.5px) - 1.5px);
+    left: var(--l0, 10px);
+    right: auto;
+    width: var(--lh, calc(100% - 20px));
+    height: 3px;
+  }
+  .is-static .route__path::before,
+  .is-static .route--iv .route__path::before {
+    left: calc(var(--lc, 11.5px) - 1.5px);
+    top: var(--l0, 14px);
+    width: 3px;
+    height: var(--lh, calc(100% - 28px));
+  }
+}
+
+/* The client set this colour inline. */
+.ivt__dlink {
+  color: var(--nd-dark-accent);
+}
+
+/* v3: the end of the act. The client's grid left the closing line touching
+   the routes and 3 px of screen under the panel; give both a little air, and
+   no lone word on the summary's last line. */
+@media (min-width: 861px) {
+  .routes__grid {
+    height: calc(100svh - var(--bar-h) - 8.5rem);
+  }
+}
+.routes__end {
+  padding-top: 0.75rem;
+  padding-bottom: 1.5rem;
+}
+.routes__sum {
+  text-wrap: balance;
+}
+.ivt__cards {
+  align-items: stretch;
+} /* both cards end level, whatever their text */
+
+@media (max-width: 860px) {
+  /* v3: the client's phone rule pinned the meter to row 1 without a column,
+     so grid placement put it first and pushed "By tablet" to the far right.
+     Name first, meter beside it, level underneath. */
+  .route__k {
+    grid-column: 1;
+    grid-row: 1;
+  }
+  .route__meter {
+    grid-column: 2;
+    grid-row: 1;
+    justify-self: end;
+  }
+  .route__lv {
+    grid-column: 1 / -1;
+    grid-row: 2;
+  }
+  /* The act's content sits in the middle of a tall phone or tablet, not at
+     the top with the bottom third empty. Its height never changes (the end
+     panel keeps its space while hidden), so centring moves nothing. */
+  .routes__stage {
+    justify-content: safe center;
+  }
+  .routes__end {
+    padding: 0.6rem 1rem 1rem;
+  }
+}
+/* v3: a tablet held upright (600 to 860 px) gets the phone layout at a size
+   meant for its width. */
+@media (min-width: 600px) and (max-width: 860px) {
+  .routes__grid {
+    padding-inline: 2rem;
+  }
+  .route__k {
+    font-size: 1.6rem;
+  }
+  .route__lv {
+    font-size: 0.92rem;
+  }
+  .route__path b {
+    font-size: 1rem;
+  }
+  .route__path p {
+    font-size: 0.98rem;
+    width: calc(100vw - 4rem);
+  }
+  .route__path {
+    min-height: 10.5rem;
+  }
+  .route--iv .route__path {
+    min-height: 7.5rem;
+  }
+  .routes__end {
+    padding-inline: 2rem;
+  }
+  .routes__sum {
+    font-size: 1.3rem;
+  }
+}
+/* v3: a short phone (iPhone SE and smaller): the closing panel fits on the
+   screen with its action, so the routes give up a little air. */
+@media (max-width: 860px) and (max-height: 740px) {
+  .route {
+    padding: 0.45rem 0 0.55rem;
+    gap: 0.45rem;
+  }
+  .route__path {
+    min-height: 8.4rem;
+  }
+  .route--iv .route__path {
+    min-height: 5.6rem;
+  }
+  .routes__end {
+    padding: 0.4rem 1rem 0.6rem;
+    gap: 0.3rem;
+  }
+  .routes__sum {
+    font-size: 1.02rem;
+  }
+}
+
+/* v3: the slip on a narrow phone is in site.css (every page closes on it). */
+
+/* v3: the still phone layout (reduced motion) runs down the screen, where the
+   full stop names fit; the short ones are for the row across. */
+@media (max-width: 860px) {
+  .is-static .route__path .sm {
+    display: none;
+  }
+  .is-static .route__path .lg {
+    display: inline;
+  }
+}
+
+/* Port (2026-11-02): the route meter (.route__meter) is no longer drawn, and
+   the dose dot no longer shrinks (--lvl stays 1). The client's meter drained
+   to invented levels (0.88, 0.62, 0.46), and a fill on this site always shows a
+   real quantity (CLAUDE.md). Each stop now carries its words instead ("Full
+   dose" … "Part of the dose"), under the "Illustration, not to scale" note. */

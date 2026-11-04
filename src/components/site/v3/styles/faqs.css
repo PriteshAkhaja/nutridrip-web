@@ -1,0 +1,129 @@
+/* FAQs: the client's tokens (no client page), and no motion: somebody here
+   is reading or searching. Every class is the page's own (fq-). Scoped to
+   .sc-site by scripts/scope-site-css.mjs: edit here, then run
+   `npm run site-css`. */
+
+.fq-head .nd-q {
+  max-width: 16ch;
+}
+.fq-head .nd-lede {
+  max-width: 56ch;
+}
+.fq-body {
+  padding-bottom: clamp(3rem, 7vw, 6rem);
+}
+
+.fq-tools {
+  display: grid;
+  gap: 1rem;
+  padding: clamp(1.1rem, 2.4vw, 1.6rem);
+  background: #fff;
+  border: 1px solid var(--nd-line);
+  border-radius: 20px;
+}
+.fq-search {
+  max-width: 34rem;
+}
+.fq-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+.fq-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  min-height: 44px;
+  padding: 0.5rem 1rem;
+  border: 1.5px solid #b9c4c0;
+  border-radius: 999px;
+  background: #fff;
+  color: var(--sc-ink);
+  font: 500 0.92rem/1.2 var(--sc-font-text);
+  cursor: pointer;
+  transition:
+    border-color 160ms var(--sc-ease-out),
+    background-color 160ms var(--sc-ease-out),
+    color 160ms var(--sc-ease-out);
+}
+.fq-chip:hover {
+  border-color: var(--sc-ink);
+}
+.fq-chip span {
+  font-variant-numeric: tabular-nums;
+  opacity: 0.7;
+}
+.fq-chip[aria-pressed="true"] {
+  background: var(--sc-ink);
+  border-color: var(--sc-ink);
+  color: #fff;
+}
+.fq-count {
+  margin: 0;
+}
+
+.fq-cats {
+  display: grid;
+  gap: clamp(2.5rem, 5vw, 4rem);
+  margin-top: clamp(2.5rem, 5vw, 3.5rem);
+}
+.fq-cat {
+  display: grid;
+  grid-template-columns: minmax(0, 0.75fr) minmax(0, 1.25fr);
+  gap: 1.5rem clamp(2rem, 5vw, 4.5rem);
+  align-items: start;
+}
+.fq-cat__head {
+  position: sticky;
+  top: calc(var(--bar-h) + 1.5rem);
+  display: grid;
+  gap: 0.5rem;
+}
+.fq-cat__head .nd-body {
+  max-width: 40ch;
+}
+.fq-list {
+  border-top: 1px solid var(--nd-line);
+}
+.fq-none {
+  display: grid;
+  gap: 0.8rem;
+  justify-items: start;
+  margin-top: 2rem;
+}
+.fq-none__h {
+  font: 600 1.3rem/1.2 var(--sc-font-display);
+}
+@media (max-width: 860px) {
+  .fq-cat {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .fq-cat__head {
+    position: static;
+  }
+}
+
+.fq-ask {
+  background: #fff;
+}
+.fq-ask__in {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 1.5rem 3rem;
+  flex-wrap: wrap;
+}
+.fq-ask__in .nd-body {
+  margin-top: 0.6rem;
+  max-width: 58ch;
+}
+.fq-ask__go {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.8rem;
+}
+.fq-ask__go .nd-btn:first-child {
+  background: transparent;
+  color: var(--sc-ink);
+  border-color: currentColor;
+}

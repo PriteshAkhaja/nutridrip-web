@@ -11,7 +11,18 @@ const config = [
   // errors on a clean tree and a real one had nowhere to show.
   // scrollcraft/ holds standalone scroll-craft builds (plain HTML + the skill's
   // engine JS), not app source.
-  { ignores: ["_reference/**", "__MACOSX/**", ".next/**", "node_modules/**", "scrollcraft/**"] },
+  // src/components/site/scroll/engine/ is the scroll-craft engine, vendored
+  // unchanged from the skill (AGENTS.md: never edited per page).
+  {
+    ignores: [
+      "_reference/**",
+      "__MACOSX/**",
+      ".next/**",
+      "node_modules/**",
+      "scrollcraft/**",
+      "src/components/site/scroll/engine/**",
+    ],
+  },
   // Last, so it switches off every rule above that is about layout. Prettier
   // owns formatting (npm run format); ESLint owns correctness.
   prettier,

@@ -1,0 +1,184 @@
+/* Pricing: a Light page in the client's tokens (no client page). Entry
+   reveals only, no act. Every class is the page's own (pr-). Scoped to
+   .sc-site by scripts/scope-site-css.mjs: edit here, then run
+   `npm run site-css`. */
+
+/* ---------------------------------------------------------------- head */
+.pr-head__grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1.2fr) minmax(0, 0.8fr);
+  gap: clamp(1.5rem, 4vw, 4rem);
+  align-items: end;
+}
+.pr-head .nd-q {
+  max-width: 16ch;
+}
+.pr-head__side {
+  display: grid;
+  gap: 1.5rem;
+  justify-items: start;
+  padding-bottom: 0.3rem;
+}
+.pr-head__range {
+  display: grid;
+  gap: 0.3rem;
+}
+.pr-head__range span {
+  font-size: 0.9rem;
+  color: var(--sc-ink-soft);
+}
+.pr-head__range b {
+  font-size: clamp(1.8rem, 1.3rem + 1.6vw, 2.6rem);
+  font-weight: 600;
+  letter-spacing: -0.025em;
+  line-height: 1.1;
+}
+@media (max-width: 860px) {
+  .pr-head__grid {
+    grid-template-columns: minmax(0, 1fr);
+    align-items: start;
+  }
+}
+
+/* ------------------------------------------------------------ the list */
+.pr-list {
+  background: #fff;
+}
+.pr-table {
+  margin-top: clamp(1.25rem, 3vw, 2rem);
+  font-size: 1rem;
+}
+.pr-table__name {
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+}
+.pr-table td:first-child a {
+  font-weight: 600;
+  text-decoration: none;
+}
+.pr-table td:first-child a:hover {
+  text-decoration: underline;
+  text-underline-offset: 0.2em;
+}
+.pr-table__dot {
+  flex: none;
+  width: 0.7rem;
+  height: 0.7rem;
+  border-radius: 50%;
+}
+.pr-table td {
+  color: var(--sc-ink-soft);
+}
+.pr-table td:first-child,
+.pr-table td.pr-table__price {
+  color: var(--sc-ink);
+}
+.pr-table .pr-table__price {
+  text-align: right;
+  white-space: nowrap;
+}
+/* The time keeps its unit on its line. */
+.pr-table td:nth-child(3) {
+  white-space: nowrap;
+}
+.pr-table td.pr-table__price {
+  font-weight: 600;
+  font-size: 1.05rem;
+}
+.pr-list__note {
+  margin-top: 1.2rem;
+}
+.pr-list__none {
+  margin-top: 1.2rem;
+}
+@media (max-width: 640px) {
+  .pr-table .pr-table__goal {
+    display: none;
+  }
+  .pr-table th,
+  .pr-table td {
+    padding-inline: 0.45rem;
+  }
+  .pr-table td:first-child {
+    white-space: normal;
+  }
+}
+
+/* ------------------------------------------------------- what it covers */
+.pr-covers__list {
+  list-style: none;
+  margin: clamp(1.5rem, 3vw, 2.25rem) 0 0;
+  padding: 0;
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: clamp(1rem, 2vw, 1.5rem);
+}
+.pr-covers__list li {
+  display: grid;
+  gap: 0.5rem;
+  align-content: start;
+  padding: 1.25rem;
+  background: #fff;
+  border: 1px solid var(--nd-line);
+  border-radius: 16px;
+}
+.pr-covers__list li::before {
+  content: "";
+  width: 1.4rem;
+  height: 1.4rem;
+  border-radius: 50%;
+  background: var(--sc-ink) center / 0.85rem no-repeat
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Cpath d='M3.5 8.5l3 3 6-7' fill='none' stroke='%23fff' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+  margin-bottom: 0.3rem;
+}
+.pr-covers__list b {
+  font: 600 1.1rem/1.25 var(--sc-font-display);
+}
+.pr-covers__list span {
+  color: var(--sc-ink-soft);
+  font-size: 0.96rem;
+}
+@media (max-width: 1023px) {
+  .pr-covers__list {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+@media (max-width: 560px) {
+  .pr-covers__list {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+/* ------------------------------------------------ changes and refunds */
+.pr-change {
+  background: #fff;
+}
+.pr-change__free {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  gap: 1.25rem;
+  align-items: start;
+}
+.pr-change__n {
+  font-size: clamp(3.4rem, 2.6rem + 3vw, 5.2rem);
+  font-weight: 600;
+  line-height: 0.9;
+  letter-spacing: -0.04em;
+}
+.pr-change__free .nd-body {
+  margin-top: 0.8rem;
+}
+@media (min-width: 641px) {
+  .pr-change__list li {
+    grid-template-columns: minmax(9rem, 15rem) 1fr;
+  }
+}
+.pr-change__list span {
+  color: var(--sc-ink-soft);
+}
+
+/* ------------------------------------------------------------------ faq */
+.pr-faq .sc-stack p {
+  margin-top: 0.8rem;
+}

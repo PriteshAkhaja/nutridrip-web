@@ -153,11 +153,11 @@ export const FAQS = [
   },
   {
     q: "Do I have to take the quiz every time I book?",
-    a: "No. One approval covers all your bookings for 90 days. It lapses after that because a physician's approval is a judgement about you on the day — weight, medication and kidney function all move.",
+    a: "No. One approval covers all your bookings for 90 days. It lapses after that because a physician's approval is a judgement about you on the day: weight, medication and kidney function all move.",
   },
   {
     q: "What if the nurse finds something wrong?",
-    a: "The 29-step checklist gates the session. If your vitals fall outside the reference range the infusion does not start — the nurse escalates to the reviewing physician, and a session that does not run is refunded in full.",
+    a: "The 29-step checklist gates the session. If your vitals fall outside the reference range the infusion does not start. The nurse escalates to the reviewing physician, and a session that does not run is refunded in full.",
   },
   {
     q: "Can I cancel or reschedule?",

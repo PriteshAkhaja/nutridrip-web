@@ -1,0 +1,677 @@
+[
+  {
+    "slug": "hydrate-plus",
+    "name": "Hydrate Plus",
+    "tagline": "Fast rehydration",
+    "description": "Balanced electrolytes in Ringer lactate for dehydration, hangovers and heat exposure.",
+    "goodToKnow": ["The shortest session on the menu"],
+    "category": "Hydration",
+    "volumeMl": 500,
+    "priceInr": 5400,
+    "durationMin": 30,
+    "durationToMin": 40,
+    "isPopular": true,
+    "carrier": {
+      "name": "Ringer lactate",
+      "dose": 500,
+      "unit": "ml"
+    },
+    "items": [
+      {
+        "name": "Electrolyte concentrate",
+        "dose": 20,
+        "unit": "ml",
+        "role": "ACTIVE",
+        "notes": null,
+        "form": "Ampoule",
+        "pack": {
+          "value": 20,
+          "unit": "ml",
+          "ml": null
+        },
+        "molecule": null,
+        "separate": false
+      },
+      {
+        "name": "Pyridoxine",
+        "dose": 100,
+        "unit": "mg",
+        "role": "ADDITIVE",
+        "notes": null,
+        "form": "Ampoule",
+        "pack": {
+          "value": 100,
+          "unit": "mg",
+          "ml": null
+        },
+        "molecule": "Vitamin B6",
+        "separate": false
+      },
+      {
+        "name": "Ondansetron",
+        "dose": 4,
+        "unit": "mg",
+        "role": "PREMED",
+        "notes": "If nausea present",
+        "form": "Ampoule",
+        "pack": {
+          "value": 4,
+          "unit": "mg",
+          "ml": null
+        },
+        "molecule": null,
+        "separate": true
+      }
+    ]
+  },
+  {
+    "slug": "jetlag-reset",
+    "name": "Jetlag Reset",
+    "tagline": "Built around travel days",
+    "description": "Lower volume, faster run, built around travel days and time-zone shifts.",
+    "goodToKnow": ["Book within 24 hours of landing for the clearest effect"],
+    "category": "Energy",
+    "volumeMl": 500,
+    "priceInr": 6800,
+    "durationMin": 30,
+    "durationToMin": 40,
+    "isPopular": false,
+    "carrier": {
+      "name": "Normal saline 0.9%",
+      "dose": 500,
+      "unit": "ml"
+    },
+    "items": [
+      {
+        "name": "Ascorbic acid",
+        "dose": 5000,
+        "unit": "mg",
+        "role": "ACTIVE",
+        "notes": null,
+        "form": "Vial",
+        "pack": {
+          "value": 5000,
+          "unit": "mg",
+          "ml": null
+        },
+        "molecule": "Vitamin C",
+        "separate": false
+      },
+      {
+        "name": "Electrolyte concentrate",
+        "dose": 20,
+        "unit": "ml",
+        "role": "ACTIVE",
+        "notes": null,
+        "form": "Ampoule",
+        "pack": {
+          "value": 20,
+          "unit": "ml",
+          "ml": null
+        },
+        "molecule": null,
+        "separate": false
+      },
+      {
+        "name": "Pyridoxine",
+        "dose": 100,
+        "unit": "mg",
+        "role": "ADDITIVE",
+        "notes": null,
+        "form": "Ampoule",
+        "pack": {
+          "value": 100,
+          "unit": "mg",
+          "ml": null
+        },
+        "molecule": "Vitamin B6",
+        "separate": false
+      }
+    ]
+  },
+  {
+    "slug": "myers-revive",
+    "name": "Myers' Revive",
+    "tagline": "The default first drip",
+    "description": "Magnesium-forward Myers' cocktail. B-complex, magnesium and ascorbic acid in a saline carrier.",
+    "goodToKnow": ["Most patients feel the lift within 24 hours", "Magnesium can cause a brief warm sensation"],
+    "category": "Energy",
+    "volumeMl": 500,
+    "priceInr": 8400,
+    "durationMin": 45,
+    "durationToMin": 60,
+    "isPopular": true,
+    "carrier": {
+      "name": "Normal saline 0.9%",
+      "dose": 500,
+      "unit": "ml"
+    },
+    "items": [
+      {
+        "name": "Ascorbic acid",
+        "dose": 7500,
+        "unit": "mg",
+        "role": "ACTIVE",
+        "notes": "Antioxidant load",
+        "form": "Vial",
+        "pack": {
+          "value": 5000,
+          "unit": "mg",
+          "ml": null
+        },
+        "molecule": "Vitamin C",
+        "separate": false
+      },
+      {
+        "name": "Magnesium sulphate",
+        "dose": 1000,
+        "unit": "mg",
+        "role": "ACTIVE",
+        "notes": "Muscle and sleep",
+        "form": "Ampoule",
+        "pack": {
+          "value": 1000,
+          "unit": "mg",
+          "ml": null
+        },
+        "molecule": "Magnesium",
+        "separate": false
+      },
+      {
+        "name": "B-complex",
+        "dose": 2,
+        "unit": "ml",
+        "role": "ACTIVE",
+        "notes": "Energy metabolism",
+        "form": "Vial",
+        "pack": {
+          "value": 10,
+          "unit": "ml",
+          "ml": null
+        },
+        "molecule": null,
+        "separate": false
+      },
+      {
+        "name": "Cyanocobalamin",
+        "dose": 1000,
+        "unit": "mcg",
+        "role": "ACTIVE",
+        "notes": "Nerve and blood",
+        "form": "Ampoule",
+        "pack": {
+          "value": 1500,
+          "unit": "mcg",
+          "ml": null
+        },
+        "molecule": "Vitamin B12",
+        "separate": false
+      },
+      {
+        "name": "Calcium gluconate",
+        "dose": 500,
+        "unit": "mg",
+        "role": "ADDITIVE",
+        "notes": "Electrolyte balance",
+        "form": "Ampoule",
+        "pack": {
+          "value": 1000,
+          "unit": "mg",
+          "ml": null
+        },
+        "molecule": null,
+        "separate": false
+      },
+      {
+        "name": "Pyridoxine",
+        "dose": 100,
+        "unit": "mg",
+        "role": "ADDITIVE",
+        "notes": "Cofactor",
+        "form": "Ampoule",
+        "pack": {
+          "value": 100,
+          "unit": "mg",
+          "ml": null
+        },
+        "molecule": "Vitamin B6",
+        "separate": false
+      }
+    ]
+  },
+  {
+    "slug": "immune-shield",
+    "name": "Immune Shield",
+    "tagline": "High-dose vitamin C",
+    "description": "High-dose vitamin C with zinc and selenium.",
+    "goodToKnow": ["G6PD screening required at high doses"],
+    "category": "Immunity",
+    "volumeMl": 500,
+    "priceInr": 9200,
+    "durationMin": 60,
+    "durationToMin": 80,
+    "isPopular": true,
+    "carrier": {
+      "name": "Normal saline 0.9%",
+      "dose": 500,
+      "unit": "ml"
+    },
+    "items": [
+      {
+        "name": "Ascorbic acid",
+        "dose": 15000,
+        "unit": "mg",
+        "role": "ACTIVE",
+        "notes": null,
+        "form": "Vial",
+        "pack": {
+          "value": 5000,
+          "unit": "mg",
+          "ml": null
+        },
+        "molecule": "Vitamin C",
+        "separate": false
+      },
+      {
+        "name": "Zinc sulphate",
+        "dose": 10,
+        "unit": "mg",
+        "role": "ACTIVE",
+        "notes": null,
+        "form": "Ampoule",
+        "pack": {
+          "value": 10,
+          "unit": "mg",
+          "ml": null
+        },
+        "molecule": "Zinc",
+        "separate": false
+      },
+      {
+        "name": "Sodium selenite",
+        "dose": 100,
+        "unit": "mcg",
+        "role": "ACTIVE",
+        "notes": null,
+        "form": "Ampoule",
+        "pack": {
+          "value": 100,
+          "unit": "mcg",
+          "ml": null
+        },
+        "molecule": "Selenium",
+        "separate": false
+      }
+    ]
+  },
+  {
+    "slug": "post-viral-rebuild",
+    "name": "Post-viral Rebuild",
+    "tagline": "After the infection clears",
+    "description": "Antioxidant-forward protocol for the flat weeks that follow a viral illness.",
+    "goodToKnow": ["Best started at least seven days after fever resolves"],
+    "category": "Post-viral",
+    "volumeMl": 500,
+    "priceInr": 9600,
+    "durationMin": 60,
+    "durationToMin": 80,
+    "isPopular": false,
+    "carrier": {
+      "name": "Normal saline 0.9%",
+      "dose": 500,
+      "unit": "ml"
+    },
+    "items": [
+      {
+        "name": "Ascorbic acid",
+        "dose": 10000,
+        "unit": "mg",
+        "role": "ACTIVE",
+        "notes": null,
+        "form": "Vial",
+        "pack": {
+          "value": 5000,
+          "unit": "mg",
+          "ml": null
+        },
+        "molecule": "Vitamin C",
+        "separate": false
+      },
+      {
+        "name": "Alpha-lipoic acid",
+        "dose": 300,
+        "unit": "mg",
+        "role": "ACTIVE",
+        "notes": null,
+        "form": "Ampoule",
+        "pack": {
+          "value": 300,
+          "unit": "mg",
+          "ml": null
+        },
+        "molecule": null,
+        "separate": false
+      },
+      {
+        "name": "B-complex",
+        "dose": 2,
+        "unit": "ml",
+        "role": "ACTIVE",
+        "notes": null,
+        "form": "Vial",
+        "pack": {
+          "value": 10,
+          "unit": "ml",
+          "ml": null
+        },
+        "molecule": null,
+        "separate": false
+      },
+      {
+        "name": "Zinc sulphate",
+        "dose": 10,
+        "unit": "mg",
+        "role": "ADDITIVE",
+        "notes": null,
+        "form": "Ampoule",
+        "pack": {
+          "value": 10,
+          "unit": "mg",
+          "ml": null
+        },
+        "molecule": "Zinc",
+        "separate": false
+      }
+    ]
+  },
+  {
+    "slug": "iron-restore",
+    "name": "Iron Restore",
+    "tagline": "Requires recent labs",
+    "description": "Iron sucrose for confirmed deficiency. A ferritin result within 90 days is mandatory.",
+    "goodToKnow": ["Labs required before the physician can approve", "Observation period is longer"],
+    "category": "Energy",
+    "volumeMl": 500,
+    "priceInr": 9800,
+    "durationMin": 90,
+    "durationToMin": 120,
+    "isPopular": false,
+    "carrier": {
+      "name": "Normal saline 0.9%",
+      "dose": 500,
+      "unit": "ml"
+    },
+    "items": [
+      {
+        "name": "Iron sucrose",
+        "dose": 200,
+        "unit": "mg",
+        "role": "ACTIVE",
+        "notes": null,
+        "form": "Ampoule",
+        "pack": {
+          "value": 100,
+          "unit": "mg",
+          "ml": null
+        },
+        "molecule": "Iron",
+        "separate": false
+      },
+      {
+        "name": "Ascorbic acid",
+        "dose": 1000,
+        "unit": "mg",
+        "role": "ADDITIVE",
+        "notes": "Aids absorption",
+        "form": "Vial",
+        "pack": {
+          "value": 5000,
+          "unit": "mg",
+          "ml": null
+        },
+        "molecule": "Vitamin C",
+        "separate": false
+      },
+      {
+        "name": "Pheniramine maleate",
+        "dose": 22.75,
+        "unit": "mg",
+        "role": "PREMED",
+        "notes": "Reaction cover",
+        "form": "Ampoule",
+        "pack": {
+          "value": 22.75,
+          "unit": "mg",
+          "ml": null
+        },
+        "molecule": null,
+        "separate": true
+      }
+    ]
+  },
+  {
+    "slug": "athletic-recovery",
+    "name": "Athletic Recovery",
+    "tagline": "After the event, not before",
+    "description": "Amino-acid forward recovery protocol for the 24 hours after a hard effort.",
+    "goodToKnow": ["Check your federation's anti-doping list before booking"],
+    "category": "Athletic recovery",
+    "volumeMl": 500,
+    "priceInr": 10200,
+    "durationMin": 55,
+    "durationToMin": 75,
+    "isPopular": false,
+    "carrier": {
+      "name": "Ringer lactate",
+      "dose": 500,
+      "unit": "ml"
+    },
+    "items": [
+      {
+        "name": "Taurine",
+        "dose": 1000,
+        "unit": "mg",
+        "role": "ACTIVE",
+        "notes": null,
+        "form": "Ampoule",
+        "pack": {
+          "value": 500,
+          "unit": "mg",
+          "ml": null
+        },
+        "molecule": null,
+        "separate": false
+      },
+      {
+        "name": "L-carnitine",
+        "dose": 1000,
+        "unit": "mg",
+        "role": "ACTIVE",
+        "notes": null,
+        "form": "Ampoule",
+        "pack": {
+          "value": 1000,
+          "unit": "mg",
+          "ml": null
+        },
+        "molecule": null,
+        "separate": false
+      },
+      {
+        "name": "Magnesium sulphate",
+        "dose": 1000,
+        "unit": "mg",
+        "role": "ACTIVE",
+        "notes": null,
+        "form": "Ampoule",
+        "pack": {
+          "value": 1000,
+          "unit": "mg",
+          "ml": null
+        },
+        "molecule": "Magnesium",
+        "separate": false
+      },
+      {
+        "name": "Ascorbic acid",
+        "dose": 5000,
+        "unit": "mg",
+        "role": "ADDITIVE",
+        "notes": null,
+        "form": "Vial",
+        "pack": {
+          "value": 5000,
+          "unit": "mg",
+          "ml": null
+        },
+        "molecule": "Vitamin C",
+        "separate": false
+      }
+    ]
+  },
+  {
+    "slug": "deep-recharge",
+    "name": "Deep Recharge",
+    "tagline": "For sustained fatigue",
+    "description": "Adds L-carnitine and taurine for sustained fatigue that a single session has not shifted.",
+    "goodToKnow": ["Usually prescribed as a course of four"],
+    "category": "Energy",
+    "volumeMl": 500,
+    "priceInr": 10600,
+    "durationMin": 60,
+    "durationToMin": 80,
+    "isPopular": false,
+    "carrier": {
+      "name": "Normal saline 0.9%",
+      "dose": 500,
+      "unit": "ml"
+    },
+    "items": [
+      {
+        "name": "L-carnitine",
+        "dose": 2000,
+        "unit": "mg",
+        "role": "ACTIVE",
+        "notes": null,
+        "form": "Ampoule",
+        "pack": {
+          "value": 1000,
+          "unit": "mg",
+          "ml": null
+        },
+        "molecule": null,
+        "separate": false
+      },
+      {
+        "name": "Taurine",
+        "dose": 1000,
+        "unit": "mg",
+        "role": "ACTIVE",
+        "notes": null,
+        "form": "Ampoule",
+        "pack": {
+          "value": 500,
+          "unit": "mg",
+          "ml": null
+        },
+        "molecule": null,
+        "separate": false
+      },
+      {
+        "name": "Cyanocobalamin",
+        "dose": 1000,
+        "unit": "mcg",
+        "role": "ACTIVE",
+        "notes": null,
+        "form": "Ampoule",
+        "pack": {
+          "value": 1500,
+          "unit": "mcg",
+          "ml": null
+        },
+        "molecule": "Vitamin B12",
+        "separate": false
+      },
+      {
+        "name": "B-complex",
+        "dose": 2,
+        "unit": "ml",
+        "role": "ACTIVE",
+        "notes": null,
+        "form": "Vial",
+        "pack": {
+          "value": 10,
+          "unit": "ml",
+          "ml": null
+        },
+        "molecule": null,
+        "separate": false
+      }
+    ]
+  },
+  {
+    "slug": "glow-protocol",
+    "name": "Glow Protocol",
+    "tagline": "Given as a slow push",
+    "description": "Glutathione with vitamin C, given as a slow push at the end of the carrier.",
+    "goodToKnow": ["A course of six is the usual protocol"],
+    "category": "Skin",
+    "volumeMl": 500,
+    "priceInr": 11000,
+    "durationMin": 50,
+    "durationToMin": 70,
+    "isPopular": true,
+    "carrier": {
+      "name": "Normal saline 0.9%",
+      "dose": 500,
+      "unit": "ml"
+    },
+    "items": [
+      {
+        "name": "Glutathione",
+        "dose": 600,
+        "unit": "mg",
+        "role": "ACTIVE",
+        "notes": "Slow IV push",
+        "form": "Vial",
+        "pack": {
+          "value": 600,
+          "unit": "mg",
+          "ml": null
+        },
+        "molecule": null,
+        "separate": true
+      },
+      {
+        "name": "Ascorbic acid",
+        "dose": 5000,
+        "unit": "mg",
+        "role": "ACTIVE",
+        "notes": null,
+        "form": "Vial",
+        "pack": {
+          "value": 5000,
+          "unit": "mg",
+          "ml": null
+        },
+        "molecule": "Vitamin C",
+        "separate": false
+      },
+      {
+        "name": "Biotin",
+        "dose": 5000,
+        "unit": "mcg",
+        "role": "ADDITIVE",
+        "notes": null,
+        "form": "Ampoule",
+        "pack": {
+          "value": 5000,
+          "unit": "mcg",
+          "ml": null
+        },
+        "molecule": null,
+        "separate": false
+      }
+    ]
+  }
+]

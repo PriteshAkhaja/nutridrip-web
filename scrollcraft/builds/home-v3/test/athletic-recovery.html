@@ -1,0 +1,1416 @@
+<!doctype html>
+<html lang="en-IN">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
+    <title>NutriDrip · IV nutrient therapy at home</title>
+    <meta
+      name="description"
+      content="Answer a health quiz, get a protocol reviewed by a registered physician, and have a nurse give it in your own home."
+    />
+    <meta name="theme-color" content="#F5F7F5" />
+    <base href="../" />
+    <link rel="icon" href="data:," />
+    <link rel="preload" href="fonts/outfit-latin-wght-normal.woff2" as="font" type="font/woff2" crossorigin />
+    <link rel="preload" href="fonts/geist-latin-wght-normal.woff2" as="font" type="font/woff2" crossorigin />
+    <link rel="preload" href="assets/room.webp" as="image" media="(min-width: 861px)" />
+    <link rel="preload" href="assets/room-p.webp" as="image" media="(max-width: 860px)" />
+    <link rel="stylesheet" href="scrollcraft.css" />
+    <link rel="stylesheet" href="site.css" />
+    <link rel="stylesheet" href="home.css" />
+  </head>
+  <body style="--tint: #4a4fb5">
+    <div id="sc-root">
+      <span data-sc-progress></span>
+      <a class="visually-hidden" href="#main">Skip to content</a>
+
+      <!-- Stand-in for the restyled shared SiteChrome header. -->
+      <header class="nd-bar">
+        <div class="nd-bar__in">
+          <a class="nd-mark-link" href="/" aria-label="NutriDrip, IV nutrient therapy, home"
+            ><span class="nd-mark"
+              ><b>NutriDrip<sup>™</sup></b
+              ><small>IV NUTRIENT THERAPY</small></span
+            ></a
+          >
+          <nav class="nd-bar__nav" aria-label="Site">
+            <a href="/drips">Drips</a><a href="/how-it-works">How it works</a><a href="/pricing">Pricing</a
+            ><a href="/safety">Safety</a><a href="/iv-vs-tablets">IV vs Tablets</a><a href="/zones">Zones</a
+            ><a href="/for-clinics">For clinics</a>
+          </nav>
+          <div class="nd-bar__end">
+            <button class="nd-ledger-btn" type="button" data-ledger-btn aria-expanded="false" aria-controls="nd-ledger">
+              <span class="nd-ledger-btn__count">0/10</span><span class="nd-ledger-btn__q">What is this?</span>
+            </button>
+            <div class="nd-bar__book"><a class="nd-btn" href="/login">Sign in</a></div>
+            <div class="nd-bar__book">
+              <div class="nd-cta">
+                <a class="nd-btn" href="/quiz" data-quiz-link>Take the quiz</a
+                ><span class="nd-cta__free">Physician-reviewed before every session</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </header>
+      <div class="nd-ledger" id="nd-ledger" role="dialog" aria-label="Your questions">
+        <h2>Your questions, answered as you read</h2>
+        <ol></ol>
+        <div class="nd-ledger__pages">
+          <a href="/drips">All drips</a><a href="/how-it-works">How it works</a><a href="/pricing">Pricing</a
+          ><a href="/safety">Safety</a><a href="/iv-vs-tablets">IV vs Tablets</a><a href="/zones">Zones</a
+          ><a href="/about">About</a><a href="/for-clinics">For clinics</a>
+        </div>
+      </div>
+
+      <main id="main">
+        <!-- 1 · WHAT IS THIS? Planes; the headline recedes behind the bag. -->
+        <section
+          id="q-what"
+          class="hero act-res"
+          data-q="What is this?"
+          data-hero
+          data-sc-act="pin"
+          data-sc-span="2.1"
+          style="--span: 2.1; --span-m: 1.8"
+        >
+          <div data-sc-stage class="hero__stage" data-sc-verify-state="0">
+            <div class="hero__plane hero__room" data-depth="0.2">
+              <picture
+                ><source media="(max-width: 860px)" srcset="assets/room-p.webp" />
+                <img src="assets/room.webp" width="2400" height="1357" alt="" fetchpriority="high"
+              /></picture>
+            </div>
+            <img
+              class="hero__plane hero__back hero__back--1"
+              src="assets/hero-back-1.webp"
+              width="279"
+              height="640"
+              alt=""
+            />
+            <img
+              class="hero__plane hero__back hero__back--2"
+              src="assets/hero-back-2.webp"
+              width="279"
+              height="640"
+              alt=""
+            />
+            <div class="hero__plane hero__head">
+              <h1 class="hero__h1">IV nutrient therapy, at home, with a doctor in the loop.</h1>
+            </div>
+            <div class="hero__plane hero__bag">
+              <img
+                src="assets/bag-hero-clean.webp"
+                width="611"
+                height="1400"
+                alt="A NutriDrip 500 mL IV nutrient bag hanging in a sunlit infusion room"
+                fetchpriority="high"
+              />
+            </div>
+            <!-- v3e: the bag's print, a plane of its own that moves with the bag. The
+         photo plane is rasterised once and moved as a bitmap (will-change),
+         which blurred live text; this one is redrawn at each size, sharp. -->
+            <div class="hero__plane hero__bag hero__bagprint" aria-hidden="true">
+              <div class="hb-label">
+                <span class="hb-word">NutriDrip<sup>™</sup></span>
+                <span class="hb-sub">IV NUTRIENT THERAPY</span>
+                <span class="hb-foot"
+                  ><svg viewBox="0 0 100 50" aria-hidden="true">
+                    <path
+                      d="M50 25C40 11 33 7 25 7 15 7 7 15 7 25s8 18 18 18c8 0 15-4 25-18s17-18 25-18c10 0 18 8 18 18s-8 18-18 18c-8 0-15-4-25-18Z"
+                      fill="none"
+                      stroke="currentColor"
+                      stroke-width="5"
+                      stroke-linejoin="round"
+                    /></svg
+                  ><i></i><b>500 mL</b></span
+                >
+              </div>
+            </div>
+            <img class="hero__plane hero__front" src="assets/hero-front.webp" width="279" height="640" alt="" />
+            <div class="hero__plane hero__light" aria-hidden="true"></div>
+            <div class="hero__copy">
+              <p class="hero__sub">
+                Answer a 16-point health quiz, get a protocol reviewed by a registered physician, and have a nurse
+                administer it in your own home. No walk-in, no guesswork.
+              </p>
+              <div class="nd-cta">
+                <a class="nd-btn" href="/quiz" data-quiz-link>Take the health quiz · 3 min</a
+                ><span class="nd-cta__free">No card needed to get a protocol reviewed</span>
+              </div>
+            </div>
+            <p class="hero__second" aria-hidden="true">
+              Reviewed by a physician. Given by a nurse at home. Every dose on your report.
+            </p>
+          </div>
+        </section>
+        <p class="visually-hidden">Reviewed by a physician. Given by a nurse at home. Every dose on your report.</p>
+
+        <!-- 2 · IS IT SAFE? WHO IS BEHIND IT? Real figures only. -->
+        <div id="q-safe" data-q="Is it safe? Who is behind it?">
+          <section class="sc-section trust">
+            <div class="nd-wrap trust__grid">
+              <div class="sc-stack" data-sc-in data-sc-stagger="70">
+                <h2 class="nd-q">Is it safe? Who is behind it?</h2>
+                <p class="nd-lede">
+                  NutriDrip is a clinical service first and a wellness brand a long way second. A registered physician
+                  reviews everyone before anything is prepared, a council-registered nurse comes to you, and every dose
+                  and batch number is written down.
+                </p>
+                <p><a class="nd-link" href="/about">About NutriDrip</a></p>
+              </div>
+              <dl class="trust__stats">
+                <div>
+                  <dt>steps in every session checklist, none skippable</dt>
+                  <dd class="nd-num"><span data-sc-count="0 29">29</span></dd>
+                </div>
+                <div>
+                  <dt>days a physician's approval lasts</dt>
+                  <dd class="nd-num"><span data-sc-count="0 90">90</span></dd>
+                </div>
+                <div>
+                  <dt>zones served in Bengaluru</dt>
+                  <dd class="nd-num"><span data-sc-count="0 14">14</span></dd>
+                </div>
+                <div>
+                  <dt>drips, every dose published</dt>
+                  <dd class="nd-num"><span data-sc-count="0 9">9</span></dd>
+                </div>
+              </dl>
+            </div>
+          </section>
+
+          <section
+            class="path act-res"
+            data-sc-act="pin"
+            data-sc-span="2.8"
+            style="--span: 2.8; --span-m: 2.4"
+            aria-labelledby="path-h"
+          >
+            <div data-sc-stage class="path__stage" data-sc-verify-state="0">
+              <div class="nd-wrap path__grid">
+                <div class="path__intro">
+                  <h3 id="path-h" class="nd-q nd-q--sm">Every session follows the same six steps.</h3>
+                  <p class="nd-body">No step is skipped. If any step says no, there is no drip.</p>
+                </div>
+                <ol class="path__steps">
+                  <li>
+                    <span class="path__n">1</span>
+                    <div>
+                      <b>Health quiz</b>
+                      <p>About three minutes: your symptoms, medication, allergies and history.</p>
+                    </div>
+                  </li>
+                  <li>
+                    <span class="path__n">2</span>
+                    <div>
+                      <b>Physician review</b>
+                      <p>A registered doctor approves a protocol, changes the doses, asks you for more, or declines.</p>
+                    </div>
+                  </li>
+                  <li>
+                    <span class="path__n">3</span>
+                    <div>
+                      <b>Booking</b>
+                      <p>A slot in your zone. Free to move up to 4 hours before.</p>
+                    </div>
+                  </li>
+                  <li>
+                    <span class="path__n">4</span>
+                    <div>
+                      <b>A sealed kit</b>
+                      <p>Your nurse checks the seal and every vial's expiry in front of you.</p>
+                    </div>
+                  </li>
+                  <li>
+                    <span class="path__n">5</span>
+                    <div>
+                      <b>The infusion, at home</b>
+                      <p>Baseline vitals first, then a 29-step checklist that cannot be skipped.</p>
+                    </div>
+                  </li>
+                  <li>
+                    <span class="path__n">6</span>
+                    <div>
+                      <b>Your report</b>
+                      <p>Vitals, every dose, every batch number and the physician's name, the same day.</p>
+                    </div>
+                  </li>
+                </ol>
+              </div>
+            </div>
+          </section>
+
+          <section class="sc-section nd-section--tight tests" aria-labelledby="tests-h">
+            <div class="nd-wrap">
+              <div class="tests__panel" data-sc-reveal="right" data-sc-reveal-at="0.04 0.42">
+                <div class="tests__head">
+                  <h3 id="tests-h" class="nd-q nd-q--sm">Checked before anything is infused.</h3>
+                  <p class="nd-body">
+                    The nurse records baseline vitals at every session. A reading outside its range stops the infusion
+                    until the physician clears it.
+                  </p>
+                </div>
+                <div class="tests__cols">
+                  <div>
+                    <p class="nd-tag">Every session</p>
+                    <ul class="tests__list">
+                      <li><b>Blood pressure</b><span>90–140 / 60–90 mmHg</span></li>
+                      <li><b>Heart rate</b><span>60–100 bpm</span></li>
+                      <li><b>SpO₂</b><span>95–100%</span></li>
+                      <li><b>Temperature</b><span>97.0–99.5 °F</span></li>
+                    </ul>
+                  </div>
+                  <div>
+                    <p class="nd-tag">Only where needed</p>
+                    <ul class="tests__list tests__list--cond">
+                      <li><b>Hydrate Plus</b><span>The shortest session on the menu</span></li>
+                      <li><b>Immune Shield</b><span>G6PD screening required at high doses</span></li>
+                      <li><b>Iron Restore</b><span>Labs required before the physician can approve</span></li>
+                      <li>
+                        <b>Every quiz</b
+                        ><span
+                          >IV therapy is unsuitable during pregnancy, in renal or cardiac failure, and with certain drug
+                          interactions. The quiz screens for these and a physician can decline.</span
+                        >
+                      </li>
+                    </ul>
+                  </div>
+                </div>
+                <p class="tests__chair">
+                  <b>At every session:</b> the nurse confirms the anaphylaxis kit is present and in date before the
+                  sealed kit is opened. <a class="nd-link" href="/safety">Where the safety actually sits</a>
+                </p>
+              </div>
+            </div>
+          </section>
+        </div>
+
+        <!-- 3 · WHY IV AND NOT TABLETS? (client's wording, editable) -->
+        <section id="q-why" class="sc-section teaser" data-q="Why IV and not tablets?">
+          <div class="nd-wrap teaser__grid">
+            <div class="teaser__pics" aria-hidden="true">
+              <img
+                class="teaser__pic teaser__pic--a"
+                data-sc-parallax="-0.6"
+                src="assets/tablets.webp"
+                width="1800"
+                height="1018"
+                alt=""
+                loading="lazy"
+              />
+              <img
+                class="teaser__pic teaser__pic--b"
+                data-sc-parallax="0.6"
+                src="assets/ivline.webp"
+                width="1800"
+                height="1018"
+                alt=""
+                loading="lazy"
+              />
+            </div>
+            <div class="sc-stack" data-sc-in data-sc-stagger="70">
+              <h2 class="nd-q">Why IV and not tablets?</h2>
+              <p class="nd-lede">
+                A tablet passes through your stomach, gut and liver before what&#39;s left reaches your blood. An IV
+                drip goes straight into a vein.
+              </p>
+              <p class="nd-body">
+                Tablets are enough for many people. A doctor may choose IV when absorption is poor, a test shows a
+                deficiency, or nutrients are needed quickly.
+              </p>
+              <p><a class="nd-btn nd-btn--ghost" href="/how-it-works">How it works</a></p>
+            </div>
+          </div>
+        </section>
+
+        <!-- 4 · WHICH ONE IS FOR ME? Goal picker, the drop, then the build. -->
+        <div id="q-which" data-q="Which one is for me?">
+          <section class="sc-section picker" aria-labelledby="pick-h">
+            <div class="nd-wrap">
+              <div class="picker__head">
+                <h2 id="pick-h" class="nd-q">Which one is for me?</h2>
+                <p class="nd-lede">
+                  Start with what you are trying to fix. Then keep scrolling and watch that drip being built.
+                </p>
+              </div>
+              <div class="picker__grid" role="group" aria-label="What are you trying to fix?">
+                <button type="button" class="feel" aria-pressed="false" data-feel="myers-revive" style="--t: #7b5bd6">
+                  <i aria-hidden="true"></i>Fatigue that sleep has not fixed<small
+                    >Energy · Myers&#39; Revive · ₹8,400</small
+                  >
+                </button>
+                <button type="button" class="feel" aria-pressed="false" data-feel="immune-shield" style="--t: #c13e8d">
+                  <i aria-hidden="true"></i>Before travel, after illness<small>Immunity · Immune Shield · ₹9,200</small>
+                </button>
+                <button type="button" class="feel" aria-pressed="false" data-feel="glow-protocol" style="--t: #db5b93">
+                  <i aria-hidden="true"></i>Glutathione protocols<small>Skin · Glow Protocol · ₹11,000</small>
+                </button>
+                <button type="button" class="feel" aria-pressed="false" data-feel="hydrate-plus" style="--t: #16a6b6">
+                  <i aria-hidden="true"></i>The fastest session we run<small>Hydration · Hydrate Plus · ₹5,400</small>
+                </button>
+                <button
+                  type="button"
+                  class="feel"
+                  aria-pressed="true"
+                  data-feel="athletic-recovery"
+                  style="--t: #4a4fb5"
+                >
+                  <i aria-hidden="true"></i>After the effort, not before<small
+                    >Athletic recovery · Athletic Recovery · ₹10,200</small
+                  >
+                </button>
+                <button
+                  type="button"
+                  class="feel"
+                  aria-pressed="false"
+                  data-feel="post-viral-rebuild"
+                  style="--t: #a47ddb"
+                >
+                  <i aria-hidden="true"></i>The flat weeks afterwards<small
+                    >Post-viral · Post-viral Rebuild · ₹9,600</small
+                  >
+                </button>
+              </div>
+              <p class="picker__note nd-small" role="status" data-pick-status>
+                Not sure? A physician confirms it after the quiz. Showing <b data-chosen-name>Athletic Recovery</b> for
+                now.
+              </p>
+            </div>
+          </section>
+
+          <section
+            class="drop act-res"
+            data-sc-act="scrub"
+            data-sc-span="2.2"
+            data-sc-dwell="0.3"
+            style="--span: 2.2; --span-m: 2.2"
+            aria-label="A drop forming in the drip chamber"
+          >
+            <div data-sc-stage class="drop__stage">
+              <picture
+                ><source media="(max-width: 860px)" srcset="assets/chamber-poster-m.webp" />
+                <img
+                  class="sc-stage__poster"
+                  src="assets/chamber-poster.webp"
+                  width="1914"
+                  height="1080"
+                  alt=""
+                  loading="lazy"
+              /></picture>
+              <video
+                data-sc-scrub
+                data-sc-src="assets/chamber.mp4"
+                data-sc-src-mobile="assets/chamber-m.mp4"
+                muted
+                playsinline
+                preload="none"
+              ></video>
+              <div class="drop__scrim" aria-hidden="true"></div>
+              <div class="sc-copy drop__copy" data-sc-cue="0.12 0.9">
+                <h2 class="drop__h">It starts with one drop.</h2>
+                <p class="drop__p">
+                  <span data-chosen-name>Athletic Recovery</span> runs over <span data-chosen-duration>55–75 min</span>.
+                  What goes into the bag is decided before the first drop falls.
+                </p>
+              </div>
+            </div>
+          </section>
+
+          <section
+            id="build"
+            class="build act-res"
+            data-sc-act="pin"
+            data-sc-span="4.40"
+            style="--span: 4.4; --span-m: 3.96"
+            aria-labelledby="build-h"
+          >
+            <div data-sc-stage class="build__stage" data-sc-verify-state="0">
+              <picture class="build__plate"
+                ><source media="(max-width: 860px)" srcset="assets/prep-p.webp" />
+                <img src="assets/prep.webp" width="2400" height="1357" alt="" loading="lazy"
+              /></picture>
+              <div class="build__flood" aria-hidden="true"></div>
+              <div class="build__copy">
+                <h2 id="build-h" class="build__h">
+                  Your <span data-chosen-name>Athletic Recovery</span>, built to protocol.
+                </h2>
+                <ol class="build__steps">
+                  <li data-bstep="0">
+                    <span
+                      >The bag is the carrier: <span data-chosen-carrier>Ringer lactate</span>,
+                      <span data-chosen-volume>500</span> mL.</span
+                    >
+                  </li>
+                  <li data-bstep="1">
+                    <span>Each ingredient goes in from its own ampoule or vial, at the dose on the protocol.</span>
+                  </li>
+                  <li data-bstep="2"><span>Anything that must not sit in the bag is given beside it.</span></li>
+                  <li data-bstep="3"><span>A physician approves it for you before a nurse brings it home.</span></li>
+                </ol>
+                <p class="build__mstep" data-build-mstep aria-hidden="true"></p>
+              </div>
+              <div class="build__rig">
+                <div class="build__vials" data-vials aria-hidden="true"></div>
+                <div class="nd-bag build__bag" data-build-bag style="--fill: 0">
+                  <!-- v3e: the liquid. page.js eases the level to where the scroll
+               puts it; the surface rolls, and drops fall while it rises. -->
+                  <div class="nd-bag__fill">
+                    <div class="liq">
+                      <div class="liq__level" data-liq-level>
+                        <div class="liq__wave liq__wave--back">
+                          <svg viewBox="0 0 200 12" preserveAspectRatio="none" aria-hidden="true">
+                            <path
+                              class="liq__body"
+                              d="M0 6Q12.5 2 25 6T50 6T75 6T100 6T125 6T150 6T175 6T200 6V12H0Z"
+                            />
+                            <path class="liq__shine" d="M0 6Q12.5 2 25 6T50 6T75 6T100 6T125 6T150 6T175 6T200 6" />
+                          </svg>
+                        </div>
+                        <div class="liq__wave">
+                          <svg viewBox="0 0 200 12" preserveAspectRatio="none" aria-hidden="true">
+                            <path
+                              class="liq__body"
+                              d="M0 6Q12.5 2 25 6T50 6T75 6T100 6T125 6T150 6T175 6T200 6V12H0Z"
+                            />
+                            <path class="liq__shine" d="M0 6Q12.5 2 25 6T50 6T75 6T100 6T125 6T150 6T175 6T200 6" />
+                          </svg>
+                        </div>
+                      </div>
+                    </div>
+                    <i class="liq__drop"></i><i class="liq__drop"></i><i class="liq__drop"></i><i class="liq__drop"></i
+                    ><i class="liq__drop"></i> <i class="liq__ring"></i><i class="liq__ring"></i
+                    ><i class="liq__ring"></i>
+                  </div>
+                  <img
+                    class="nd-bag__img"
+                    src="assets/bag-empty.webp"
+                    width="577"
+                    height="1200"
+                    alt=""
+                    loading="lazy"
+                  />
+                  <!-- v3d: the hero bag's label design (wordmark, tagline, ∞ | volume),
+               with the drip's name and its doses printed between. -->
+                  <div class="build__label" data-build-label>
+                    <div class="bl-head">
+                      <p class="bl-word">NutriDrip<sup>™</sup></p>
+                      <p class="bl-sub">IV NUTRIENT THERAPY</p>
+                    </div>
+                    <p class="build__lname bl-band" data-chosen-name>Athletic Recovery</p>
+                    <ul class="build__lines" data-build-lines></ul>
+                    <div class="bl-end">
+                      <i class="bl-rule"></i>
+                      <p class="bl-foot">
+                        <svg viewBox="0 0 100 50" aria-hidden="true">
+                          <path
+                            d="M50 25C40 11 33 7 25 7 15 7 7 15 7 25s8 18 18 18c8 0 15-4 25-18s17-18 25-18c10 0 18 8 18 18s-8 18-18 18c-8 0-15-4-25-18Z"
+                            fill="none"
+                            stroke="currentColor"
+                            stroke-width="5"
+                            stroke-linejoin="round"
+                          /></svg
+                        ><i></i><b><span data-chosen-volume>500</span> mL</b>
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <div class="build__sep" data-build-sep></div>
+              <div class="build__end" data-build-end>
+                <p class="build__endk">
+                  <span data-chosen-name>Athletic Recovery</span> · <span data-chosen-price>₹10,200</span> per session
+                </p>
+                <div class="nd-cta">
+                  <a class="nd-btn" href="/quiz?drip=athletic-recovery" data-quiz-link>Take the quiz to book this</a
+                  ><span class="nd-cta__free">A physician approves it first</span>
+                </div>
+                <a class="nd-link build__more" data-drip-page href="/drips/athletic-recovery">Every dose, in full</a>
+              </div>
+            </div>
+          </section>
+          <div class="visually-hidden" data-build-sr aria-live="polite"></div>
+        </div>
+
+        <!-- 5 · WHAT EXACTLY IS IN IT? Every public drip, from the DB. -->
+        <section
+          id="q-inside"
+          class="formulary act-res"
+          data-q="What exactly is in it?"
+          data-sc-act="pan"
+          data-sc-span="5"
+          style="--span: 5; --span-m: 0"
+        >
+          <div data-sc-stage class="formulary__stage">
+            <div class="formulary__rail" data-sc-pan="0.04">
+              <div class="formulary__lead">
+                <h2 class="nd-q">What exactly is in it?</h2>
+                <p class="nd-lede">All nine drips, with every dose. Prices are per session, everything included.</p>
+                <p class="nd-small">
+                  Some components are given beside the bag, never in it: Ondansetron (if nausea present), Pheniramine
+                  maleate (reaction cover), Glutathione (slow iv push).
+                </p>
+              </div>
+              <article class="fcard" style="--tint: #16a6b6; --i: 0" aria-labelledby="fc-hydrate-plus">
+                <div class="fcard__top">
+                  <div class="fcard__bag" data-sc-tilt="6">
+                    <div class="nd-bag" style="--tint: #16a6b6; --fill: 1" aria-hidden="true">
+                      <div class="nd-bag__fill"></div>
+                      <img
+                        class="nd-bag__img"
+                        src="assets/bag-empty.webp"
+                        width="577"
+                        height="1200"
+                        alt=""
+                        loading="lazy"
+                        decoding="async"
+                      />
+                    </div>
+                  </div>
+                  <div class="fcard__head">
+                    <h3 id="fc-hydrate-plus">Hydrate Plus</h3>
+                    <p class="fcard__cat">Hydration<span>30–40 min</span></p>
+                    <p class="fcard__price">₹5,400</p>
+                    <p class="fcard__prem">Most booked</p>
+                  </div>
+                </div>
+                <div>
+                  <p class="fcard__k">Inside the bag</p>
+                  <ul>
+                    <li>Ringer lactate 500 mL</li>
+                    <li>Electrolyte concentrate 20 mL</li>
+                    <li>Pyridoxine 100 mg</li>
+                  </ul>
+                </div>
+                <div>
+                  <p class="fcard__k">Given separately</p>
+                  <ul class="fcard__sep">
+                    <li>Ondansetron 4 mg (if nausea present)</li>
+                  </ul>
+                </div>
+                <p class="fcard__for">Fast rehydration.</p>
+                <a class="nd-link fcard__link" href="/drips/hydrate-plus"
+                  >Every dose, in full<span class="visually-hidden"> for Hydrate Plus</span></a
+                >
+              </article>
+              <article class="fcard" style="--tint: #4b96e6; --i: 1" aria-labelledby="fc-jetlag-reset">
+                <div class="fcard__top">
+                  <div class="fcard__bag" data-sc-tilt="6">
+                    <div class="nd-bag" style="--tint: #4b96e6; --fill: 1" aria-hidden="true">
+                      <div class="nd-bag__fill"></div>
+                      <img
+                        class="nd-bag__img"
+                        src="assets/bag-empty.webp"
+                        width="577"
+                        height="1200"
+                        alt=""
+                        loading="lazy"
+                        decoding="async"
+                      />
+                    </div>
+                  </div>
+                  <div class="fcard__head">
+                    <h3 id="fc-jetlag-reset">Jetlag Reset</h3>
+                    <p class="fcard__cat">Energy<span>30–40 min</span></p>
+                    <p class="fcard__price">₹6,800</p>
+                  </div>
+                </div>
+                <div>
+                  <p class="fcard__k">Inside the bag</p>
+                  <ul>
+                    <li>Normal saline 0.9% 500 mL</li>
+                    <li>Ascorbic acid 5,000 mg</li>
+                    <li>Electrolyte concentrate 20 mL</li>
+                    <li>Pyridoxine 100 mg</li>
+                  </ul>
+                </div>
+
+                <p class="fcard__for">Built around travel days.</p>
+                <a class="nd-link fcard__link" href="/drips/jetlag-reset"
+                  >Every dose, in full<span class="visually-hidden"> for Jetlag Reset</span></a
+                >
+              </article>
+              <article class="fcard" style="--tint: #7b5bd6; --i: 2" aria-labelledby="fc-myers-revive">
+                <div class="fcard__top">
+                  <div class="fcard__bag" data-sc-tilt="6">
+                    <div class="nd-bag" style="--tint: #7b5bd6; --fill: 1" aria-hidden="true">
+                      <div class="nd-bag__fill"></div>
+                      <img
+                        class="nd-bag__img"
+                        src="assets/bag-empty.webp"
+                        width="577"
+                        height="1200"
+                        alt=""
+                        loading="lazy"
+                        decoding="async"
+                      />
+                    </div>
+                  </div>
+                  <div class="fcard__head">
+                    <h3 id="fc-myers-revive">Myers&#39; Revive</h3>
+                    <p class="fcard__cat">Energy<span>45–60 min</span></p>
+                    <p class="fcard__price">₹8,400</p>
+                    <p class="fcard__prem">Most booked</p>
+                  </div>
+                </div>
+                <div>
+                  <p class="fcard__k">Inside the bag</p>
+                  <ul>
+                    <li>Normal saline 0.9% 500 mL</li>
+                    <li>Ascorbic acid 7,500 mg</li>
+                    <li>Magnesium sulphate 1,000 mg</li>
+                    <li>B-complex 2 mL</li>
+                    <li>Cyanocobalamin 1,000 mcg</li>
+                    <li>Calcium gluconate 500 mg</li>
+                    <li>Pyridoxine 100 mg</li>
+                  </ul>
+                </div>
+
+                <p class="fcard__for">The default first drip.</p>
+                <a class="nd-link fcard__link" href="/drips/myers-revive"
+                  >Every dose, in full<span class="visually-hidden"> for Myers&#39; Revive</span></a
+                >
+              </article>
+              <article class="fcard" style="--tint: #c13e8d; --i: 3" aria-labelledby="fc-immune-shield">
+                <div class="fcard__top">
+                  <div class="fcard__bag" data-sc-tilt="6">
+                    <div class="nd-bag" style="--tint: #c13e8d; --fill: 1" aria-hidden="true">
+                      <div class="nd-bag__fill"></div>
+                      <img
+                        class="nd-bag__img"
+                        src="assets/bag-empty.webp"
+                        width="577"
+                        height="1200"
+                        alt=""
+                        loading="lazy"
+                        decoding="async"
+                      />
+                    </div>
+                  </div>
+                  <div class="fcard__head">
+                    <h3 id="fc-immune-shield">Immune Shield</h3>
+                    <p class="fcard__cat">Immunity<span>60–80 min</span></p>
+                    <p class="fcard__price">₹9,200</p>
+                    <p class="fcard__prem">Most booked</p>
+                  </div>
+                </div>
+                <div>
+                  <p class="fcard__k">Inside the bag</p>
+                  <ul>
+                    <li>Normal saline 0.9% 500 mL</li>
+                    <li>Ascorbic acid 15,000 mg</li>
+                    <li>Zinc sulphate 10 mg</li>
+                    <li>Sodium selenite 100 mcg</li>
+                  </ul>
+                </div>
+
+                <p class="fcard__for">High-dose vitamin C.</p>
+                <a class="nd-link fcard__link" href="/drips/immune-shield"
+                  >Every dose, in full<span class="visually-hidden"> for Immune Shield</span></a
+                >
+              </article>
+              <article class="fcard" style="--tint: #a47ddb; --i: 4" aria-labelledby="fc-post-viral-rebuild">
+                <div class="fcard__top">
+                  <div class="fcard__bag" data-sc-tilt="6">
+                    <div class="nd-bag" style="--tint: #a47ddb; --fill: 1" aria-hidden="true">
+                      <div class="nd-bag__fill"></div>
+                      <img
+                        class="nd-bag__img"
+                        src="assets/bag-empty.webp"
+                        width="577"
+                        height="1200"
+                        alt=""
+                        loading="lazy"
+                        decoding="async"
+                      />
+                    </div>
+                  </div>
+                  <div class="fcard__head">
+                    <h3 id="fc-post-viral-rebuild">Post-viral Rebuild</h3>
+                    <p class="fcard__cat">Post-viral<span>60–80 min</span></p>
+                    <p class="fcard__price">₹9,600</p>
+                  </div>
+                </div>
+                <div>
+                  <p class="fcard__k">Inside the bag</p>
+                  <ul>
+                    <li>Normal saline 0.9% 500 mL</li>
+                    <li>Ascorbic acid 10,000 mg</li>
+                    <li>Alpha-lipoic acid 300 mg</li>
+                    <li>B-complex 2 mL</li>
+                    <li>Zinc sulphate 10 mg</li>
+                  </ul>
+                </div>
+
+                <p class="fcard__for">After the infection clears.</p>
+                <a class="nd-link fcard__link" href="/drips/post-viral-rebuild"
+                  >Every dose, in full<span class="visually-hidden"> for Post-viral Rebuild</span></a
+                >
+              </article>
+              <article class="fcard" style="--tint: #8c3e8a; --i: 5" aria-labelledby="fc-iron-restore">
+                <div class="fcard__top">
+                  <div class="fcard__bag" data-sc-tilt="6">
+                    <div class="nd-bag" style="--tint: #8c3e8a; --fill: 1" aria-hidden="true">
+                      <div class="nd-bag__fill"></div>
+                      <img
+                        class="nd-bag__img"
+                        src="assets/bag-empty.webp"
+                        width="577"
+                        height="1200"
+                        alt=""
+                        loading="lazy"
+                        decoding="async"
+                      />
+                    </div>
+                  </div>
+                  <div class="fcard__head">
+                    <h3 id="fc-iron-restore">Iron Restore</h3>
+                    <p class="fcard__cat">Energy<span>90–120 min</span></p>
+                    <p class="fcard__price">₹9,800</p>
+                  </div>
+                </div>
+                <div>
+                  <p class="fcard__k">Inside the bag</p>
+                  <ul>
+                    <li>Normal saline 0.9% 500 mL</li>
+                    <li>Iron sucrose 200 mg</li>
+                    <li>Ascorbic acid 1,000 mg</li>
+                  </ul>
+                </div>
+                <div>
+                  <p class="fcard__k">Given separately</p>
+                  <ul class="fcard__sep">
+                    <li>Pheniramine maleate 22.75 mg (reaction cover)</li>
+                  </ul>
+                </div>
+                <p class="fcard__for">Requires recent labs.</p>
+                <a class="nd-link fcard__link" href="/drips/iron-restore"
+                  >Every dose, in full<span class="visually-hidden"> for Iron Restore</span></a
+                >
+              </article>
+              <article class="fcard" style="--tint: #4a4fb5; --i: 6" aria-labelledby="fc-athletic-recovery">
+                <div class="fcard__top">
+                  <div class="fcard__bag" data-sc-tilt="6">
+                    <div class="nd-bag" style="--tint: #4a4fb5; --fill: 1" aria-hidden="true">
+                      <div class="nd-bag__fill"></div>
+                      <img
+                        class="nd-bag__img"
+                        src="assets/bag-empty.webp"
+                        width="577"
+                        height="1200"
+                        alt=""
+                        loading="lazy"
+                        decoding="async"
+                      />
+                    </div>
+                  </div>
+                  <div class="fcard__head">
+                    <h3 id="fc-athletic-recovery">Athletic Recovery</h3>
+                    <p class="fcard__cat">Athletic recovery<span>55–75 min</span></p>
+                    <p class="fcard__price">₹10,200</p>
+                  </div>
+                </div>
+                <div>
+                  <p class="fcard__k">Inside the bag</p>
+                  <ul>
+                    <li>Ringer lactate 500 mL</li>
+                    <li>Taurine 1,000 mg</li>
+                    <li>L-carnitine 1,000 mg</li>
+                    <li>Magnesium sulphate 1,000 mg</li>
+                    <li>Ascorbic acid 5,000 mg</li>
+                  </ul>
+                </div>
+
+                <p class="fcard__for">After the event, not before.</p>
+                <a class="nd-link fcard__link" href="/drips/athletic-recovery"
+                  >Every dose, in full<span class="visually-hidden"> for Athletic Recovery</span></a
+                >
+              </article>
+              <article class="fcard" style="--tint: #b65cc8; --i: 7" aria-labelledby="fc-deep-recharge">
+                <div class="fcard__top">
+                  <div class="fcard__bag" data-sc-tilt="6">
+                    <div class="nd-bag" style="--tint: #b65cc8; --fill: 1" aria-hidden="true">
+                      <div class="nd-bag__fill"></div>
+                      <img
+                        class="nd-bag__img"
+                        src="assets/bag-empty.webp"
+                        width="577"
+                        height="1200"
+                        alt=""
+                        loading="lazy"
+                        decoding="async"
+                      />
+                    </div>
+                  </div>
+                  <div class="fcard__head">
+                    <h3 id="fc-deep-recharge">Deep Recharge</h3>
+                    <p class="fcard__cat">Energy<span>60–80 min</span></p>
+                    <p class="fcard__price">₹10,600</p>
+                  </div>
+                </div>
+                <div>
+                  <p class="fcard__k">Inside the bag</p>
+                  <ul>
+                    <li>Normal saline 0.9% 500 mL</li>
+                    <li>L-carnitine 2,000 mg</li>
+                    <li>Taurine 1,000 mg</li>
+                    <li>Cyanocobalamin 1,000 mcg</li>
+                    <li>B-complex 2 mL</li>
+                  </ul>
+                </div>
+
+                <p class="fcard__for">For sustained fatigue.</p>
+                <a class="nd-link fcard__link" href="/drips/deep-recharge"
+                  >Every dose, in full<span class="visually-hidden"> for Deep Recharge</span></a
+                >
+              </article>
+              <article class="fcard" style="--tint: #db5b93; --i: 8" aria-labelledby="fc-glow-protocol">
+                <div class="fcard__top">
+                  <div class="fcard__bag" data-sc-tilt="6">
+                    <div class="nd-bag" style="--tint: #db5b93; --fill: 1" aria-hidden="true">
+                      <div class="nd-bag__fill"></div>
+                      <img
+                        class="nd-bag__img"
+                        src="assets/bag-empty.webp"
+                        width="577"
+                        height="1200"
+                        alt=""
+                        loading="lazy"
+                        decoding="async"
+                      />
+                    </div>
+                  </div>
+                  <div class="fcard__head">
+                    <h3 id="fc-glow-protocol">Glow Protocol</h3>
+                    <p class="fcard__cat">Skin<span>50–70 min</span></p>
+                    <p class="fcard__price">₹11,000</p>
+                    <p class="fcard__prem">Most booked</p>
+                  </div>
+                </div>
+                <div>
+                  <p class="fcard__k">Inside the bag</p>
+                  <ul>
+                    <li>Normal saline 0.9% 500 mL</li>
+                    <li>Ascorbic acid 5,000 mg</li>
+                    <li>Biotin 5,000 mcg</li>
+                  </ul>
+                </div>
+                <div>
+                  <p class="fcard__k">Given separately</p>
+                  <ul class="fcard__sep">
+                    <li>Glutathione 600 mg (slow iv push)</li>
+                  </ul>
+                </div>
+                <p class="fcard__for">Given as a slow push.</p>
+                <a class="nd-link fcard__link" href="/drips/glow-protocol"
+                  >Every dose, in full<span class="visually-hidden"> for Glow Protocol</span></a
+                >
+              </article>
+              <div class="formulary__end">
+                <p class="nd-q nd-q--sm">Not sure which?</p>
+                <p class="nd-body">Your answers point to one. The physician decides.</p>
+                <div class="nd-cta">
+                  <a class="nd-btn" href="/quiz" data-quiz-link>Take the health quiz</a
+                  ><span class="nd-cta__free">A physician reads every answer</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- 6 · WHAT HAPPENS ON THE DAY? -->
+        <section
+          id="q-day"
+          class="day act-res"
+          data-q="What happens on the day?"
+          data-sc-act="pin"
+          data-sc-span="2.6"
+          style="--span: 2.6; --span-m: 2.4"
+        >
+          <div data-sc-stage class="day__stage" data-sc-verify-state="0">
+            <div class="nd-wrap">
+              <h2 class="nd-q">What happens on the day?</h2>
+              <p class="nd-lede day__lede">From the door to the report. Most of it you spend sitting back.</p>
+              <div class="day__track">
+                <div class="day__line" aria-hidden="true"><span></span></div>
+                <ol class="day__steps">
+                  <li>
+                    <span class="day__dot"></span><b>The nurse arrives</b>
+                    <p>With a sealed kit, and checks your identity and the protocol on file.</p>
+                  </li>
+                  <li>
+                    <span class="day__dot"></span><b>Baseline vitals</b>
+                    <p>A reading outside its range stops the session until the physician clears it.</p>
+                  </li>
+                  <li>
+                    <span class="day__dot"></span><b>Consent, then a cannula</b>
+                    <p>One small cannula in a vein in your arm.</p>
+                  </li>
+                  <li>
+                    <span class="day__dot"></span><b>30 to 120 minutes</b>
+                    <p>Depending on the drip. Observed every 10 minutes.</p>
+                  </li>
+                  <li>
+                    <span class="day__dot"></span><b>Ten minutes after</b>
+                    <p>Closing vitals and a short observation before the nurse leaves.</p>
+                  </li>
+                  <li>
+                    <span class="day__dot"></span><b>Your report</b>
+                    <p>Every dose and batch number in your account, the same day.</p>
+                  </li>
+                </ol>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- 7 · WHAT DOES IT COST? Live prices. -->
+        <section id="q-cost" class="sc-section cost" data-q="What does it cost?">
+          <div class="nd-wrap">
+            <div class="cost__offer" data-sc-in>
+              <p class="cost__offer-k">Before you pay</p>
+              <p class="cost__offer-t">No card needed to get a protocol reviewed.</p>
+            </div>
+            <div class="cost__grid">
+              <div class="sc-stack" data-sc-in data-sc-stagger="60">
+                <h2 class="nd-q">What does it cost?</h2>
+                <p class="nd-lede">
+                  From ₹5,400 to ₹11,000 per session, depending on what goes into the bag. The kit, the nurse and the
+                  report are included.
+                </p>
+                <div class="cost__course">
+                  <p class="cost__course-n nd-num">4</p>
+                  <p>
+                    <b>Free to move or cancel up to 4 hours before your slot.</b> Inside that, moving or cancelling
+                    carries a ₹500 late fee, because the nurse is already dispatched with your batch drawn.
+                  </p>
+                </div>
+                <div class="nd-cta">
+                  <a class="nd-btn" href="/quiz" data-quiz-link>Take the health quiz</a
+                  ><span class="nd-cta__free">A physician reads every answer</span>
+                </div>
+              </div>
+              <table class="nd-table cost__table" data-sc-in>
+                <caption class="visually-hidden">
+                  Price per session for each drip
+                </caption>
+                <thead>
+                  <tr>
+                    <th scope="col">Drip</th>
+                    <th scope="col">Time</th>
+                    <th scope="col">Per session</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <td>
+                      <span class="dot" style="background: #16a6b6"></span
+                      ><a href="/drips/hydrate-plus">Hydrate Plus</a>
+                    </td>
+                    <td>30–40 min</td>
+                    <td>₹5,400</td>
+                  </tr>
+                  <tr>
+                    <td>
+                      <span class="dot" style="background: #4b96e6"></span
+                      ><a href="/drips/jetlag-reset">Jetlag Reset</a>
+                    </td>
+                    <td>30–40 min</td>
+                    <td>₹6,800</td>
+                  </tr>
+                  <tr>
+                    <td>
+                      <span class="dot" style="background: #7b5bd6"></span
+                      ><a href="/drips/myers-revive">Myers&#39; Revive</a>
+                    </td>
+                    <td>45–60 min</td>
+                    <td>₹8,400</td>
+                  </tr>
+                  <tr>
+                    <td>
+                      <span class="dot" style="background: #c13e8d"></span
+                      ><a href="/drips/immune-shield">Immune Shield</a>
+                    </td>
+                    <td>60–80 min</td>
+                    <td>₹9,200</td>
+                  </tr>
+                  <tr>
+                    <td>
+                      <span class="dot" style="background: #a47ddb"></span
+                      ><a href="/drips/post-viral-rebuild">Post-viral Rebuild</a>
+                    </td>
+                    <td>60–80 min</td>
+                    <td>₹9,600</td>
+                  </tr>
+                  <tr>
+                    <td>
+                      <span class="dot" style="background: #8c3e8a"></span
+                      ><a href="/drips/iron-restore">Iron Restore</a>
+                    </td>
+                    <td>90–120 min</td>
+                    <td>₹9,800</td>
+                  </tr>
+                  <tr>
+                    <td>
+                      <span class="dot" style="background: #4a4fb5"></span
+                      ><a href="/drips/athletic-recovery">Athletic Recovery</a>
+                    </td>
+                    <td>55–75 min</td>
+                    <td>₹10,200</td>
+                  </tr>
+                  <tr>
+                    <td>
+                      <span class="dot" style="background: #b65cc8"></span
+                      ><a href="/drips/deep-recharge">Deep Recharge</a>
+                    </td>
+                    <td>60–80 min</td>
+                    <td>₹10,600</td>
+                  </tr>
+                  <tr>
+                    <td>
+                      <span class="dot" style="background: #db5b93"></span
+                      ><a href="/drips/glow-protocol">Glow Protocol</a>
+                    </td>
+                    <td>50–70 min</td>
+                    <td>₹11,000</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </section>
+
+        <!-- 8 · WHAT IF IT'S NOT RIGHT FOR ME? -->
+        <section id="q-notright" class="sc-section notright" data-q="What if it's not right for me?">
+          <div class="nd-wrap notright__grid" data-sc-in data-sc-stagger="70">
+            <h2 class="nd-q nd-q--sm">What if it's not right for me?</h2>
+            <p class="notright__big">We turn people away, and that is the point.</p>
+            <p class="nd-body">
+              IV therapy is unsuitable during pregnancy, in renal or cardiac failure, and with certain drug
+              interactions. The quiz screens for these and a physician can decline. A session that does not run is
+              refunded in full.
+            </p>
+          </div>
+        </section>
+
+        <!-- 9 · FAQ -->
+        <section id="q-faq" class="sc-section faq" data-q="What else should I know?">
+          <div class="nd-wrap nd-grid2">
+            <div class="sc-stack faq__side">
+              <h2 class="nd-q nd-q--sm">What else should I know?</h2>
+              <p class="nd-body">The questions people ask us most. Anything else, ask our clinical team.</p>
+              <p><a class="nd-btn nd-btn--ghost" href="/consult">Ask a clinician</a></p>
+            </div>
+            <div class="nd-faq">
+              <details>
+                <summary>Does a real doctor look at my quiz?</summary>
+                <div>
+                  <p>
+                    Yes. A registered physician reads every submission and either approves the protocol, changes the
+                    doses, or declines it. Their name and council registration number appear on your session report.
+                  </p>
+                </div>
+              </details>
+              <details>
+                <summary>Do I have to take the quiz every time I book?</summary>
+                <div>
+                  <p>
+                    No. One approval covers all your bookings for 90 days. It lapses after that because a
+                    physician&#39;s approval is a judgement about you on the day: weight, medication and kidney function
+                    all move.
+                  </p>
+                </div>
+              </details>
+              <details>
+                <summary>What if the nurse finds something wrong?</summary>
+                <div>
+                  <p>
+                    The 29-step checklist gates the session. If your vitals fall outside the reference range the
+                    infusion does not start. The nurse escalates to the reviewing physician, and a session that does not
+                    run is refunded in full.
+                  </p>
+                </div>
+              </details>
+              <details>
+                <summary>Can I cancel or reschedule?</summary>
+                <div>
+                  <p>
+                    Move or cancel freely up to 4 hours before your slot. Inside that, moving or cancelling carries a
+                    ₹500 late fee, because the nurse is already dispatched with your batch drawn.
+                  </p>
+                </div>
+              </details>
+              <details>
+                <summary>Do you serve my pincode?</summary>
+                <div>
+                  <p>
+                    We cover 14 zones across Bengaluru. Enter your pincode at booking and you get a straight yes or no,
+                    not a waitlist.
+                  </p>
+                </div>
+              </details>
+              <details>
+                <summary>What happens to my health data?</summary>
+                <div>
+                  <p>
+                    Your record is visible to you, the reviewing physician and the attending nurse. Nobody else. Access
+                    attempts are logged, and you can export or delete your record from your profile at any time.
+                  </p>
+                </div>
+              </details>
+            </div>
+          </div>
+        </section>
+
+        <!-- 10 · READY TO BOOK? The quiz, with the chosen drip on the slip. -->
+        <section class="sc-section nd-book" id="book" data-q="Ready to book?">
+          <div class="nd-wrap nd-grid2">
+            <div class="nd-book__intro">
+              <h2 class="nd-q">Ready to book?</h2>
+              <p class="nd-lede">
+                Three minutes of questions, read by a registered physician. If a drip is not right for you, they will
+                say so, and tell you what is.
+              </p>
+              <ul class="nd-book__facts">
+                <li><b>A physician reviews you first</b>, before anything is booked.</li>
+                <li><b>A nurse comes to your home</b> in 14 zones across Bengaluru.</li>
+                <li><b>Free to move or cancel</b> up to 4 hours before your slot.</li>
+              </ul>
+            </div>
+            <div class="nd-slip">
+              <div class="nd-slip__head">
+                <div>
+                  <p class="nd-tag">Your drip</p>
+                  <p class="nd-slip__drip" data-chosen-name>Athletic Recovery</p>
+                  <p class="nd-slip__free"><span data-chosen-duration>55–75 min</span> · at your home</p>
+                </div>
+                <p class="nd-slip__price">per session<b data-chosen-price>₹10,200</b></p>
+              </div>
+              <p class="nd-body nd-slip__body">
+                The quiz asks what a physician needs to know before they will put their name to a protocol. Not sure
+                about this drip? Answer anyway: the physician chooses with you.
+              </p>
+              <div class="nd-cta">
+                <a class="nd-btn" href="/quiz?drip=athletic-recovery" data-quiz-link>Take the quiz to book this</a
+                ><span class="nd-cta__free">No card needed to get a protocol reviewed</span>
+              </div>
+            </div>
+          </div>
+        </section>
+      </main>
+
+      <!-- Stand-in for the restyled shared SiteChrome footer. -->
+      <footer class="nd-foot">
+        <div class="nd-wrap">
+          <div class="nd-foot__grid">
+            <div>
+              <a class="nd-mark-link" href="/"
+                ><span class="nd-mark"
+                  ><b>NutriDrip<sup>™</sup></b
+                  ><small>IV NUTRIENT THERAPY</small></span
+                ></a
+              >
+              <p class="nd-small" style="margin-top: 1rem; max-width: 36ch">
+                IV nutrient therapy at home in Bengaluru, reviewed by a registered physician and given by a
+                council-registered nurse.
+              </p>
+              <p class="nd-small" style="margin-top: 0.8rem">
+                NutriDrip Health Pvt. Ltd. · Clinical establishment reg. KA/CEA/2024/11872
+              </p>
+            </div>
+            <div>
+              <h3>Now serving</h3>
+              <ul class="nd-foot__zones">
+                <li>Koramangala</li>
+                <li>HSR Layout</li>
+                <li>Indiranagar</li>
+                <li>Ejipura</li>
+                <li>Domlur</li>
+                <li>Jayanagar</li>
+                <li>JP Nagar</li>
+                <li>BTM Layout</li>
+                <li>Richmond Town</li>
+                <li>Frazer Town</li>
+                <li>Sadashivanagar</li>
+                <li>Whitefield</li>
+                <li>Sarjapur Road</li>
+                <li>Hebbal</li>
+              </ul>
+            </div>
+            <div>
+              <h3>Pages</h3>
+              <ul>
+                <li><a href="/drips">Drips</a></li>
+                <li><a href="/how-it-works">How it works</a></li>
+                <li><a href="/pricing">Pricing</a></li>
+                <li><a href="/safety">Safety</a></li>
+                <li><a href="/iv-vs-tablets">IV vs Tablets</a></li>
+                <li><a href="/zones">Zones</a></li>
+                <li><a href="/faqs">FAQs</a></li>
+                <li><a href="/consult">Ask a clinician</a></li>
+                <li><a href="/for-clinics">For clinics</a></li>
+                <li><a href="/legal/terms">Terms</a></li>
+                <li><a href="/legal/privacy">Privacy</a></li>
+              </ul>
+            </div>
+          </div>
+          <div class="nd-foot__legal">
+            <p>
+              <b>IV nutrient therapy is a medical procedure.</b> Every protocol is reviewed by a registered physician
+              before anything is booked, and may not be suitable for everyone. Not a substitute for emergency care. In
+              an emergency call 108.
+            </p>
+          </div>
+        </div>
+      </footer>
+      <div class="nd-sticky" aria-label="Booking">
+        <a class="nd-btn" href="/quiz?drip=athletic-recovery" data-quiz-link>Take the health quiz</a>
+        <span class="nd-sticky__free">A physician reads every answer</span>
+      </div>
+    </div>
+    <script>
+      window.ND_DRIPS = [
+        {
+          slug: "hydrate-plus",
+          name: "Hydrate Plus",
+          tint: "#16A6B6",
+          price: 5400,
+          duration: "30–40 min",
+          volume: 500,
+          carrier: "Ringer lactate",
+          inBag: [
+            { name: "Electrolyte concentrate", dose: "20 mL", alt: null, molecule: null, form: "Ampoule" },
+            { name: "Pyridoxine", dose: "100 mg", alt: null, molecule: "Vitamin B6", form: "Ampoule" },
+          ],
+          separate: [{ name: "Ondansetron", dose: "4 mg", notes: "If nausea present" }],
+        },
+        {
+          slug: "jetlag-reset",
+          name: "Jetlag Reset",
+          tint: "#4B96E6",
+          price: 6800,
+          duration: "30–40 min",
+          volume: 500,
+          carrier: "Normal saline 0.9%",
+          inBag: [
+            { name: "Ascorbic acid", dose: "5,000 mg", alt: "(5 g)", molecule: "Vitamin C", form: "Vial" },
+            { name: "Electrolyte concentrate", dose: "20 mL", alt: null, molecule: null, form: "Ampoule" },
+            { name: "Pyridoxine", dose: "100 mg", alt: null, molecule: "Vitamin B6", form: "Ampoule" },
+          ],
+          separate: [],
+        },
+        {
+          slug: "myers-revive",
+          name: "Myers' Revive",
+          tint: "#7B5BD6",
+          price: 8400,
+          duration: "45–60 min",
+          volume: 500,
+          carrier: "Normal saline 0.9%",
+          inBag: [
+            { name: "Ascorbic acid", dose: "7,500 mg", alt: "(7.5 g)", molecule: "Vitamin C", form: "Vial" },
+            { name: "Magnesium sulphate", dose: "1,000 mg", alt: "(1 g)", molecule: "Magnesium", form: "Ampoule" },
+            { name: "B-complex", dose: "2 mL", alt: null, molecule: null, form: "Vial" },
+            { name: "Cyanocobalamin", dose: "1,000 mcg", alt: "(1 mg)", molecule: "Vitamin B12", form: "Ampoule" },
+            { name: "Calcium gluconate", dose: "500 mg", alt: null, molecule: null, form: "Ampoule" },
+            { name: "Pyridoxine", dose: "100 mg", alt: null, molecule: "Vitamin B6", form: "Ampoule" },
+          ],
+          separate: [],
+        },
+        {
+          slug: "immune-shield",
+          name: "Immune Shield",
+          tint: "#C13E8D",
+          price: 9200,
+          duration: "60–80 min",
+          volume: 500,
+          carrier: "Normal saline 0.9%",
+          inBag: [
+            { name: "Ascorbic acid", dose: "15,000 mg", alt: "(15 g)", molecule: "Vitamin C", form: "Vial" },
+            { name: "Zinc sulphate", dose: "10 mg", alt: null, molecule: "Zinc", form: "Ampoule" },
+            { name: "Sodium selenite", dose: "100 mcg", alt: null, molecule: "Selenium", form: "Ampoule" },
+          ],
+          separate: [],
+        },
+        {
+          slug: "post-viral-rebuild",
+          name: "Post-viral Rebuild",
+          tint: "#A47DDB",
+          price: 9600,
+          duration: "60–80 min",
+          volume: 500,
+          carrier: "Normal saline 0.9%",
+          inBag: [
+            { name: "Ascorbic acid", dose: "10,000 mg", alt: "(10 g)", molecule: "Vitamin C", form: "Vial" },
+            { name: "Alpha-lipoic acid", dose: "300 mg", alt: null, molecule: null, form: "Ampoule" },
+            { name: "B-complex", dose: "2 mL", alt: null, molecule: null, form: "Vial" },
+            { name: "Zinc sulphate", dose: "10 mg", alt: null, molecule: "Zinc", form: "Ampoule" },
+          ],
+          separate: [],
+        },
+        {
+          slug: "iron-restore",
+          name: "Iron Restore",
+          tint: "#8C3E8A",
+          price: 9800,
+          duration: "90–120 min",
+          volume: 500,
+          carrier: "Normal saline 0.9%",
+          inBag: [
+            { name: "Iron sucrose", dose: "200 mg", alt: null, molecule: "Iron", form: "Ampoule" },
+            { name: "Ascorbic acid", dose: "1,000 mg", alt: "(1 g)", molecule: "Vitamin C", form: "Vial" },
+          ],
+          separate: [{ name: "Pheniramine maleate", dose: "22.75 mg", notes: "Reaction cover" }],
+        },
+        {
+          slug: "athletic-recovery",
+          name: "Athletic Recovery",
+          tint: "#4A4FB5",
+          price: 10200,
+          duration: "55–75 min",
+          volume: 500,
+          carrier: "Ringer lactate",
+          inBag: [
+            { name: "Taurine", dose: "1,000 mg", alt: "(1 g)", molecule: null, form: "Ampoule" },
+            { name: "L-carnitine", dose: "1,000 mg", alt: "(1 g)", molecule: null, form: "Ampoule" },
+            { name: "Magnesium sulphate", dose: "1,000 mg", alt: "(1 g)", molecule: "Magnesium", form: "Ampoule" },
+            { name: "Ascorbic acid", dose: "5,000 mg", alt: "(5 g)", molecule: "Vitamin C", form: "Vial" },
+          ],
+          separate: [],
+        },
+        {
+          slug: "deep-recharge",
+          name: "Deep Recharge",
+          tint: "#B65CC8",
+          price: 10600,
+          duration: "60–80 min",
+          volume: 500,
+          carrier: "Normal saline 0.9%",
+          inBag: [
+            { name: "L-carnitine", dose: "2,000 mg", alt: "(2 g)", molecule: null, form: "Ampoule" },
+            { name: "Taurine", dose: "1,000 mg", alt: "(1 g)", molecule: null, form: "Ampoule" },
+            { name: "Cyanocobalamin", dose: "1,000 mcg", alt: "(1 mg)", molecule: "Vitamin B12", form: "Ampoule" },
+            { name: "B-complex", dose: "2 mL", alt: null, molecule: null, form: "Vial" },
+          ],
+          separate: [],
+        },
+        {
+          slug: "glow-protocol",
+          name: "Glow Protocol",
+          tint: "#DB5B93",
+          price: 11000,
+          duration: "50–70 min",
+          volume: 500,
+          carrier: "Normal saline 0.9%",
+          inBag: [
+            { name: "Ascorbic acid", dose: "5,000 mg", alt: "(5 g)", molecule: "Vitamin C", form: "Vial" },
+            { name: "Biotin", dose: "5,000 mcg", alt: "(5 mg)", molecule: null, form: "Ampoule" },
+          ],
+          separate: [{ name: "Glutathione", dose: "600 mg", notes: "Slow IV push" }],
+        },
+      ];
+      window.ND_DEFAULT = "athletic-recovery";
+    </script>
+    <script src="scrollcraft.js"></script>
+    <script src="page.js"></script>
+  </body>
+</html>

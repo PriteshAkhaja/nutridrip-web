@@ -4,6 +4,7 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Field";
+import { PasswordInput } from "@/components/ui/PasswordInput";
 import { OtpBoxes } from "@/components/ui/OtpBoxes";
 import { useLoginState } from "./LoginState";
 
@@ -77,11 +78,13 @@ export function LoginForm({ next }: { next: string | null }) {
           <button
             key={m}
             type="button"
+            // Says which way of signing in is open, which the shading alone does not.
+            aria-pressed={mode === m}
             onClick={() => {
               setMode(m);
               setError(null);
             }}
-            className={`flex-1 min-h-[36px] rounded-[6px] text-[13px] font-semibold transition-colors duration-150 ${
+            className={`flex-1 min-h-[40px] rounded-[calc(var(--radius-sm)-4px)] text-[13px] font-semibold cursor-pointer transition-colors duration-150 ${
               mode === m
                 ? "bg-[var(--color-surface)] text-[var(--color-ink)] shadow-[0_1px_2px_color-mix(in_srgb,var(--color-ink)_6%,transparent)]"
                 : "text-[var(--color-ink-2)]"
@@ -178,10 +181,10 @@ export function LoginForm({ next }: { next: string | null }) {
             value={email}
             onChange={(e) => setEmail(e.target.value)}
           />
-          <Input
+          <PasswordInput
             label="Password"
-            type="password"
             autoComplete="current-password"
+            placeholder="Your password"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
           />

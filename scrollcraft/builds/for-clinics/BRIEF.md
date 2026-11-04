@@ -1,22 +1,28 @@
-# /for-clinics: the price splits as you scroll
+# For clinics: brief (2026-11-03)
 
-**Scope (user, 6 Oct 2026):** GSAP only where required. One section gets a
-moment: **"The economics"**. The hero, "What you get", onboarding, the FAQ and the
-enquiry form stay as they are (a line drawn through the onboarding weeks would
-repeat /how-it-works' thread, so it is not done).
+Self-authored under explicit creative delegation. Built straight in the route.
 
-**Peak.** *"The ₹8,400 bar broke into three pieces and each one dropped into its
-own row: what the clinic keeps, what the drugs cost, and our share."*
-
-**Device.** A bar for the whole session price is added at the top of the
-existing card. As the card comes up the screen (a GSAP timeline scrubbed by
-ScrollTrigger), each share slides from its place in the whole bar to its own
-row and lands exactly on that row's bar: a share is the same fraction of the
-price in both places, so it keeps its width. A share fades to a ghost while it
-crosses the rows above, so it never reads as a line through their labels.
-The whole bar never empties (user, 6 Oct: an empty bar beside ₹8,400 read as
-zero): copies travel, and each share's part of the whole dims while its copy is
-on the way and is full again once it lands. The end state is the whole price
-over its three parts, the same as the reduced-motion state.
-Every figure is the page's existing (indicative, labelled) split. Reduced
-motion: the whole bar shows the three shares side by side; the rows as today.
+- **Treatment:** Full (AGENTS.md); its peak is a device that needs no script.
+- **Shape:** the client's `clinics.html`: the dark head with a photograph,
+  the numbered offer, the rules that travel with the product, the trade form.
+  The offer is ours (PAGES.md section 2: keep our offer, the client to say
+  which of theirs is real): order drips, physician review, our nurses or
+  theirs (`User.nurse.clinicId`), recall traceability, the clinic console,
+  pay per order or on account (`User.clinic.onCredit`, 30 days).
+- **Removed, no source (PAGES.md 4b):** the ₹8,400 / ₹3,200 / ₹2,900 /
+  ₹2,300 split and 38%, "24 hr order to delivery", "0 monthly platform fee",
+  "2–8 °C", "4 PM". The FAQ no longer quotes them.
+- **Peak, one order:** four cards that stack as you read (CSS sticky, each a
+  little lower than the last, so the deck keeps an edge of every card
+  passed): ordered (availability pooled and in whole vials), confirmed (the
+  exact vials, soonest expiry first, an atomic claim), dispatched (the
+  ledger from the lot, never a recomputed plan), a recall traced. Drip and
+  ingredient names are the panel's own; batch codes are `EX-` examples and
+  the card says "Example".
+- **Distinct from the other pages:** a stacking deck: nothing pins, nothing
+  scrubs.
+- **Form:** the same POST to `/api/leads` (kind "clinic"), in the client's
+  `.nd-form`; the old `EnquiryForm.tsx` beside the route is removed.
+- **Photos:** `for-clinics.hero` kept (frame unchanged, measured);
+  `for-clinics.economics` retired with the economics.
+- **Reduced motion:** the cards one after another, not stacking.

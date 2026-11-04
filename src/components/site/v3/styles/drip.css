@@ -1,0 +1,643 @@
+/* The drip page (/drips/[slug]), in the client's design (approved prototype:
+   scrollcraft/builds/drip-v3): the client's drip block (pages.css, lines
+   1-57), unchanged, then our patches (marked v3). The glass, the bag label's
+   print and the liquid are in glass.css, shared with the landing. */
+/* ================================================================ DRIP PAGES */
+.dp {
+  display: grid;
+  grid-template-columns: minmax(14rem, 0.8fr) 1.4fr;
+  gap: clamp(2rem, 6vw, 6rem);
+  padding-top: calc(var(--bar-h) + clamp(2rem, 5vw, 4rem));
+  padding-bottom: clamp(3rem, 6vw, 5rem);
+  align-items: start;
+}
+.dp__bagcol {
+  position: relative;
+  height: 100%;
+}
+.dp__bagstick {
+  position: sticky;
+  top: calc(var(--bar-h) + 3vh);
+  display: grid;
+  justify-items: center;
+  gap: 0.8rem;
+}
+.dp__bag {
+  width: auto;
+  height: min(74svh, 46rem);
+  filter: drop-shadow(0 24px 30px rgba(30, 40, 35, 0.18));
+}
+.dp__bag .nd-bag__fill::before {
+  transition: transform 420ms var(--sc-ease-out);
+}
+.dp__label {
+  position: absolute;
+  left: 19%;
+  right: 19%;
+  top: 30%;
+  padding: 9% 8%;
+  background: #fff;
+  border-radius: 6% / 5%;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.12);
+  display: flex;
+  flex-direction: column;
+  line-height: 1;
+}
+.dp__label b {
+  font: 700 clamp(0.9rem, 1.6vh, 1.2rem)/1 var(--sc-font-display);
+  letter-spacing: -0.035em;
+}
+.dp__label sup {
+  font-size: 0.5em;
+  vertical-align: top;
+}
+.dp__label small {
+  font: 600 0.48rem/1 var(--sc-font-text);
+  letter-spacing: 0.22em;
+  margin-top: 0.3rem;
+  color: #46524f;
+}
+.dp__label span {
+  font: 700 clamp(0.85rem, 1.7vh, 1.15rem)/1.1 var(--sc-font-display);
+  margin-top: 0.7rem;
+  padding-top: 0.55rem;
+  border-top: 1px solid #d7deda;
+}
+.dp__count {
+  font-size: 0.88rem;
+  color: var(--sc-ink-soft);
+  font-variant-numeric: tabular-nums;
+}
+.dp__hero {
+  padding-bottom: 2rem;
+}
+.dp__hero .nd-q {
+  font-size: clamp(2.6rem, 1.6rem + 3.6vw, 5rem);
+  margin-top: 0.7rem;
+}
+.dp__hero .nd-lede {
+  margin-top: 1rem;
+}
+.dp__buy {
+  margin-top: 1.8rem;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1.25rem 2rem;
+  align-items: center;
+}
+.dp__price {
+  font-size: 1rem;
+  color: var(--sc-ink-soft);
+}
+.dp__price b {
+  font: 600 1.9rem/1 var(--sc-font-display);
+  color: var(--sc-ink);
+  margin-right: 0.3rem;
+}
+.dp__sec {
+  padding-top: clamp(3rem, 6vw, 4.5rem);
+}
+.dp__sec > .nd-body {
+  margin-top: 0.8rem;
+}
+.ings {
+  list-style: none;
+  margin: 1.6rem 0 0;
+  padding: 0;
+  border-top: 1px solid var(--nd-line);
+}
+.ing {
+  display: grid;
+  grid-template-columns: 1.2rem 1fr;
+  gap: 1rem;
+  padding: 1.3rem 0;
+  border-bottom: 1px solid var(--nd-line);
+  color: #56625f;
+  transition: background-color 260ms var(--sc-ease-out);
+  margin-inline: -0.75rem;
+  padding-inline: 0.75rem;
+  border-radius: 12px;
+}
+.ing h3 {
+  color: #56625f;
+  transition: color 200ms var(--sc-ease-out);
+}
+.ing.is-lit {
+  background: color-mix(in oklab, var(--tint) 9%, transparent);
+}
+.ing.is-lit h3 {
+  color: var(--sc-ink);
+}
+.ing__dot {
+  width: 0.9rem;
+  height: 0.9rem;
+  border-radius: 50%;
+  border: 2px solid var(--tint);
+  margin-top: 0.4rem;
+  transition: background-color 260ms var(--sc-ease-out);
+}
+.ing.is-lit .ing__dot {
+  background: var(--tint);
+}
+.ing h3 {
+  font-size: 1.25rem;
+  letter-spacing: -0.015em;
+}
+.ing__where {
+  font-size: 0.78rem;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--sc-ink-soft);
+  margin-top: 0.3rem;
+}
+.ing p:last-child {
+  color: inherit;
+  margin-top: 0.35rem;
+}
+.ing.is-lit p:last-child {
+  color: var(--sc-ink-soft);
+}
+.dp__tests {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 2rem;
+  margin-top: 1.4rem;
+}
+.dp__tlist {
+  list-style: none;
+  margin: 0.7rem 0 0;
+  padding: 0;
+}
+.dp__tlist li {
+  padding: 0.8rem 0;
+  border-top: 1px solid var(--nd-line);
+  display: grid;
+  gap: 0.15rem;
+}
+.dp__tlist b {
+  font: 600 1.05rem/1.3 var(--sc-font-display);
+}
+.dp__tlist span {
+  font-size: 0.92rem;
+  color: var(--sc-ink-soft);
+}
+.dp__session {
+  list-style: none;
+  margin: 1.4rem 0 0;
+  padding: 0;
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 1px;
+  background: var(--nd-line);
+  border: 1px solid var(--nd-line);
+  border-radius: 18px;
+  overflow: hidden;
+}
+.dp__session li {
+  background: #fff;
+  padding: 1.2rem 1.25rem;
+  display: grid;
+  gap: 0.3rem;
+}
+.dp__session b {
+  font: 600 1.08rem/1.25 var(--sc-font-display);
+}
+.dp__session span {
+  font-size: 0.94rem;
+  color: var(--sc-ink-soft);
+}
+.dp__costgrid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1.5rem;
+  margin: 1.4rem 0;
+}
+.dp__costgrid p {
+  display: grid;
+  gap: 0.3rem;
+  padding-top: 1rem;
+  border-top: 2px solid var(--sc-ink);
+}
+.dp__costgrid b {
+  font-size: 2.6rem;
+  font-weight: 600;
+  letter-spacing: -0.04em;
+  line-height: 1;
+}
+.dp__costgrid span {
+  color: var(--sc-ink-soft);
+  font-size: 0.95rem;
+}
+.dp__offer {
+  display: inline-block;
+  margin-bottom: 1.5rem;
+  padding: 0.8rem 1.1rem;
+  border-radius: 14px;
+  background: var(--sc-ink);
+  color: #fff;
+  font: 600 1.08rem/1.3 var(--sc-font-display);
+}
+@media (max-width: 860px) {
+  .dp {
+    grid-template-columns: 1fr;
+    gap: 0;
+    padding-top: calc(var(--bar-h) + 1.5rem);
+  }
+  .dp__bagcol {
+    position: absolute;
+    right: 1rem;
+    top: 0;
+    height: var(--bagcol-h, 100%);
+    width: 22vw;
+    pointer-events: none;
+    z-index: 2;
+  }
+  .dp {
+    position: relative;
+  }
+  .dp__bagstick {
+    top: calc(var(--bar-h) + 10px);
+  }
+  .dp__bag {
+    height: auto;
+    width: 22vw;
+  }
+  .dp__label {
+    display: none;
+  }
+  .dp__count {
+    font-size: 0.7rem;
+    text-align: center;
+    background: rgba(245, 247, 245, 0.9);
+    padding: 0.1rem 0.3rem;
+    border-radius: 6px;
+  }
+  .dp__hero,
+  .dp__sec > h2,
+  .dp__sec > .nd-body,
+  .ings {
+    padding-right: 25vw;
+  }
+  .dp__hero .nd-q {
+    font-size: 2.4rem;
+  }
+  .dp__tests,
+  .dp__session,
+  .dp__costgrid {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* ------------------------------------------------------------ v3 patches */
+/* The bag column gains a drop zone above the bag, where each ingredient's
+   bottle appears before it falls in. The bag is a little shorter than the
+   client's (66svh, not 74) so the zone and the bag fit under the bar. */
+.dp {
+  --bag-h: min(66svh, 40rem);
+  --drop-h: 12svh;
+}
+.dp__rig {
+  position: relative;
+  padding-top: var(--drop-h);
+}
+.dp__bag {
+  height: var(--bag-h);
+  container-type: inline-size;
+}
+.dp__drops {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 0;
+  height: var(--drop-h);
+  pointer-events: none;
+}
+.dp__glass {
+  position: absolute;
+  left: 50%;
+  top: 3%;
+  height: 90%;
+  translate: -50% 0;
+  opacity: 0;
+  transform-origin: 50% 100%;
+}
+.dp__glass .vial__glass {
+  height: 100%;
+}
+.dp__glass.is-in {
+  animation: dp-in 1.1s cubic-bezier(0.33, 0.1, 0.3, 1) forwards;
+}
+/* Appears, holds a beat so it can be read, then falls into the bag's top and
+   is gone; the liquid rises as it lands (drip/motion.ts). */
+@keyframes dp-in {
+  0% {
+    opacity: 0;
+    transform: translateY(-12px) scale(0.94);
+  }
+  20% {
+    opacity: 1;
+    transform: none;
+  }
+  46% {
+    opacity: 1;
+    transform: none;
+  }
+  88% {
+    opacity: 1;
+    transform: translateY(calc(var(--drop-h) * 0.55 + var(--bag-h) * 0.12)) scale(0.42);
+  }
+  100% {
+    opacity: 0;
+    transform: translateY(calc(var(--drop-h) * 0.55 + var(--bag-h) * 0.14)) scale(0.36);
+  }
+}
+/* What is given separately stands beside the bag, never in it. */
+/* Just past the bag's right edge: the bag is centred and its width is its
+   height x 577/1200, so the shelf starts there whatever the screen. */
+.dp__beside {
+  position: absolute;
+  left: calc(50% + var(--bag-h) * 0.2404 + 0.3rem);
+  bottom: 1%;
+  display: flex;
+  gap: 0.5rem;
+}
+.dp__side {
+  width: 4.6rem;
+  text-align: center;
+  opacity: 0;
+  transform: translateY(8px);
+  transition:
+    opacity 420ms var(--sc-ease-out),
+    transform 420ms var(--sc-ease-out);
+}
+.dp__side.is-on {
+  opacity: 1;
+  transform: none;
+}
+.dp__side .vial__glass {
+  height: 13svh;
+  margin-inline: auto;
+}
+.dp__side p {
+  margin-top: 0.35rem;
+  font-size: 0.68rem;
+  line-height: 1.2;
+  color: var(--sc-ink-soft);
+}
+/* The label on the bag: the client's compact card in the upper middle, in the
+   hero label's type, at the home label's width (16.5% in, so "Cyanocobalamin
+   1,000 mcg" fits) and a little higher than the client's 27%, so liquid shows
+   above and below it. The bag's print (.bl-word, .bl-sub, .bl-foot) is in
+   glass.css. */
+.dp__bag .nd-bag__fill::before,
+.dp__bag .nd-bag__fill::after {
+  content: none;
+}
+.dpl {
+  position: absolute;
+  left: 16.5%;
+  right: 16.5%;
+  top: 23%;
+  display: flex;
+  flex-direction: column;
+  padding: 7cqi 0 5.5cqi;
+  border-radius: 4cqi;
+  color: #111514;
+  overflow: hidden;
+  background: #fff;
+  box-shadow:
+    0 0 0 1px rgba(0, 0, 0, 0.05),
+    0 3px 10px rgba(0, 0, 0, 0.14);
+}
+.dpl::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: linear-gradient(
+    104deg,
+    rgba(255, 255, 255, 0) 36%,
+    rgba(255, 255, 255, 0.26) 43%,
+    rgba(255, 255, 255, 0) 50%
+  );
+  mix-blend-mode: screen;
+}
+.dpl .bl-word,
+.dpl .bl-sub {
+  padding: 0 7cqi;
+}
+.dpl .bl-band {
+  margin: 5cqi 0 0;
+  padding: 2.6cqi 7.5cqi 2.3cqi;
+  background: color-mix(in oklab, var(--tint) 30%, #fff);
+  color: #141a26;
+  font: 800 6.4cqi/1.05 var(--sc-font-display);
+  letter-spacing: -0.012em;
+  text-transform: uppercase;
+}
+.dpl .bl-foot {
+  margin-top: 5cqi;
+}
+/* Its ingredient lines: a ruled table with a row for every line, there from
+   the start, so the label never changes size (it grew line by line once, and
+   the user found the moving foot looked bad; lines printed on the clear bag
+   beneath it read as text outside the label). An empty row is a hairline and
+   a faint dot, so the unread label reads as one waiting to be filled, not a
+   blank card. As each bottle lands its name and dose print onto the row, as
+   on the home page's build. The dots hang in the margin (3.6cqi = 7cqi less
+   the dot and its gap), so the names start under the wordmark and
+   "Magnesium sulphate 1,000 mg" keeps to one row; a longer line wraps under
+   itself. Its own class, not the build's list class: home.css stays loaded
+   after a visit to the landing and would reach it. */
+.dpl__lines {
+  flex: none;
+  list-style: none;
+  display: grid;
+  margin: 4cqi 0 0;
+  padding: 0 7cqi 0 3.6cqi;
+  font: 500 3.6cqi/1.4 var(--sc-font-text);
+}
+.dpl__lines li {
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  align-items: baseline;
+  column-gap: 1.6cqi;
+  padding: 0.16em 0;
+}
+.dpl__lines li + li {
+  border-top: 1px solid rgba(17, 21, 20, 0.09);
+}
+/* The dot beside a wrapped name's first line, not between its two. */
+.dpl__lines li::before {
+  content: "";
+  width: 0.5em;
+  height: 0.5em;
+  border-radius: 50%;
+  background: var(--tint);
+  align-self: start;
+  margin-top: 0.45em;
+  opacity: 0.28;
+  transition: opacity 220ms var(--sc-ease-out);
+}
+.dpl__lines li b {
+  font-weight: 650;
+  white-space: nowrap;
+}
+.dpl__lines .dpl__lsep {
+  grid-template-columns: auto 1fr;
+  color: #46524f;
+  font-size: 0.92em;
+}
+.dpl__lines .dpl__lsep::before {
+  background: transparent;
+  border: 1px solid var(--tint);
+}
+.dpl__lines li > * {
+  opacity: 0;
+  transform: scale(1.2);
+  transform-origin: 0 50%;
+}
+.dpl__lines li > b {
+  transform-origin: 100% 50%;
+}
+.dpl__lines li.is-on::before {
+  opacity: 1;
+}
+.dpl__lines li.is-on > * {
+  opacity: 1;
+  transform: none;
+  transition:
+    opacity 160ms var(--sc-ease-out),
+    transform 220ms cubic-bezier(0.2, 1.6, 0.4, 1);
+}
+.dp__count {
+  font-variant-numeric: tabular-nums;
+}
+/* The list: the dose beside each name; what is given separately has an open dot. */
+.ing h3 .ing__dose {
+  margin-left: 0.35rem;
+  font-size: 0.88em;
+  font-weight: 600;
+  color: var(--sc-ink-soft);
+  white-space: nowrap;
+}
+.ing--sep .ing__dot {
+  border-style: dashed;
+}
+.ing--sep.is-lit .ing__dot {
+  background: transparent;
+}
+.dp__meta {
+  margin-top: 0.7rem;
+  font-size: 0.95rem;
+  color: var(--sc-ink-soft);
+}
+/* Port: the stock, only when it is low or out (the inventory's whole-vial
+   count, as the page showed it before the redesign). A genuine status, so the
+   app's status hues, with their darker text tints and always with the words. */
+.dp__stock {
+  margin-top: 1rem;
+  display: flex;
+  align-items: center;
+  gap: 0.45rem;
+  font-size: 0.92rem;
+  font-weight: 600;
+  color: var(--color-caution-text);
+}
+.dp__stock::before {
+  content: "";
+  flex: none;
+  width: 0.5rem;
+  height: 0.5rem;
+  border-radius: 50%;
+  background: var(--color-caution);
+}
+.dp__stock--out {
+  color: var(--color-critical-text);
+}
+.dp__stock--out::before {
+  background: var(--color-critical);
+}
+.dp__for {
+  margin-top: 1.5rem;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.45rem;
+  font-size: 0.86rem;
+}
+.dp__for span {
+  color: var(--sc-ink-soft);
+  margin-right: 0.2rem;
+}
+.dp__for i {
+  font-style: normal;
+  padding: 0.32rem 0.7rem;
+  border-radius: 999px;
+  background: color-mix(in oklab, var(--tint) 11%, #fff);
+  border: 1px solid color-mix(in oklab, var(--tint) 28%, transparent);
+}
+/* An odd number of cards: the last spans the row, not a grey empty cell beside it. */
+.dp__session li:last-child:nth-child(odd) {
+  grid-column: 1 / -1;
+}
+.dp__notes {
+  margin: 0 0 1.4rem;
+  padding-left: 1.1rem;
+  color: var(--sc-ink-soft);
+}
+/* Its own line at every width: inline, it sat beside the quiz button wherever
+   the column fits both (768 px), and read as a second button. */
+.dp__offer {
+  font-size: 1rem;
+  display: block;
+  width: fit-content;
+}
+@media (max-width: 860px) {
+  .dp {
+    --drop-h: 9svh;
+    --bag-h: 45.7vw;
+  }
+  .dp__bag {
+    height: auto;
+  }
+  .dpl {
+    display: none;
+  }
+  .dp__beside {
+    position: static;
+    justify-content: center;
+    margin-top: 0.3rem;
+  }
+  .dp__side {
+    width: auto;
+  }
+  .dp__side .vial__glass {
+    height: 7svh;
+  }
+  .dp__side p {
+    display: none;
+  }
+}
+.is-static .dp__glass {
+  display: none;
+}
+@media (prefers-reduced-motion: reduce) {
+  .dp__side,
+  .dpl__lines li::before,
+  .dpl__lines li > *,
+  .dpl__lines li.is-on > * {
+    transition: none;
+  }
+}
+/* v3 (2026-11-03): an admin's upload for this drip, in the hero under the
+   description; the bag stays beside the list. A wide crop held to a third of
+   the screen, so the price and the quiz stay on the first screen; the
+   admin's focal point holds the crop (Photo). */
+.dp__photo {
+  margin: 1.4rem 0 0;
+  aspect-ratio: 2 / 1;
+  max-height: 34svh;
+  background-color: var(--nd-line);
+}

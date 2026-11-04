@@ -1,7 +1,7 @@
 import sharp, { type Metadata } from "sharp";
 import { randomBytes } from "node:crypto";
 import { fileName, needFor, slotFolder, storedSize, uploadProblem } from "@/lib/media/rules";
-import { frameOf } from "@/lib/media/slots";
+import { coverOf } from "@/lib/media/slots";
 import { putFile } from "@/lib/storage";
 
 export type Processed = { file: string; width: number; height: number; blur: string; bytes: number };
@@ -25,7 +25,7 @@ export async function processUpload(data: Buffer, slot: string, dripSlug?: strin
   const turned = (meta.orientation ?? 1) >= 5;
   const width = turned ? meta.height : meta.width;
   const height = turned ? meta.width : meta.height;
-  const frame = frameOf(slot);
+  const frame = coverOf(slot);
   const problem = uploadProblem(
     { bytes: data.length, format: meta.format, width, height },
     frame ? needFor(frame) : undefined

@@ -47,8 +47,8 @@ describe("storage", () => {
 
 describe("processUpload", () => {
   it("stores a large landscape photo at 1600 px, as a JPEG, in the slot's folder", async () => {
-    const out = await processUpload(await photo(3200, 2000).png().toBuffer(), "home.step-physician");
-    expect(out.file).toMatch(/^images\/site\/home\/step-physician\/\d{8}-\d{6}-[a-z0-9]+\.jpg$/);
+    const out = await processUpload(await photo(3200, 2000).png().toBuffer(), "how-it-works.hero");
+    expect(out.file).toMatch(/^images\/site\/how-it-works\/hero\/\d{8}-\d{6}-[a-z0-9]+\.jpg$/);
     expect(out.width).toBe(1600);
     expect(out.height).toBe(1000);
     const stored = await getFile(out.file);
@@ -59,14 +59,14 @@ describe("processUpload", () => {
   });
 
   it("stores a portrait photo at 1400 px wide, and never enlarges a smaller one", async () => {
-    const tall = await processUpload(await photo(2100, 3000).jpeg().toBuffer(), "home.step-physician");
+    const tall = await processUpload(await photo(2100, 3000).jpeg().toBuffer(), "how-it-works.hero");
     expect([tall.width, tall.height]).toEqual([1400, 2000]);
-    const modest = await processUpload(await photo(1300, 900).jpeg().toBuffer(), "home.step-physician");
+    const modest = await processUpload(await photo(1300, 900).jpeg().toBuffer(), "how-it-works.hero");
     expect([modest.width, modest.height]).toEqual([1300, 900]);
   });
 
   it("makes a 20 px preview a browser can show while the photo loads", async () => {
-    const out = await processUpload(await photo(2000, 1000).jpeg().toBuffer(), "pricing.hero");
+    const out = await processUpload(await photo(2000, 1000).jpeg().toBuffer(), "how-it-works.hero");
     expect(out.blur.startsWith("data:image/jpeg;base64,")).toBe(true);
     const preview = await sharp(Buffer.from(out.blur.split(",")[1], "base64")).metadata();
     expect(preview.width).toBe(20);
@@ -80,7 +80,7 @@ describe("processUpload", () => {
       .jpeg()
       .toBuffer();
     expect((await sharp(tagged).metadata()).exif).toBeDefined();
-    const out = await processUpload(tagged, "home.step-physician");
+    const out = await processUpload(tagged, "how-it-works.hero");
     expect([out.width, out.height]).toEqual([1400, 2100]);
     expect(out.height).toBeGreaterThan(out.width);
     const meta = await sharp((await getFile(out.file))!).metadata();
@@ -97,7 +97,7 @@ describe("processUpload", () => {
       .withMetadata({ orientation: 6 })
       .jpeg({ quality: 95 })
       .toBuffer();
-    const out = await processUpload(sensor, "home.step-physician");
+    const out = await processUpload(sensor, "how-it-works.hero");
     const stored = (await getFile(out.file))!;
     const at = async (x: number, y: number) =>
       (await sharp(stored).extract({ left: x, top: y, width: 8, height: 8 }).resize(1, 1).raw().toBuffer()).subarray(
@@ -118,7 +118,7 @@ describe("processUpload", () => {
     })
       .png()
       .toBuffer();
-    const out = await processUpload(clear, "home.step-physician");
+    const out = await processUpload(clear, "how-it-works.hero");
     const px = await sharp((await getFile(out.file))!)
       .resize(1, 1)
       .raw()
@@ -135,32 +135,32 @@ describe("processUpload", () => {
 
   it("gives every upload a name of its own, so nothing is overwritten", async () => {
     const data = await photo(1600, 1000).jpeg().toBuffer();
-    const a = await processUpload(data, "zones.hero");
-    const b = await processUpload(data, "zones.hero");
+    const a = await processUpload(data, "for-clinics.hero");
+    const b = await processUpload(data, "for-clinics.hero");
     expect(a.file).not.toBe(b.file);
     expect(await getFile(a.file)).not.toBeNull();
     expect(await getFile(b.file)).not.toBeNull();
   });
 
   it("refuses what is not a photo, a small photo, or a format the site cannot show, with a reason", async () => {
-    await expect(processUpload(Buffer.from("just text, named .jpg"), "home.step-physician")).rejects.toThrow(
+    await expect(processUpload(Buffer.from("just text, named .jpg"), "how-it-works.hero")).rejects.toThrow(
       /not a photograph/
     );
-    await expect(processUpload(Buffer.alloc(0), "home.step-physician")).rejects.toBeInstanceOf(UploadError);
-    await expect(processUpload(await photo(640, 480).jpeg().toBuffer(), "home.step-physician")).rejects.toThrow(
+    await expect(processUpload(Buffer.alloc(0), "how-it-works.hero")).rejects.toBeInstanceOf(UploadError);
+    await expect(processUpload(await photo(640, 480).jpeg().toBuffer(), "how-it-works.hero")).rejects.toThrow(
       /640 × 480 px/
     );
-    await expect(processUpload(await photo(2000, 400).jpeg().toBuffer(), "home.step-physician")).rejects.toThrow(
-      /needs at least 580 × 670 px/
+    await expect(processUpload(await photo(2000, 400).jpeg().toBuffer(), "how-it-works.hero")).rejects.toThrow(
+      /needs at least 780 × 590 px/
     );
-    await expect(processUpload(await photo(1600, 1000).gif().toBuffer(), "home.step-physician")).rejects.toThrow(
+    await expect(processUpload(await photo(1600, 1000).gif().toBuffer(), "how-it-works.hero")).rejects.toThrow(
       /JPEG, PNG, WebP or AVIF/
     );
   });
 
   it("writes nothing when it refuses", async () => {
     const before = fs.readdirSync(path.join(dir, "images", "site"), { recursive: true }).length;
-    await processUpload(await photo(300, 300).jpeg().toBuffer(), "about.closing").catch(() => {});
+    await processUpload(await photo(300, 300).jpeg().toBuffer(), "about.physicians").catch(() => {});
     expect(fs.readdirSync(path.join(dir, "images", "site"), { recursive: true }).length).toBe(before);
   });
 });

@@ -5,13 +5,14 @@ import { connectDB } from "@/lib/db/mongoose";
 import { User } from "@/lib/models";
 import { onboardingOf, PLACEHOLDER_NAME } from "@/lib/auth/onboarding";
 import { geocodingConfigured } from "@/lib/geo/geocode";
-import { LogoMark } from "@/components/layout/Logo";
 import { SignOutButton } from "@/components/layout/SignOutButton";
+import { AccountFrame } from "@/components/site/account/AccountFrame";
+import { SITE_ICONS } from "@/components/site/site-icons";
 import { AddressForm } from "./AddressForm";
 import { getZones } from "@/lib/zones-store";
 import { servedZones } from "@/lib/zones";
 
-export const metadata: Metadata = { title: "Where should we come?" };
+export const metadata: Metadata = { title: "Where should we come?", icons: SITE_ICONS };
 export const dynamic = "force-dynamic";
 
 /**
@@ -40,51 +41,41 @@ export default async function WelcomePage() {
   // Already done — nothing to ask, and no way to get stuck on this screen.
   if (onboardingOf(me).complete) redirect("/app");
 
+  // In the client's design, like sign-in, the step it follows (AccountFrame).
   return (
-    <div className="min-h-dvh bg-[var(--color-paper)] flex flex-col">
-      <header className="border-b border-[var(--color-line)]">
-        <div className="mx-auto w-full max-w-[560px] md:max-w-[720px] px-5 py-3 flex items-center gap-3">
-          <LogoMark size={22} />
-          <span style={{ font: "600 14.5px/1 var(--font-display)" }}>NutriDrip</span>
-          <div className="ml-auto">
-            <SignOutButton form="compact" />
-          </div>
-        </div>
-      </header>
-
-      <main className="flex-1 mx-auto w-full max-w-[560px] md:max-w-[720px] px-5 py-8">
-        <span className="t-micro">Step 1 of 1</span>
-        <h1
-          className="mt-2 mb-2"
-          style={{ font: "600 26px/1.25 var(--font-display)", letterSpacing: "-0.02em", textWrap: "pretty" }}
-        >
+    <AccountFrame layout="wide" end={<SignOutButton form="compact" />}>
+      <section className="acc-card" aria-labelledby="welcome-h">
+        <p className="nd-tag">Your account · last step</p>
+        <h1 id="welcome-h" className="acc-h">
           Where should we come?
         </h1>
-        <p className="t-body text-[var(--color-ink-2)] mb-7">
+        <p className="acc-lede">
           A nurse administers every session at your door, so we need an address before anything else. It takes about
           thirty seconds, and you only do this once.
           {me?.phone ? (
             <>
               {" "}
-              Signed in as <span className="t-data text-[13px]">{me.phone}</span>.
+              Signed in as <b className="font-semibold text-[var(--color-ink)]">{me.phone}</b>.
             </>
           ) : null}
         </p>
 
-        <AddressForm
-          initial={{
-            name: me?.name && me.name !== PLACEHOLDER_NAME ? me.name : "",
-            address: me?.patient?.address ?? "",
-            city: me?.patient?.city ?? "Bengaluru",
-            pincode: me?.patient?.pincode ?? "",
-            latitude: me?.patient?.latitude ?? null,
-            longitude: me?.patient?.longitude ?? null,
-          }}
-          mapsKey={process.env.NEXT_PUBLIC_GOOGLE_MAPS_BROWSER_KEY ?? null}
-          searchEnabled={geocodingConfigured()}
-          zones={servedZones(await getZones())}
-        />
-      </main>
-    </div>
+        <div className="acc-form">
+          <AddressForm
+            initial={{
+              name: me?.name && me.name !== PLACEHOLDER_NAME ? me.name : "",
+              address: me?.patient?.address ?? "",
+              city: me?.patient?.city ?? "Bengaluru",
+              pincode: me?.patient?.pincode ?? "",
+              latitude: me?.patient?.latitude ?? null,
+              longitude: me?.patient?.longitude ?? null,
+            }}
+            mapsKey={process.env.NEXT_PUBLIC_GOOGLE_MAPS_BROWSER_KEY ?? null}
+            searchEnabled={geocodingConfigured()}
+            zones={servedZones(await getZones())}
+          />
+        </div>
+      </section>
+    </AccountFrame>
   );
 }

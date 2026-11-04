@@ -15,7 +15,8 @@
     "test:watch": "vitest",
     "smoke": "node scripts/smoke.mjs",
     "typecheck": "tsc --noEmit",
-    "prepare": "husky"
+    "prepare": "husky",
+    "site-css": "node scripts/scope-site-css.mjs"
   },
   "lint-staged": {
     "*": "prettier --write --ignore-unknown"

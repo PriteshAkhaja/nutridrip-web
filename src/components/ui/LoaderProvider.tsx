@@ -20,7 +20,7 @@ const DRIP_PAGE = /^\/drips\/[^/]+\/?$/;
  * After that, a click through to a drip page can bring up the route loader,
  * but only while that page is genuinely still loading.
  */
-export function LoaderProvider({ children }: { children: React.ReactNode }) {
+export function LoaderProvider({ children, intro = true }: { children: React.ReactNode; intro?: boolean }) {
   const pathname = usePathname();
   const [introDone, setIntroDone] = useState(false);
   // A click through to a drip: the page it left from (the trip is over once
@@ -60,7 +60,7 @@ export function LoaderProvider({ children }: { children: React.ReactNode }) {
     <>
       {/* Ahead of the page in the markup, so the first paint that can show
           anything already includes it. */}
-      {!introDone && <IntroLoader />}
+      {intro && !introDone && <IntroLoader />}
       {trip && <RouteLoader key={trip.id} arrived={pathname !== trip.from} onDone={finishTrip} />}
       {children}
     </>

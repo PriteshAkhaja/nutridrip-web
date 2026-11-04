@@ -1,0 +1,195 @@
+/* Sign-in (/login), a new patient's one step before the app (/welcome) and
+   the quiz (/quiz), in the client's tokens (no client page), through
+   ClientTheme. Every class is these pages' own (acc-, nd-quiz).
+   Scoped to .sc-site by scripts/scope-site-css.mjs: edit here, then run
+   `npm run site-css`.
+
+   The forms are the app's own components (Button, Input, OtpBoxes,
+   AddressPicker), which draw everything from the app's design tokens. Inside
+   .nd-account those tokens point at the client's palette, type and corners,
+   so the forms take the site's look and keep their behaviour; the consoles,
+   outside it, are untouched. No motion: somebody is filling in a form. */
+
+.nd-account {
+  --color-paper: var(--sc-canvas);
+  --color-surface: #ffffff;
+  --color-surface-2: #eef2ef;
+  --color-line: var(--nd-line);
+  --color-line-2: #b9c4c0;
+  --color-ink: var(--sc-ink);
+  --color-ink-2: var(--sc-ink-soft);
+  --color-ink-3: #56625e;
+  /* The site's buttons are ink, not the app's teal. */
+  --color-primary: var(--sc-ink);
+  --color-primary-dark: #26302e;
+  --color-primary-soft: #e6ece8;
+  --color-primary-line: #c9d4ce;
+  --color-primary-text: var(--sc-ink);
+  --font-display: var(--sc-font-display);
+  --font-sans: var(--sc-font-text);
+  /* The site sets figures in Geist, not a monospace: phone numbers, codes. */
+  --font-mono: var(--sc-font-text);
+  --radius-sm: 12px;
+  --radius-md: 14px;
+  --radius-lg: 18px;
+  display: flex;
+  flex-direction: column;
+  min-height: 100dvh;
+  font-variant-numeric: tabular-nums;
+}
+/* The site's buttons are pills; its fields keep their 12px corners. */
+.nd-account .btn {
+  --radius-sm: 999px;
+}
+/* A field shows focus as the site's own forms do (.nd-field, site.css): the
+   ink edge the field already takes, and a soft halo hugging it. The site's
+   ring for links and buttons sits 3px outside, and round a field it drew a
+   second outline beside the field's own border. */
+.nd-account input:not([type="checkbox"]):not([type="radio"]):focus,
+.nd-account select:focus,
+.nd-account textarea:focus {
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(13, 107, 70, 0.25);
+}
+
+.acc-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  min-height: var(--bar-h);
+  padding: 0.75rem clamp(1rem, 5vw, 4rem);
+}
+.acc-back {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  min-height: 44px;
+  font-weight: 600;
+  font-size: 0.95rem;
+  text-decoration: none;
+}
+.acc-back svg {
+  transition: transform 200ms var(--sc-ease-out);
+}
+.acc-back:hover {
+  text-decoration: underline;
+  text-decoration-thickness: 1px;
+  text-underline-offset: 0.22em;
+}
+.acc-back:hover svg {
+  transform: translateX(-3px);
+}
+
+.acc-main {
+  flex: 1;
+  width: 100%;
+  max-width: calc(30rem + 2rem);
+  margin-inline: auto;
+  padding: clamp(1.25rem, 5dvh, 4rem) 1rem clamp(2.5rem, 8dvh, 5rem);
+  display: grid;
+  gap: 2rem;
+  align-content: start;
+}
+.acc-main--wide {
+  max-width: calc(40rem + 2rem);
+}
+.acc-card {
+  background: #fff;
+  border: 1px solid var(--nd-line);
+  border-radius: 20px;
+  padding: clamp(1.4rem, 4vw, 2.4rem);
+}
+.acc-h {
+  margin-top: 0.55rem;
+  font-size: clamp(2rem, 1.6rem + 1.4vw, 2.6rem);
+  letter-spacing: -0.03em;
+}
+.acc-lede {
+  margin-top: 0.8rem;
+  color: var(--sc-ink-soft);
+  font-size: 1.02rem;
+  line-height: 1.55;
+  text-wrap: pretty;
+}
+.acc-form {
+  margin-top: 1.6rem;
+}
+
+/* Outside production: the seeded accounts, beside the card on a desktop. */
+.acc-main--demo {
+  max-width: calc(66rem + 2rem);
+}
+.acc-demo {
+  padding: clamp(0.25rem, 1vw, 1rem) 0 0;
+}
+.acc-demo h2 {
+  margin-top: 0.55rem;
+  font-size: clamp(1.35rem, 1.2rem + 0.5vw, 1.6rem);
+  letter-spacing: -0.02em;
+}
+.acc-demo__p {
+  margin-top: 0.7rem;
+  color: var(--sc-ink-soft);
+  max-width: 52ch;
+  text-wrap: pretty;
+}
+.acc-demo__list {
+  margin-top: 1.25rem;
+  background: #fff;
+  border-radius: var(--radius-lg);
+}
+.acc-demo__note {
+  margin-top: 0.9rem;
+  font-size: 0.88rem;
+  color: var(--sc-ink-soft);
+  max-width: 56ch;
+}
+@media (min-width: 1024px) {
+  .acc-main--demo {
+    grid-template-columns: minmax(0, 30rem) minmax(0, 1fr);
+    column-gap: clamp(2.5rem, 5vw, 5rem);
+    align-items: start;
+  }
+  /* Beside the card, its first line level with the card's: the card's
+     padding plus its border. */
+  .acc-demo {
+    padding-top: calc(clamp(1.4rem, 4vw, 2.4rem) + 1px);
+  }
+}
+
+.acc-foot {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 0.35rem 1.4rem;
+  padding: 1rem clamp(1rem, 5vw, 4rem) 1.75rem;
+  font-size: 0.88rem;
+  color: var(--sc-ink-soft);
+}
+.acc-foot a {
+  display: inline-flex;
+  align-items: center;
+  min-height: 32px;
+  text-decoration: none;
+}
+.acc-foot a:hover {
+  color: var(--sc-ink);
+  text-decoration: underline;
+  text-underline-offset: 0.22em;
+}
+
+/* The quiz (app/quiz/QuizFlow.tsx): the brand green for its marks (the
+   progress, a chosen answer's marker, a finished section's tick), and a chosen
+   answer or the current section tinted as the site's chosen chips are (.nd-seg,
+   site.css), with the ink edge the tokens already give them. */
+.nd-quiz {
+  --qz-mark: var(--sc-accent);
+  --color-primary-soft: #eef5f1;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .acc-back svg {
+    transition: none;
+  }
+}

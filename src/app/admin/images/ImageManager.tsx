@@ -221,8 +221,9 @@ export function ImageManager({ groups, lastChange }: { groups: ImageGroup[]; las
             Drag the photo in the editor. Desktop and phone crop it differently, and both are shown side by side.
           </Tip>
           <Tip title="Not listed here, on purpose">
-            The drip animation&rsquo;s bag, vials and room, which the animation is measured against, and the logo, which
-            is drawn.
+            The home page and IV vs tablets, whose pictures are layers of their scroll scenes, cut and placed to the
+            pixel; the drip animation&rsquo;s bag and vials; and the logo, which is drawn. Pricing, Zones and FAQs have
+            no photographs.
           </Tip>
         </div>
       ) : null}
@@ -265,7 +266,7 @@ export function ImageManager({ groups, lastChange }: { groups: ImageGroup[]; las
             <div className="rounded-[var(--radius-lg)] border border-dashed border-[var(--color-line-2)] px-6 py-14 text-center">
               <p className="t-body m-0 font-semibold text-[var(--color-ink)]">No photo matches</p>
               <p className="t-small m-0 mt-1 text-[var(--color-ink-3)]">
-                Try a page name such as &ldquo;Pricing&rdquo;, a section such as &ldquo;closing&rdquo;, or a
+                Try a page name such as &ldquo;Safety&rdquo;, a section such as &ldquo;first screen&rdquo;, or a
                 drip&rsquo;s name.
               </p>
               <button

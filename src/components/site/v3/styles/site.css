@@ -1,0 +1,1442 @@
+/* The public site's shared stylesheet: the client's site.css, ported from the
+   approved prototype (scrollcraft/builds/home-v3), patched where marked "v3".
+   Scoped to .sc-site by scripts/scope-site-css.mjs: edit here, then run
+   `npm run site-css`. */
+/* Self-hosted variable fonts (SIL OFL, see assets/fonts). */
+@font-face {
+  font-family: "Outfit";
+  font-style: normal;
+  font-display: swap;
+  font-weight: 100 900;
+  src: url(/fonts/v3/outfit-latin-wght-normal.woff2) format("woff2-variations");
+  unicode-range:
+    U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC,
+    U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+@font-face {
+  font-family: "Outfit";
+  font-style: normal;
+  font-display: swap;
+  font-weight: 100 900;
+  src: url(/fonts/v3/outfit-latin-ext-wght-normal.woff2) format("woff2-variations");
+  unicode-range:
+    U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F,
+    U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C0, U+2113, U+2C60-2C7F, U+A720-A7FF;
+}
+@font-face {
+  font-family: "Geist";
+  font-style: normal;
+  font-display: swap;
+  font-weight: 100 900;
+  src: url(/fonts/v3/geist-latin-wght-normal.woff2) format("woff2-variations");
+  unicode-range:
+    U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC,
+    U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+@font-face {
+  font-family: "Geist";
+  font-style: normal;
+  font-display: swap;
+  font-weight: 100 900;
+  src: url(/fonts/v3/geist-latin-ext-wght-normal.woff2) format("woff2-variations");
+  unicode-range:
+    U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F,
+    U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C0, U+2113, U+2C60-2C7F, U+A720-A7FF;
+}
+/* NutriDrip v3 prototype: the client's site.css, patched where marked "v3:". */
+:root {
+  --sc-canvas: #f5f7f5;
+  --sc-surface: #ffffff;
+  --sc-ink: #0c1211;
+  --sc-ink-soft: #46524f;
+  --sc-accent: #0d6b46;
+  --sc-accent-ink: #ffffff;
+  --sc-font-display: "Outfit", "Geist", system-ui, sans-serif;
+  --sc-font-text: "Geist", system-ui, sans-serif;
+  --sc-shadow-color: 160 18% 22%;
+  --nd-line: #d7deda;
+  --nd-dark: #0b0f0e;
+  --nd-dark-2: #141a18;
+  --nd-dark-ink: #f1f4f2;
+  --nd-dark-soft: #b3bfba;
+  --nd-dark-accent: #6bdaa2;
+  --tint: #d99a0b;
+  --tint-ink: #0c1211;
+  --bar-h: 64px;
+  /* Pages not yet redesigned pad their first section by this (the old
+     capsule header's room); the bar is fixed, so it is the bar. */
+  --site-header-h: var(--bar-h);
+  color-scheme: light;
+}
+html {
+  scroll-padding-top: calc(var(--bar-h) + 12px);
+}
+body {
+  background: var(--sc-canvas);
+  color: var(--sc-ink);
+  font-family: var(--sc-font-text);
+  line-height: 1.6;
+  margin: 0;
+  overflow-x: clip;
+}
+h1,
+h2,
+h3,
+h4 {
+  font-family: var(--sc-font-display);
+  font-weight: 600;
+  letter-spacing: var(--sc-track-snug);
+  line-height: 1.06;
+  margin: 0;
+  text-wrap: balance;
+}
+p {
+  margin: 0;
+}
+a {
+  color: inherit;
+}
+img {
+  height: auto;
+}
+.nd-wrap {
+  width: 100%;
+  max-width: 78rem;
+  margin-inline: auto;
+  padding-inline: clamp(1rem, 5vw, 4rem);
+}
+.nd-q {
+  font-size: clamp(2rem, 1.3rem + 2.8vw, 3.6rem);
+  font-weight: 600;
+  letter-spacing: -0.03em;
+}
+.nd-q--sm {
+  font-size: clamp(1.6rem, 1.2rem + 1.6vw, 2.5rem);
+}
+.nd-lede {
+  font-size: clamp(1.08rem, 1rem + 0.4vw, 1.3rem);
+  color: var(--sc-ink-soft);
+  max-width: 46ch;
+  text-wrap: pretty;
+}
+.nd-body {
+  color: var(--sc-ink-soft);
+  max-width: 62ch;
+  text-wrap: pretty;
+}
+.nd-small {
+  font-size: 0.9rem;
+  color: var(--sc-ink-soft);
+}
+.nd-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4em;
+  font-size: 0.78rem;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--sc-ink-soft);
+}
+.nd-num {
+  font-family: var(--sc-font-display);
+  font-variant-numeric: tabular-nums;
+}
+.sc-section {
+  padding-block: clamp(4rem, 9vw, 8rem);
+}
+.nd-section--tight {
+  padding-block: clamp(3rem, 6vw, 5rem);
+}
+.nd-dark {
+  background: var(--nd-dark);
+  color: var(--nd-dark-ink);
+  --sc-ink: var(--nd-dark-ink);
+  --sc-ink-soft: var(--nd-dark-soft);
+  --sc-accent: var(--nd-dark-accent);
+  --sc-accent-ink: #06130d;
+  --nd-line: #2a3431;
+}
+.visually-hidden {
+  position: absolute !important;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+}
+/* v3: the skip link is hidden until it has focus, then sits over the bar. */
+.nd-skip {
+  position: absolute;
+  left: -9999px;
+  top: auto;
+}
+.nd-skip:focus {
+  left: 1rem;
+  top: 0.75rem;
+  z-index: 90;
+  padding: 0.7rem 1rem;
+  border-radius: 10px;
+  background: var(--sc-ink);
+  color: #fff;
+  font-weight: 600;
+}
+
+/* ---------------------------------------------------------------- buttons */
+.nd-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.55rem;
+  min-height: 48px;
+  padding: 0.75rem 1.35rem;
+  border-radius: 999px;
+  border: 1px solid transparent;
+  background: var(--sc-ink);
+  color: var(--sc-canvas);
+  font: 600 1rem/1 var(--sc-font-text);
+  text-decoration: none;
+  cursor: pointer;
+  white-space: nowrap;
+  transition:
+    transform 140ms var(--sc-ease-out),
+    background-color 160ms var(--sc-ease-out),
+    box-shadow 160ms var(--sc-ease-out);
+}
+.nd-btn:hover {
+  background: #1f2a27;
+}
+.nd-btn:active {
+  transform: scale(0.97);
+}
+.nd-btn--ghost {
+  background: transparent;
+  color: var(--sc-ink);
+  border-color: currentColor;
+}
+.nd-btn--ghost:hover {
+  background: rgba(12, 18, 17, 0.06);
+}
+.nd-btn--accent {
+  background: var(--sc-accent);
+  color: var(--sc-accent-ink);
+}
+.nd-btn--accent:hover {
+  background: #0a5638;
+}
+.nd-btn--wa {
+  background: #0b6e3e;
+  color: #fff;
+}
+.nd-btn--wa:hover {
+  background: #085a32;
+}
+.nd-btn[disabled] {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+.nd-dark .nd-btn {
+  background: var(--nd-dark-ink);
+  color: var(--nd-dark);
+}
+.nd-dark .nd-btn:hover {
+  background: #fff;
+}
+.nd-dark .nd-btn--ghost {
+  background: transparent;
+  color: var(--nd-dark-ink);
+}
+.nd-cta {
+  display: inline-flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0.45rem;
+}
+.nd-cta__free {
+  font-size: 0.88rem;
+  font-weight: 500;
+  color: var(--sc-ink-soft);
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+}
+.nd-cta__free::before {
+  content: "";
+  width: 0.5rem;
+  height: 0.5rem;
+  border-radius: 50%;
+  background: var(--sc-accent);
+  flex: none;
+}
+.nd-cta--center {
+  align-items: center;
+  text-align: center;
+}
+:focus-visible {
+  outline: 2px solid var(--sc-accent);
+  outline-offset: 3px;
+  border-radius: 6px;
+}
+.nd-dark :focus-visible {
+  outline-color: var(--nd-dark-accent);
+}
+.nd-link {
+  font-weight: 600;
+  text-decoration: underline;
+  text-decoration-thickness: 1px;
+  text-underline-offset: 0.22em;
+}
+.nd-link:hover {
+  text-decoration-thickness: 2px;
+}
+
+/* -------------------------------------------------------------- wordmark */
+.nd-mark {
+  display: inline-flex;
+  flex-direction: column;
+  text-decoration: none;
+  color: var(--sc-ink);
+  line-height: 1;
+}
+.nd-mark b {
+  font: 700 1.42rem/1 var(--sc-font-display);
+  letter-spacing: -0.035em;
+}
+.nd-mark b sup {
+  font-size: 0.42em;
+  font-weight: 600;
+  vertical-align: top;
+  margin-left: 0.06em;
+  position: relative;
+  top: 0.1em;
+}
+.nd-mark small {
+  font: 600 0.52rem/1 var(--sc-font-text);
+  letter-spacing: 0.26em;
+  margin-top: 0.32rem;
+  color: var(--sc-ink-soft);
+}
+
+/* -------------------------------------------------------------- top bar */
+.nd-bar {
+  position: fixed;
+  inset: 0 0 auto 0;
+  z-index: 70;
+  height: var(--bar-h);
+  display: flex;
+  align-items: center;
+  background: rgba(245, 247, 245, 0.97); /* v3: no backdrop blur on a sticky layer */
+  border-bottom: 1px solid rgba(12, 18, 17, 0.08);
+}
+.nd-bar__in {
+  display: flex;
+  align-items: center;
+  gap: 1.25rem;
+  width: 100%;
+  max-width: 86rem;
+  margin-inline: auto;
+  padding-inline: clamp(1rem, 3vw, 2rem);
+}
+.nd-bar__nav {
+  display: flex;
+  gap: 1.1rem;
+  margin-left: 0.5rem;
+}
+.nd-bar__nav a {
+  text-decoration: none;
+  font-size: 0.93rem;
+  font-weight: 500;
+  color: var(--sc-ink);
+  padding: 0.4rem 0.1rem;
+}
+.nd-bar__nav a:hover,
+.nd-bar__nav a[aria-current="page"] {
+  text-decoration: underline;
+  text-underline-offset: 0.3em;
+}
+.nd-bar__end {
+  margin-left: auto;
+  display: flex;
+  align-items: center;
+  gap: 0.9rem;
+}
+.nd-bar__book {
+  display: flex;
+  align-items: center;
+  gap: 0.7rem;
+}
+.nd-bar__book .nd-btn {
+  min-height: 42px;
+  padding: 0.6rem 1.1rem;
+  font-size: 0.95rem;
+}
+.nd-bar__free {
+  font-size: 0.78rem;
+  line-height: 1.25;
+  color: var(--sc-ink-soft);
+  max-width: 9.5rem;
+}
+.nd-ledger-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.55rem;
+  min-height: 42px;
+  padding: 0.45rem 0.9rem;
+  border-radius: 999px;
+  border: 1px solid var(--nd-line);
+  background: #fff;
+  color: var(--sc-ink);
+  font: 500 0.9rem/1.2 var(--sc-font-text);
+  cursor: pointer;
+  max-width: 22rem;
+}
+.nd-ledger-btn:hover {
+  border-color: var(--sc-ink);
+}
+.nd-ledger-btn__count {
+  font-variant-numeric: tabular-nums;
+  font-weight: 700;
+}
+.nd-ledger-btn__q {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.nd-menu-btn {
+  display: none;
+}
+@media (max-width: 1180px) {
+  .nd-bar__nav {
+    display: none;
+  }
+  .nd-menu-btn {
+    display: inline-flex;
+  }
+}
+@media (max-width: 860px) {
+  :root {
+    --bar-h: 58px;
+  }
+  .nd-bar__free,
+  .nd-bar__book {
+    display: none;
+  }
+  .nd-ledger-btn {
+    max-width: 52vw;
+    font-size: 0.82rem;
+    padding-inline: 0.7rem;
+  }
+  .nd-ledger-btn__q {
+    display: none;
+  }
+  .nd-ledger-btn::after {
+    content: "Questions";
+    font-weight: 600;
+  }
+  .nd-menu-btn::after {
+    content: none;
+  }
+}
+
+/* The question ledger: the page's navigation. */
+.nd-ledger {
+  position: fixed;
+  z-index: 80;
+  top: calc(var(--bar-h) + 8px);
+  right: clamp(0.75rem, 3vw, 2rem);
+  width: min(25rem, calc(100vw - 1.5rem));
+  max-height: calc(100svh - var(--bar-h) - 24px);
+  overflow: auto;
+  background: #fff;
+  color: var(--sc-ink);
+  border: 1px solid var(--nd-line);
+  border-radius: 18px;
+  box-shadow: var(--sc-e3);
+  padding: 1rem;
+  opacity: 0;
+  transform: translateY(-6px);
+  pointer-events: none;
+  visibility: hidden;
+  transition:
+    opacity 180ms var(--sc-ease-out),
+    transform 180ms var(--sc-ease-out),
+    visibility 0s linear 180ms;
+}
+/* v3: hidden from the keyboard while closed (the artifact left 12 invisible tab stops). */
+.nd-ledger.is-open {
+  opacity: 1;
+  transform: none;
+  pointer-events: auto;
+  visibility: visible;
+  transition-delay: 0s;
+}
+.nd-ledger h2 {
+  font-size: 1rem;
+  letter-spacing: 0;
+  margin: 0.2rem 0.4rem 0.7rem;
+}
+.nd-ledger ol {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+.nd-ledger a {
+  display: grid;
+  grid-template-columns: 1.6rem 1fr;
+  gap: 0.6rem;
+  align-items: center;
+  padding: 0.55rem 0.5rem;
+  border-radius: 10px;
+  text-decoration: none;
+  font-size: 0.95rem;
+}
+.nd-ledger a:hover {
+  background: #f0f3f1;
+}
+.nd-ledger .tick {
+  width: 1.25rem;
+  height: 1.25rem;
+  border-radius: 50%;
+  border: 1.5px solid #9aa6a2;
+  display: grid;
+  place-items: center;
+}
+.nd-ledger .is-done .tick {
+  background: var(--sc-accent);
+  border-color: var(--sc-accent);
+}
+.nd-ledger .is-done .tick::after {
+  content: "";
+  width: 0.32rem;
+  height: 0.6rem;
+  border: solid #fff;
+  border-width: 0 2px 2px 0;
+  transform: translateY(-1px) rotate(45deg);
+}
+.nd-ledger .is-now {
+  background: #eef5f1;
+  font-weight: 600;
+}
+.nd-ledger__pages {
+  border-top: 1px solid var(--nd-line);
+  margin-top: 0.8rem;
+  padding-top: 0.8rem;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem 0.9rem;
+}
+.nd-ledger__pages a {
+  display: inline;
+  padding: 0.3rem 0.2rem;
+  font-weight: 500;
+}
+
+/* Mobile sticky booking bar (appears after the hero). */
+.nd-sticky {
+  position: fixed;
+  z-index: 65;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  padding: 0.6rem max(0.75rem, env(safe-area-inset-left)) calc(0.6rem + env(safe-area-inset-bottom));
+  background: rgba(255, 255, 255, 0.96);
+  border-top: 1px solid var(--nd-line);
+  display: none;
+  align-items: center;
+  gap: 0.6rem;
+  transform: translateY(110%);
+  transition: transform 220ms var(--sc-ease-out);
+}
+.nd-sticky.is-on {
+  transform: none;
+}
+/* v3: while it is down, out of the keyboard's reach too (it was a hidden tab
+   stop on every phone page); it goes after its slide, and comes before it. */
+.nd-sticky {
+  visibility: hidden;
+  transition:
+    transform 220ms var(--sc-ease-out),
+    visibility 0s linear 220ms;
+}
+.nd-sticky.is-on {
+  visibility: visible;
+  transition-delay: 0s;
+}
+.nd-sticky .nd-btn {
+  flex: 1;
+  min-height: 46px;
+}
+.nd-sticky__free {
+  font-size: 0.74rem;
+  line-height: 1.2;
+  color: var(--sc-ink-soft);
+  max-width: 7.5rem;
+}
+.nd-sticky__wa {
+  flex: none !important;
+  width: 46px;
+  padding: 0 !important;
+}
+@media (max-width: 860px) {
+  .nd-sticky {
+    display: flex;
+  }
+}
+.nd-wa-float {
+  position: fixed;
+  z-index: 64;
+  right: 1.25rem;
+  bottom: 1.25rem;
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  background: #0b6e3e;
+  color: #fff;
+  display: grid;
+  place-items: center;
+  box-shadow: var(--sc-e3);
+  text-decoration: none;
+  transition: transform 140ms var(--sc-ease-out);
+}
+.nd-wa-float:hover {
+  transform: translateY(-2px);
+}
+.nd-wa-float svg,
+.nd-sticky__wa svg {
+  width: 26px;
+  height: 26px;
+}
+@media (max-width: 860px) {
+  .nd-wa-float {
+    display: none;
+  }
+}
+
+/* ------------------------------------------------------------------ bags */
+/* A clear bag that fills: the empty-bag photo on top, a tinted fill under it,
+   clipped to the bag's silhouette. Fill level from --fill (0..1). */
+.nd-bag {
+  position: relative;
+  aspect-ratio: 577 / 1200;
+  width: 100%;
+  --fill: 1;
+}
+.nd-bag__fill {
+  position: absolute;
+  inset: 0;
+  -webkit-mask: url(/site/v3/bag-mask.png) 0 0 / 100% 100% no-repeat;
+  mask: url(/site/v3/bag-mask.png) 0 0 / 100% 100% no-repeat;
+}
+.nd-bag__fill::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 13.5%;
+  height: 79.5%;
+  background: linear-gradient(180deg, color-mix(in oklab, var(--tint) 72%, #fff) 0%, var(--tint) 100%);
+  opacity: 0.84;
+  transform-origin: 50% 100%;
+  transform: scaleY(var(--fill));
+}
+.nd-bag__fill::after {
+  content: "";
+  position: absolute;
+  left: 6%;
+  right: 6%;
+  bottom: calc(13.5% + var(--fill) * 79.5%);
+  height: 2px;
+  background: rgba(255, 255, 255, 0.8);
+  opacity: min(1, calc(var(--fill) * 6));
+}
+.nd-bag__img {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+}
+
+/* ---------------------------------------------------------------- forms */
+.nd-form {
+  display: grid;
+  gap: 1rem;
+}
+.nd-field {
+  display: grid;
+  gap: 0.4rem;
+}
+.nd-field label,
+.nd-field legend {
+  font-weight: 600;
+  font-size: 0.95rem;
+}
+.nd-field input,
+.nd-field select,
+.nd-field textarea {
+  width: 100%;
+  min-height: 50px;
+  padding: 0.75rem 0.9rem;
+  border: 1.5px solid #b9c4c0;
+  border-radius: 12px;
+  background: #fff;
+  color: var(--sc-ink);
+  font-size: 1rem;
+}
+.nd-field textarea {
+  min-height: 7rem;
+  resize: vertical;
+}
+.nd-field input:focus,
+.nd-field select:focus,
+.nd-field textarea:focus {
+  border-color: var(--sc-ink);
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(13, 107, 70, 0.25);
+}
+.nd-field [aria-invalid="true"] {
+  border-color: #b3261e;
+}
+.nd-err {
+  color: #9c1f17;
+  font-size: 0.86rem;
+  min-height: 0;
+}
+.nd-seg {
+  display: flex;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+  border: 0;
+  padding: 0;
+  margin: 0;
+}
+.nd-seg label {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  min-height: 46px;
+  padding: 0.55rem 1rem;
+  border: 1.5px solid #b9c4c0;
+  border-radius: 999px;
+  font-weight: 500;
+  cursor: pointer;
+  background: #fff;
+}
+.nd-seg input {
+  accent-color: var(--sc-accent);
+  width: 1.05rem;
+  height: 1.05rem;
+  margin: 0;
+}
+.nd-seg label:has(input:checked) {
+  border-color: var(--sc-ink);
+  background: #eef5f1;
+}
+.nd-consent {
+  display: grid;
+  grid-template-columns: 1.3rem 1fr;
+  gap: 0.7rem;
+  align-items: start;
+  font-size: 0.9rem;
+  color: var(--sc-ink-soft);
+}
+.nd-consent input {
+  width: 1.2rem;
+  height: 1.2rem;
+  margin-top: 0.15rem;
+  accent-color: var(--sc-accent);
+}
+.nd-out {
+  border: 1.5px dashed #9aa6a2;
+  border-radius: 14px;
+  padding: 1rem;
+  background: #fafbfa;
+  display: grid;
+  gap: 0.8rem;
+}
+.nd-out pre {
+  margin: 0;
+  white-space: pre-wrap;
+  font: 0.92rem/1.5 var(--sc-font-text);
+  color: var(--sc-ink);
+}
+.nd-out__actions {
+  display: flex;
+  gap: 0.6rem;
+  flex-wrap: wrap;
+}
+.nd-status {
+  font-size: 0.92rem;
+  font-weight: 500;
+  color: var(--sc-ink);
+}
+
+/* ------------------------------------------------------------- the slip */
+.nd-slip {
+  background: #fff;
+  color: var(--sc-ink);
+  border-radius: 22px;
+  box-shadow: var(--sc-e2);
+  border: 1px solid var(--nd-line);
+  padding: clamp(1.25rem, 3vw, 2.25rem);
+  position: relative;
+  overflow: hidden;
+}
+.nd-slip::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  width: 8px;
+  background: var(--tint);
+}
+.nd-slip__head {
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+  align-items: flex-start;
+  padding-bottom: 1rem;
+  margin-bottom: 1.1rem;
+  border-bottom: 1px dashed #b9c4c0;
+}
+.nd-slip__drip {
+  font: 600 clamp(1.3rem, 1rem + 1vw, 1.7rem)/1.1 var(--sc-font-display);
+  letter-spacing: -0.02em;
+}
+.nd-slip__free {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  margin-top: 0.5rem;
+  padding: 0.35rem 0.7rem;
+  border-radius: 999px;
+  background: #e3f2ea;
+  color: #0a4f33;
+  font-weight: 600;
+  font-size: 0.9rem;
+}
+.nd-slip__price {
+  text-align: right;
+  font-size: 0.9rem;
+  color: var(--sc-ink-soft);
+}
+.nd-slip__price b {
+  display: block;
+  font: 600 1.35rem/1.1 var(--sc-font-display);
+  color: var(--sc-ink);
+}
+/* The slip's note above its button: on every slip (landing, IV vs Tablets, drip
+   page), so it no longer depends on which page's stylesheet was loaded first. */
+.nd-slip__body {
+  margin-bottom: 1.2rem;
+}
+/* The slip's empty state ("Drip to be suggested", "From ₹5,400") is longer
+   than a drip's name, and at 390 px it squeezed the time pill into four
+   broken lines. On a narrow phone the price goes under the name. Here, not in
+   one page's stylesheet, so every page's slip gets it on first load. */
+@media (max-width: 480px) {
+  .nd-slip__head {
+    flex-direction: column;
+    gap: 0.7rem;
+  }
+  .nd-slip__price {
+    text-align: left;
+  }
+  .nd-slip__free {
+    white-space: nowrap;
+  }
+}
+
+/* -------------------------------------------------------------- footer */
+.nd-foot {
+  background: var(--nd-dark);
+  color: var(--nd-dark-ink);
+  padding: clamp(3rem, 6vw, 5rem) 0 calc(2rem + 76px);
+  --sc-ink: var(--nd-dark-ink);
+  --sc-ink-soft: var(--nd-dark-soft);
+}
+@media (min-width: 861px) {
+  .nd-foot {
+    padding-bottom: 2.5rem;
+  }
+}
+.nd-foot .nd-mark {
+  color: var(--nd-dark-ink);
+}
+.nd-foot .nd-mark small {
+  color: var(--nd-dark-soft);
+}
+.nd-foot__grid {
+  display: grid;
+  grid-template-columns: 1.3fr 1fr 1fr;
+  gap: 2rem;
+}
+.nd-foot h3 {
+  font: 600 0.82rem/1 var(--sc-font-text);
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--nd-dark-soft);
+  margin-bottom: 0.9rem;
+}
+.nd-foot ul {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 0.45rem;
+}
+.nd-foot a {
+  color: var(--nd-dark-ink);
+  text-decoration: none;
+}
+.nd-foot a:hover {
+  text-decoration: underline;
+}
+.nd-foot__legal {
+  margin-top: 2.5rem;
+  padding-top: 1.5rem;
+  border-top: 1px solid #2a3431;
+  font-size: 0.86rem;
+  color: var(--nd-dark-soft);
+  display: grid;
+  gap: 0.6rem;
+  max-width: 80ch;
+}
+@media (max-width: 860px) {
+  .nd-foot__grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* -------------------------------------------------------- pinned acts */
+/* A pinned act's height is reserved from first paint (--span, --span-m on the
+   section), so the engine's own write at mount moves nothing: the client's
+   artifact shifted the page by CLS 1.0. Shared by every page with an act. */
+.act-res {
+  height: calc(var(--span) * 100vh);
+}
+@media (max-width: 860px) {
+  .act-res {
+    height: calc(var(--span-m) * 100vh);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .act-res {
+    height: auto;
+  }
+}
+.nd-still {
+  position: relative !important;
+  top: auto !important;
+}
+
+/* ------------------------------------------------- shared page sections */
+.nd-pagehead {
+  padding-top: calc(var(--bar-h) + clamp(2.5rem, 6vw, 5rem));
+  padding-bottom: clamp(2rem, 5vw, 4rem);
+}
+.nd-pagehead .nd-q {
+  max-width: 20ch;
+  margin-top: 0.8rem;
+}
+.nd-pagehead .nd-lede {
+  margin-top: 1.1rem;
+}
+/* The trail at the top of a page (v3/Crumbs.tsx): Home as a small pill with
+   its house, chevrons between, the page itself in ink. Quieter than the
+   client's underlined line, and a real tap target. Inherits the dark band's
+   colours on a dark head. */
+.nd-crumbs ol {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.4rem 0.55rem;
+  font-size: 0.88rem;
+  line-height: 1.25;
+}
+.nd-crumbs li {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.55rem;
+  min-width: 0;
+  color: var(--sc-ink-soft);
+}
+.nd-crumbs li + li::before {
+  content: "";
+  flex: none;
+  width: 0.38rem;
+  height: 0.38rem;
+  border: solid currentColor;
+  border-width: 1.5px 1.5px 0 0;
+  transform: rotate(45deg);
+  opacity: 0.5;
+  margin-right: 0.1rem;
+}
+.nd-crumbs a {
+  color: var(--sc-ink-soft);
+  text-decoration: none;
+  text-underline-offset: 0.22em;
+  transition: color 160ms var(--sc-ease-out);
+}
+.nd-crumbs a:hover {
+  color: var(--sc-ink);
+  text-decoration: underline;
+}
+.nd-crumbs .nd-crumbs__home {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  min-height: 32px;
+  padding: 0.3rem 0.75rem 0.3rem 0.6rem;
+  border: 1px solid var(--nd-line);
+  border-radius: 999px;
+  background: color-mix(in oklab, var(--sc-canvas) 40%, transparent);
+  color: var(--sc-ink);
+  font-weight: 500;
+  transition:
+    border-color 160ms var(--sc-ease-out),
+    background-color 160ms var(--sc-ease-out);
+}
+.nd-crumbs .nd-crumbs__home:hover {
+  border-color: var(--sc-ink);
+  text-decoration: none;
+}
+.nd-crumbs__home svg {
+  flex: none;
+}
+.nd-dark .nd-crumbs .nd-crumbs__home {
+  background: transparent;
+}
+.nd-crumbs [aria-current="page"] {
+  color: var(--sc-ink);
+  font-weight: 600;
+}
+.nd-crumbs [aria-current="page"] span {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.nd-pagehead .nd-crumbs + .nd-q,
+.nd-crumbs + .nd-q {
+  margin-top: 1.1rem;
+}
+/* A narrow phone keeps a long trail on one line: the page's own name, the
+   heading right under it, leaves the trail when it is the fourth step. */
+@media (max-width: 560px) {
+  .nd-crumbs li[aria-current="page"]:nth-child(n + 4) {
+    display: none;
+  }
+}
+.nd-grid2 {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: clamp(1.5rem, 4vw, 4rem);
+  align-items: start;
+}
+@media (max-width: 860px) {
+  .nd-grid2 {
+    grid-template-columns: 1fr;
+  }
+}
+.nd-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.97rem;
+}
+.nd-table th,
+.nd-table td {
+  text-align: left;
+  padding: 0.85rem 0.75rem;
+  border-bottom: 1px solid var(--nd-line);
+  vertical-align: top;
+}
+.nd-table th {
+  font-size: 0.8rem;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--sc-ink-soft);
+  font-weight: 600;
+}
+.nd-table td:first-child {
+  font-weight: 600;
+  white-space: nowrap;
+}
+.nd-rule-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: grid;
+  gap: 0;
+  border-top: 1px solid var(--nd-line);
+}
+.nd-rule-list li {
+  display: grid;
+  grid-template-columns: minmax(9rem, 14rem) 1fr;
+  gap: 1.25rem;
+  padding: 1.1rem 0;
+  border-bottom: 1px solid var(--nd-line);
+}
+.nd-rule-list b {
+  font-family: var(--sc-font-display);
+  font-weight: 600;
+  font-size: 1.05rem;
+}
+@media (max-width: 640px) {
+  .nd-rule-list li {
+    grid-template-columns: 1fr;
+    gap: 0.3rem;
+  }
+  .nd-table td:first-child {
+    white-space: normal;
+  }
+}
+.nd-callout {
+  background: #fff;
+  border: 1px solid var(--nd-line);
+  border-radius: 18px;
+  padding: clamp(1.1rem, 2.5vw, 1.8rem);
+}
+.nd-faq details {
+  border-bottom: 1px solid var(--nd-line);
+}
+.nd-faq summary {
+  cursor: pointer;
+  list-style: none;
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 1.15rem 0;
+  font: 600 1.12rem/1.3 var(--sc-font-display);
+}
+.nd-faq summary::-webkit-details-marker {
+  display: none;
+}
+.nd-faq summary::after {
+  content: "+";
+  font-size: 1.5rem;
+  line-height: 1;
+  font-weight: 400;
+  transition: transform 180ms var(--sc-ease-out);
+}
+.nd-faq details[open] summary::after {
+  transform: rotate(45deg);
+}
+/* While an answer glides shut (v3/Accordions.tsx) the details is still open,
+   so the cross turns back at once rather than at the end. */
+.nd-faq details.is-closing summary::after {
+  transform: none;
+}
+.nd-faq details > div {
+  padding: 0 0 1.2rem;
+  color: var(--sc-ink-soft);
+  max-width: 66ch;
+}
+
+/* ---------------------------------------------------------- RMP gate */
+.nd-gate {
+  position: fixed;
+  inset: 0;
+  z-index: 90;
+  background: rgba(11, 15, 14, 0.94);
+  display: grid;
+  place-items: center;
+  padding: 1rem;
+  color: var(--nd-dark-ink);
+}
+.nd-gate[hidden] {
+  display: none;
+}
+.nd-gate__card {
+  max-width: 34rem;
+  background: var(--nd-dark-2);
+  border: 1px solid #2a3431;
+  border-radius: 22px;
+  padding: clamp(1.5rem, 4vw, 2.5rem);
+  display: grid;
+  gap: 1rem;
+}
+.nd-gate__card p {
+  color: var(--nd-dark-soft);
+}
+.nd-gate__card .nd-btn {
+  background: var(--nd-dark-ink);
+  color: var(--nd-dark);
+}
+.nd-gate__card .nd-btn--ghost {
+  background: transparent;
+  color: var(--nd-dark-ink);
+}
+body.nd-gated main {
+  filter: blur(14px);
+  pointer-events: none;
+  user-select: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .nd-sticky,
+  .nd-ledger {
+    transition: none;
+  }
+}
+
+/* booking section (every patient page) */
+.nd-book {
+  background: color-mix(in oklab, var(--tint) 10%, var(--sc-canvas));
+}
+.nd-book__facts {
+  list-style: none;
+  padding: 0;
+  margin: 1.5rem 0;
+  display: grid;
+  gap: 0.65rem;
+}
+.nd-book__facts li {
+  padding-left: 1.4rem;
+  position: relative;
+  color: var(--sc-ink-soft);
+}
+.nd-book__facts li::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 0.55em;
+  width: 0.55rem;
+  height: 0.55rem;
+  border-radius: 50%;
+  background: var(--sc-accent);
+}
+.nd-book__facts b {
+  color: var(--sc-ink);
+}
+.nd-book__intro .nd-lede {
+  margin-top: 1rem;
+}
+.nd-out[hidden] {
+  display: none;
+}
+fieldset.nd-field {
+  border: 0;
+  padding: 0;
+  margin: 0;
+  min-width: 0;
+}
+fieldset.nd-field legend {
+  padding: 0;
+  margin-bottom: 0.4rem;
+}
+
+/* ------------------------------------------------------------------ v3 */
+.nd-mark-link {
+  text-decoration: none;
+  color: inherit;
+  display: inline-flex;
+}
+.nd-bar__book .nd-cta {
+  flex-direction: row;
+  align-items: center;
+  gap: 0.7rem;
+}
+.nd-bar__book .nd-cta__free {
+  font-size: 0.78rem;
+  line-height: 1.25;
+  max-width: 9.5rem;
+}
+.nd-bar__book .nd-cta__free::before {
+  display: none;
+}
+.nd-bar__book .nd-btn--account {
+  background: transparent;
+  color: var(--sc-ink);
+  border-color: var(--nd-line);
+}
+@media (max-width: 1180px) {
+  .nd-bar__book .nd-btn--account {
+    display: none;
+  }
+}
+@media (max-width: 860px) {
+  .nd-bar__book .nd-cta__free {
+    display: none;
+  }
+  .nd-bar__book .nd-btn {
+    min-height: 40px;
+    padding: 0.5rem 0.9rem;
+    font-size: 0.88rem;
+  }
+}
+/* v3e: the header row (shared chrome, so it lives in site.css). The question button grows with the question; on the
+   long ones ("What if it's not right for me?") the row ran out of room and
+   the browser squeezed everything: the logo's tagline broke onto two lines
+   and the note beside the quiz button wrapped to four, out of the bar. Now
+   the logo, the links and the buttons keep their size; only the question may
+   give way (ellipsis, full text in the menu and the button's title). The note
+   is dropped on desktop: with seven links it cannot share the row with the
+   longer questions, and every quiz button below carries the same line. */
+.nd-bar__nav a {
+  white-space: nowrap;
+}
+.nd-mark,
+.nd-bar__nav,
+.nd-bar__book {
+  flex-shrink: 0;
+}
+.nd-mark small {
+  white-space: nowrap;
+}
+.nd-bar__end {
+  min-width: 0;
+}
+.nd-ledger-btn {
+  min-width: 0;
+  flex: 0 1 auto;
+}
+.nd-ledger-btn__count {
+  flex: none;
+}
+.nd-ledger-btn__q {
+  min-width: 0;
+}
+@media (min-width: 861px) {
+  .nd-bar__book .nd-cta__free {
+    display: none;
+  }
+}
+/* The client hid its five links below 1180 px; ours are seven, so they
+   leave the bar below 1340, where the longest question would otherwise be
+   cut. The question menu carries every page link. */
+@media (min-width: 1181px) and (max-width: 1339px) {
+  .nd-bar__nav {
+    display: none;
+  }
+  .nd-menu-btn {
+    display: inline-flex;
+  }
+}
+/* The label every bag carries: HTML over the photo, never baked in. */
+.nd-bag {
+  container-type: inline-size;
+}
+.nd-bag__label {
+  position: absolute;
+  left: 17%;
+  right: 17%;
+  top: 26%;
+  bottom: 30%;
+  background: #fff;
+  color: #0c1211;
+  border-radius: 6% / 4%;
+  padding: 9% 8%;
+  display: flex;
+  flex-direction: column;
+  gap: 4cqi;
+  box-shadow:
+    0 1px 0 rgba(0, 0, 0, 0.05),
+    0 6px 16px rgba(0, 0, 0, 0.14);
+}
+.nd-bag__mark b {
+  font-size: 11cqi;
+}
+.nd-bag__mark small {
+  font-size: 2.6cqi;
+  margin-top: 1.6cqi;
+}
+.nd-bag__name {
+  margin-top: auto;
+  padding-top: 3cqi;
+  border-top: 1px solid #d7deda;
+  font: 600 8cqi/1.05 var(--sc-font-display);
+  letter-spacing: -0.02em;
+}
+.nd-bag__vol {
+  font: 600 5.4cqi/1 var(--sc-font-text);
+  letter-spacing: 0.04em;
+  color: #46524f;
+}
+.nd-foot__zones {
+  grid-template-columns: 1fr 1fr;
+  column-gap: 1rem;
+}
+
+/* Page not found (components/site/NotFound.tsx). It can stand at any address,
+   so its rules live here, the one sheet every page has. No scroll motion: the
+   only movement is a link's arrow on hover. */
+.nf {
+  min-height: 72dvh;
+}
+.nf__grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1.1fr) minmax(0, 0.9fr);
+  gap: clamp(2.5rem, 6vw, 6rem);
+  align-items: start;
+}
+.nf__go {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  gap: 1rem 1.25rem;
+  margin-top: 2rem;
+}
+.nf__pages ul {
+  list-style: none;
+  margin: 0.9rem 0 0;
+  padding: 0;
+  border-top: 1px solid var(--nd-line);
+}
+.nf__pages li {
+  border-bottom: 1px solid var(--nd-line);
+}
+.nf__pages a {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  column-gap: 1rem;
+  align-items: center;
+  min-height: 44px;
+  padding: 0.85rem 0.15rem;
+  color: var(--sc-ink);
+  text-decoration: none;
+}
+.nf__name {
+  font: 600 1.05rem/1.3 var(--sc-font-display);
+  letter-spacing: -0.01em;
+}
+.nf__what {
+  grid-column: 1;
+  margin-top: 0.15rem;
+  color: var(--sc-ink-soft);
+  font-size: 0.93rem;
+  line-height: 1.4;
+}
+.nf__arrow {
+  grid-column: 2;
+  grid-row: 1 / span 2;
+  color: var(--sc-ink-soft);
+  transition:
+    transform 200ms var(--sc-ease-out),
+    color 200ms var(--sc-ease-out);
+}
+.nf__pages a:hover .nf__name {
+  text-decoration: underline;
+  text-decoration-thickness: 1px;
+  text-underline-offset: 0.2em;
+}
+.nf__pages a:hover .nf__arrow,
+.nf__pages a:focus-visible .nf__arrow {
+  transform: translateX(4px);
+  color: var(--sc-ink);
+}
+@media (max-width: 860px) {
+  .nf {
+    min-height: 0;
+  }
+  .nf__grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .nf__arrow {
+    transition: none;
+  }
+}

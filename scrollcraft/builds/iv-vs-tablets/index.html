@@ -1,0 +1,376 @@
+<!doctype html>
+<html lang="en-IN">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
+    <title>IV vs Tablets · NutriDrip</title>
+    <meta
+      name="description"
+      content="How tablets are absorbed compared with an IV drip, when tablets are enough, and when a doctor may choose IV."
+    />
+    <meta name="theme-color" content="#F5F7F5" />
+    <link rel="icon" href="data:," />
+    <link rel="preload" href="fonts/outfit-latin-wght-normal.woff2" as="font" type="font/woff2" crossorigin />
+    <link rel="preload" href="fonts/geist-latin-wght-normal.woff2" as="font" type="font/woff2" crossorigin />
+    <link rel="stylesheet" href="scrollcraft.css" />
+    <link rel="stylesheet" href="site.css" />
+    <link rel="stylesheet" href="ivtabs.css" />
+  </head>
+  <body
+    class="nd-page nd-ivt"
+    style="--tint: #7b5bd6"
+    data-levels='["Full dose","A little less","Less again","Part of the dose"]'
+  >
+    <div id="sc-root">
+      <span data-sc-progress></span>
+      <a class="visually-hidden" href="#main">Skip to content</a>
+
+      <!-- Stand-in for the restyled shared SiteChrome header (home-v3's markup). -->
+      <header class="nd-bar">
+        <div class="nd-bar__in">
+          <a class="nd-mark-link" href="/" aria-label="NutriDrip, IV nutrient therapy, home"
+            ><span class="nd-mark"
+              ><b>NutriDrip<sup>™</sup></b
+              ><small>IV NUTRIENT THERAPY</small></span
+            ></a
+          >
+          <nav class="nd-bar__nav" aria-label="Site">
+            <a href="/drips">Drips</a><a href="/how-it-works">How it works</a><a href="/pricing">Pricing</a
+            ><a href="/safety">Safety</a><a href="/iv-vs-tablets" aria-current="page">IV vs Tablets</a
+            ><a href="/zones">Zones</a><a href="/for-clinics">For clinics</a>
+          </nav>
+          <div class="nd-bar__end">
+            <button
+              class="nd-ledger-btn nd-menu-btn"
+              type="button"
+              data-menu-btn
+              aria-expanded="false"
+              aria-controls="nd-ledger"
+            >
+              Menu
+            </button>
+            <div class="nd-bar__book"><a class="nd-btn" href="/login">Sign in</a></div>
+            <div class="nd-bar__book">
+              <div class="nd-cta">
+                <a class="nd-btn" href="/quiz" data-quiz-link>Take the quiz</a
+                ><span class="nd-cta__free">Physician-reviewed before every session</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </header>
+      <div class="nd-ledger" id="nd-ledger" role="dialog" aria-label="Menu">
+        <h2>NutriDrip</h2>
+        <div class="nd-ledger__pages">
+          <a href="/">Home</a><a href="/drips">Drips</a><a href="/how-it-works">How it works</a
+          ><a href="/pricing">Pricing</a><a href="/safety">Safety</a
+          ><a href="/iv-vs-tablets" aria-current="page">IV vs Tablets</a><a href="/zones">Zones</a
+          ><a href="/for-clinics">For clinics</a><a href="/about">About</a>
+        </div>
+      </div>
+
+      <main id="main">
+        <section class="nd-pagehead">
+          <div class="nd-wrap">
+            <p class="nd-crumb"><a href="/">Home</a> · IV vs Tablets</p>
+            <h1 class="nd-q">Why IV and not tablets?</h1>
+            <p class="nd-lede">
+              The difference is the route a nutrient takes to reach your blood. Follow one dose each way.
+            </p>
+          </div>
+        </section>
+
+        <section
+          class="routes act-res"
+          data-sc-act="pin"
+          data-sc-span="4.2"
+          style="--span: 4.2; --span-m: 4.6"
+          aria-label="One dose by tablet and one by IV, stage by stage"
+        >
+          <div data-sc-stage class="routes__stage" data-sc-verify-state="0">
+            <div class="routes__grid">
+              <div class="route route--tab" data-route="tab">
+                <div class="route__head">
+                  <p class="route__k">By tablet</p>
+                  <div class="route__meter" aria-hidden="true"><span></span></div>
+                  <p class="route__lv" data-lv>Full dose</p>
+                </div>
+                <ol class="route__path">
+                  <li data-at="0.00">
+                    <b><span class="lg">Swallowed</span><span class="sm">Mouth</span></b>
+                    <p>One dose, taken by mouth.</p>
+                  </li>
+                  <li data-at="0.22" data-drop="0.88">
+                    <b>Stomach</b>
+                    <p>
+                      The tablet has to break down and dissolve first. B12 also needs intrinsic factor, made in the
+                      stomach.
+                    </p>
+                  </li>
+                  <li data-at="0.46" data-drop="0.62">
+                    <b><span class="lg">Small intestine</span><span class="sm">Gut</span></b>
+                    <p>
+                      Nutrients cross the gut wall through transporters that can fill up. Vitamin C, for one, is
+                      absorbed less efficiently at higher doses.
+                    </p>
+                  </li>
+                  <li data-at="0.70" data-drop="0.46">
+                    <b>Liver</b>
+                    <p>
+                      Blood from the gut passes through the liver first. For some substances, part of the dose is
+                      processed here (the first-pass effect).
+                    </p>
+                  </li>
+                  <li data-at="0.92">
+                    <b><span class="lg">Bloodstream</span><span class="sm">Blood</span></b>
+                    <p>What remains reaches your blood. How much varies with the nutrient, the dose and your gut.</p>
+                  </li>
+                </ol>
+                <span class="route__dose" aria-hidden="true"></span>
+              </div>
+              <div class="route route--iv" data-route="iv">
+                <div class="route__head">
+                  <p class="route__k">By IV drip</p>
+                  <div class="route__meter" aria-hidden="true"><span></span></div>
+                  <p class="route__lv" data-lv>Full dose</p>
+                </div>
+                <ol class="route__path">
+                  <li data-at="0.00">
+                    <b>Into a vein</b>
+                    <p>The drip runs into a vein in your arm, over 30 to 120 minutes.</p>
+                  </li>
+                  <li data-at="0.40">
+                    <b>Bloodstream</b>
+                    <p>The nutrients are in your blood directly. No stomach, gut or liver on the way.</p>
+                  </li>
+                </ol>
+                <span class="route__dose" aria-hidden="true"></span>
+              </div>
+            </div>
+            <div class="routes__end">
+              <p class="routes__sum">
+                Same dose, two routes. By mouth, part of it is absorbed. By IV, all of it enters the blood.
+              </p>
+              <p class="nd-small">
+                Illustration, not to scale. Real amounts depend on the nutrient, the dose and the person.
+              </p>
+              <div class="nd-cta">
+                <a class="nd-btn" href="/quiz" data-quiz-link>Take the health quiz</a
+                ><span class="nd-cta__free">A physician reads every answer</span>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <section class="sc-section" aria-labelledby="a-h">
+          <div class="nd-wrap ivt__grid">
+            <img
+              class="ivt__pic"
+              src="assets/tablets.webp"
+              width="1800"
+              height="1018"
+              alt="White tablets and capsules on a white surface in window light"
+              loading="lazy"
+            />
+            <div class="sc-stack">
+              <h2 id="a-h" class="nd-q nd-q--sm">How tablets are absorbed</h2>
+              <p class="nd-body">
+                A tablet dissolves in the stomach. Nutrients are absorbed mostly in the small intestine, through
+                carriers in the gut wall that can only move so much at once. Blood from the gut then flows through the
+                liver before reaching the rest of the body. Some of the dose is lost or held back along the way, and how
+                much depends on the nutrient, the dose, food in the gut and the health of the gut itself.
+              </p>
+            </div>
+          </div>
+        </section>
+
+        <section class="sc-section" style="background: #fff" aria-labelledby="b-h">
+          <div class="nd-wrap ivt__grid ivt__grid--flip">
+            <img
+              class="ivt__pic"
+              src="assets/ivline.webp"
+              width="1800"
+              height="1018"
+              alt="A clear IV line with a roller clamp on a white surface in window light"
+              loading="lazy"
+            />
+            <div class="sc-stack">
+              <h2 id="b-h" class="nd-q nd-q--sm">How an IV drip is different</h2>
+              <p class="nd-body">
+                An IV drip puts nutrients into a vein, so they are in the blood straight away. They skip the stomach,
+                the gut wall and the first pass through the liver. That is why IV doses are set by a doctor, run slowly,
+                and given only after tests.
+              </p>
+            </div>
+          </div>
+        </section>
+
+        <section class="sc-section" aria-labelledby="c-h">
+          <div class="nd-wrap nd-grid2 ivt__cards">
+            <div class="ivt__card">
+              <h2 id="c-h" class="nd-q nd-q--sm">When tablets are enough</h2>
+              <p class="nd-body">
+                For many people with a varied diet and a healthy gut, food and tablets are enough, and they are usually
+                the first thing a doctor tries. We&#39;ll tell you if that&#39;s you.
+              </p>
+            </div>
+            <div class="ivt__card">
+              <h2 class="nd-q nd-q--sm">When a doctor may choose IV</h2>
+              <ul class="ivt__list">
+                <li>Poor absorption from the gut.</li>
+                <li>A deficiency found on your blood tests.</li>
+                <li>Gut conditions that make tablets hard to take or absorb.</li>
+                <li>When nutrients are needed quickly, as with IV iron for low iron stores.</li>
+              </ul>
+            </div>
+          </div>
+        </section>
+
+        <section class="sc-section nd-dark" aria-labelledby="d-h">
+          <div class="nd-wrap nd-grid2">
+            <div class="sc-stack">
+              <h2 id="d-h" class="nd-q nd-q--sm">The limits, honestly</h2>
+              <p class="nd-body">
+                IV is a medical procedure. It needs tests, a doctor&#39;s prescription and a trained team. It carries
+                small risks that tablets don&#39;t, such as bruising at the cannula site or, rarely, an allergic
+                reaction, which is why emergency drugs are at the chair.
+              </p>
+            </div>
+            <div class="sc-stack">
+              <p class="nd-body">
+                IV isn&#39;t better for everyone. It&#39;s another route, and the doctor chooses it only when it fits
+                your results.
+              </p>
+              <p><a class="nd-link ivt__dlink" href="/drips">See what&#39;s in every drip</a></p>
+              <div class="nd-cta">
+                <a class="nd-btn" href="/quiz" data-quiz-link>Take the health quiz</a
+                ><span class="nd-cta__free">A physician reads every answer</span>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- READY TO BOOK? home-v3's section. The slip shows the drip picked on the
+     landing (localStorage nd-drip), else none: the physician suggests one. -->
+        <section class="sc-section nd-book" id="book">
+          <div class="nd-wrap nd-grid2">
+            <div class="nd-book__intro">
+              <h2 class="nd-q">Ready to book?</h2>
+              <p class="nd-lede">
+                Three minutes of questions, read by a registered physician. If a drip is not right for you, they will
+                say so, and tell you what is.
+              </p>
+              <ul class="nd-book__facts">
+                <li><b>A physician reviews you first</b>, before anything is booked.</li>
+                <li><b>A nurse comes to your home</b> in 14 zones across Bengaluru.</li>
+                <li><b>Free to move or cancel</b> up to 4 hours before your slot.</li>
+              </ul>
+            </div>
+            <div class="nd-slip">
+              <div class="nd-slip__head">
+                <div>
+                  <p class="nd-tag">Your drip</p>
+                  <p class="nd-slip__drip" data-chosen-name>Drip to be suggested</p>
+                  <p class="nd-slip__free"><span data-chosen-duration>30–120 min</span> · at your home</p>
+                </div>
+                <p class="nd-slip__price">per session<b data-chosen-price>From ₹5,400</b></p>
+              </div>
+              <p class="nd-body nd-slip__body" data-slip-body>
+                The quiz asks what a physician needs to know before they will put their name to a protocol. Not sure
+                which drip? Answer anyway: the physician chooses with you.
+              </p>
+              <div class="nd-cta">
+                <a class="nd-btn" href="/quiz" data-quiz-link>Take the quiz to book this</a
+                ><span class="nd-cta__free">No card needed to get a protocol reviewed</span>
+              </div>
+            </div>
+          </div>
+        </section>
+      </main>
+
+      <!-- Stand-in for the restyled shared SiteChrome footer (home-v3's markup). -->
+      <footer class="nd-foot">
+        <div class="nd-wrap">
+          <div class="nd-foot__grid">
+            <div>
+              <a class="nd-mark-link" href="/"
+                ><span class="nd-mark"
+                  ><b>NutriDrip<sup>™</sup></b
+                  ><small>IV NUTRIENT THERAPY</small></span
+                ></a
+              >
+              <p class="nd-small" style="margin-top: 1rem; max-width: 36ch">
+                IV nutrient therapy at home in Bengaluru, reviewed by a registered physician and given by a
+                council-registered nurse.
+              </p>
+              <p class="nd-small" style="margin-top: 0.8rem">
+                NutriDrip Health Pvt. Ltd. · Clinical establishment reg. KA/CEA/2024/11872
+              </p>
+            </div>
+            <div>
+              <h3>Now serving</h3>
+              <ul class="nd-foot__zones">
+                <li>Koramangala</li>
+                <li>HSR Layout</li>
+                <li>Indiranagar</li>
+                <li>Ejipura</li>
+                <li>Domlur</li>
+                <li>Jayanagar</li>
+                <li>JP Nagar</li>
+                <li>BTM Layout</li>
+                <li>Richmond Town</li>
+                <li>Frazer Town</li>
+                <li>Sadashivanagar</li>
+                <li>Whitefield</li>
+                <li>Sarjapur Road</li>
+                <li>Hebbal</li>
+              </ul>
+            </div>
+            <div>
+              <h3>Pages</h3>
+              <ul>
+                <li><a href="/drips">Drips</a></li>
+                <li><a href="/how-it-works">How it works</a></li>
+                <li><a href="/pricing">Pricing</a></li>
+                <li><a href="/safety">Safety</a></li>
+                <li><a href="/iv-vs-tablets">IV vs Tablets</a></li>
+                <li><a href="/zones">Zones</a></li>
+                <li><a href="/faqs">FAQs</a></li>
+                <li><a href="/consult">Ask a clinician</a></li>
+                <li><a href="/for-clinics">For clinics</a></li>
+                <li><a href="/legal/terms">Terms</a></li>
+                <li><a href="/legal/privacy">Privacy</a></li>
+              </ul>
+            </div>
+          </div>
+          <div class="nd-foot__legal">
+            <p>
+              <b>IV nutrient therapy is a medical procedure.</b> Every protocol is reviewed by a registered physician
+              before anything is booked, and may not be suitable for everyone. Not a substitute for emergency care. In
+              an emergency call 108.
+            </p>
+          </div>
+        </div>
+      </footer>
+      <div class="nd-sticky" aria-label="Booking">
+        <a class="nd-btn" href="/quiz" data-quiz-link>Take the health quiz</a>
+        <span class="nd-sticky__free">A physician reads every answer</span>
+      </div>
+    </div>
+    <script>
+      window.ND_DRIPS = [
+        { slug: "hydrate-plus", name: "Hydrate Plus", tint: "#16A6B6", price: 5400, duration: "30–40 min" },
+        { slug: "jetlag-reset", name: "Jetlag Reset", tint: "#4B96E6", price: 6800, duration: "30–40 min" },
+        { slug: "myers-revive", name: "Myers' Revive", tint: "#7B5BD6", price: 8400, duration: "45–60 min" },
+        { slug: "immune-shield", name: "Immune Shield", tint: "#C13E8D", price: 9200, duration: "60–80 min" },
+        { slug: "post-viral-rebuild", name: "Post-viral Rebuild", tint: "#A47DDB", price: 9600, duration: "60–80 min" },
+        { slug: "iron-restore", name: "Iron Restore", tint: "#8C3E8A", price: 9800, duration: "90–120 min" },
+        { slug: "athletic-recovery", name: "Athletic Recovery", tint: "#4A4FB5", price: 10200, duration: "55–75 min" },
+        { slug: "deep-recharge", name: "Deep Recharge", tint: "#B65CC8", price: 10600, duration: "60–80 min" },
+        { slug: "glow-protocol", name: "Glow Protocol", tint: "#DB5B93", price: 11000, duration: "50–70 min" },
+      ];
+    </script>
+    <script src="scrollcraft.js"></script>
+    <script src="page.js"></script>
+  </body>
+</html>

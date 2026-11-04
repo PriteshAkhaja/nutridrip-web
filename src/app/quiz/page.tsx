@@ -8,6 +8,8 @@ import { quizCtaFor } from "@/lib/data/quiz-cta";
 import { connectDB } from "@/lib/db/mongoose";
 import { HealthQuiz } from "@/lib/models";
 import { approvalState } from "@/lib/clinical/validity";
+import { SITE_ICONS } from "@/components/site/site-icons";
+import { ClientTheme } from "@/components/site/account/ClientTheme";
 
 /** What a retake will do, in the patient's terms, by where their last answers stand. */
 async function retakeNoteFor(patientId: string): Promise<string | null> {
@@ -25,7 +27,8 @@ async function retakeNoteFor(patientId: string): Promise<string | null> {
   return null;
 }
 
-export const metadata: Metadata = { title: "Health quiz" };
+// Every "Take the quiz" on the site opens this in the same tab: keep the site's icon.
+export const metadata: Metadata = { title: "Health quiz", icons: SITE_ICONS };
 
 /** Never cached — the quiz must reflect an admin edit immediately. */
 export const dynamic = "force-dynamic";
@@ -56,7 +59,11 @@ export default async function QuizPage({
   const questions = await loadQuestions();
   const retakeNote = retake === "1" ? await retakeNoteFor(session.sub) : null;
 
+  // In the client's design, as sign-in is: the site's palette, type and
+  // corners on the app's components (ClientTheme), with the quiz's own bar.
   return (
-    <QuizFlow questions={questions} preferredDrip={drip ?? null} retake={retake === "1"} retakeNote={retakeNote} />
+    <ClientTheme className="nd-quiz">
+      <QuizFlow questions={questions} preferredDrip={drip ?? null} retake={retake === "1"} retakeNote={retakeNote} />
+    </ClientTheme>
   );
 }

@@ -33,3 +33,30 @@ export async function dripPhotos(): Promise<(d: { id: string; slug: string; cate
   const media = await getSiteMedia();
   return (d) => applyMedia(dripImage(d.slug, d.category), media.get(dripSlot(d.slug)));
 }
+
+/**
+ * A drip's photo only when the admin has uploaded one (Admin → Site images),
+ * else null. The redesigned site shows the drip's own bag in its colour, and
+ * an upload in the bag's place: on its card, and in its page's first screen
+ * (the user's rule, 2026-11-03). The shipped stand-ins are never shown there.
+ */
+/**
+ * A place's photo only when the admin has uploaded one, else null: for places
+ * that must never show a stand-in (the About page's team, 2026-11-03: only real
+ * photographs of the people, as the client's page promises).
+ */
+export async function uploadedSiteImages(): Promise<(slot: SlotKey) => SiteImage | null> {
+  const media = await getSiteMedia();
+  return (slot) => {
+    const row = media.get(slot);
+    return row?.file && row.width && row.height ? applyMedia(SITE_IMAGES[SLOTS[slot].fallback], row) : null;
+  };
+}
+
+export async function uploadedDripPhotos(): Promise<(slug: string) => SiteImage | null> {
+  const media = await getSiteMedia();
+  return (slug) => {
+    const row = media.get(dripSlot(slug));
+    return row?.file && row.width && row.height ? applyMedia(dripImage(slug, ""), row) : null;
+  };
+}

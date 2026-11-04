@@ -1,6 +1,7 @@
 import { z } from "zod";
 import { ProductMaster } from "@/lib/models";
 import { DRIP_CATEGORIES, INGREDIENT_ROLES, UNITS } from "@/lib/models/types";
+import { SITE_TINT_VALUES } from "@/lib/tints";
 import { sameFamily } from "./units";
 
 export const Ingredient = z.object({
@@ -36,6 +37,8 @@ export const DripInput = z.object({
   /** One or two characters — an emoji, not a colour. */
   icon: z.string().max(8).nullable().optional(),
   isPopular: z.boolean().default(false),
+  /** Its colour on the public site, from the safe palette. Null: the default. */
+  tint: z.enum(SITE_TINT_VALUES).nullable().optional(),
   benefits: z
     .array(z.object({ title: z.string().min(1).max(80), description: z.string().max(400).optional() }))
     .max(6)
