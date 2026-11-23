@@ -2,7 +2,7 @@
  * The liquid inside a bag (.nd-bag__fill), shared by the landing's build and
  * the drip page's companion bag. The level starts empty; liquid.ts moves it.
  */
-export function LiquidFill({ drops, rings }: { drops: number; rings: number }) {
+export function LiquidFill({ drops, rings, blooms = 0 }: { drops: number; rings: number; blooms?: number }) {
   return (
     <div className="nd-bag__fill">
       <div className="liq">
@@ -10,6 +10,15 @@ export function LiquidFill({ drops, rings }: { drops: number; rings: number }) {
           <Wave back />
           <Wave />
         </div>
+        {/* Clouds of an ingredient's colour rising into the liquid as it goes
+            in (the drip page, motion-v4): kept under the surface (--liq-y). */}
+        {blooms ? (
+          <div className="liq__blooms" aria-hidden="true">
+            {Array.from({ length: blooms }, (_, i) => (
+              <i key={i} className="liq__bloom" />
+            ))}
+          </div>
+        ) : null}
       </div>
       {Array.from({ length: drops }, (_, i) => (
         <i key={`d${i}`} className="liq__drop" />

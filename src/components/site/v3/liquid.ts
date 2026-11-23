@@ -40,6 +40,8 @@ export function createLiquid(
   const waveEls = [...bag.querySelectorAll<HTMLElement>(".liq__wave")];
   const dropEls = [...bag.querySelectorAll<HTMLElement>(".liq__drop")];
   const ringEls = [...bag.querySelectorAll<HTMLElement>(".liq__ring")];
+  // Where a page blooms colour into the liquid, kept under the surface.
+  const bloomBox = bag.querySelector<HTMLElement>(".liq__blooms");
   const liq = {
     to: 0,
     lvl: 0,
@@ -60,6 +62,7 @@ export function createLiquid(
     if (!levelEl) return;
     const y = surfaceY();
     levelEl.style.transform = `translate3d(0,${y.toFixed(2)}px,0) rotate(${liq.tilt.toFixed(3)}deg)`;
+    if (bloomBox) bloomBox.style.clipPath = `inset(${y.toFixed(1)}px 0 0 0)`;
     waveEls.forEach((w) => {
       w.style.transform = `scaleY(${liq.amp.toFixed(3)})`;
       w.style.opacity = String(Math.min(1, liq.lvl * 30));

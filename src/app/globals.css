@@ -59,24 +59,25 @@
      this instead. It clears AA for body text at 6.88:1. */
   --color-ink-on-dark: #949a9f;
 
-  /* The page loader. It now FOLLOWS the brand rather than holding its own
-     blue.
+  /* The page loader. It only ever runs on the public site (SiteShell), which
+     wears the client's design (adopted 2026-10-30, v3/styles/site.css), so it
+     holds that design's values, as literals: the pale ground, the ink, the
+     line and the green accent. It used to follow the brand blue, to match the
+     site it loaded; the public site no longer uses the brand colour, and the
+     loader is the first thing a visitor sees of it. It sits outside .sc-site,
+     so it cannot read the site's own tokens; nothing but DripLoader reads these.
 
-     It used to be pinned to a separate sky blue (#2E90DC) so that a move of
-     the brand could not recolour it by accident. In practice that produced the
-     opposite problem: the loader is the first thing anyone sees, and it was
-     visibly a different blue from the site it was loading. Matching by
-     reference rather than by copying two hex values means they cannot drift
-     apart again. To decouple them once more, put literals back here — nothing
-     else needs to change, because the loader only ever reads these three.
-
-     Contrast is better under the brand blue, not merely no worse:
-       fluid on the bag's headspace   4.14:1  (was 3.07:1, WCAG 1.4.11 wants 3:1)
-       fluid on white                 4.60:1  (was 3.42:1)
-       counter text on white          7.88:1  (was 4.96:1, 13px text wants 4.5:1) */
-  --color-loader: var(--color-primary);
-  --color-loader-soft: var(--color-primary-soft);
-  --color-loader-ink: var(--color-primary-text);
+     Contrast on the ground (#f5f7f5):
+       counter, green                 6.1:1   (13px text wants 4.5:1)
+       label, soft ink                7.6:1
+       wordmark, ink                  17.6:1 */
+  --color-loader: #0d6b46;
+  --color-loader-soft: #dfece5;
+  --color-loader-ink: #0d6b46;
+  --color-loader-ground: #f5f7f5;
+  --color-loader-text: #0c1211;
+  --color-loader-muted: #46524f;
+  --color-loader-line: #d7deda;
 
   /* Apricot survives for one job only: the vitality ring. */
   --color-accent: #e08a4c;
@@ -297,37 +298,10 @@
    Motion
    -------------------------------------------------------------------------- */
 /* --------------------------------------------------------------------------
-   Loader — the Fill primitive at page scale. The bag drains, the wordmark
-   fills, and the counter carries the real number, exactly as every other Fill
-   in the product does. It is drawn in light blue (--color-loader), by request.
+   Loader — the Fill primitive at page scale, in the client's look: the
+   site's bag fills, the NutriDrip™ wordmark fills with it, and the counter
+   carries the real number, exactly as every other Fill in the product does.
    -------------------------------------------------------------------------- */
-@keyframes ndDropFall {
-  0% {
-    transform: translateY(0) scaleY(0.7);
-    opacity: 0;
-  }
-  12% {
-    opacity: 1;
-  }
-  85% {
-    opacity: 1;
-  }
-  100% {
-    transform: translateY(var(--nd-drop-distance, 120px)) scaleY(1.25);
-    opacity: 0;
-  }
-}
-@keyframes ndPulse {
-  0%,
-  100% {
-    transform: scale(1);
-    opacity: 0.55;
-  }
-  50% {
-    transform: scale(1.9);
-    opacity: 0;
-  }
-}
 @keyframes ndFadeOut {
   to {
     opacity: 0;
@@ -338,6 +312,17 @@
   from {
     opacity: 0;
   }
+}
+/* The loader's liquid stays inside the bag's own shape: the site's bag mask,
+   cut to the loader's size (public/site/v3/loader-bag-mask.png, 2.4 KB), here
+   as data so it is there from the intro's first frame. A mask fetched by URL
+   only loads once its element shows, which left the intro without its liquid
+   for its first few hundred milliseconds. */
+.nd-loader-mask {
+  -webkit-mask: url("data:image/png;base64,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")
+    0 0 / 100% 100% no-repeat;
+  mask: url("data:image/png;base64,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")
+    0 0 / 100% 100% no-repeat;
 }
 
 /* The intro loader (IntroLoader) is in the server HTML of every public page
@@ -367,12 +352,18 @@
     --nd-count: 100;
   }
 }
-@keyframes ndIntroDrain {
+@keyframes ndIntroFill {
+  from {
+    transform: scaleY(0);
+  }
   to {
-    transform: translateY(120px);
+    transform: scaleY(1);
   }
 }
-@keyframes ndIntroLetter {
+@keyframes ndIntroMark {
+  from {
+    clip-path: inset(0 100% 0 0);
+  }
   to {
     clip-path: inset(0 0 0 0);
   }
@@ -407,16 +398,15 @@
   .intro-count::after {
     content: counter(nd-count) "%";
   }
+  /* The bag and the wordmark fill on the count's own curve, so all three
+     read the same number at every frame. */
   .intro-fluid {
-    animation: ndIntroDrain var(--intro-ms, 800ms) cubic-bezier(0.3, 0.72, 0.62, 1) forwards;
+    transform: scaleY(0);
+    animation: ndIntroFill var(--intro-ms, 800ms) cubic-bezier(0.3, 0.72, 0.62, 1) forwards;
   }
-  /* Each letter's delay and length are set inline, so the word fills in step
-     with the number. */
-  .intro-letter {
+  .intro-mark {
     clip-path: inset(0 100% 0 0);
-    animation-name: ndIntroLetter;
-    animation-timing-function: linear;
-    animation-fill-mode: forwards;
+    animation: ndIntroMark var(--intro-ms, 800ms) cubic-bezier(0.3, 0.72, 0.62, 1) forwards;
   }
 }
 @keyframes ndRise {
@@ -454,8 +444,8 @@
 
 /* --------------------------------------------------------------------------
    Status pulse — a ring leaving the dot of a status still in motion (Pill).
-   Its own keyframes rather than ndPulse: that one belongs to the loader, which
-   keeps its tokens apart so a change there cannot move the status language.
+   Its own keyframes, kept apart from the loader's, so a change there cannot
+   move the status language.
    Starts at half strength and is gone by 70%, so the last stretch of each
    two-second cycle is still — a pulse, not a strobe.
    -------------------------------------------------------------------------- */

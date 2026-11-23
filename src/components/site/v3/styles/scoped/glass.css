@@ -318,6 +318,44 @@
     opacity: 0;
     will-change: transform;
   }
+  /* An ingredient's colour blooming up into the liquid from the port as it goes
+   in (the drip page): soft clouds in its band colour, multiplied into the
+   liquid like a dye, moved by transform and opacity only (no blur). The box is
+   clipped at the surface by liquid.ts. */
+  .sc-site .liq__blooms {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+  }
+  .sc-site .liq__bloom {
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 66%;
+    aspect-ratio: 1;
+    margin: -33% 0 0 -33%;
+    border-radius: 50%;
+    /* Where relative colour is not supported: the band colour itself. */
+    background: radial-gradient(
+      closest-side,
+      color-mix(in oklab, var(--c, var(--tint)) 90%, transparent) 0,
+      color-mix(in oklab, var(--c, var(--tint)) 55%, transparent) 40%,
+      color-mix(in oklab, var(--c, var(--tint)) 18%, transparent) 72%,
+      transparent 100%
+    );
+    /* The band colours are pale (printed under black type): the same hue, made
+     richer, so the dye shows in a tinted liquid. Laid over it, not multiplied,
+     so a yellow in a lilac bag stays yellow rather than turning to mud. */
+    background: radial-gradient(
+      closest-side,
+      oklch(from var(--c, var(--tint)) calc(l - 0.08) calc(c * 2.4) h / 0.85) 0,
+      oklch(from var(--c, var(--tint)) calc(l - 0.06) calc(c * 2.2) h / 0.5) 40%,
+      oklch(from var(--c, var(--tint)) l calc(c * 2) h / 0.15) 72%,
+      transparent 100%
+    );
+    opacity: 0;
+    will-change: transform, opacity;
+  }
   .sc-site .liq__ring {
     position: absolute;
     left: 50%;

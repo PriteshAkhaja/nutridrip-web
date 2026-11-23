@@ -96,18 +96,87 @@ function bandLines(it: GlassItem) {
   return lines;
 }
 
+/**
+ * Each character's advance in a band (Outfit 800 with its letter-spacing) at
+ * 100 px, measured in the browser (scrollcraft/builds/home-v2/tools/band-widths.mjs).
+ * Summed they come within about 1% of the real line (kerning), so the server
+ * can print a band at the size fitBands then sets, and nothing jumps on load.
+ */
+const BAND_W: Record<string, number> = {
+  " ": 17.3,
+  A: 69.4,
+  B: 63.8,
+  C: 65.3,
+  D: 74.9,
+  E: 61.5,
+  F: 59,
+  G: 78.9,
+  H: 72.7,
+  I: 29.3,
+  J: 50,
+  K: 69.2,
+  L: 55.5,
+  M: 85.4,
+  N: 73.6,
+  O: 81,
+  P: 62.2,
+  Q: 80.7,
+  R: 63.8,
+  S: 56.7,
+  T: 62,
+  U: 69.6,
+  V: 67.8,
+  W: 97.3,
+  X: 66.8,
+  Y: 64.2,
+  Z: 57.8,
+  "0": 65.9,
+  "1": 37.8,
+  "2": 56.4,
+  "3": 55.7,
+  "4": 59.7,
+  "5": 55.6,
+  "6": 56.7,
+  "7": 50.9,
+  "8": 55.7,
+  "9": 56.7,
+  "(": 30.3,
+  ")": 30.3,
+  "-": 45.1,
+  ".": 29.2,
+  ",": 27.5,
+  "/": 36.4,
+  "+": 55.9,
+  "%": 68.6,
+  "&": 68.9,
+  "'": 24.2,
+  "’": 25.4,
+  ":": 28.8,
+};
+/** The largest size a band's lines start from: one word may set larger, in the same height. */
+const bandCap = (n: number) => (n === 1 ? 34 : n === 2 ? 30 : 24);
+/** A band's size, as fitBands works it out, from the character widths. */
+export function bandSize(lines: string[]) {
+  const cap = bandCap(lines.length);
+  const w = Math.max(0, ...lines.map((l) => [...l].reduce((s, c) => s + (BAND_W[c] ?? 62), 0))) * (cap / 100);
+  return w ? Math.min(cap, (cap * 172) / w) : cap;
+}
+
 /** The glass and its printed label, as HTML: the landing writes it on the client as the drip changes, the drip page on the server. */
 export function glassHTML(it: GlassItem, colour: GlassColour) {
   const g = glassOf(it);
+  const lines = bandLines(it);
   return (
-    `<div class="vial__glass" style="aspect-ratio:${g.w}/${g.h};--band:${colour.band}"><img class="vial__photo" src="${g.src}" alt="">` +
+    // --gar (width over height) lets a page whose glass height is known in CSS
+    // scale the label from the first paint (drip-build.css), before scaleLabels.
+    `<div class="vial__glass" style="aspect-ratio:${g.w}/${g.h};--gar:${(g.w / g.h).toFixed(4)};--band:${colour.band}"><img class="vial__photo" src="${g.src}" alt="">` +
     // An ampoule's coloured neck ring, or a vial's cap in the band's shade.
     (g.vial ? (colour.cap ? `<i class="vcap" style="--cap:${colour.cap}"></i>` : "") : `<i class="vring"></i>`) +
     // <p>, not <span>: the client's ".vial span" rule styles the caption under
     // each vial and would catch every span in the label.
     `<div class="vlabel${g.vial ? " vlabel--vial" : ""}" style="--lt:${g.lt};--lh:${g.lh}px">` +
     `<p class="vlabel__word">NutriDrip<sup>™</sup></p><p class="vlabel__sub">IV NUTRIENT THERAPY</p>` +
-    `<p class="vlabel__band">${bandLines(it)
+    `<p class="vlabel__band" style="--nfs:${bandSize(lines).toFixed(2)}px">${lines
       .map((l) => `<b>${esc(l)}</b>`)
       .join("")}</p>` +
     `<div class="vlabel__low"><p class="vlabel__dose">${esc(it.dose)}${it.alt ? `<small>${esc(it.alt)}</small>` : ""}</p>` +
@@ -126,7 +195,7 @@ export function glassHTML(it: GlassItem, colour: GlassColour) {
 export function fitBands(scope: ParentNode) {
   scope.querySelectorAll<HTMLElement>(".vlabel__band").forEach((b) => {
     const ls = [...b.querySelectorAll<HTMLElement>("b")];
-    const cap = ls.length === 1 ? 34 : ls.length === 2 ? 30 : 24;
+    const cap = bandCap(ls.length);
     b.style.setProperty("--nfs", `${cap}px`);
     const w = ls.reduce((m, l) => Math.max(m, l.offsetWidth), 0);
     if (w) b.style.setProperty("--nfs", `${Math.min(cap, (cap * 172) / w).toFixed(2)}px`);

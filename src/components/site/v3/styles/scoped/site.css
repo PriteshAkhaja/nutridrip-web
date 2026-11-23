@@ -931,6 +931,58 @@
     position: relative !important;
     top: auto !important;
   }
+  /* A pinned act's stage is laid out from first paint as the engine lays it out
+   when it mounts (it adds .sc-stage, scrollcraft.css): sticky, one screen
+   tall, clipped. Until then a stage was a block 0 px tall, so its absolutely
+   placed copy and pictures went to the top of the page: the landing's build
+   act painted over its hero, and its hero planes and drips' rail made the page
+   wider than the screen, for as long as the page's script took to arrive (a
+   slow first load, and every return to the page). Zero specificity, like the
+   engine's own :where() rule, so .sc-stage, the pan act's rule, .nd-still and
+   each page's static and phone rules all still win. */
+  .sc-site :where([data-sc-act] [data-sc-stage]) {
+    position: sticky;
+    top: 0;
+    height: 100vh;
+    height: 100svh;
+    overflow: clip;
+    z-index: var(--sc-z-stage);
+  }
+  /* ...except where the page's motion never lets the engine pin that stage, so
+   the first paint is the layout the page keeps (measured: the stages left
+   without .sc-stage after load). SHORT_SCREEN is (max-height: 500px)
+   (scroll/short-screen.ts). Zero specificity too, so the page's own rules for
+   these stages still win; these only take back the four declarations above. */
+  @media (max-width: 860px), (max-height: 500px) {
+    /* The landing's drips: no pinned act on a phone or a short screen. */
+    .sc-site :where(.formulary__stage:not(.sc-stage)) {
+      position: static;
+      top: auto;
+      height: auto;
+      overflow: visible;
+      z-index: auto;
+    }
+  }
+  @media (prefers-reduced-motion: reduce), (max-height: 500px) {
+    /* How it works and About read their still version. */
+    .sc-site :where(.hw-relay__stage:not(.sc-stage), .ab-line__stage:not(.sc-stage)) {
+      position: static;
+      top: auto;
+      height: auto;
+      overflow: visible;
+      z-index: auto;
+    }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    /* So does Safety, under reduced motion. */
+    .sc-site :where(.sf-gate__stage:not(.sc-stage)) {
+      position: static;
+      top: auto;
+      height: auto;
+      overflow: visible;
+      z-index: auto;
+    }
+  }
 
   /* ------------------------------------------------- shared page sections */
   .sc-site .nd-pagehead {

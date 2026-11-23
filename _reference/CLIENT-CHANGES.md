@@ -2091,3 +2091,49 @@ Closes 63.4.
 | 65.1 | At 360, 390, 768, 1024 and 1440 as a seeded patient (retake): first question, an answer picked, the next question and the leave dialog. No sideways scroll, no errors. Nothing was sent; "See my results" was not pressed | ✅ |
 | 65.2 | Sign-in still renders the same after its frame was split into a shared theme | ✅ |
 | 65.3 | Typecheck, lint, 791 unit tests | ✅ |
+
+## 66. The page loader in the client's design (21 Nov)
+
+- **Changed: the page loader** (the short intro on a visitor's first page of the day, and the "Drawing up" screen when a drip page is slow to open) now matches the site.
+  - **The look:** the pale green background, the real IV bag from the drip pages filling with soft green, the NutriDrip™ wordmark filling from grey to black with the count, "IV NUTRIENT THERAPY" under it, and the count in Geist and the brand green.
+  - **Before:** a white screen, a light-blue line-drawn bag that drained, and "NUTRIDRIP" in plain capitals.
+  - **Weight:** the bag is a 20 KB copy made for the loader, fetched once with the page at low priority (then cached), so it is there from the loader's first frame.
+- **Unchanged:** when each loader shows and for how long (the intro 0.8 s, once a day; "Drawing up" only when a drip page takes over 0.4 s), and that the bag, the wordmark and the number always show the same amount.
+
+| # | Test | Result |
+|---|---|---|
+| 66.1 | The intro, frozen at a quarter, two thirds and nearly full, at 1440 and 390: count, bag and wordmark agree | ✅ |
+| 66.2 | A click from /drips to a drip page that was slow to open shows "Drawing up" in the new look and fades out when the page arrives | ✅ |
+| 66.3 | Typecheck, lint, 828 unit tests | ✅ |
+
+## 67. No flash of the wrong section while a page loads (23 Nov)
+
+- **Fixed: the home page flashed its "built to protocol" section** (the empty bag on the dark table) over the hero, with a sideways scrollbar, until the page's script arrived: on a slow first load, and on every return to the home page from another page.
+  - **Why:** each pinned section's frame got its size and position only once the script ran, so the section's words and pictures briefly piled up at the top of the page, and the hero's pictures and the drips' row spilled past the right edge.
+  - **Now:** the frames have their size from the first paint, so the page opens on the hero and never scrolls sideways, before and after the script.
+  - **Also covered:** How it works, About, Safety and IV vs Tablets, which use the same frames. Where a page shows its still version instead (reduced motion, a phone on its side, the drips grid on phones and tablets), it is laid out exactly as before.
+
+| # | Test | Result |
+|---|---|---|
+| 67.1 | Home with its scripts held back at 1920, 1440 (reduced motion), 768, 390 and 844x390: the hero first, no sideways scroll | ✅ |
+| 67.2 | Drips → home by the header link, every frame recorded: no flash, never wider than the screen | ✅ |
+| 67.3 | All five pages, five screen modes: every frame the engine pins is pinned as before; every one it leaves still keeps its own height | ✅ |
+| 67.4 | Typecheck, lint, 828 unit tests | ✅ |
+
+## 68. The new drip page is live (23 Nov)
+
+- **Changed: every drip's page** (`/drips/<drip>`) now has the client's three steps, reviewed on a preview copy and approved.
+  1. **Into the bag:** the drip's own bottles float beside the bag. As each ingredient in "What's inside" is read, its bottle lifts, docks under the bag's medication port and goes in, a ring closing around the port; its colour blooms up into the liquid, the level rises and the bag's label prints its line. Anything given separately stays on the shelf and fades. The list holds at the foot of the screen while the last bottles go in.
+  2. **On the stand:** the scroll after the last ingredient, the evening room slides up and the same bag goes onto the stand beside the patient at home, the tube runs to the cannula, and a clock shows the drip running over its real duration.
+  3. **The morning after:** the evening dissolves into a morning picture for the drip's goal (energy, hydration, immunity, skin), with what the drip is for.
+  - **Everything from the drip's record:** names, doses, containers, colours, duration and benefits; nothing is written per drip.
+- **Unchanged:** the page's address, its sections after the stand (tests, the session, cost, questions), the quiz buttons, and the reduced-motion version, which shows everything still.
+- **Removed:** the review copy at `/drips/<drip>/preview`.
+- **Still to come:** morning pictures for Athletic recovery and Post-viral, which use the energy picture until theirs are made.
+
+| # | Test | Result |
+|---|---|---|
+| 68.1 | All nine drips scrolled quickly down into the stand and back up, at 1920 and 390: one bottle moving at a time, every bottle in and every label line printed, all back on the shelf after | ✅ |
+| 68.2 | The old preview address answers "not found"; the drip pages answer as before | ✅ |
+| 68.3 | Typecheck, lint, 828 unit tests | ✅ |
+| 68.4 | Production build; speed at 1440 and 390, empty cache: the drip pages show in 0.4–0.8 s (LCP, the bag), the home page 0.5–0.6 s, Drips 0.3 s; layout shift 0 everywhere but Hydrate Plus on a desktop, 0.008 (the evening scene edge, below the fold line, settling once; “good” is under 0.1) | ✅ |
