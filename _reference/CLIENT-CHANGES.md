@@ -2137,3 +2137,18 @@ Closes 63.4.
 | 68.2 | The old preview address answers "not found"; the drip pages answer as before | ✅ |
 | 68.3 | Typecheck, lint, 828 unit tests | ✅ |
 | 68.4 | Production build; speed at 1440 and 390, empty cache: the drip pages show in 0.4–0.8 s (LCP, the bag), the home page 0.5–0.6 s, Drips 0.3 s; layout shift 0 everywhere but Hydrate Plus on a desktop, 0.008 (the evening scene edge, below the fold line, settling once; “good” is under 0.1) | ✅ |
+
+## 69. Morning pictures for every goal (23 Nov)
+
+- **Added: the last two morning pictures** on the drip pages, so all six goals now have their own.
+  - **Athletic recovery:** he sits on the sofa lacing his trainers, ready to train.
+  - **Post-viral:** he stands at the sunlit window with a mug of tea, the blanket folded away.
+  - Before, these two goals showed the Energy picture.
+- **New drips:** every drip belongs to one of the six goals, so a drip added later gets its goal's picture with no extra work.
+- Like the others, these are generated pictures of nobody real, with no text or logos (source and licence recorded with the build).
+
+| # | Test | Result |
+|---|---|---|
+| 69.1 | Both pictures checked close up: hands, face, no text or brand marks, nothing medical left in the room | ✅ |
+| 69.2 | Athletic Recovery and Post-viral Rebuild pages at 1920x920, 2560x1080, 1440x900 and 390x844: head clear of the header, face in view on a phone, his hands on the laces kept in view on wide screens | ✅ |
+| 69.3 | Typecheck, lint, 828 unit tests | ✅ |

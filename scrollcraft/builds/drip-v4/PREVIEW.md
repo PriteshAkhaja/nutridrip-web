@@ -120,3 +120,5 @@ Speed, 2026-11-23 (tools/vitals.mjs, cold cache, intro seen; LCP ms / CLS at loa
 - Production (next start): Myers' Revive 1440 480–828 / 0 / 0, 390 404–412 / 0 / 0; Hydrate Plus 1440 440–628 / 0.008 / 0.008, 390 364–392 / 0 / 0; home 1440 568–620 / 0 / 0.001, 390 468–544 / 0 / 0; Drips 1440 320–324, 390 256–284, CLS 0. LCP element on the drip pages: the bag photograph.
 - Dev: the same CLS; LCP 0.8–1.8 s, all of it the dev server's slower first byte (0.5–1 s against 0.04–0.19 s).
 - The 0.008: on a drip with a short list the stand scene's top edge shows at the foot of the first screen and moves up 49 px once fitHandOff sizes the room (tools/shift-src.mjs). Left as is.
+
+2026-11-23: the last two morning pictures (new KIE key, 80 credits; 28 used, 52 left): Athletic recovery (lacing his trainers on the sofa, feel.ts "70% 60%" so his hands on the laces stay in on a wide screen) and Post-viral (at the window with tea, "68% 20%"). All six DRIP_CATEGORIES now have their own; Energy stays the fallback for any goal added later. Checked at 1920x920, 2560x1080, 1440x900, 390x844 (tools/morning-sheet.mjs).

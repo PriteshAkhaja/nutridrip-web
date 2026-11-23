@@ -13,12 +13,14 @@ in them is identifiable; no text, logos or name tags.
 | `public/site/v3/feel/hydration.webp` | Step 3, goal Hydration | as above, `gen/g-hydration.txt`, `gen/morning-hydration.png` | as above |
 | `public/site/v3/feel/immunity.webp` | Step 3, goal Immunity | as above, `gen/g-immunity.txt`, `gen/morning-immunity.png` | as above |
 | `public/site/v3/feel/skin.webp` | Step 3, goal Skin | as above, `gen/g-skin.txt`, `gen/morning-skin.png` | as above |
+| `public/site/v3/feel/athletic.webp` | Step 3, goal Athletic recovery: lacing his trainers on the sofa | as above, `gen/g-athletic.txt`, `gen/morning-athletic.png` (2026-11-23) | as above |
+| `public/site/v3/feel/postviral.webp` | Step 3, goal Post-viral: at the window with a mug of tea | as above, `gen/g-postviral.txt`, `gen/morning-postviral.png` (2026-11-23) | as above |
 | `public/site/v3/loader-bag.webp`, `loader-bag-mask.png` | The page loader's bag (176 px) and its liquid mask | Resized with sharp from the site's own `bag-empty.webp` and `bag-mask.png` | As the site's bag |
 
 Spend: 80 credits on the key in use, 70 used (5 pictures at 14); 10 left.
 
-Not made yet: morning pictures for Athletic recovery and Post-viral (about 14
-credits each). Until then those goals show `energy.webp`.
+All six goals have their morning picture (2026-11-23): Athletic recovery and
+Post-viral were made with a new key (80 credits, 28 used, 52 left).
 
 The vial and ampoule photographs and the bag on this page are the site's
 existing assets (see `scrollcraft/builds/home-v2/ASSETS.md`).

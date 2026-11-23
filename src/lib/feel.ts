@@ -1,7 +1,8 @@
 /**
  * The pictures for step 3 of a drip's page (the client's brief, 2026-11-20):
  * the evening with the nurse while the drip runs, then the morning after, one
- * per goal (the drip's category). A goal without its own falls back to Energy.
+ * per goal (the drip's category): all six goals have one (DRIP_CATEGORIES).
+ * A goal added later without its own falls back to Energy.
  *
  * These are generated (KIE, Seedream image-to-image from the evening room; the
  * prompts are in scrollcraft/builds/drip-v4/gen/). They show nobody real, carry
@@ -35,6 +36,11 @@ const BY_GOAL: Record<string, FeelImage> = {
   Immunity: pic("immunity", "70% 25%"),
   // Head at about 16%.
   Skin: pic("skin", "66% 15%"),
+  // Lacing his trainers on the sofa: head at about 23%, his hands on the laces
+  // at about 86%, so the crop sits low enough to keep both; face at 65-74% across.
+  "Athletic recovery": pic("athletic", "70% 60%"),
+  // At the window with a mug of tea; head at about 23%, face at 62-73% across.
+  "Post-viral": pic("postviral", "68% 20%"),
 };
 
 export function feelImage(category: string | null | undefined): FeelImage {

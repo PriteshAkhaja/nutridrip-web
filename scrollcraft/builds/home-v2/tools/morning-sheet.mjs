@@ -3,12 +3,14 @@ import { chromium } from "playwright-core";
 import fs from "fs";
 const OUT = process.env.OUT;
 const SLUGS = (process.env.SLUGS ?? "myers-revive,hydrate-plus,immune-shield,glow-protocol").split(",");
-const SIZES = [
-  [1920, 920],
-  [2560, 1080],
-  [1440, 900],
-  [390, 844],
-];
+const SIZES = process.env.SIZES
+  ? process.env.SIZES.split(",").map((x) => x.split("x").map(Number))
+  : [
+      [1920, 920],
+      [2560, 1080],
+      [1440, 900],
+      [390, 844],
+    ];
 const b = await chromium.launch({ executablePath: "C:/Program Files/Google/Chrome/Application/chrome.exe" });
 try {
   const shots = [];
