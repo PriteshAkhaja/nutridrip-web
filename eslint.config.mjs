@@ -21,6 +21,8 @@ const config = [
       "node_modules/**",
       "scrollcraft/**",
       "src/components/site/scroll/engine/**",
+      // The home page ported from scrollcraft/builds/home-v5 (npm run home-port): generated, never edited.
+      "src/components/site/home/v5/port/**",
     ],
   },
   // Last, so it switches off every rule above that is about layout. Prettier

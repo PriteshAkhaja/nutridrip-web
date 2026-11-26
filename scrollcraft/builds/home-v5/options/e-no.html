@@ -1,0 +1,284 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Section 3, option E: a doctor can say no</title>
+    <link rel="icon" href="../images/mark.svg" type="image/svg+xml" />
+    <script>
+      document.documentElement.className = "js";
+      if ("scrollRestoration" in history) history.scrollRestoration = "manual";
+    </script>
+    <link rel="stylesheet" href="../styles.css" />
+    <link rel="stylesheet" href="opt.css" />
+    <style>
+      /* Option E: a doctor can say no. Type only. A reel of what the quiz screens for turns past a reading line, each one
+   marked as a physician would answer it; it stops on everyone else, approved for 90 days. About two screens. */
+      .no {
+        height: 320vh;
+      }
+      .no .stage {
+        padding-top: var(--hh);
+        background: var(--paper);
+      }
+      .no__grid {
+        height: 100%;
+        display: grid;
+        grid-template-columns: minmax(0, 0.8fr) minmax(0, 1.2fr);
+        gap: clamp(24px, 4vw, 72px);
+        align-items: center;
+      }
+      .no__copy h2 {
+        margin: 14px 0 20px;
+        font-size: clamp(2.4rem, 1.2rem + 3vw, 4.6rem);
+      }
+      .no__copy p.lede {
+        max-width: 28em;
+      }
+      .no__copy .facts {
+        margin-top: 20px;
+        display: grid;
+        gap: 10px;
+      }
+      /* the reel */
+      .reel {
+        position: relative;
+        height: min(80dvh, 760px);
+        overflow: hidden;
+        -webkit-mask-image: linear-gradient(180deg, transparent 0, #000 22%, #000 78%, transparent 100%);
+        mask-image: linear-gradient(180deg, transparent 0, #000 22%, #000 78%, transparent 100%);
+      }
+      .reelw > .kick {
+        display: block;
+        margin-bottom: 6px;
+      }
+      .reel__track {
+        position: absolute;
+        left: 0;
+        right: 0;
+        top: 50%;
+        will-change: transform;
+      }
+      .reel__it {
+        position: absolute;
+        left: 0;
+        right: 0;
+        display: flex;
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 14px;
+        will-change: transform, opacity;
+      }
+      .reel__w {
+        font: 350 clamp(2.2rem, 1rem + 3.4vw, 4.8rem)/1.02 var(--serif);
+        letter-spacing: -0.035em;
+        color: var(--ink);
+      }
+      .reel__c {
+        max-width: 30em;
+        font-size: clamp(0.9rem, 0.85rem + 0.2vw, 1.05rem);
+        color: var(--ink-2);
+      }
+      .reel__tag {
+        flex: none;
+        padding: 0.55em 0.8em;
+        border: 2px solid currentColor;
+        border-radius: 6px;
+        font: 700 clamp(0.7rem, 0.55rem + 0.4vw, 0.95rem)/1 var(--mono);
+        letter-spacing: 0.12em;
+        text-transform: uppercase;
+        white-space: nowrap;
+      }
+      @media (max-width: 800px) {
+        .no .stage {
+          padding-top: calc(var(--hh) + 14px);
+        }
+        .no__grid {
+          grid-template-columns: 1fr;
+          grid-template-rows: auto 1fr;
+          gap: 0;
+          align-items: stretch;
+        }
+        .no__copy h2 {
+          font-size: clamp(1.9rem, 8vw, 2.5rem);
+          margin: 6px 0 10px;
+        }
+        .no__copy p.lede {
+          font-size: 0.92rem;
+        }
+        .no__copy .facts {
+          display: none;
+        }
+        .reel {
+          height: auto;
+        }
+        .reel__it {
+          gap: 8px;
+        }
+        .reel__w {
+          font-size: clamp(1.9rem, 9vw, 2.8rem);
+        }
+        .reel__c {
+          font-size: 0.86rem;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <header class="hd">
+      <div class="wrap hd__in">
+        <a class="wm" href="../index.html" aria-label="NutriDrip, the home page"
+          ><img src="../images/mark.svg" alt="" width="22" height="30" /><span>NutriDrip<sup>™</sup></span></a
+        >
+        <nav aria-label="Sections">
+          <a href="../index.html#drips">The drips</a><a href="../index.html#how">How it works</a
+          ><a href="../index.html#safety">Safety</a><a href="../index.html#zones">Where</a
+          ><a href="../index.html#price">Price</a>
+        </nav>
+        <a class="btn btn--sm hd__cta" href="/quiz">Take the health quiz · 3 min<i></i></a>
+      </div>
+    </header>
+    <main>
+      <section class="opt-lead">
+        <div>
+          <span class="kick">Preview E · section 3 · new</span>
+          <h1>A doctor can say no</h1>
+          <p>
+            Type only, and bold. What the quiz screens for turns past a reading line, each marked the way a physician
+            answers it, until it stops on everyone else: approved, for 90 days. About two screens. Scroll down.
+          </p>
+        </div>
+      </section>
+
+      <section class="act no" id="noAct" aria-labelledby="no-h">
+        <div class="stage">
+          <div class="wrap no__grid">
+            <div class="no__copy">
+              <p class="kick">Before a needle</p>
+              <h2 id="no-h">A doctor, <em>before</em> a needle.</h2>
+              <p class="lede" id="noLede"></p>
+              <div class="facts">
+                <p class="fact">A 15-minute phone call with your physician</p>
+                <p class="fact">One approval covers all bookings for 90 days</p>
+              </div>
+            </div>
+            <div class="reelw" id="reelw">
+              <span class="kick">The quiz screens for</span>
+              <div class="reel" id="reel" aria-label="What the quiz screens for, and how a physician answers">
+                <div class="reel__track" id="track"></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="opt-next">
+        <div class="wrap">
+          <p class="kick">Next on the page</p>
+          <h2>The drips.</h2>
+          <p>The drips section follows here.</p>
+        </div>
+      </section>
+    </main>
+    <div class="opt-tag">
+      Option E · Can say no <a href="index.html">All options</a> <a href="../index.html">Home</a>
+    </div>
+
+    <script src="opt.js"></script>
+    <script>
+      (function () {
+        "use strict";
+        var O = OPT,
+          ss = O.ss,
+          clamp = O.clamp;
+        var $ = function (s, r) {
+          return (r || document).querySelector(s);
+        };
+        $("#noLede").textContent = O.LEDE;
+        // what the page says the quiz screens for, and the answer; then everyone else
+        var R = [
+          ["Pregnancy", "A physician declines", "var(--stop)", "IV therapy is unsuitable during pregnancy."],
+          ["Renal failure", "A physician declines", "var(--stop)", "Or in renal failure."],
+          ["Cardiac failure", "A physician declines", "var(--stop)", "Or in cardiac failure."],
+          [
+            "Certain drug interactions",
+            "A physician declines",
+            "var(--stop)",
+            "Or with certain drug interactions. The quiz asks about your medications.",
+          ],
+          [
+            "Everyone else",
+            "Approved · 90 days",
+            "var(--ok)",
+            "One approval covers all bookings for 90 days. Or the physician changes the doses, or asks for more first.",
+          ],
+        ];
+        var track = $("#track"),
+          its = [];
+        R.forEach(function (r) {
+          var e = document.createElement("div");
+          e.className = "reel__it";
+          e.innerHTML =
+            '<span class="reel__w">' +
+            r[0] +
+            '</span><span class="reel__tag" style="color:' +
+            r[2] +
+            '">' +
+            r[1] +
+            '</span><span class="reel__c">' +
+            r[3] +
+            "</span>";
+          track.appendChild(e);
+          its.push({ el: e, tag: $(".reel__tag", e), cap: $(".reel__c", e) });
+        });
+        var G = { h: 140 };
+        function resize() {
+          var reel = $("#reel");
+          var w = $("#reelw");
+          if (innerWidth <= 800)
+            reel.style.height = Math.max(280, w.parentNode.clientHeight - w.offsetTop - reel.offsetTop - 12) + "px";
+          else reel.style.height = "";
+          G.h = Math.max(
+            110,
+            Math.max.apply(
+              null,
+              its.map(function (o) {
+                return o.el.offsetHeight;
+              })
+            ) + (innerWidth <= 800 ? 30 : 50)
+          );
+          its.forEach(function (o, i) {
+            o.el.style.top = i * G.h - o.el.offsetHeight / 2 + "px";
+          });
+        }
+        function fn(p) {
+          // each one comes to the line and holds there for a while before the next
+          var n = R.length,
+            f = clamp(p / 0.9, 0, 1) * (n - 1),
+            i = Math.floor(f),
+            u = f - i,
+            pos = i + ss(clamp((u - 0.55) / 0.45, 0, 1));
+          if (i >= n - 1) {
+            pos = n - 1;
+            u = 0;
+          }
+          track.style.transform = "translate3d(0," + (-pos * G.h).toFixed(1) + "px,0)";
+          var at = Math.round(pos);
+          its.forEach(function (o, k) {
+            var dd = Math.abs(k - pos),
+              on = clamp(1 - dd, 0, 1);
+            o.el.style.opacity = (0.18 + 0.82 * on).toFixed(3);
+            o.el.style.transform = "scale(" + (0.86 + 0.14 * on).toFixed(4) + ")";
+            o.el.style.transformOrigin = "0 50%";
+            var t = k === at ? ss((on - 0.75) / 0.2) : 0;
+            o.tag.style.opacity = t.toFixed(3);
+            o.tag.style.transform = "rotate(-3deg) scale(" + (1 + 0.25 * (1 - t)).toFixed(3) + ")";
+            o.tag.style.transformOrigin = "0 50%";
+            o.cap.style.opacity = t.toFixed(3);
+          });
+        }
+        O.pin($("#noAct"), fn, resize);
+      })();
+    </script>
+  </body>
+</html>

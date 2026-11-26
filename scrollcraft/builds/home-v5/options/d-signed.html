@@ -1,0 +1,434 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Section 3, option D: signed, by name</title>
+    <link rel="icon" href="../images/mark.svg" type="image/svg+xml" />
+    <script>
+      document.documentElement.className = "js";
+      if ("scrollRestoration" in history) history.scrollRestoration = "manual";
+    </script>
+    <link rel="stylesheet" href="../styles.css" />
+    <link rel="stylesheet" href="opt.css" />
+    <style>
+      /* Option D: signed, by name. Your session report lies on the linen; the camera moves in on its physician block, where
+   the physician's name and registration number are printed and the protocol is signed in ink. About two screens. */
+      .rp {
+        height: 300vh;
+      }
+      .rp .stage {
+        padding-top: var(--hh);
+        background: #e7e1d4;
+      }
+      .rp__tex {
+        position: absolute;
+        inset: 0;
+        background: url(../images/tex-linen.webp) center / cover;
+        opacity: 0.85;
+        pointer-events: none;
+      }
+      .rp__tex::after {
+        content: "";
+        position: absolute;
+        inset: 0;
+        background: linear-gradient(
+          90deg,
+          rgba(234, 229, 217, 0.9) 0,
+          rgba(234, 229, 217, 0.72) 36%,
+          rgba(234, 229, 217, 0) 60%
+        );
+      }
+      .rp__grid {
+        position: relative;
+        height: 100%;
+        display: grid;
+        grid-template-columns: minmax(0, 0.85fr) minmax(0, 1.15fr);
+        gap: clamp(24px, 4vw, 72px);
+        align-items: center;
+      }
+      .rp__copy {
+        position: relative;
+        z-index: 3;
+      }
+      .rp__copy h2 {
+        margin: 14px 0 20px;
+        font-size: clamp(2.4rem, 1.2rem + 3vw, 4.6rem);
+      }
+      .swap {
+        display: grid;
+        min-height: 10em;
+      }
+      .swap > div {
+        grid-area: 1 / 1;
+        opacity: 0;
+        transform: translateY(8px);
+        transition:
+          opacity 0.45s var(--ease),
+          transform 0.45s var(--ease);
+      }
+      .swap > div.on {
+        opacity: 1;
+        transform: none;
+      }
+      .swap p {
+        font-size: clamp(1rem, 0.95rem + 0.3vw, 1.2rem);
+        line-height: 1.5;
+        color: var(--ink-2);
+        max-width: 30em;
+      }
+      .swap p + p {
+        margin-top: 12px;
+      }
+      .swap .not {
+        padding: 12px 16px;
+        border-left: 3px solid var(--stop);
+        background: rgba(162, 58, 42, 0.07);
+        font-size: 0.92rem;
+      }
+      .swap .not b {
+        color: var(--stop);
+        font-weight: 600;
+      }
+      .rp__view {
+        position: relative;
+        height: min(82dvh, 760px);
+        display: grid;
+        place-items: center;
+      }
+      .rep {
+        width: min(500px, 100%);
+        padding: clamp(18px, 2.6vh, 30px) clamp(20px, 2.2vw, 32px);
+        border-radius: 3px;
+        background: linear-gradient(175deg, #fdfcf8, #f3f0e7);
+        box-shadow:
+          0 1px 0 rgba(0, 0, 0, 0.04),
+          0 34px 60px -30px rgba(30, 26, 18, 0.55),
+          0 4px 10px rgba(30, 26, 18, 0.08);
+        will-change: transform;
+      }
+      .rep__hd {
+        display: flex;
+        justify-content: space-between;
+        align-items: baseline;
+        padding-bottom: 10px;
+        border-bottom: 1.5px solid var(--ink);
+      }
+      .rep__wm {
+        font: 650 1rem/1 var(--sans);
+        letter-spacing: -0.04em;
+      }
+      .rep__wm sup {
+        font-size: 0.5em;
+        font-weight: 500;
+        position: relative;
+        top: -0.3em;
+      }
+      .rep .kick {
+        font-size: 0.6rem;
+      }
+      .rep__sec {
+        margin-top: 14px;
+        padding-bottom: 5px;
+        border-bottom: 1px solid var(--hair);
+        font: 500 0.6rem/1.2 var(--mono);
+        letter-spacing: 0.12em;
+        text-transform: uppercase;
+        color: var(--ink-3);
+        display: flex;
+        justify-content: space-between;
+      }
+      .rep__rows li {
+        display: flex;
+        justify-content: space-between;
+        gap: 10px;
+        padding: 5px 0;
+        border-bottom: 1px dashed var(--hair-2);
+        font-size: 0.8rem;
+        color: var(--ink-2);
+      }
+      .rep__rows b {
+        font: 500 0.76rem var(--mono);
+        color: var(--ink);
+      }
+      .phys {
+        margin-top: 18px;
+        padding: 14px 14px 10px;
+        border: 1.5px solid var(--ink);
+        border-radius: 4px;
+      }
+      .phys__row {
+        display: grid;
+        grid-template-columns: 8.5em 1fr;
+        gap: 10px;
+        align-items: baseline;
+        padding: 7px 0;
+        border-bottom: 1px solid var(--hair-2);
+      }
+      .phys__row dt {
+        font: 500 0.6rem/1.3 var(--mono);
+        letter-spacing: 0.12em;
+        text-transform: uppercase;
+        color: var(--ink-3);
+      }
+      .phys__row dd {
+        margin: 0;
+        font-size: 0.86rem;
+        color: var(--ink);
+        clip-path: inset(0 100% 0 0);
+      }
+      .phys__row dd i {
+        font-style: normal;
+        color: var(--ink-3);
+      }
+      .sig {
+        position: relative;
+        height: 70px;
+        margin-top: 6px;
+        border-bottom: 1px solid var(--ink-3);
+      }
+      .sig svg {
+        position: absolute;
+        left: 6%;
+        bottom: 4px;
+        width: 62%;
+        height: 64px;
+        overflow: visible;
+      }
+      .sig path {
+        fill: none;
+        stroke: #23315e;
+        stroke-width: 2.4;
+        stroke-linecap: round;
+        stroke-linejoin: round;
+      }
+      .sig span {
+        position: absolute;
+        right: 0;
+        bottom: -18px;
+        font: 500 0.56rem/1 var(--mono);
+        letter-spacing: 0.12em;
+        text-transform: uppercase;
+        color: var(--ink-3);
+      }
+      @media (max-width: 800px) {
+        .rp .stage {
+          padding-top: calc(var(--hh) + 14px);
+        }
+        .rp__tex::after {
+          background: linear-gradient(
+            180deg,
+            rgba(234, 229, 217, 0.92) 0,
+            rgba(234, 229, 217, 0.75) 40%,
+            rgba(234, 229, 217, 0) 62%
+          );
+        }
+        .rp__grid {
+          grid-template-columns: 1fr;
+          grid-template-rows: auto 1fr;
+          gap: 8px;
+          align-items: stretch;
+        }
+        .rp__copy h2 {
+          font-size: clamp(1.9rem, 8vw, 2.5rem);
+          margin: 6px 0 10px;
+        }
+        .swap {
+          min-height: 7.8em;
+        }
+        .swap p {
+          font-size: 0.9rem;
+        }
+        .swap .not {
+          font-size: 0.8rem;
+          padding: 8px 10px;
+        }
+        .rp__facts {
+          display: none !important;
+        }
+        .rp__view {
+          height: auto;
+          align-items: start;
+          overflow: hidden;
+          border-radius: 4px;
+        }
+        .rep {
+          width: 92%;
+          padding: 14px 16px;
+        }
+        .rep__rows li {
+          font-size: 0.7rem;
+          padding: 3px 0;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <header class="hd">
+      <div class="wrap hd__in">
+        <a class="wm" href="../index.html" aria-label="NutriDrip, the home page"
+          ><img src="../images/mark.svg" alt="" width="22" height="30" /><span>NutriDrip<sup>™</sup></span></a
+        >
+        <nav aria-label="Sections">
+          <a href="../index.html#drips">The drips</a><a href="../index.html#how">How it works</a
+          ><a href="../index.html#safety">Safety</a><a href="../index.html#zones">Where</a
+          ><a href="../index.html#price">Price</a>
+        </nav>
+        <a class="btn btn--sm hd__cta" href="/quiz">Take the health quiz · 3 min<i></i></a>
+      </div>
+    </header>
+    <main>
+      <section class="opt-lead">
+        <div>
+          <span class="kick">Preview D · section 3 · new</span>
+          <h1>Signed, by name</h1>
+          <p>
+            Your session report on the table. The camera moves in on the physician’s block: their name and registration
+            number are printed, and the protocol is signed in ink. About two screens. Scroll down.
+          </p>
+        </div>
+      </section>
+
+      <section class="act rp" id="rpAct" aria-labelledby="rp-h">
+        <div class="stage">
+          <div class="rp__tex" aria-hidden="true"></div>
+          <div class="wrap rp__grid">
+            <div class="rp__copy">
+              <p class="kick">Before a needle</p>
+              <h2 id="rp-h">A doctor, <em>before</em> a needle.</h2>
+              <div class="swap" id="swap" aria-live="polite"></div>
+              <div class="rp__facts" style="margin-top: 18px; display: grid; gap: 10px">
+                <p class="fact">A 15-minute phone call with your physician</p>
+                <p class="fact">One approval covers all bookings for 90 days</p>
+              </div>
+            </div>
+            <div class="rp__view" id="view">
+              <article class="rep" id="rep" aria-label="Your session report">
+                <div class="rep__hd">
+                  <span class="rep__wm">NutriDrip<sup>™</sup></span
+                  ><span class="kick">Session report</span>
+                </div>
+                <p class="rep__sec"><span id="rDrip"></span><span>Dose</span></p>
+                <ul class="rep__rows" id="rRows"></ul>
+                <div class="phys" id="phys">
+                  <p class="kick" style="margin-bottom: 6px">Reviewing physician</p>
+                  <dl>
+                    <div class="phys__row">
+                      <dt>Name</dt>
+                      <dd><i>Your physician’s name, printed here</i></dd>
+                    </div>
+                    <div class="phys__row">
+                      <dt>KMC reg. no.</dt>
+                      <dd><i>Their registration number, printed here</i></dd>
+                    </div>
+                  </dl>
+                  <div class="sig">
+                    <svg viewBox="0 0 340 64" aria-hidden="true">
+                      <path
+                        id="sigP"
+                        d="M6,46 C22,10 40,8 38,34 C36,58 18,56 30,36 C44,14 66,14 64,40 C62,58 82,40 92,26 C100,16 104,44 116,42 C128,40 132,18 146,22 C158,26 150,50 164,48 C182,46 186,20 204,24 C220,28 214,46 230,44 C252,42 262,26 284,30 C300,33 314,38 334,34"
+                      /></svg
+                    ><span>Signature</span>
+                  </div>
+                </div>
+              </article>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="opt-next">
+        <div class="wrap">
+          <p class="kick">Next on the page</p>
+          <h2>The drips.</h2>
+          <p>The drips section follows here.</p>
+        </div>
+      </section>
+    </main>
+    <div class="opt-tag">
+      Option D · Signed, by name <a href="index.html">All options</a> <a href="../index.html">Home</a>
+    </div>
+
+    <script src="opt.js"></script>
+    <script>
+      (function () {
+        "use strict";
+        var O = OPT,
+          ss = O.ss,
+          lerp = O.lerp,
+          d = O.DRIP;
+        var $ = function (s, r) {
+          return (r || document).querySelector(s);
+        };
+        $("#rDrip").textContent = d.name + " · " + d.base;
+        d.items.forEach(function (it) {
+          $("#rRows").insertAdjacentHTML("beforeend", "<li><span>" + it[0] + "</span><b>" + it[1] + "</b></li>");
+        });
+        var rep = $("#rep"),
+          phys = $("#phys"),
+          view = $("#view"),
+          sig = $("#sigP"),
+          dds = Array.prototype.slice.call(phys.querySelectorAll("dd"));
+        var sl = sig.getTotalLength();
+        sig.style.strokeDasharray = sl + " " + sl;
+        sig.style.strokeDashoffset = sl;
+        var swap = $("#swap");
+        swap.innerHTML =
+          '<div class="on"><p>' +
+          O.LEDE +
+          "</p></div>" +
+          "<div><p>Their name and registration number are printed on your report, beside the doses they signed.</p></div>" +
+          '<div><p>And they can say no.</p><p class="not">' +
+          O.NOT +
+          "</p></div>";
+        var says = Array.prototype.slice.call(swap.children),
+          said = 0;
+        function show(k) {
+          if (k !== said) {
+            says[said].classList.remove("on");
+            says[k].classList.add("on");
+            said = k;
+          }
+        }
+        var G = {};
+        function resize() {
+          if (innerWidth <= 800)
+            view.style.height = Math.max(300, view.parentNode.clientHeight - view.offsetTop - 12) + "px";
+          else view.style.height = "";
+          rep.style.transform = "";
+          // the move in: centre the physician block in the view, larger
+          var v = view.getBoundingClientRect(),
+            b = phys.getBoundingClientRect(),
+            r = rep.getBoundingClientRect();
+          G.z = innerWidth <= 800 ? 1.25 : 1.45;
+          G.ox = ((b.left + b.width / 2 - r.left) / r.width) * 100;
+          G.oy = ((b.top + b.height / 2 - r.top) / r.height) * 100;
+          G.dx = v.left + v.width / 2 - (b.left + b.width / 2);
+          G.dy = v.top + v.height * 0.5 - (b.top + b.height / 2);
+          if (innerWidth > 800) G.dx = Math.min(G.dx, 0);
+        }
+        function fn(p) {
+          var z = ss((p - 0.04) / 0.32) * (1 - 0.55 * ss((p - 0.86) / 0.14));
+          rep.style.transformOrigin = G.ox.toFixed(1) + "% " + G.oy.toFixed(1) + "%";
+          rep.style.transform =
+            "translate3d(" +
+            (G.dx * z).toFixed(1) +
+            "px," +
+            (G.dy * z).toFixed(1) +
+            "px,0) rotate(" +
+            lerp(-1.6, -0.4, z).toFixed(2) +
+            "deg) scale(" +
+            lerp(1, G.z, z).toFixed(4) +
+            ")";
+          dds.forEach(function (dd, i) {
+            var t = ss((p - 0.3 - i * 0.07) / 0.1);
+            dd.style.clipPath = "inset(0 " + (100 * (1 - t)).toFixed(1) + "% 0 0)";
+          });
+          sig.style.strokeDashoffset = (sl * (1 - ss((p - 0.48) / 0.3))).toFixed(1);
+          show(p < 0.3 ? 0 : p < 0.82 ? 1 : 2);
+        }
+        O.pin($("#rpAct"), fn, resize);
+      })();
+    </script>
+  </body>
+</html>

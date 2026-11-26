@@ -1,0 +1,540 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Section 3, option B: one decision, four roads</title>
+    <link rel="icon" href="../images/mark.svg" type="image/svg+xml" />
+    <script>
+      document.documentElement.className = "js";
+      if ("scrollRestoration" in history) history.scrollRestoration = "manual";
+    </script>
+    <link rel="stylesheet" href="../styles.css" />
+    <link rel="stylesheet" href="opt.css" />
+    <style>
+      /* Option B: one decision, four roads. Your answers run down an ink line to the physician, and the scroll then travels
+   each road the physician can send them down: declines (it ends), asks for more (it loops back to you), changes the
+   doses and approves (both go on to the bag). A dot is your protocol. Drawn in SVG; nothing generated. */
+      .rd {
+        height: 540vh;
+      }
+      .rd .stage {
+        padding-top: var(--hh);
+        background-color: var(--paper);
+        background-image: radial-gradient(circle, rgba(18, 26, 23, 0.13) 1px, transparent 1.4px);
+        background-size: 26px 26px;
+        background-position: 13px 13px;
+      }
+      .rd__grid {
+        height: 100%;
+        display: grid;
+        grid-template-columns: minmax(0, 0.7fr) minmax(0, 1.3fr);
+        gap: clamp(24px, 4vw, 72px);
+        align-items: center;
+      }
+      .rd__copy h2 {
+        margin: 14px 0 20px;
+        font-size: clamp(2.4rem, 1.2rem + 3vw, 4.6rem);
+      }
+      .rd__swap {
+        display: grid;
+        min-height: 10.5em;
+      }
+      .rd__swap > div {
+        grid-area: 1 / 1;
+        opacity: 0;
+        transform: translateY(8px);
+        transition:
+          opacity 0.45s var(--ease),
+          transform 0.45s var(--ease);
+      }
+      .rd__swap > div.on {
+        opacity: 1;
+        transform: none;
+      }
+      .rd__swap p {
+        font-size: clamp(1rem, 0.95rem + 0.3vw, 1.2rem);
+        line-height: 1.5;
+        color: var(--ink-2);
+        max-width: 30em;
+      }
+      .rd__swap p + p {
+        margin-top: 12px;
+      }
+      .rd__swap .not {
+        padding: 12px 16px;
+        border-left: 3px solid var(--stop);
+        background: rgba(162, 58, 42, 0.07);
+        font-size: 0.92rem;
+      }
+      .rd__swap .not b {
+        color: var(--stop);
+        font-weight: 600;
+      }
+      .rd__word {
+        display: block;
+        margin-bottom: 10px;
+        font: 600 0.78rem/1 var(--mono);
+        letter-spacing: 0.14em;
+        text-transform: uppercase;
+      }
+      .rd__facts {
+        margin-top: 18px;
+        display: grid;
+        gap: 10px;
+      }
+      .rd__map {
+        position: relative;
+        height: min(84dvh, 820px);
+      }
+      .rd__map svg {
+        position: absolute;
+        inset: 0;
+        width: 100%;
+        height: 100%;
+        overflow: visible;
+      }
+      /* the drawing */
+      .road {
+        fill: none;
+        stroke: var(--ink-3);
+        stroke-width: 3;
+        stroke-linecap: round;
+        stroke-linejoin: round;
+        transition:
+          stroke 0.4s,
+          opacity 0.4s;
+      }
+      .road.on {
+        stroke-width: 4.2;
+      }
+      .road.dim {
+        opacity: 0.38;
+      }
+      .mainline {
+        fill: none;
+        stroke: var(--ink);
+        stroke-width: 3;
+        stroke-linecap: round;
+      }
+      .node-card {
+        fill: #fbf9f3;
+        stroke: var(--hair);
+      }
+      .node-card-sh {
+        fill: rgba(18, 26, 23, 0.08);
+      }
+      .node-doc {
+        fill: var(--ink);
+      }
+      .t-serif {
+        font-family: var(--serif);
+        font-weight: 350;
+        letter-spacing: -0.02em;
+        fill: var(--ink);
+      }
+      .t-mono {
+        font-family: var(--mono);
+        font-weight: 500;
+        letter-spacing: 0.1em;
+        text-transform: uppercase;
+        fill: var(--ink-3);
+      }
+      .t-white {
+        fill: #fff;
+      }
+      .lab {
+        opacity: 0;
+        transition: opacity 0.4s var(--ease);
+      }
+      .lab.on {
+        opacity: 1;
+      }
+      .lab .w {
+        font-family: var(--mono);
+        font-weight: 700;
+        letter-spacing: 0.12em;
+        text-transform: uppercase;
+      }
+      .lab .l {
+        font-family: var(--sans);
+        fill: var(--ink-2);
+      }
+      .cap {
+        stroke-width: 3.2;
+        stroke-linecap: round;
+      }
+      .dot {
+        fill: var(--ink);
+      }
+      .dot-ring {
+        fill: none;
+        stroke: var(--ink);
+        stroke-width: 1.5;
+        opacity: 0.35;
+      }
+      @media (max-width: 800px) {
+        .rd .stage {
+          padding-top: calc(var(--hh) + 14px);
+        }
+        .rd__grid {
+          grid-template-columns: 1fr;
+          grid-template-rows: auto 1fr;
+          gap: 6px;
+          align-items: stretch;
+        }
+        .rd__copy h2 {
+          font-size: clamp(1.9rem, 8vw, 2.5rem);
+          margin: 6px 0 10px;
+        }
+        .rd__swap {
+          min-height: 7.4em;
+        }
+        .rd__swap p {
+          font-size: 0.9rem;
+        }
+        .rd__swap .not {
+          font-size: 0.8rem;
+          padding: 8px 10px;
+        }
+        .rd__facts {
+          display: none;
+        }
+        .rd__map {
+          height: auto;
+          margin-bottom: 12px;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <header class="hd">
+      <div class="wrap hd__in">
+        <a class="wm" href="../index.html" aria-label="NutriDrip, the home page"
+          ><img src="../images/mark.svg" alt="" width="22" height="30" /><span>NutriDrip<sup>™</sup></span></a
+        >
+        <nav aria-label="Sections">
+          <a href="../index.html#drips">The drips</a><a href="../index.html#how">How it works</a
+          ><a href="../index.html#safety">Safety</a><a href="../index.html#zones">Where</a
+          ><a href="../index.html#price">Price</a>
+        </nav>
+        <a class="btn btn--sm hd__cta" href="/quiz">Take the health quiz · 3 min<i></i></a>
+      </div>
+    </header>
+    <main>
+      <section class="opt-lead">
+        <div>
+          <span class="kick">Preview B · section 3</span>
+          <h1>One decision, four roads</h1>
+          <p>
+            Your answers run down an ink line to the physician. Then the scroll travels each road they can send you
+            down: declines, asks for more, changes the doses, approves. Scroll down.
+          </p>
+        </div>
+      </section>
+
+      <section class="act rd" id="roadAct" aria-labelledby="rd-h">
+        <div class="stage">
+          <div class="wrap rd__grid">
+            <div class="rd__copy">
+              <p class="kick">Before a needle</p>
+              <h2 id="rd-h">A doctor, <em>before</em> a needle.</h2>
+              <div class="rd__swap" id="rdSwap" aria-live="polite"></div>
+              <div class="rd__facts">
+                <p class="fact">A 15-minute phone call with your physician</p>
+                <p class="fact">One approval covers all bookings for 90 days</p>
+              </div>
+            </div>
+            <div class="rd__map" id="map"><svg id="svg" aria-hidden="true"></svg></div>
+          </div>
+        </div>
+      </section>
+
+      <section class="opt-next">
+        <div class="wrap">
+          <p class="kick">Next on the page</p>
+          <h2>The drips.</h2>
+          <p>The drips section follows here.</p>
+        </div>
+      </section>
+    </main>
+    <div class="opt-tag">
+      Option B · Four roads <a href="index.html">All options</a> <a href="../index.html">Home</a>
+    </div>
+
+    <script src="opt.js"></script>
+    <script>
+      (function () {
+        "use strict";
+        var O = OPT,
+          ss = O.ss,
+          clamp = O.clamp,
+          NS = "http://www.w3.org/2000/svg";
+        var $ = function (s, r) {
+          return (r || document).querySelector(s);
+        };
+        var svg = $("#svg"),
+          map = $("#map");
+        // two drawings of the same map: wide (beside the words) and tall (under them on a phone). Roads in the order the
+        // scroll travels them, as the page names the decisions: [path, end-cap?, label x, y, anchor, second line]
+        var WIDE = {
+          vb: [940, 800],
+          card: [310, 24, 320, 84],
+          doc: [360, 252, 220, 64],
+          sub: [596, 290, "start"],
+          fs: 1.3,
+          main: "M470,108 L470,252",
+          roads: [
+            ["M470,316 C470,430 170,420 170,556", [170, 556], 170, 600, "middle", "No drip."],
+            ["M470,316 C470,410 120,400 94,262 C74,160 166,66 306,66", null, 270, 196, "middle", "Back to you, first."],
+            ["M470,316 L470,556 C470,660 770,640 770,716", null, 488, 552, "start", "Amended, then the bag."],
+            ["M470,316 C470,420 770,420 770,556 L770,792", null, 788, 552, "start", "Then the bag."],
+          ],
+        };
+        var TALL = {
+          vb: [420, 480],
+          card: [100, 8, 220, 66],
+          doc: [140, 170, 140, 48],
+          sub: null,
+          fs: 0.82,
+          main: "M210,74 L210,170",
+          roads: [
+            ["M210,218 C210,300 62,300 62,404", [62, 404], 62, 436, "middle", "No drip."],
+            ["M210,218 C210,276 40,286 30,196 C20,110 50,41 96,41", null, 120, 120, "middle", "Back to you."],
+            ["M210,218 L210,404", null, 210, 436, "middle", "Amended."],
+            ["M210,218 C210,300 358,300 358,404", null, 358, 436, "middle", "Then the bag."],
+          ],
+        };
+        var el = function (tag, a, txt) {
+          var e = document.createElementNS(NS, tag);
+          for (var k in a) e.setAttribute(k, a[k]);
+          if (txt != null) e.textContent = txt;
+          return e;
+        };
+        var M,
+          roads = [],
+          labs = [],
+          caps = [],
+          mainP,
+          dot,
+          ring,
+          card,
+          doc,
+          len = [];
+        function build() {
+          var tall = innerWidth <= 800;
+          if (M === (tall ? TALL : WIDE) && svg.childNodes.length) return;
+          M = tall ? TALL : WIDE;
+          svg.innerHTML = "";
+          roads = [];
+          labs = [];
+          caps = [];
+          len = [];
+          svg.setAttribute("viewBox", "0 0 " + M.vb[0] + " " + M.vb[1]);
+          svg.setAttribute("preserveAspectRatio", "xMidYMid meet");
+          var f = M.fs,
+            c = M.card,
+            dd = M.doc;
+          card = el("g", {});
+          card.appendChild(
+            el("rect", { x: c[0] + 4, y: c[1] + 6, width: c[2], height: c[3], rx: 14, class: "node-card-sh" })
+          );
+          card.appendChild(el("rect", { x: c[0], y: c[1], width: c[2], height: c[3], rx: 14, class: "node-card" }));
+          card.appendChild(
+            el(
+              "text",
+              {
+                x: c[0] + c[2] / 2,
+                y: c[1] + c[3] * 0.46,
+                "text-anchor": "middle",
+                class: "t-serif",
+                "font-size": 30 * f,
+              },
+              "Your answers"
+            )
+          );
+          card.appendChild(
+            el(
+              "text",
+              {
+                x: c[0] + c[2] / 2,
+                y: c[1] + c[3] * 0.8,
+                "text-anchor": "middle",
+                class: "t-mono",
+                "font-size": 12.5 * f,
+              },
+              O.quizTotal + " questions · " + O.QUIZ.length + " parts"
+            )
+          );
+          mainP = el("path", { d: M.main, class: "mainline" });
+          M.roads.forEach(function (r, i) {
+            var p = el("path", { d: r[0], class: "road" });
+            roads.push(p);
+            svg.appendChild(p);
+          });
+          svg.appendChild(mainP);
+          svg.appendChild(card);
+          doc = el("g", {});
+          doc.appendChild(
+            el("rect", { x: dd[0], y: dd[1], width: dd[2], height: dd[3], rx: dd[3] / 2, class: "node-doc" })
+          );
+          doc.appendChild(
+            el(
+              "text",
+              {
+                x: dd[0] + dd[2] / 2,
+                y: dd[1] + dd[3] * 0.63,
+                "text-anchor": "middle",
+                class: "t-serif t-white",
+                "font-size": 27 * f,
+              },
+              "Physician"
+            )
+          );
+          if (M.sub)
+            doc.appendChild(
+              el(
+                "text",
+                { x: M.sub[0], y: M.sub[1], "text-anchor": M.sub[2], class: "t-mono", "font-size": 11.5 * f },
+                "Registered with the KMC"
+              )
+            );
+          svg.appendChild(doc);
+          M.roads.forEach(function (r, i) {
+            var x = O.DECIDE[i],
+              g = el("g", { class: "lab" });
+            if (r[1]) {
+              var cp = el("line", {
+                x1: r[1][0] - 18,
+                y1: r[1][1],
+                x2: r[1][0] + 18,
+                y2: r[1][1],
+                class: "cap",
+                stroke: x[1],
+                opacity: 0,
+              });
+              caps[i] = cp;
+              svg.appendChild(cp);
+            }
+            g.appendChild(
+              el("text", { x: r[2], y: r[3], "text-anchor": r[4], class: "w", fill: x[1], "font-size": 16 * f }, x[0])
+            );
+            g.appendChild(
+              el("text", { x: r[2], y: r[3] + 24 * f, "text-anchor": r[4], class: "l", "font-size": 16 * f }, r[5])
+            );
+            labs.push(g);
+            svg.appendChild(g);
+          });
+          // the bag, where two of the roads end
+          var last = M.roads[3][0].match(/(-?\d+),(-?\d+)\s*$/);
+          svg.appendChild(
+            el("path", {
+              d:
+                "M" +
+                (+last[1] - 9) +
+                "," +
+                (+last[2] - 12) +
+                " L" +
+                last[1] +
+                "," +
+                last[2] +
+                " L" +
+                (+last[1] + 9) +
+                "," +
+                (+last[2] - 12),
+              class: "road",
+              id: "arrow",
+              opacity: 0,
+            })
+          );
+          ring = el("circle", { r: 15 * f, class: "dot-ring" });
+          dot = el("circle", { r: 7 * f, class: "dot" });
+          svg.appendChild(ring);
+          svg.appendChild(dot);
+          len = roads.map(function (p) {
+            var L = p.getTotalLength();
+            p.style.strokeDasharray = L + " " + L;
+            p.style.strokeDashoffset = L;
+            return L;
+          });
+          mainP.style.strokeDasharray = mainP.getTotalLength() + " " + mainP.getTotalLength();
+        }
+        function resize() {
+          if (innerWidth <= 800) {
+            map.style.height = Math.max(280, map.parentNode.clientHeight - map.offsetTop - 12) + "px";
+          } else map.style.height = "";
+          M = null;
+          build();
+        }
+        // the copy
+        var swap = $("#rdSwap"),
+          say = ['<div class="on"><p>' + O.LEDE + "</p></div>"];
+        O.DECIDE.forEach(function (x, i) {
+          var more = i === 0 ? '<p class="not">' + O.NOT + "</p>" : i === 1 ? "<p>" + O.IRON + "</p>" : "";
+          say.push(
+            '<div><span class="rd__word" style="color:' +
+              x[1] +
+              '">' +
+              x[0] +
+              "</span><p>" +
+              x[2] +
+              "</p>" +
+              more +
+              "</div>"
+          );
+        });
+        swap.innerHTML = say.join("");
+        var sayEls = Array.prototype.slice.call(swap.children),
+          said = 0;
+        function show(k) {
+          if (k === said) return;
+          sayEls[said].classList.remove("on");
+          sayEls[k].classList.add("on");
+          said = k;
+        }
+        function put(p, at) {
+          var pt = p.getPointAtLength(at);
+          dot.setAttribute("cx", pt.x);
+          dot.setAttribute("cy", pt.y);
+          ring.setAttribute("cx", pt.x);
+          ring.setAttribute("cy", pt.y);
+        }
+        var R0 = 0.16,
+          SPAN = 0.2;
+        function fn(p) {
+          if (!roads.length) build();
+          // your answers come down to the physician
+          var m = ss((p - 0.02) / 0.12),
+            ml = mainP.getTotalLength();
+          card.style.opacity = ss(p / 0.04).toFixed(3);
+          dot.style.opacity = ring.style.opacity = card.style.opacity;
+          mainP.style.strokeDashoffset = (ml * (1 - m)).toFixed(1);
+          if (p < R0) put(mainP, ml * m);
+          var k = -1;
+          roads.forEach(function (r, i) {
+            var u = (p - (R0 + i * SPAN)) / SPAN,
+              dr = ss(u / 0.6),
+              L = len[i],
+              x = O.DECIDE[i];
+            r.style.strokeDashoffset = (L * (1 - dr)).toFixed(1);
+            var cur = (u >= 0 && u < 1) || (i === 3 && u >= 1);
+            r.classList.toggle("on", cur);
+            r.classList.toggle("dim", u >= 1 && i < 3);
+            r.style.stroke = cur ? x[1] : "";
+            labs[i].classList.toggle("on", u >= 0.55);
+            if (caps[i]) caps[i].setAttribute("opacity", u >= 0.58 ? (u >= 1 && i < 3 ? 0.5 : 1) : 0);
+            if (u >= 0.55) k = i;
+            if (u >= 0 && (u < 1 || i === 3)) put(r, L * dr);
+          });
+          var ar = svg.querySelector("#arrow");
+          if (ar) {
+            ar.setAttribute("opacity", k === 3 ? 1 : 0);
+            ar.style.stroke = k === 3 ? O.DECIDE[3][1] : "";
+          }
+          show(k + 1);
+        }
+        O.pin($("#roadAct"), fn, resize);
+      })();
+    </script>
+  </body>
+</html>

@@ -2152,3 +2152,21 @@ Closes 63.4.
 | 69.1 | Both pictures checked close up: hands, face, no text or brand marks, nothing medical left in the room | ✅ |
 | 69.2 | Athletic Recovery and Post-viral Rebuild pages at 1920x920, 2560x1080, 1440x900 and 390x844: head clear of the header, face in view on a phone, his hands on the laces kept in view on wide screens | ✅ |
 | 69.3 | Typecheck, lint, 828 unit tests | ✅ |
+
+## 70. The new home page is live (26 Nov)
+
+- **Changed: the home page is the new design**, built and approved as a preview first.
+  - **Hero:** every drip hangs on a turning ring.
+  - **Why it is medical:** a sterile field is laid out, step by step, from the nurse's checklist.
+  - **Before a needle:** your answers go to a physician, who declines, asks for more, changes the doses or approves.
+  - **Further down:** the drips, the dose followed into the bloodstream, the six steps, the vitals, zones, price and FAQ.
+- **From the live data:** every drip, price, dose, colour, count, zone (with its hours), FAQ answer and the late-change fee comes from the data the admin manages. Adding or retiring a drip, opening a zone or changing the fee changes the page with no edit.
+- **Same site around it:** the page keeps the site's own header and footer.
+- **Backup:** the previous home page is kept, as a zip of the app before the change.
+
+| # | Test | Result |
+|---|---|---|
+| 70.1 | Whole page on a laptop (1440x900): every section shows, the ring and drips list show all nine drips, the zones list shows all 14 with their hours, the price range and late fee come from the billing settings; no errors | ✅ |
+| 70.2 | Leave the home page by a header link and come back: nothing from the home page keeps running elsewhere, and the page rebuilds cleanly | ✅ |
+| 70.3 | Phone (390x844), and with reduced motion: the still version shows everything; no sideways scrolling | ✅ |
+| 70.4 | Typecheck, lint, 828 unit tests | ✅ |

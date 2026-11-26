@@ -16,7 +16,8 @@
     "smoke": "node scripts/smoke.mjs",
     "typecheck": "tsc --noEmit",
     "prepare": "husky",
-    "site-css": "node scripts/scope-site-css.mjs"
+    "site-css": "node scripts/scope-site-css.mjs",
+    "home-port": "node scripts/port-home-v5.mjs"
   },
   "lint-staged": {
     "*": "prettier --write --ignore-unknown"

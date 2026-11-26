@@ -1,0 +1,327 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Section 3, option C: today’s design, upgraded</title>
+    <link rel="icon" href="../images/mark.svg" type="image/svg+xml" />
+    <script>
+      document.documentElement.className = "js";
+      if ("scrollRestoration" in history) history.scrollRestoration = "manual";
+    </script>
+    <link rel="stylesheet" href="../styles.css" />
+    <link rel="stylesheet" href="opt.css" />
+    <style>
+      /* Option C: today's physician act, kept as it is (the copy, the protocol card, the four sheets, the linen), with three
+   changes: a real rubber stamp comes down on each sheet and the ink is left grainy; the sheets are torn off a gummed
+   pad; and a torn sheet flies off to the right, away from the heading, instead of across it. */
+      .doc {
+        margin-top: 0 !important;
+        height: 480vh;
+      }
+      @media (max-width: 800px) {
+        .doc {
+          height: 440vh;
+        }
+      }
+      .sheet {
+        transform-origin: 0 0;
+        padding-top: 24px;
+      }
+      .sheet::before {
+        content: "";
+        position: absolute;
+        left: 0;
+        right: 0;
+        top: 0;
+        height: 9px;
+        border-radius: 8px 8px 0 0;
+        background: linear-gradient(180deg, #d8d1c0, #e8e2d4);
+      }
+      .sheet .stamp {
+        -webkit-mask: url(../images/ink-grain.png) 0 0 / 150px 150px;
+        mask: url(../images/ink-grain.png) 0 0 / 150px 150px;
+      }
+      .stampo,
+      .stamp-sh {
+        position: absolute;
+        left: 0;
+        top: 0;
+        width: 250px;
+        aspect-ratio: 640 / 492;
+        transform-origin: 50% 61%;
+        pointer-events: none;
+        will-change: transform, opacity;
+      }
+      .stampo {
+        z-index: 6;
+        background: url(../images/doc-stamp.webp) 0 0 / 100% 100%;
+      }
+      .stamp-sh {
+        z-index: 5;
+        background: url(../images/doc-stamp-sh.webp) 0 0 / 100% 100%;
+      }
+    </style>
+  </head>
+  <body>
+    <header class="hd">
+      <div class="wrap hd__in">
+        <a class="wm" href="../index.html" aria-label="NutriDrip, the home page"
+          ><img src="../images/mark.svg" alt="" width="22" height="30" /><span>NutriDrip<sup>™</sup></span></a
+        >
+        <nav aria-label="Sections">
+          <a href="../index.html#drips">The drips</a><a href="../index.html#how">How it works</a
+          ><a href="../index.html#safety">Safety</a><a href="../index.html#zones">Where</a
+          ><a href="../index.html#price">Price</a>
+        </nav>
+        <a class="btn btn--sm hd__cta" href="/quiz">Take the health quiz · 3 min<i></i></a>
+      </div>
+    </header>
+    <main>
+      <section class="opt-lead">
+        <div>
+          <span class="kick">Preview C · section 3</span>
+          <h1>Today’s design, upgraded</h1>
+          <p>
+            The same card and copy. A real stamp now comes down on each sheet, the ink is grainy, the sheets tear off a
+            pad, and they fly off to the right instead of across the heading. Scroll down.
+          </p>
+        </div>
+      </section>
+
+      <section class="act doc" id="doctor" aria-labelledby="doc-h">
+        <div class="stage" id="cStage">
+          <div class="tex" id="docTex" aria-hidden="true"></div>
+          <p class="doc__ghost" id="docGhost" aria-hidden="true">
+            Declines · Asks for more · Changes the doses · Approves
+          </p>
+          <div class="wrap doc__grid">
+            <div class="doc__copy">
+              <p class="kick">Before a needle</p>
+              <h2 id="doc-h">A doctor, <em>before</em> a needle.</h2>
+              <div class="doc__swap" id="docSwap">
+                <p class="lede">
+                  Every protocol is read and signed by a physician registered with the Karnataka Medical Council. Their
+                  name and number are on your report. Nothing is given on a quiz score alone.
+                </p>
+                <p class="doc__not" id="docNot">
+                  <b>Not for everyone.</b> IV therapy is unsuitable during pregnancy, in renal or cardiac failure, and
+                  with certain drug interactions. The quiz screens for these and a physician can decline.
+                </p>
+              </div>
+              <div class="doc__facts">
+                <p class="fact">A 15-minute phone call with your physician</p>
+                <p class="fact">One approval covers all bookings for 90 days</p>
+              </div>
+            </div>
+            <div class="card" aria-label="A protocol under review">
+              <div class="card__hd">
+                <span class="kick">Protocol review</span><span class="kick">Registered physician</span>
+              </div>
+              <ul class="parts" id="parts"></ul>
+              <p class="parts__total"><span id="partsN"></span><span id="partsQ"></span></p>
+              <div class="sheets" id="sheets" aria-live="polite"></div>
+              <div class="card__ft">
+                <div class="dots" role="group" aria-label="Show a physician's decision" id="docDots"></div>
+                <span class="kick">Nothing on a quiz score alone</span>
+              </div>
+            </div>
+          </div>
+          <i class="stamp-sh" id="stampSh" aria-hidden="true"></i>
+          <i class="stampo" id="stamp" aria-hidden="true"></i>
+        </div>
+      </section>
+
+      <section class="opt-next">
+        <div class="wrap">
+          <p class="kick">Next on the page</p>
+          <h2>The drips.</h2>
+          <p>The drips section follows here.</p>
+        </div>
+      </section>
+    </main>
+    <div class="opt-tag">Option C · Upgraded <a href="index.html">All options</a> <a href="../index.html">Home</a></div>
+
+    <script src="opt.js"></script>
+    <script>
+      (function () {
+        "use strict";
+        var O = OPT,
+          ss = O.ss,
+          clamp = O.clamp,
+          lerp = O.lerp;
+        var $ = function (s, r) {
+            return (r || document).querySelector(s);
+          },
+          $$ = function (s, r) {
+            return Array.prototype.slice.call((r || document).querySelectorAll(s));
+          };
+        O.QUIZ.forEach(function (q) {
+          $("#parts").insertAdjacentHTML("beforeend", "<li><span>" + q[0] + "</span><b>" + q[1] + "</b></li>");
+        });
+        $("#partsN").textContent = "The quiz · " + O.QUIZ.length + " parts";
+        $("#partsQ").textContent = O.quizTotal + " questions";
+        var el = $("#doctor"),
+          stage = $("#cStage"),
+          card = $(".card", el),
+          not = $("#docNot"),
+          swapEl = $("#docSwap"),
+          dots = $("#docDots"),
+          ghost = $("#docGhost"),
+          tex = $("#docTex");
+        var stamp = $("#stamp"),
+          sh = $("#stampSh"),
+          sheets = [],
+          step = -1,
+          gw = 0;
+        O.DECIDE.forEach(function (x, i) {
+          var s = document.createElement("div");
+          s.className = "sheet";
+          s.style.zIndex = 10 - i;
+          s.innerHTML = '<span class="stamp" style="color:' + x[1] + '">' + x[0] + "</span><p>" + x[2] + "</p>";
+          $("#sheets").appendChild(s);
+          sheets.push({ el: s, st: $(".stamp", s) });
+          var b = document.createElement("button");
+          b.textContent = i + 1;
+          b.setAttribute("aria-label", x[0]);
+          b.addEventListener("click", function () {
+            var r = el.getBoundingClientRect();
+            scrollTo({ top: r.top + scrollY + ((i + 0.5) / 4) * (r.height - innerHeight), behavior: "smooth" });
+          });
+          dots.appendChild(b);
+        });
+        function docStep(i) {
+          if (i === step) return;
+          step = i;
+          $$("button", dots).forEach(function (b, k) {
+            b.setAttribute("aria-current", k === i ? "true" : "false");
+          });
+          not.classList.toggle("on", i === 0);
+          swapEl.classList.toggle("no", i === 0);
+        }
+        var G = {};
+        function resize() {
+          // where the stamp comes down: the middle of the word on the sheet in front; and where it waits, to the right
+          var sr = stage.getBoundingClientRect(),
+            w = $(".sheets", el).getBoundingClientRect(),
+            c = card.getBoundingClientRect();
+          var sw = Math.max(150, Math.min(250, w.width * 0.5));
+          stamp.style.width = sh.style.width = sw + "px";
+          var swh = (sw * 492) / 640,
+            st = sheets[0].st,
+            so = st.getBoundingClientRect();
+          G.target = [so.left - sr.left + so.width / 2 - sw * 0.5, so.top - sr.top + so.height / 2 - swh * 0.61];
+          G.park = [
+            Math.min(sr.width - sw * 0.75, c.right - sr.left + 14),
+            Math.max(-swh * 0.1, w.top - sr.top - swh * 0.75),
+          ];
+          gw = 0;
+        }
+        function fn(p) {
+          var L = 0.25,
+            s = Math.min(3, Math.floor(p / L)),
+            u = s === 3 ? clamp((p - 0.75) / 0.25, 0, 1) : (p - s * L) / L;
+          docStep(s);
+          sheets.forEach(function (o, k) {
+            var tx = 0,
+              ty = 0,
+              rot = 0,
+              sc = 1,
+              op = 1,
+              so = 0,
+              sg = 1;
+            if (k < s) {
+              tx = 135;
+              ty = 22;
+              rot = 16;
+              op = 0;
+              so = 1;
+            } else if (k === s) {
+              // inked when the stamp meets the paper; torn off the pad and away to the right
+              var t = k < 3 ? ss((u - 0.78) / 0.22) : 0,
+                ink = ss((u - 0.19) / 0.04);
+              tx = t * 135;
+              ty = t * 22;
+              rot = t * 16;
+              op = 1 - t * 0.8;
+              so = ink;
+              sg = 1 + 0.06 * (1 - ss((u - 0.19) / 0.1));
+            } else if (k === s + 1) {
+              var t2 = ss((u - 0.78) / 0.22);
+              sc = 0.955 + 0.045 * t2;
+              ty = 10 - 10 * t2;
+              op = 0.92;
+            } else {
+              sc = 0.92;
+              ty = 22;
+              op = 0;
+            }
+            o.el.style.transform =
+              "translate(" +
+              tx.toFixed(1) +
+              "%," +
+              ty.toFixed(1) +
+              "%) rotate(" +
+              rot.toFixed(2) +
+              "deg) scale(" +
+              sc.toFixed(3) +
+              ")";
+            o.el.style.opacity = op.toFixed(3);
+            o.st.style.transform = "rotate(-3deg) scale(" + sg.toFixed(3) + ")";
+            o.st.style.opacity = so.toFixed(3);
+          });
+          // the stamp: down onto the sheet in front at the start of each decision, then back to wait beside the card
+          var a = ss(u / 0.14),
+            b = ss((u - 0.14) / 0.07),
+            c = ss((u - 0.26) / 0.16);
+          var x = lerp(lerp(G.park[0], G.target[0], a), G.park[0], c),
+            y = lerp(lerp(G.park[1], G.target[1], a), G.park[1], c);
+          var sc2 = c > 0 ? lerp(1, 1.3, c) : lerp(lerp(1.3, 1.12, a), 1, b),
+            r2 = c > 0 ? lerp(-3, 8, c) : lerp(8, -3, a);
+          stamp.style.transform =
+            "translate3d(" +
+            x.toFixed(1) +
+            "px," +
+            y.toFixed(1) +
+            "px,0) rotate(" +
+            r2.toFixed(2) +
+            "deg) scale(" +
+            sc2.toFixed(4) +
+            ")";
+          var hgt = (sc2 - 1) / 0.3;
+          sh.style.transform =
+            "translate3d(" +
+            (x + 8 + 60 * hgt).toFixed(1) +
+            "px," +
+            (y + 10 + 100 * hgt).toFixed(1) +
+            "px,0) rotate(" +
+            r2.toFixed(2) +
+            "deg) scale(" +
+            (1 + 0.12 * hgt).toFixed(4) +
+            ")";
+          sh.style.opacity = (0.95 - 0.5 * hgt).toFixed(3);
+          // today's depth, unchanged: the card turns a little, the linen drifts, the ghost line slides
+          card.style.transform =
+            "rotate(-1.1deg) perspective(1400px) rotateY(" +
+            ((p - 0.5) * -9).toFixed(2) +
+            "deg) rotateX(" +
+            (Math.sin(p * Math.PI) * 3).toFixed(2) +
+            "deg)";
+          tex.style.transform =
+            "translate3d(" +
+            (p * 34).toFixed(1) +
+            "px," +
+            (-p * 26).toFixed(1) +
+            "px,0) rotate(" +
+            (p * 1.4).toFixed(2) +
+            "deg) scale(1.08)";
+          if (!gw) gw = ghost.scrollWidth;
+          ghost.style.transform =
+            "translate3d(" + (innerWidth * 0.06 - p * Math.max(0, gw - innerWidth * 0.7)).toFixed(1) + "px,0,0)";
+        }
+        docStep(0);
+        O.pin(el, fn, resize);
+      })();
+    </script>
+  </body>
+</html>

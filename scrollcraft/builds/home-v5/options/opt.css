@@ -1,0 +1,71 @@
+/* Section 3 option previews: the chrome around each option (not part of the build) */
+.opt-tag {
+  position: fixed;
+  left: 14px;
+  bottom: 14px;
+  z-index: 60;
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  padding: 9px 14px;
+  border-radius: 999px;
+  background: var(--ink);
+  color: #fff;
+  font: 500 0.72rem/1 var(--mono);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+.opt-tag a {
+  color: #fff;
+  opacity: 0.72;
+  text-decoration: none;
+}
+.opt-tag a:hover {
+  opacity: 1;
+}
+@media (max-width: 800px) {
+  .opt-tag {
+    left: 8px;
+    bottom: 8px;
+    gap: 8px;
+    padding: 7px 10px;
+    font-size: 0.58rem;
+    white-space: nowrap;
+  }
+  .opt-tag a:last-child {
+    display: none;
+  }
+}
+.opt-lead {
+  min-height: 64dvh;
+  display: grid;
+  place-items: center;
+  padding: calc(var(--hh) + 40px) var(--pad) 40px;
+  text-align: center;
+  background: var(--paper);
+}
+.opt-lead h1 {
+  font-size: clamp(2rem, 1.2rem + 2.6vw, 3.4rem);
+}
+.opt-lead p {
+  margin-top: 14px;
+  color: var(--ink-3);
+  max-width: 38em;
+  margin-inline: auto;
+}
+.opt-lead .kick {
+  display: block;
+  margin-bottom: 14px;
+}
+.opt-next {
+  min-height: 70dvh;
+  padding: calc(var(--hh) + 60px) 0 80px;
+  background: var(--paper);
+}
+.opt-next h2 {
+  font-size: clamp(2rem, 1.2rem + 2.6vw, 3.6rem);
+}
+.opt-next p {
+  margin-top: 12px;
+  color: var(--ink-3);
+}

@@ -1,0 +1,166 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Section 3: three options to choose from</title>
+    <link rel="icon" href="../images/mark.svg" type="image/svg+xml" />
+    <link rel="stylesheet" href="../styles.css" />
+    <style>
+      body {
+        background: var(--paper);
+      }
+      .opts {
+        max-width: 1120px;
+        margin: 0 auto;
+        padding: 72px var(--pad) 96px;
+      }
+      .opts h1 {
+        font-size: clamp(2.2rem, 1.4rem + 2.6vw, 3.6rem);
+      }
+      .opts > p {
+        margin-top: 14px;
+        max-width: 40em;
+        color: var(--ink-2);
+      }
+      .opts__grid {
+        margin-top: 40px;
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+        gap: 20px;
+      }
+      .opt {
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+        padding: 26px 24px 22px;
+        border-radius: 12px;
+        background: #fbf9f3;
+        color: inherit;
+        text-decoration: none;
+        box-shadow:
+          0 0 0 1px var(--hair),
+          0 20px 40px -30px rgba(18, 26, 23, 0.45);
+        transition:
+          transform 0.3s var(--ease),
+          box-shadow 0.3s var(--ease);
+      }
+      .opt:hover,
+      .opt:focus-visible {
+        transform: translateY(-3px);
+        box-shadow:
+          0 0 0 1px var(--ink),
+          0 26px 46px -30px rgba(18, 26, 23, 0.5);
+      }
+      .opt h2 {
+        font-size: 1.9rem;
+      }
+      .opt p {
+        color: var(--ink-2);
+        font-size: 0.98rem;
+      }
+      .opt .kick {
+        color: var(--ink-3);
+      }
+      .opt__go {
+        margin-top: auto;
+        padding-top: 10px;
+        font: 600 0.9rem/1 var(--sans);
+      }
+      .opts__h {
+        margin-top: 56px;
+        font-size: clamp(1.6rem, 1.2rem + 1.2vw, 2.3rem);
+      }
+      .opts__sub {
+        margin-top: 10px;
+        color: var(--ink-2);
+        max-width: 40em;
+      }
+      .opts__note {
+        margin-top: 28px;
+        font-size: 0.9rem;
+        color: var(--ink-3);
+      }
+    </style>
+  </head>
+  <body>
+    <main class="opts">
+      <p class="kick">Home page preview · section 3</p>
+      <h1>A doctor, before a needle: three options</h1>
+      <p>
+        Open each one and scroll through it. They show the section on its own, without the sterile field before it; the
+        one you choose is then built into the page and joined to it.
+      </p>
+      <div class="opts__grid">
+        <a class="opt" href="a-desk.html"
+          ><span class="kick">Option A</span>
+          <h2>The physician’s desk</h2>
+          <p>
+            The same linen table, from above. Your drip’s own protocol is read down with a ruler, line by line, each
+            line ticked in pen. Then a real rubber stamp comes down four times on a pad of decision slips, and each slip
+            is torn off and laid on the protocol.
+          </p>
+          <span class="opt__go">Open A →</span></a
+        >
+        <a class="opt" href="b-roads.html"
+          ><span class="kick">Option B</span>
+          <h2>One decision, four roads</h2>
+          <p>
+            A clean ink diagram on chart paper. Your answers run down to the physician, and the scroll then travels each
+            road they can send you down: declines (it ends), asks for more (it loops back to you), changes the doses and
+            approves (both go on to the bag).
+          </p>
+          <span class="opt__go">Open B →</span></a
+        >
+        <a class="opt" href="c-upgrade.html"
+          ><span class="kick">Option C</span>
+          <h2>Today’s design, upgraded</h2>
+          <p>
+            The section as it is now, with a real stamp coming down on each sheet, grainy ink, sheets torn off a gummed
+            pad, and the torn sheet flying off to the right instead of across the heading.
+          </p>
+          <span class="opt__go">Open C →</span></a
+        >
+      </div>
+      <h2 class="opts__h">Brand-new concepts, shorter (about two screens)</h2>
+      <p class="opts__sub">
+        Each is built around what only this section says: a real, registered doctor, named on your report, who can say
+        no.
+      </p>
+      <div class="opts__grid">
+        <a class="opt" href="d-signed.html"
+          ><span class="kick">Option D · new</span>
+          <h2>Signed, by name</h2>
+          <p>
+            Your session report on the linen. The camera moves in on the physician’s block: their name and registration
+            number are printed in, and the protocol is signed in ink. Then: and they can say no.
+          </p>
+          <span class="opt__go">Open D →</span></a
+        >
+        <a class="opt" href="e-no.html"
+          ><span class="kick">Option E · new</span>
+          <h2>A doctor can say no</h2>
+          <p>
+            Type only, and bold. What the quiz screens for turns past a reading line, pregnancy, renal failure, cardiac
+            failure, certain drug interactions, each marked “a physician declines”, until it stops on everyone else:
+            approved, for 90 days.
+          </p>
+          <span class="opt__go">Open E →</span></a
+        >
+        <a class="opt" href="f-call.html"
+          ><span class="kick">Option F · new</span>
+          <h2>Fifteen minutes</h2>
+          <p>
+            A phone on the table, on a call with your physician. Your scroll runs the call’s clock from 0:00 to 15:00
+            while your quiz answers are read through beside it. The call ends; the protocol is signed.
+          </p>
+          <span class="opt__go">Open F →</span></a
+        >
+      </div>
+      <p class="opts__note">
+        Previews for choosing, not the finished section: Myers’ Revive stands in for whichever drip the visitor picked,
+        and the motion is tuned roughly.
+      </p>
+    </main>
+  </body>
+</html>

@@ -1,0 +1,699 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Section 3, option A: the physician’s desk</title>
+    <link rel="icon" href="../images/mark.svg" type="image/svg+xml" />
+    <script>
+      document.documentElement.className = "js";
+      if ("scrollRestoration" in history) history.scrollRestoration = "manual";
+    </script>
+    <link rel="stylesheet" href="../styles.css" />
+    <link rel="stylesheet" href="opt.css" />
+    <style>
+      /* Option A: the physician's desk. The same linen table as the act before it, seen from above. The chosen drip's own
+   protocol lies on it; a ruler reads it down line by line, each line ticked in pen; then a real rubber stamp comes
+   down on a pad of decision slips, four times, and each slip is torn off and laid on the protocol. */
+      .dsk {
+        height: 560vh;
+      }
+      .dsk .stage {
+        padding-top: var(--hh);
+        background: #e7e1d4;
+      }
+      .dsk__tex {
+        position: absolute;
+        inset: 0;
+        background: url(../images/tex-linen.webp) center / cover;
+        opacity: 0.85;
+        pointer-events: none;
+      }
+      /* the light falls clear across the side the words are on */
+      .dsk__tex::after {
+        content: "";
+        position: absolute;
+        inset: 0;
+        background: linear-gradient(
+          90deg,
+          rgba(234, 229, 217, 0.88) 0,
+          rgba(234, 229, 217, 0.7) 34%,
+          rgba(234, 229, 217, 0) 58%
+        );
+      }
+      @media (max-width: 800px) {
+        .dsk__tex::after {
+          background: linear-gradient(
+            180deg,
+            rgba(234, 229, 217, 0.9) 0,
+            rgba(234, 229, 217, 0.75) 38%,
+            rgba(234, 229, 217, 0) 60%
+          );
+        }
+      }
+      .dsk__grid {
+        position: relative;
+        height: 100%;
+        display: grid;
+        grid-template-columns: minmax(0, 0.8fr) minmax(0, 1.2fr);
+        gap: clamp(24px, 4vw, 72px);
+        align-items: center;
+      }
+      .dsk__copy h2 {
+        margin: 14px 0 20px;
+        font-size: clamp(2.4rem, 1.2rem + 3vw, 4.6rem);
+      }
+      .dsk__swap {
+        display: grid;
+        min-height: 10.5em;
+      }
+      .dsk__swap > div {
+        grid-area: 1 / 1;
+        opacity: 0;
+        transform: translateY(8px);
+        transition:
+          opacity 0.45s var(--ease),
+          transform 0.45s var(--ease);
+      }
+      .dsk__swap > div.on {
+        opacity: 1;
+        transform: none;
+      }
+      .dsk__swap p {
+        font-size: clamp(1rem, 0.95rem + 0.3vw, 1.2rem);
+        line-height: 1.5;
+        color: var(--ink-2);
+        max-width: 30em;
+      }
+      .dsk__swap p + p {
+        margin-top: 12px;
+      }
+      .dsk__swap .not {
+        padding: 12px 16px;
+        border-left: 3px solid var(--stop);
+        background: rgba(162, 58, 42, 0.07);
+        font-size: 0.92rem;
+      }
+      .dsk__swap .not b {
+        color: var(--stop);
+        font-weight: 600;
+      }
+      .dsk__word {
+        display: block;
+        margin-bottom: 10px;
+        font: 600 0.78rem/1 var(--mono);
+        letter-spacing: 0.14em;
+        text-transform: uppercase;
+      }
+      .dsk__facts {
+        margin-top: 18px;
+        display: grid;
+        gap: 10px;
+      }
+
+      /* the desk: everything on it is placed in px by the script below */
+      .desk {
+        position: relative;
+        height: min(80dvh, 740px);
+      }
+      .proto {
+        position: absolute;
+        left: 0;
+        top: 0;
+        width: min(480px, 60%);
+        height: 100%;
+        padding: clamp(16px, 2.6vh, 28px) clamp(18px, 2vw, 28px);
+        display: flex;
+        flex-direction: column;
+        border-radius: 3px;
+        background: linear-gradient(175deg, #fdfcf8, #f3f0e7);
+        box-shadow:
+          0 1px 0 rgba(0, 0, 0, 0.04),
+          0 30px 50px -26px rgba(30, 26, 18, 0.5),
+          0 4px 10px rgba(30, 26, 18, 0.08);
+        transform: rotate(-1.4deg);
+      }
+      .proto__hd {
+        display: flex;
+        justify-content: space-between;
+        align-items: baseline;
+        gap: 10px;
+        padding-bottom: 10px;
+        border-bottom: 1.5px solid var(--ink);
+      }
+      .proto__wm {
+        font: 650 1rem/1 var(--sans);
+        letter-spacing: -0.04em;
+      }
+      .proto__wm sup {
+        font-size: 0.5em;
+        font-weight: 500;
+        position: relative;
+        top: -0.3em;
+      }
+      .proto__hd .kick {
+        font-size: 0.6rem;
+      }
+      .proto__meta {
+        display: grid;
+        grid-template-columns: auto 1fr;
+        gap: 4px 14px;
+        margin: 12px 0 2px;
+        font-size: clamp(0.74rem, 1.6vh, 0.86rem);
+      }
+      .proto__meta dt {
+        font: 500 0.62rem/1.7 var(--mono);
+        letter-spacing: 0.12em;
+        text-transform: uppercase;
+        color: var(--ink-3);
+      }
+      .proto__meta dd {
+        margin: 0;
+        color: var(--ink);
+      }
+      .proto__sec {
+        margin-top: clamp(8px, 1.6vh, 14px);
+        display: flex;
+        justify-content: space-between;
+        gap: 10px;
+        padding-bottom: 5px;
+        border-bottom: 1px solid var(--hair);
+        font: 500 0.6rem/1.2 var(--mono);
+        letter-spacing: 0.12em;
+        text-transform: uppercase;
+        color: var(--ink-3);
+      }
+      .proto__rows li {
+        display: grid;
+        grid-template-columns: 1fr auto 18px;
+        gap: 10px;
+        align-items: baseline;
+        padding: clamp(3px, 0.62vh, 6px) 0;
+        border-bottom: 1px dashed var(--hair-2);
+        font-size: clamp(0.72rem, 1.55vh, 0.84rem);
+        line-height: 1.3;
+        color: var(--ink-2);
+      }
+      .proto__rows li b {
+        font: 500 0.92em var(--mono);
+        color: var(--ink);
+        white-space: nowrap;
+      }
+      .proto__rows svg {
+        width: 18px;
+        height: 14px;
+        align-self: center;
+        overflow: visible;
+      }
+      /* the physician's pen: blue-black ink, not a status colour */
+      .proto__rows path {
+        fill: none;
+        stroke: #23315e;
+        stroke-width: 2.1;
+        stroke-linecap: round;
+        stroke-linejoin: round;
+        stroke-dasharray: 26;
+        stroke-dashoffset: 26;
+      }
+      .proto__ft {
+        margin-top: auto;
+        padding-top: 14px;
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 14px;
+        font: 500 0.58rem/1.4 var(--mono);
+        letter-spacing: 0.1em;
+        text-transform: uppercase;
+        color: var(--ink-3);
+      }
+      .proto__ft span {
+        border-top: 1px solid var(--ink-3);
+        padding-top: 6px;
+      }
+      /* a clear acrylic ruler, read down the sheet */
+      .ruler {
+        position: absolute;
+        left: -4%;
+        width: 108%;
+        top: 0;
+        height: 34px;
+        border-radius: 3px;
+        pointer-events: none;
+        opacity: 0;
+        will-change: transform, opacity;
+        background:
+          repeating-linear-gradient(90deg, rgba(18, 26, 23, 0.5) 0 1px, transparent 1px 50px) 8px 0 / 100% 14px
+            no-repeat,
+          repeating-linear-gradient(90deg, rgba(18, 26, 23, 0.38) 0 1px, transparent 1px 10px) 8px 0 / 100% 8px
+            no-repeat,
+          linear-gradient(180deg, rgba(236, 246, 246, 0.55), rgba(214, 232, 232, 0.35));
+        box-shadow:
+          inset 0 0 0 1px rgba(255, 255, 255, 0.7),
+          0 10px 16px -10px rgba(20, 30, 30, 0.45);
+      }
+      /* the decision pad */
+      .pad {
+        position: absolute;
+        right: 0;
+        bottom: 3%;
+        width: min(330px, 46%);
+        aspect-ratio: 1.75;
+        z-index: 2;
+        transform: rotate(3deg);
+      }
+      .pad::before,
+      .pad::after {
+        content: "";
+        position: absolute;
+        inset: 0;
+        border-radius: 3px;
+        background: #f5f2e9;
+      }
+      .pad::before {
+        transform: translate(5px, 7px);
+        box-shadow: 0 26px 40px -22px rgba(30, 26, 18, 0.55);
+      }
+      .pad::after {
+        transform: translate(2.5px, 3.5px);
+        box-shadow: 0 1px 0 rgba(0, 0, 0, 0.08);
+      }
+      .slip {
+        position: absolute;
+        inset: 0;
+        z-index: 1;
+        display: flex;
+        flex-direction: column;
+        padding: 20px 16px 12px;
+        border-radius: 3px;
+        background: linear-gradient(175deg, #fffefb, #f6f3eb);
+        box-shadow:
+          0 0 0 1px rgba(18, 26, 23, 0.06),
+          0 1px 0 rgba(0, 0, 0, 0.05);
+        transform-origin: 0 0;
+        will-change: transform;
+      }
+      .slip::before {
+        content: "";
+        position: absolute;
+        left: 0;
+        right: 0;
+        top: 0;
+        height: 8px;
+        border-radius: 3px 3px 0 0;
+        background: linear-gradient(180deg, #d8d1c0, #e8e2d4);
+      }
+      .slip .kick {
+        font-size: 0.56rem;
+      }
+      .slip__box {
+        flex: 1;
+        margin: 8px 0;
+        display: grid;
+        place-items: center;
+        border: 1px dashed rgba(18, 26, 23, 0.22);
+        border-radius: 4px;
+      }
+      .slip__sig {
+        font: 500 0.54rem/1 var(--mono);
+        letter-spacing: 0.1em;
+        text-transform: uppercase;
+        color: var(--ink-3);
+      }
+      .ink {
+        --c: var(--ink);
+        color: var(--c);
+        padding: 0.42em 0.7em;
+        border: 3px solid currentColor;
+        border-radius: 6px;
+        opacity: 0;
+        transform: rotate(-4deg);
+        font: 700 clamp(0.84rem, 0.55rem + 0.75vw, 1.2rem)/1 var(--mono);
+        letter-spacing: 0.12em;
+        text-transform: uppercase;
+        white-space: nowrap;
+        -webkit-mask: url(../images/ink-grain.png) 0 0 / 150px 150px;
+        mask: url(../images/ink-grain.png) 0 0 / 150px 150px;
+      }
+      /* the stamp, and its shadow on the desk; origin at the middle of its rubber face */
+      .stampo,
+      .stamp-sh {
+        position: absolute;
+        left: 0;
+        top: 0;
+        width: 270px;
+        aspect-ratio: 640 / 492;
+        transform-origin: 50% 61%;
+        pointer-events: none;
+        will-change: transform, opacity;
+      }
+      .stampo {
+        z-index: 6;
+        background: url(../images/doc-stamp.webp) 0 0 / 100% 100%;
+      }
+      .stamp-sh {
+        z-index: 5;
+        background: url(../images/doc-stamp-sh.webp) 0 0 / 100% 100%;
+      }
+
+      @media (max-width: 800px) {
+        .dsk .stage {
+          padding-top: calc(var(--hh) + 14px);
+        }
+        .dsk__grid {
+          grid-template-columns: 1fr;
+          grid-template-rows: auto 1fr;
+          gap: 10px;
+          align-items: stretch;
+        }
+        .dsk__copy h2 {
+          font-size: clamp(1.9rem, 8vw, 2.5rem);
+          margin: 6px 0 10px;
+        }
+        .dsk__swap {
+          min-height: 7.6em;
+        }
+        .dsk__swap p {
+          font-size: 0.9rem;
+        }
+        .dsk__swap .not {
+          font-size: 0.8rem;
+          padding: 8px 10px;
+        }
+        .dsk__facts {
+          display: none;
+        }
+        .desk {
+          height: auto;
+          min-height: 0;
+          margin-bottom: 14px;
+        }
+        .proto {
+          width: 74%;
+          padding: 12px 14px;
+        }
+        .proto__meta,
+        .proto__rows li {
+          font-size: 0.66rem;
+        }
+        .proto__rows li {
+          padding: 2px 0;
+        }
+        .pad {
+          width: 64%;
+          bottom: 0;
+        }
+        .slip {
+          padding: 14px 10px 8px;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <header class="hd">
+      <div class="wrap hd__in">
+        <a class="wm" href="../index.html" aria-label="NutriDrip, the home page"
+          ><img src="../images/mark.svg" alt="" width="22" height="30" /><span>NutriDrip<sup>™</sup></span></a
+        >
+        <nav aria-label="Sections">
+          <a href="../index.html#drips">The drips</a><a href="../index.html#how">How it works</a
+          ><a href="../index.html#safety">Safety</a><a href="../index.html#zones">Where</a
+          ><a href="../index.html#price">Price</a>
+        </nav>
+        <a class="btn btn--sm hd__cta" href="/quiz">Take the health quiz · 3 min<i></i></a>
+      </div>
+    </header>
+    <main>
+      <section class="opt-lead">
+        <div>
+          <span class="kick">Preview A · section 3</span>
+          <h1>The physician’s desk</h1>
+          <p>
+            The same linen table, from above. Your drip’s protocol is read down line by line, then a real stamp comes
+            down on the decision pad: declines, asks for more, changes the doses, approves. Scroll down.
+          </p>
+        </div>
+      </section>
+
+      <section class="act dsk" id="deskAct" aria-labelledby="dsk-h">
+        <div class="stage">
+          <div class="dsk__tex" aria-hidden="true"></div>
+          <div class="wrap dsk__grid">
+            <div class="dsk__copy">
+              <p class="kick">Before a needle</p>
+              <h2 id="dsk-h">A doctor, <em>before</em> a needle.</h2>
+              <div class="dsk__swap" id="dskSwap" aria-live="polite"></div>
+              <div class="dsk__facts">
+                <p class="fact">A 15-minute phone call with your physician</p>
+                <p class="fact">One approval covers all bookings for 90 days</p>
+              </div>
+            </div>
+            <div class="desk" id="desk">
+              <article class="proto" id="proto" aria-label="The protocol, for the physician to review">
+                <div class="proto__hd">
+                  <span class="proto__wm">NutriDrip<sup>™</sup></span
+                  ><span class="kick">Protocol for physician review</span>
+                </div>
+                <dl class="proto__meta">
+                  <dt>Drip</dt>
+                  <dd id="pDrip"></dd>
+                  <dt>Carrier</dt>
+                  <dd id="pBase"></dd>
+                  <dt>Session</dt>
+                  <dd id="pTime"></dd>
+                </dl>
+                <p class="proto__sec"><span>Goes in the bag</span><span>Dose</span></p>
+                <ul class="proto__rows" id="pBag"></ul>
+                <p class="proto__sec"><span>Your quiz answers</span><span id="pQuizN"></span></p>
+                <ul class="proto__rows" id="pQuiz"></ul>
+                <div class="proto__ft"><span>Reviewing physician</span><span>KMC reg. no.</span></div>
+                <i class="ruler" id="ruler" aria-hidden="true"></i>
+              </article>
+              <div class="pad" id="pad"></div>
+              <i class="stamp-sh" id="stampSh" aria-hidden="true"></i>
+              <i class="stampo" id="stamp" aria-hidden="true"></i>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="opt-next">
+        <div class="wrap">
+          <p class="kick">Next on the page</p>
+          <h2>The drips.</h2>
+          <p>The drips section follows here.</p>
+        </div>
+      </section>
+    </main>
+    <div class="opt-tag">
+      Option A · Physician’s desk <a href="index.html">All options</a> <a href="../index.html">Home</a>
+    </div>
+
+    <script src="opt.js"></script>
+    <script>
+      (function () {
+        "use strict";
+        var O = OPT,
+          ss = O.ss,
+          lerp = O.lerp,
+          clamp = O.clamp,
+          d = O.DRIP;
+        var $ = function (s, r) {
+          return (r || document).querySelector(s);
+        };
+        var tick = '<svg viewBox="0 0 18 14" aria-hidden="true"><path d="M2 8 L7 12 L16 2"/></svg>';
+        $("#pDrip").textContent = d.name;
+        $("#pBase").textContent = d.base;
+        $("#pTime").textContent = d.time;
+        d.items.forEach(function (it) {
+          $("#pBag").insertAdjacentHTML(
+            "beforeend",
+            "<li><span>" + it[0] + "</span><b>" + it[1] + "</b>" + tick + "</li>"
+          );
+        });
+        O.QUIZ.forEach(function (q) {
+          $("#pQuiz").insertAdjacentHTML(
+            "beforeend",
+            "<li><span>" + q[0] + "</span><b>" + q[1] + "</b>" + tick + "</li>"
+          );
+        });
+        $("#pQuizN").textContent = O.QUIZ.length + " parts · " + O.quizTotal + " questions";
+        var pad = $("#pad"),
+          desk = $("#desk"),
+          proto = $("#proto"),
+          ruler = $("#ruler"),
+          stamp = $("#stamp"),
+          sh = $("#stampSh");
+        O.DECIDE.forEach(function (x, i) {
+          pad.insertAdjacentHTML(
+            "beforeend",
+            '<div class="slip" style="z-index:' +
+              (10 - i) +
+              '"><span class="kick">Physician’s decision</span><div class="slip__box"><span class="ink" style="--c:' +
+              x[1] +
+              '">' +
+              x[0] +
+              '</span></div><span class="slip__sig">Signed · KMC reg. no.</span></div>'
+          );
+        });
+        var slips = Array.prototype.slice.call(pad.children),
+          inks = slips.map(function (s) {
+            return $(".ink", s);
+          });
+        var rows = Array.prototype.slice.call(proto.querySelectorAll(".proto__rows li")),
+          paths = rows.map(function (r) {
+            return $("path", r);
+          });
+        // what the copy says: the protocol being read, then each decision
+        var swap = $("#dskSwap"),
+          say = ['<div class="on"><p>' + O.LEDE + "</p></div>"];
+        O.DECIDE.forEach(function (x, i) {
+          var more = i === 0 ? '<p class="not">' + O.NOT + "</p>" : i === 1 ? "<p>" + O.IRON + "</p>" : "";
+          say.push(
+            '<div><span class="dsk__word" style="color:' +
+              x[1] +
+              '">' +
+              x[0] +
+              "</span><p>" +
+              x[2] +
+              "</p>" +
+              more +
+              "</div>"
+          );
+        });
+        swap.innerHTML = say.join("");
+        var sayEls = Array.prototype.slice.call(swap.children),
+          said = 0;
+        function show(k) {
+          if (k === said) return;
+          sayEls[said].classList.remove("on");
+          sayEls[k].classList.add("on");
+          said = k;
+        }
+
+        var G = {};
+        function resize() {
+          var dw = desk.clientWidth,
+            dh = desk.clientHeight;
+          if (innerWidth <= 800) {
+            // a phone: the desk fills what the copy leaves
+            dh = Math.max(260, desk.parentNode.clientHeight - desk.offsetTop - 14);
+            desk.style.height = dh + "px";
+            proto.style.height = dh * 0.97 + "px";
+          } else {
+            desk.style.height = "";
+            proto.style.height = "";
+          }
+          dw = desk.clientWidth;
+          dh = desk.clientHeight;
+          var box = $(".slip__box", slips[0]);
+          var bw = box.offsetWidth,
+            bx = pad.offsetLeft + box.offsetLeft + bw / 2,
+            by = pad.offsetTop + box.offsetTop + box.offsetHeight / 2;
+          var sw = Math.max(120, bw * 1.02);
+          stamp.style.width = sh.style.width = sw + "px";
+          var shh = (sw * 492) / 640;
+          G.target = [bx - sw * 0.5, by - shh * 0.61];
+          // on a phone there is no room beside the pad: the stamp waits just off the screen and comes in only to stamp
+          G.park =
+            innerWidth <= 800
+              ? [dw + sw * 0.05, by - shh * 1.1]
+              : [Math.min(dw - sw * 0.35, bx + sw * 0.55), Math.max(-shh * 0.2, by - shh * 1.55)];
+          G.off = [dw + sw * 0.9, -shh * 1.6];
+          G.rows = rows.map(function (r) {
+            return r.offsetTop + r.offsetHeight / 2;
+          });
+          G.rTop = rows[0].offsetTop - 22;
+          G.rBot = rows[rows.length - 1].offsetTop + rows[rows.length - 1].offsetHeight - 8;
+          // where each torn slip comes to rest on the protocol (in the pad's own, slightly turned, frame)
+          G.land = slips.map(function (s, i) {
+            var tx = proto.offsetLeft + proto.offsetWidth * (innerWidth <= 800 ? 0.06 : 0.16) + i * 18 - pad.offsetLeft;
+            var ty = proto.offsetTop + proto.offsetHeight * 0.5 + i * 16 - pad.offsetTop;
+            return [tx, ty, -9 + i * 4.5];
+          });
+        }
+        var S0 = 0.36,
+          SPAN = 0.15;
+        function fn(p) {
+          // 1. read: the ruler goes down the sheet, and each line is ticked as it passes
+          var rd = ss((p - 0.03) / 0.25),
+            ry = lerp(G.rTop, G.rBot, rd);
+          ruler.style.opacity = (ss((p - 0.01) / 0.03) * (1 - ss((p - 0.29) / 0.04))).toFixed(3);
+          ruler.style.transform =
+            "translate3d(" + (60 * ss((p - 0.29) / 0.05)).toFixed(1) + "px," + ry.toFixed(1) + "px,0)";
+          G.rows.forEach(function (cy, i) {
+            paths[i].style.strokeDashoffset = (26 * (1 - ss((ry + 17 - cy) / 26))).toFixed(1);
+          });
+          // 2. the stamp: in from off the desk, then four times down onto the pad
+          var e = ss((p - 0.28) / 0.08),
+            x = lerp(G.off[0], G.park[0], e),
+            y = lerp(G.off[1], G.park[1], e),
+            s = 1.32,
+            rot = lerp(14, 6, e),
+            k = -1;
+          for (var i = 0; i < 4; i++) {
+            var u = (p - (S0 + i * SPAN)) / SPAN;
+            inks[i].style.opacity = ss((u - 0.38) / 0.04).toFixed(3);
+            inks[i].style.transform =
+              "rotate(" + (-4 + i * 1.5) + "deg) scale(" + (1 + 0.06 * (1 - ss((u - 0.38) / 0.1))).toFixed(3) + ")";
+            if (u >= 0.38) k = i;
+            if (i < 3) {
+              // torn off and laid on the protocol
+              var t = ss((u - 0.64) / 0.26),
+                L = G.land[i],
+                lift = Math.sin(Math.PI * t);
+              slips[i].style.transform =
+                "translate3d(" +
+                (L[0] * t).toFixed(1) +
+                "px," +
+                (L[1] * t - 30 * lift).toFixed(1) +
+                "px,0) rotate(" +
+                (L[2] * t - 6 * lift).toFixed(2) +
+                "deg)";
+              slips[i].style.zIndex = t > 0 ? 20 + i : 10 - i;
+              slips[i].style.boxShadow =
+                t > 0 && t < 1
+                  ? "0 " +
+                    (24 * lift + 2).toFixed(0) +
+                    "px " +
+                    (30 * lift + 6).toFixed(0) +
+                    "px -12px rgba(30,26,18,.45)"
+                  : "";
+            }
+            if (u < 0 || u > 1) continue;
+            var a = ss(u / 0.3),
+              b = ss((u - 0.3) / 0.1),
+              c = ss((u - 0.44) / 0.18);
+            x = lerp(lerp(G.park[0], G.target[0], a), G.park[0], c);
+            y = lerp(lerp(G.park[1], G.target[1], a), G.park[1], c);
+            s = c > 0 ? lerp(1, 1.32, c) : lerp(lerp(1.32, 1.14, a), 1, b);
+            rot = c > 0 ? lerp(3, 6, c) : lerp(6, 3, a);
+          }
+          show(k + 1);
+          stamp.style.transform =
+            "translate3d(" +
+            x.toFixed(1) +
+            "px," +
+            y.toFixed(1) +
+            "px,0) rotate(" +
+            rot.toFixed(2) +
+            "deg) scale(" +
+            s.toFixed(4) +
+            ")";
+          var hgt = (s - 1) / 0.32; // 0 on the paper, 1 held high
+          sh.style.transform =
+            "translate3d(" +
+            (x + 8 + 70 * hgt).toFixed(1) +
+            "px," +
+            (y + 10 + 120 * hgt).toFixed(1) +
+            "px,0) rotate(" +
+            rot.toFixed(2) +
+            "deg) scale(" +
+            (1 + 0.12 * hgt).toFixed(4) +
+            ")";
+          sh.style.opacity = (e * (0.95 - 0.5 * hgt)).toFixed(3);
+        }
+        O.pin($("#deskAct"), fn, resize);
+      })();
+    </script>
+  </body>
+</html>
