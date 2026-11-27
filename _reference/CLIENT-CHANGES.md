@@ -2170,3 +2170,16 @@ Closes 63.4.
 | 70.2 | Leave the home page by a header link and come back: nothing from the home page keeps running elsewhere, and the page rebuilds cleanly | ✅ |
 | 70.3 | Phone (390x844), and with reduced motion: the still version shows everything; no sideways scrolling | ✅ |
 | 70.4 | Typecheck, lint, 828 unit tests | ✅ |
+
+## 71. Home page updates (27 Nov)
+
+- **Changed: "Same dose, two routes" is redesigned.** A clear glass figure of the body replaces the two bars and the loose-tablets photo. As you scroll, the drip's route runs up the arm and into the blood at once; the tablet's route pauses at the mouth, stomach, small intestine and liver, and runs thinner after the gut and the liver. Two cards beside it say where each one is. Still marked "not to scale", with no numbers.
+- **Changed: the drips section.** The first goal button reads "All"; the "nine drips, six goals" line under the buttons is gone; the small heading reads "The formulary".
+- **Fixed: the first screen on refresh.** The heading, bags and background now open together, without flickering or pieces arriving seconds apart.
+- **Fixed: vial labels.** The glass no longer shows through the white label on the larger vials (home page and drip pages). Label text can no longer be selected, and pictures can no longer be dragged.
+
+| # | Test | Result |
+|---|---|---|
+| 71.1 | Home page on a laptop and a phone, scrolling and with reduced motion: the new section and the drips section show correctly, no errors, no sideways scrolling | ✅ |
+| 71.2 | Refresh, and leaving the home page and coming back: opens cleanly each time | ✅ |
+| 71.3 | Typecheck, lint, 828 unit tests, production build | ✅ |
