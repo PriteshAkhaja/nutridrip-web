@@ -1,0 +1,393 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>IV or tablets, option C: the stream</title>
+    <link rel="icon" href="../images/mark.svg" type="image/svg+xml" />
+    <script>
+      document.documentElement.className = "js";
+    </script>
+    <link rel="stylesheet" href="../styles.css" />
+    <link rel="stylesheet" href="opt.css" />
+    <link rel="stylesheet" href="rt.css" />
+    <style>
+      /* Option C: the stream. The same dose, as a flow of particles, leaves the tablets and the drip at the same rate. The
+   tablet's channel passes the stomach, the small intestine and the liver, and some of the flow falls away at each;
+   the drip's channel runs straight into the blood. Not to scale, and no numbers: only the shape of the difference. */
+      .rc {
+        padding: calc(var(--hh) + 64px) 0 90px;
+        background: #ece8de;
+      }
+      .rc__head {
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) minmax(0, 0.8fr);
+        gap: 20px 60px;
+        align-items: end;
+      }
+      .rc__head p.lede {
+        max-width: 30em;
+      }
+      .flow {
+        position: relative;
+        margin-top: 34px;
+        height: 460px;
+        border-radius: 20px;
+        background: #f4f1ea;
+        box-shadow: inset 0 0 0 1px var(--hair-2);
+        overflow: hidden;
+      }
+      .flow canvas {
+        position: absolute;
+        inset: 0;
+        width: 100%;
+        height: 100%;
+      }
+      .src {
+        position: absolute;
+        left: 22px;
+        width: 92px;
+        height: 92px;
+        translate: 0 -50%;
+        border-radius: 50%;
+        overflow: hidden;
+        box-shadow:
+          0 0 0 4px #f4f1ea,
+          0 0 0 5px var(--c),
+          0 16px 24px -14px rgba(18, 26, 23, 0.5);
+      }
+      .src img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+      }
+      .src--tab {
+        --c: var(--gold);
+        top: 30%;
+      }
+      .src--tab img {
+        object-position: 72% 55%;
+        transform: scale(1.6);
+      }
+      .src--iv {
+        --c: var(--blue);
+        top: 74%;
+      }
+      .src--iv img {
+        object-position: 64% 52%;
+        transform: scale(1.7);
+      }
+      .lab {
+        position: absolute;
+        z-index: 2;
+        font: 500 0.66rem/1.2 var(--mono);
+        letter-spacing: 0.12em;
+        text-transform: uppercase;
+        color: var(--ink-2);
+      }
+      .lab b {
+        display: block;
+        margin-top: 3px;
+        font: 350 1.1rem/1.1 var(--serif);
+        letter-spacing: -0.01em;
+        text-transform: none;
+        color: var(--ink);
+      }
+      .gate {
+        position: absolute;
+        z-index: 2;
+        translate: -50% 0;
+        width: 150px;
+        text-align: center;
+        font-size: 0.8rem;
+        color: var(--ink);
+      }
+      .gate b {
+        display: block;
+        font-weight: 600;
+      }
+      .gate span {
+        display: block;
+        margin-top: 4px;
+        font-size: 0.74rem;
+        line-height: 1.3;
+        color: var(--ink-3);
+      }
+      .pool {
+        position: absolute;
+        right: 22px;
+        top: 10%;
+        bottom: 10%;
+        width: 120px;
+        display: grid;
+        place-items: center;
+        text-align: center;
+        z-index: 2;
+        font: 600 0.84rem var(--sans);
+      }
+      .pool span {
+        display: block;
+        margin-top: 4px;
+        font-weight: 500;
+        font-size: 0.74rem;
+        color: var(--ink-3);
+      }
+      .rc .rt-note {
+        margin-top: 14px;
+      }
+      @media (max-width: 900px) {
+        .rc__head {
+          grid-template-columns: 1fr;
+        }
+        .flow {
+          height: 520px;
+        }
+        .src {
+          width: 64px;
+          height: 64px;
+          left: 12px;
+        }
+        .gate {
+          display: none;
+        }
+        .gates-m {
+          display: block !important;
+        }
+        .pool {
+          width: 70px;
+          right: 8px;
+          font-size: 0.7rem;
+        }
+        .lab {
+          font-size: 0.56rem;
+        }
+        .lab b {
+          font-size: 0.9rem;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <main>
+      <section class="opt-lead">
+        <div>
+          <span class="kick">IV or tablets · option C</span>
+          <h1>The stream</h1>
+          <p>
+            The same dose as a flow, leaving the tablets and the drip at the same rate. The tablet’s channel passes the
+            stomach, gut and liver, and some of it falls away at each; the drip’s runs straight into the blood.
+          </p>
+        </div>
+      </section>
+      <section class="rc" aria-labelledby="rt-h">
+        <div class="wrap">
+          <div class="rc__head">
+            <div>
+              <p class="kick">IV or tablets?</p>
+              <h2 id="rt-h" class="rt-h">Same dose, <em>two routes.</em></h2>
+            </div>
+            <p class="lede">By tablet, part of it is absorbed. By IV drip, all of it enters the blood.</p>
+          </div>
+          <div
+            class="flow"
+            id="flow"
+            aria-label="An illustration: the same flow leaves the tablets and the drip; the tablet's thins at the stomach, small intestine and liver, the drip's reaches the blood whole."
+          >
+            <canvas id="cv" aria-hidden="true"></canvas>
+            <div class="src src--tab"><img src="../images/tablets.webp" alt="" /></div>
+            <div class="src src--iv"><img src="../images/dose-arm.webp" alt="" /></div>
+            <p class="lab" style="left: 130px; top: calc(30% - 70px)">By tablet<b>Part of it is absorbed.</b></p>
+            <p class="lab" style="left: 130px; top: calc(74% - 70px)">By IV drip<b>All of it enters the blood.</b></p>
+            <div id="gates"></div>
+            <div class="pool">
+              <div>Bloodstream<span>where both are going</span></div>
+            </div>
+          </div>
+          <p class="rt-note gates-m" style="display: none">
+            Each mark on the tablet’s channel, left to right: the stomach, the small intestine, the liver.
+          </p>
+          <p class="rt-note">
+            <span>Illustration, not to scale.</span> What remains by mouth varies by nutrient, dose and person.
+          </p>
+        </div>
+      </section>
+      <section class="opt-next">
+        <div class="wrap">
+          <p class="kick">Next on the page</p>
+          <h2>Why we exist.</h2>
+          <p>The next section follows here.</p>
+        </div>
+      </section>
+    </main>
+    <div class="opt-tag">
+      IV or tablets · C · Stream <a href="index.html">All options</a> <a href="../index.html">Home</a>
+    </div>
+
+    <script src="rt.js"></script>
+    <script>
+      (function () {
+        "use strict";
+        var R = RT,
+          flow = document.getElementById("flow"),
+          cv = document.getElementById("cv"),
+          cx = cv.getContext("2d"),
+          gatesEl = document.getElementById("gates");
+        var still = matchMedia("(prefers-reduced-motion: reduce)").matches;
+        var GOLD = "#b8882f",
+          BLUE = "#2f6fb8";
+        // the tablet's stops between its source and the blood: stomach, small intestine, liver
+        var G = R.TAB.slice(1, 4),
+          W,
+          H,
+          dpr,
+          lanes,
+          gx = [],
+          parts = [],
+          last = 0,
+          run = false,
+          raf = 0,
+          acc = 0;
+        gatesEl.innerHTML = G.map(function (g) {
+          return '<div class="gate"><b>' + g[1] + "</b><span>" + g[2] + "</span></div>";
+        }).join("");
+        var gateEls = Array.prototype.slice.call(gatesEl.children);
+        function size() {
+          dpr = Math.min(2, devicePixelRatio || 1);
+          W = flow.clientWidth;
+          H = flow.clientHeight;
+          cv.width = W * dpr;
+          cv.height = H * dpr;
+          cx.setTransform(dpr, 0, 0, dpr, 0, 0);
+          var ph = innerWidth <= 900,
+            x0 = ph ? 82 : 120,
+            x1 = W - (ph ? 82 : 150);
+          lanes = { tab: { y: H * 0.3, x0: x0, x1: x1 }, iv: { y: H * 0.74, x0: x0, x1: x1 } };
+          gx = G.map(function (g, i) {
+            return x0 + (x1 - x0) * (0.22 + i * 0.25);
+          });
+          gateEls.forEach(function (el, i) {
+            el.style.left = gx[i] + "px";
+            el.style.top = lanes.tab.y + 40 + "px";
+          });
+          if (still) drawStill();
+        }
+        function spawn(lane) {
+          var L = lanes[lane];
+          parts.push({
+            lane: lane,
+            x: L.x0,
+            y0: (Math.random() - 0.5) * 26,
+            ph: Math.random() * 6.28,
+            v: 210 + Math.random() * 60,
+            gate: 0,
+            die: 0,
+          });
+        }
+        function channel(L, c) {
+          cx.strokeStyle = c;
+          cx.globalAlpha = 0.14;
+          cx.lineWidth = 34;
+          cx.lineCap = "round";
+          cx.beginPath();
+          cx.moveTo(L.x0, L.y);
+          cx.lineTo(L.x1, L.y);
+          cx.stroke();
+          cx.globalAlpha = 1;
+        }
+        function gates() {
+          gx.forEach(function (x) {
+            cx.strokeStyle = GOLD;
+            cx.lineWidth = 2;
+            cx.globalAlpha = 0.6;
+            cx.beginPath();
+            cx.moveTo(x, lanes.tab.y - 26);
+            cx.lineTo(x, lanes.tab.y - 8);
+            cx.moveTo(x, lanes.tab.y + 8);
+            cx.lineTo(x, lanes.tab.y + 26);
+            cx.stroke();
+            cx.globalAlpha = 1;
+          });
+        }
+        function pool() {
+          var x = lanes.tab.x1 + 20;
+          var g = cx.createLinearGradient(x, 0, W, 0);
+          g.addColorStop(0, "rgba(59,71,66,0)");
+          g.addColorStop(1, "rgba(59,71,66,0.10)"); /* neutral: red is kept for real warnings */
+          cx.fillStyle = g;
+          cx.fillRect(x, 0, W - x, H);
+        }
+        function frame(now) {
+          raf = 0;
+          var dt = last ? Math.min(0.05, (now - last) / 1000) : 0.016;
+          last = now;
+          // the same rate from both
+          acc += dt * 38;
+          while (acc > 1) {
+            acc -= 1;
+            spawn("tab");
+            spawn("iv");
+          }
+          cx.clearRect(0, 0, W, H);
+          pool();
+          channel(lanes.tab, GOLD);
+          channel(lanes.iv, BLUE);
+          gates();
+          parts = parts.filter(function (p) {
+            var L = lanes[p.lane];
+            p.x += p.v * dt;
+            p.ph += dt * 3;
+            if (p.lane === "tab" && p.gate < gx.length && p.x >= gx[p.gate]) {
+              if (!p.die && Math.random() < 0.3) p.die = 0.0001;
+              p.gate++;
+            }
+            if (p.die) p.die += dt * 2.2;
+            if (p.die >= 1 || p.x > W + 10) return false;
+            var y = L.y + p.y0 + Math.sin(p.ph) * 3 + (p.die ? p.die * 40 : 0);
+            if (p.x > L.x1) {
+              p.v *= 0.985;
+            }
+            cx.globalAlpha = p.die ? 1 - p.die : 1;
+            cx.fillStyle = p.lane === "tab" ? GOLD : BLUE;
+            cx.beginPath();
+            cx.arc(p.x, y, 2.6, 0, 6.283);
+            cx.fill();
+            return true;
+          });
+          cx.globalAlpha = 1;
+          if (run) raf = requestAnimationFrame(frame);
+        }
+        function drawStill() {
+          cx.clearRect(0, 0, W, H);
+          pool();
+          channel(lanes.tab, GOLD);
+          channel(lanes.iv, BLUE);
+          gates();
+          ["tab", "iv"].forEach(function (k) {
+            var L = lanes[k];
+            for (var i = 0; i < 90; i++) {
+              var x = L.x0 + (L.x1 - L.x0 + 60) * (i / 90),
+                seen = gx.filter(function (g) {
+                  return x > g;
+                }).length;
+              if (k === "tab" && (i * 7) % 10 < seen * 2.5) continue;
+              cx.fillStyle = k === "tab" ? GOLD : BLUE;
+              cx.beginPath();
+              cx.arc(x, L.y + ((i * 13) % 22) - 11, 2.6, 0, 6.283);
+              cx.fill();
+            }
+          });
+        }
+        size();
+        addEventListener("resize", size);
+        if (!still)
+          new IntersectionObserver(function (es) {
+            run = es[0].isIntersecting;
+            if (run && !raf) {
+              last = 0;
+              raf = requestAnimationFrame(frame);
+            }
+          }).observe(flow);
+      })();
+    </script>
+  </body>
+</html>

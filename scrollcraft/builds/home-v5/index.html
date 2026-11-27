@@ -206,7 +206,7 @@
         <div class="wrap">
           <div class="drips__head">
             <div>
-              <p class="kick rv">The menu</p>
+              <p class="kick rv">The formulary</p>
               <h2 id="dr-h" class="rv" style="margin-top: 14px">
                 <span data-count="drips" data-form="Word">Nine</span> drips. <em>Every ingredient</em> in view.
               </h2>
@@ -488,27 +488,53 @@
       <!-- ====================================================== 8. IV OR TABLETS: two routes, one dose -->
       <section class="act rt" id="routes" data-pin aria-labelledby="rt-h">
         <div class="stage">
-          <div class="wrap">
-            <div class="rt__head">
-              <div>
-                <p class="kick">IV or tablets?</p>
-                <h2 id="rt-h" style="margin-top: 12px">Same dose, <em>two routes.</em></h2>
+          <div class="wrap rm">
+            <div class="rm__copy">
+              <p class="kick">IV or tablets?</p>
+              <h2 id="rt-h" class="rm__h">Same dose, <em>two routes.</em></h2>
+              <div class="rm__cards" aria-live="polite">
+                <div class="rm-card rm-card--tab" id="rmTab">
+                  <div class="rm-card__top">
+                    <p class="rm-card__k"><b>By tablet</b> · part of it is absorbed</p>
+                    <span class="rm-pips"></span>
+                  </div>
+                  <div class="rm-card__rows"></div>
+                </div>
+                <div class="rm-card rm-card--iv" id="rmIv">
+                  <div class="rm-card__top">
+                    <p class="rm-card__k"><b>By IV drip</b> · all of it enters the blood</p>
+                    <span class="rm-pips"></span>
+                  </div>
+                  <div class="rm-card__rows"></div>
+                </div>
               </div>
-              <div class="rt__pic"><img src="images/tablets.webp" alt="Tablets on a surface" loading="lazy" /></div>
+              <p class="rm__note">
+                <span>Illustration, not to scale.</span> What remains by mouth varies by nutrient, dose and person.
+              </p>
             </div>
-            <div class="lanes">
-              <div class="lane lane--tab">
-                <div class="lane__t">By tablet<b>Part of it is absorbed.</b></div>
-                <div class="track" id="laneTab"></div>
+            <figure class="rm-plate">
+              <div class="rm-fig" id="rmFig">
+                <img
+                  src="images/rt-body-glass.webp"
+                  alt="A clear glass figure of the body, the heart, liver, stomach, gut and a vein in the arm visible inside"
+                  loading="lazy"
+                />
+                <svg viewBox="0 0 596 792" aria-hidden="true">
+                  <g id="rmAhead"></g>
+                  <circle class="rm-pulse" id="rmPuB1" cx="278" cy="318" />
+                  <circle class="rm-pulse b" id="rmPuB2" cx="278" cy="318" />
+                  <circle class="rm-pulse g" id="rmPuG" cx="278" cy="318" />
+                  <g id="rmLines"></g>
+                  <g id="rmSpecks"></g>
+                  <g id="rmStops"></g>
+                  <circle id="rmDotTab" r="7" />
+                  <circle id="rmDotIv" r="7" />
+                </svg>
               </div>
-              <div class="lane lane--iv">
-                <div class="lane__t">By IV drip<b>All of it enters the blood.</b></div>
-                <div class="track" id="laneIv"></div>
-              </div>
-            </div>
-            <p class="rt__note">
-              <span>Illustration, not to scale.</span><b>What remains by mouth varies by nutrient, dose and person.</b>
-            </p>
+              <figcaption class="rm-plate__cap">
+                <span><b>Fig. 1</b> · the same dose by two routes</span><span>Not to scale</span>
+              </figcaption>
+            </figure>
           </div>
         </div>
       </section>

@@ -103,9 +103,15 @@ fs.writeFileSync(`${OUT}/dose-gl.js`, HEAD("dose-gl.js") + "/* eslint-disable */
 
 /* ------------------------------------------------------------------ the page's script */
 let js = read("app.js");
+// Each rewrite matches with any spacing and line breaks, so a reformat of the preview (Prettier runs on commit)
+// cannot break the port; a rewrite that finds nothing stops it rather than shipping a page that leaks.
+const esc = (w) => w.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+const flex = (from) => new RegExp(from.trim().split(/\s+/).map(esc).join("\\s*"), "g");
 const must = (from, to) => {
-  if (!js.includes(from)) throw new Error("app.js: cannot find " + JSON.stringify(from.slice(0, 60)));
-  js = js.split(from).join(to);
+  const re = typeof from === "string" ? flex(from) : from;
+  if (!re.test(js)) throw new Error("app.js: cannot find " + String(from).slice(0, 70));
+  re.lastIndex = 0;
+  js = js.replace(re, to);
 };
 const PRELUDE = `
   // (port) Everything this page starts, it can stop: listeners on window, timers, animation frames, observers.
@@ -138,8 +144,9 @@ must("var root = document.documentElement;", "var root = ROOT;");
 must("return (r || document).querySelector(s);", "return (r || ROOT).querySelector(s);");
 must("(r || document).querySelectorAll(s)", "(r || ROOT).querySelectorAll(s)");
 must("window.NUTRIDRIP_HOME", "DATA");
+// the reduced-motion and short-screen listeners (with or without the brackets a formatter may drop)
 must(
-  '(m.addEventListener ? m.addEventListener("change", function () { setStill(); kick(); }) : m.addListener(setStill))',
+  /\(?\s*m\.addEventListener\s*\?\s*m\.addEventListener\(\s*"change",\s*function \(\) \{\s*setStill\(\);\s*kick\(\);\s*\}\)\s*:\s*m\.addListener\(setStill\)\s*\)?/g,
   'listen(m, "change", function () { setStill(); kick(); })'
 );
 must("window.addEventListener(", "listen(window, ");
@@ -174,4 +181,13 @@ for (const f of fs.readdirSync(path.join(SRC, "fonts")))
   if (/^OFL|LICENSE/i.test(f)) fs.copyFileSync(path.join(SRC, "fonts", f), path.join(PUB, "fonts", f));
 console.log(
   `home port: markup ${(markup.length / 1024).toFixed(0)} KB, ${used.size} images, keyframes renamed ${frames.size}`
+);
+
+// The repo formats every file on commit (lint-staged runs Prettier). Formatting the port here as well means a
+// re-port shows only what really changed, not a reflow of every line.
+import { execFileSync } from "node:child_process";
+execFileSync(
+  process.execPath,
+  ["node_modules/prettier/bin/prettier.cjs", "--write", "--log-level", "warn", OUT, "scripts/port-home-v5.mjs"],
+  { stdio: "inherit" }
 );

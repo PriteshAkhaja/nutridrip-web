@@ -51,6 +51,7 @@ export function mountHome(ROOT, DATA) {
     obs.push(x);
     return x;
   };
+
   var QUIZ = "/quiz"; // the app's quiz route; the button works once this folder is served beside the app
   var $ = function (s, r) {
     return (r || ROOT).querySelector(s);
@@ -658,6 +659,11 @@ export function mountHome(ROOT, DATA) {
       "</div>"
     );
   }
+
+  // no picture on the page is picked up and dragged (the browser's ghost copy of an ingredient over the bag)
+  root.addEventListener("dragstart", function (e) {
+    if (e.target && e.target.tagName === "IMG") e.preventDefault();
+  });
 
   /* ------------------------------------------------------------------ still mode: reduced motion, or a phone held sideways */
   var mqs = [matchMedia("(prefers-reduced-motion: reduce)"), matchMedia("(max-height: 500px)")];
@@ -1852,8 +1858,8 @@ export function mountHome(ROOT, DATA) {
     b.setAttribute("aria-pressed", key === "All" ? "true" : "false");
     return b;
   };
-  var countLine = upFirst(word(DRIPS.length)) + " drips, " + word(GOALS.length) + " goals.";
-  goalsEl.appendChild(chip("All " + word(DRIPS.length), "All"));
+  var countLine = ""; // (the user, 2026-11-26: no count under the chips, and the first chip is just "All")
+  goalsEl.appendChild(chip("All", "All"));
   GOALS.forEach(function (g) {
     goalsEl.appendChild(chip(g[0], g[0]));
   });
@@ -2698,66 +2704,208 @@ export function mountHome(ROOT, DATA) {
     }).join("") +
     "</tbody>";
 
-  /* ------------------------------------------------------------------ IV or tablets */
-  function lane(el, stations, thick, span) {
-    el.innerHTML = stations
-      .map(function (s, i) {
-        return (
-          '<div class="stn' +
-          (span && i === 1 ? " stn--end" : "") +
-          '"' +
-          (span && i === 1 ? ' style="grid-column:5"' : "") +
-          "><h4>" +
-          s[0] +
-          "</h4><p>" +
-          s[1] +
-          '</p><div class="seg"' +
-          (span && i === 0 ? ' style="width:' + span * 100 + '%"' : "") +
-          '><i style="--t:' +
-          (thick[i] || 4) +
-          'px"></i></div></div>'
-        );
-      })
-      .join("");
-    return { stn: $$(".stn", el), seg: $$(".seg i", el) };
+  /* ------------------------------------------------------------------ IV or tablets: the route map */
+  // The two routes' stops, as the page has always said them.
+  var RT_TAB = [
+    ["mouth", "Mouth", "Swallowed."],
+    ["stomach", "Stomach", "It must dissolve first; B12 also needs a factor made in the stomach."],
+    ["intestine", "Small intestine", "Absorption has limits; vitamin C is absorbed less efficiently at higher doses."],
+    ["liver", "Liver", "Part of some doses is processed here first."],
+    ["blood", "Bloodstream", "What remains, which varies by nutrient, dose and person."],
+  ];
+  var RT_IV = [
+    ["vein", "Into a vein", "The dose goes in directly."],
+    ["blood", "Bloodstream", "Straight in, with no stomach, gut or liver on the way."],
+  ];
+  // The tablet's road in four legs between its stops, on the plate's own 596 x 792 drawing, and how wide the line
+  // runs on each: full to the gut, then thinner after the small intestine and again after the liver.
+  // (placed on the glass figure, /site/home/rt-body-glass.webp: its mouth, stomach, gut, liver, heart and the vein in its arm)
+  var RT_LEGS = [
+    ["M296,138 L296,250 Q298,360 305,400 Q311,414 318,420", 5],
+    ["M318,420 Q348,480 298,520 Q290,525 295,520", 5],
+    ["M295,520 Q240,522 232,462 Q229,416 255,395", 3.3],
+    ["M255,395 Q262,352 278,318", 2],
+  ];
+  var RT_IVD = "M78,548 Q110,470 140,400 Q170,330 200,302 Q242,292 278,318";
+  var RT_AT = {
+    mouth: [296, 138, "r"],
+    stomach: [318, 420, "r"],
+    intestine: [295, 520, "r"],
+    liver: [255, 395, "l"],
+    blood: [278, 318, "l"],
+    vein: [78, 548, "r"],
+  };
+  var rt = { el: $("#routes"), fig: $("#rmFig"), marks: {} };
+  var rmEl = function (tag, a, parent) {
+    var e = document.createElementNS("http://www.w3.org/2000/svg", tag);
+    for (var k in a) e.setAttribute(k, a[k]);
+    parent.appendChild(e);
+    return e;
+  };
+  (function () {
+    var ahead = $("#rmAhead"),
+      lines = $("#rmLines"),
+      stops = $("#rmStops"),
+      specks = $("#rmSpecks");
+    rt.legs = RT_LEGS.map(function (l) {
+      rmEl("path", { d: l[0], class: "rm-ahead", style: "stroke: var(--gold)" }, ahead);
+      var h = rmEl("path", { d: l[0], class: "rm-halo", "stroke-width": l[1] + 6 }, lines);
+      var p = rmEl("path", { d: l[0], "stroke-width": l[1], style: "stroke: var(--gold)" }, lines);
+      return { h: h, p: p, L: 0 };
+    });
+    rmEl("path", { d: RT_IVD, class: "rm-ahead", style: "stroke: var(--blue)" }, ahead);
+    rt.ivH = rmEl("path", { d: RT_IVD, class: "rm-halo", "stroke-width": 11 }, lines);
+    rt.ivP = rmEl("path", { d: RT_IVD, "stroke-width": 5, style: "stroke: var(--blue)" }, lines);
+    var mark = function (key, label, color) {
+      var a = RT_AT[key],
+        c = rmEl("circle", { cx: a[0], cy: a[1], r: 7, class: "rm-stop" }, stops);
+      c.style.color = color;
+      c.style.stroke = color;
+      var t = document.createElement("span");
+      t.className = "rm-tag " + a[2];
+      t.style.left = (a[0] / 596) * 100 + "%";
+      t.style.top = (a[1] / 792) * 100 + "%";
+      t.innerHTML = label;
+      rt.fig.appendChild(t);
+      rt.marks[key] = { c: c, t: t };
+    };
+    RT_TAB.forEach(function (s) {
+      if (s[0] !== "blood") mark(s[0], s[1], "var(--gold)");
+    });
+    mark("vein", "Into a vein", "var(--blue)");
+    mark("blood", "Bloodstream", "var(--blue)");
+    // the specks that fall away after the small intestine (leg 2) and the liver (leg 3)
+    rt.specks = [];
+    [2, 3].forEach(function (k) {
+      var a = RT_AT[k === 2 ? "intestine" : "liver"];
+      for (var j = 0; j < 3; j++) {
+        var ang = (k === 2 ? 0.4 : 3.6) + j * 0.55;
+        rt.specks.push({
+          c: rmEl("circle", { r: 2.6, style: "fill: var(--gold)", opacity: 0 }, specks),
+          x: a[0],
+          y: a[1],
+          dx: Math.cos(ang),
+          dy: Math.sin(ang),
+          k: k,
+          j: j,
+        });
+      }
+    });
+    // each card holds a row per state: not yet, then each stop, each with its own sentence and its own summary
+    var card = function (id, rows, sums) {
+      var c = $(id);
+      $(".rm-pips", c).innerHTML = rows
+        .map(function () {
+          return "<i></i>";
+        })
+        .join("");
+      var all = [["", "Not yet", "Scroll to follow the dose."]].concat(rows);
+      $(".rm-card__rows", c).innerHTML = all
+        .map(function (r, k) {
+          return (
+            '<div class="rm-row"><p class="rm-row__stop">' +
+            r[1] +
+            '</p><p class="rm-row__line">' +
+            r[2] +
+            '</p><p class="rm-row__sum">' +
+            (sums[k] || "&nbsp;") +
+            "</p></div>"
+          );
+        })
+        .join("");
+      return { el: c, pips: $$(".rm-pips i", c), rows: $$(".rm-row", c), at: -2 };
+    };
+    rt.cTab = card(
+      "#rmTab",
+      RT_TAB,
+      [""].concat(
+        RT_TAB.map(function (r, k) {
+          return k === RT_TAB.length - 1 ? "In the blood, what remains" : "Stop " + (k + 1) + " of " + RT_TAB.length;
+        })
+      )
+    );
+    rt.cIv = card("#rmIv", RT_IV, ["", "On its way", "In the blood"]);
+  })();
+  // the lengths are read once the paths are on the page (and again if the page is measured anew)
+  function rmMeasure() {
+    var set = function (x, L) {
+      x.style.strokeDasharray = L + " " + L;
+    };
+    rt.legs.forEach(function (l) {
+      l.L = l.p.getTotalLength();
+      set(l.h, l.L);
+      set(l.p, l.L);
+    });
+    rt.LI = rt.ivP.getTotalLength();
+    set(rt.ivH, rt.LI);
+    set(rt.ivP, rt.LI);
+    // on a wide plate the blood's label sits to the left of the heart, clear of the tablet's line; on a phone, above
+    rt.marks.blood.t.className =
+      "rm-tag " + (innerWidth <= 900 ? "t" : "l") + (rt.marks.blood.t.classList.contains("on") ? " on" : "");
   }
-  var laneTab = lane(
-    $("#laneTab"),
-    [
-      ["Mouth", "Swallowed."],
-      ["Stomach", "It must dissolve first; B12 also needs a factor made in the stomach."],
-      ["Small intestine", "Absorption has limits; vitamin C is absorbed less efficiently at higher doses."],
-      ["Liver", "Part of some doses is processed here first."],
-      ["Bloodstream", "What remains, which varies by nutrient, dose and person."],
-    ],
-    [18, 13, 9, 5]
-  );
-  var laneIv = lane(
-    $("#laneIv"),
-    [
-      ["Into a vein", "The dose goes in directly."],
-      ["Bloodstream", "Straight in, with no stomach, gut or liver on the way."],
-    ],
-    [18],
-    4
-  );
-  var rt = { el: $("#routes"), pic: $(".rt__pic") };
+  // i: the state to show (-1 not yet, then each stop); prog: how far along its route, for the colour strip
+  function rmCard(c, i, prog) {
+    c.el.style.setProperty("--prog", prog.toFixed(3));
+    c.pips.forEach(function (p, k) {
+      p.classList.toggle("on", k <= i);
+    });
+    if (i === c.at) return;
+    c.at = i;
+    c.rows.forEach(function (r, k) {
+      r.classList.toggle("is-on", k === i + 1);
+      r.classList.toggle("is-past", k < i + 1);
+    });
+  }
   function rtFn(p) {
-    var q = clamp(p / 0.82, 0, 1) * 4;
-    laneTab.seg.forEach(function (s, i) {
-      s.style.setProperty("--f", clamp(q - i, 0, 1).toFixed(3));
+    if (!rt.LI) rmMeasure();
+    // the drip: up the arm and in, early
+    var v = ss((p - 0.05) / 0.17);
+    rt.ivH.style.strokeDashoffset = rt.ivP.style.strokeDashoffset = (rt.LI * (1 - v)).toFixed(1);
+    var b = rt.ivP.getPointAtLength(rt.LI * v),
+      dIv = $("#rmDotIv"),
+      dTab = $("#rmDotTab");
+    dIv.setAttribute("cx", b.x);
+    dIv.setAttribute("cy", b.y);
+    // the tablet: four legs, a pause at each stop before it moves on
+    var q = clamp((p - 0.06) / 0.84, 0, 1) * 4,
+      leg = Math.min(3, Math.floor(q)),
+      f = q >= 4 ? 1 : ss(clamp((q - leg - 0.22) / 0.78, 0, 1));
+    rt.legs.forEach(function (l, k) {
+      var done = k < leg ? 1 : k === leg ? f : 0;
+      l.h.style.strokeDashoffset = l.p.style.strokeDashoffset = (l.L * (1 - done)).toFixed(1);
     });
-    laneTab.stn.forEach(function (s, i) {
-      s.classList.toggle("on", q >= i - 0.02);
+    var a = rt.legs[leg].p.getPointAtLength(rt.legs[leg].L * f);
+    dTab.setAttribute("cx", a.x);
+    dTab.setAttribute("cy", a.y);
+    dTab.setAttribute("r", [7, 7, 5.6, 4.4][leg]);
+    dTab.style.opacity = dIv.style.opacity = p > 0.02 ? 1 : 0;
+    var reached = p <= 0.06 ? -1 : q >= 4 ? 4 : leg + (f >= 0.999 ? 1 : 0); // the stops the tablet has reached: 0 = the mouth
+    ["mouth", "stomach", "intestine", "liver"].forEach(function (k, i) {
+      rt.marks[k].c.classList.toggle("on", reached >= i);
+      rt.marks[k].t.classList.toggle("on", reached >= i);
     });
-    var v = clamp(p / 0.3, 0, 1);
-    laneIv.seg.forEach(function (s) {
-      s.style.setProperty("--f", v.toFixed(3));
+    rt.marks.vein.c.classList.toggle("on", v > 0.01);
+    rt.marks.vein.t.classList.toggle("on", v > 0.01);
+    var inB = v >= 0.99;
+    rt.marks.blood.c.classList.toggle("on", inB);
+    rt.marks.blood.t.classList.toggle("on", inB);
+    rt.marks.blood.t.innerHTML =
+      "Bloodstream " + (reached >= 4 ? "<i>both, by different roads</i>" : inB ? "<i>the drip, already</i>" : "");
+    // the specks fall away just after the tablet leaves the small intestine and the liver
+    rt.specks.forEach(function (s) {
+      var u = clamp((q - s.k) / 0.55, 0, 1),
+        o = u > 0 && u < 1 ? Math.sin(Math.PI * u) : 0,
+        d = 6 + u * 30 + s.j * 6;
+      s.c.setAttribute("cx", (s.x + s.dx * d).toFixed(1));
+      s.c.setAttribute("cy", (s.y + s.dy * d + u * 10).toFixed(1));
+      s.c.setAttribute("opacity", o.toFixed(2));
     });
-    laneIv.stn.forEach(function (s, i) {
-      s.classList.toggle("on", v >= i - 0.02 && (i === 0 || v >= 0.98));
-    });
-    rt.pic.style.setProperty("--py", ((0.5 - p) * 40).toFixed(1) + "px");
+    // a pulse from the chest as each arrives
+    $("#rmPuB1").classList.toggle("go", inB);
+    $("#rmPuB2").classList.toggle("go", inB);
+    $("#rmPuG").classList.toggle("go", reached >= 4);
+    rmCard(rt.cIv, v <= 0.01 ? -1 : inB ? 1 : 0, v);
+    rmCard(rt.cTab, reached, q / 4);
   }
 
   /* ------------------------------------------------------------------ zones */
@@ -2985,6 +3133,7 @@ export function mountHome(ROOT, DATA) {
     stackBot = sr.bottom + y;
     staMeasure();
     docMeasure();
+    rmMeasure();
     dsMeasure();
     stackMeasure();
     ringMeasure();

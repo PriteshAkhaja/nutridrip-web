@@ -1,0 +1,702 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>IV or tablets, option A: the route map</title>
+    <link rel="icon" href="../images/mark.svg" type="image/svg+xml" />
+    <script>
+      document.documentElement.className = "js";
+    </script>
+    <link rel="stylesheet" href="../styles.css" />
+    <link rel="stylesheet" href="opt.css" />
+    <link rel="stylesheet" href="rt.css" />
+    <style>
+      /* Option A, second version: the route map as a textbook plate. Both routes start together as you scroll. The drip's
+   blue line runs up the arm and is in the blood almost at once; a pulse goes out from the chest. The tablet's gold
+   line pauses at each organ, and after the small intestine and again after the liver it runs thinner, a few specks
+   falling away: part of it is absorbed. No numbers; not to scale. Two cards beside the plate say where each is. */
+      .ra {
+        height: 360vh;
+      }
+      .ra .stage {
+        padding-top: var(--hh);
+        background: #ece8de;
+      }
+      .ra__grid {
+        height: 100%;
+        display: grid;
+        grid-template-columns: minmax(0, 0.85fr) minmax(0, 1.15fr);
+        gap: clamp(24px, 5vw, 84px);
+        align-items: center;
+      }
+      /* the cards: where each route is now */
+      .now {
+        margin-top: clamp(18px, 3vh, 30px);
+        display: grid;
+        gap: 12px;
+      }
+      .card2 {
+        position: relative;
+        padding: 16px 18px 16px 20px;
+        border-radius: 14px;
+        background: #f7f4ec;
+        box-shadow:
+          0 0 0 1px var(--hair-2),
+          0 18px 30px -26px rgba(18, 26, 23, 0.5);
+        overflow: hidden;
+      }
+      .card2::before {
+        content: "";
+        position: absolute;
+        left: 0;
+        top: 0;
+        bottom: 0;
+        width: 4px;
+        background: var(--c);
+      }
+      .card2--tab {
+        --c: var(--gold);
+      }
+      .card2--iv {
+        --c: var(--blue);
+      }
+      .card2__top {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 10px;
+      }
+      .card2__k {
+        font: 500 0.68rem/1 var(--mono);
+        letter-spacing: 0.14em;
+        text-transform: uppercase;
+        color: var(--ink-3);
+      }
+      .card2__k b {
+        color: var(--c);
+        font-weight: 600;
+      }
+      .pips {
+        display: flex;
+        gap: 5px;
+      }
+      .pips i {
+        width: 8px;
+        height: 8px;
+        border-radius: 50%;
+        box-shadow: inset 0 0 0 1.5px var(--c);
+        transition: background 0.3s;
+      }
+      .pips i.on {
+        background: var(--c);
+        box-shadow: none;
+      }
+      .card2__stop {
+        margin-top: 10px;
+        font: 350 clamp(1.4rem, 1rem + 0.9vw, 1.9rem)/1.05 var(--serif);
+        letter-spacing: -0.02em;
+      }
+      .card2__line {
+        margin-top: 6px;
+        min-height: 2.7em;
+        font-size: 0.92rem;
+        line-height: 1.4;
+        color: var(--ink-2);
+      }
+      .card2__stop,
+      .card2__line {
+        transition: opacity 0.25s var(--ease);
+      }
+      .card2.swap .card2__stop,
+      .card2.swap .card2__line {
+        opacity: 0;
+      }
+      .card2__sum {
+        margin-top: 8px;
+        font: 500 0.66rem var(--mono);
+        letter-spacing: 0.1em;
+        text-transform: uppercase;
+        color: var(--c);
+      }
+      /* the plate */
+      .plate {
+        position: relative;
+        justify-self: center;
+        width: min(100%, calc((100dvh - var(--hh) - 40px) * 596 / 850), 640px);
+        padding: 14px 14px 0;
+        border-radius: 6px;
+        background: #f3efe6;
+        box-shadow:
+          0 0 0 1px rgba(18, 26, 23, 0.1),
+          inset 0 0 0 7px #f3efe6,
+          inset 0 0 0 8px rgba(18, 26, 23, 0.12),
+          0 30px 50px -40px rgba(18, 26, 23, 0.6);
+      }
+      .fig {
+        position: relative;
+        width: 100%;
+        aspect-ratio: 596 / 792;
+      }
+      .fig img,
+      .fig svg {
+        position: absolute;
+        inset: 0;
+        width: 100%;
+        height: 100%;
+      }
+      .fig svg {
+        overflow: visible;
+      }
+      .fig path {
+        fill: none;
+        stroke-linecap: round;
+        stroke-linejoin: round;
+      }
+      .fig .ahead {
+        stroke-width: 2.4;
+        stroke-dasharray: 1 7;
+        opacity: 0.45;
+      }
+      .fig .halo {
+        stroke: #f3efe6;
+      }
+      .fig-render .fig .halo {
+        stroke: rgba(255, 255, 255, 0.8);
+      }
+      .fig-render .fig .ahead {
+        opacity: 0.7;
+      }
+      .fig-render .fig circle.stop {
+        fill: rgba(255, 255, 255, 0.9);
+      }
+      .fig-render .fig img {
+        border-radius: 2px;
+      }
+      .figsw {
+        position: fixed;
+        right: 14px;
+        top: calc(var(--hh) + 14px);
+        z-index: 60;
+        display: flex;
+        gap: 4px;
+        padding: 4px;
+        border-radius: 999px;
+        background: var(--ink);
+      }
+      .figsw a {
+        padding: 8px 14px;
+        border-radius: 999px;
+        color: #fff;
+        text-decoration: none;
+        font: 500 0.72rem/1 var(--mono);
+        letter-spacing: 0.06em;
+        text-transform: uppercase;
+        opacity: 0.7;
+      }
+      .figsw a[aria-current="true"] {
+        background: #fff;
+        color: var(--ink);
+        opacity: 1;
+      }
+      @media (max-width: 900px) {
+        .figsw {
+          top: auto;
+          bottom: 52px;
+          right: 8px;
+        }
+        .figsw a {
+          padding: 6px 9px;
+          font-size: 0.56rem;
+        }
+      }
+      .fig circle.stop {
+        fill: #f3efe6;
+        stroke-width: 3;
+        transition: fill 0.3s;
+      }
+      .fig circle.stop.on {
+        fill: currentColor;
+      }
+      .fig .pulse {
+        fill: none;
+        stroke-width: 2;
+        opacity: 0;
+      }
+      .fig .pulse.go {
+        animation: pulse 2.4s cubic-bezier(0.2, 0.6, 0.3, 1) infinite;
+      }
+      .fig .pulse.go.b {
+        animation-delay: 0.8s;
+      }
+      @keyframes pulse {
+        0% {
+          opacity: 0.7;
+          r: 8;
+        }
+        100% {
+          opacity: 0;
+          r: 46;
+        }
+      }
+      .cap {
+        display: flex;
+        justify-content: space-between;
+        gap: 14px;
+        padding: 10px 6px 12px;
+        border-top: 1px solid rgba(18, 26, 23, 0.12);
+        font: 500 0.62rem/1.4 var(--mono);
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        color: var(--ink-3);
+      }
+      .cap b {
+        color: var(--ink-2);
+        font-weight: 600;
+      }
+      .tag {
+        position: absolute;
+        padding: 3px 8px;
+        border-radius: 999px;
+        background: #fbf9f3;
+        box-shadow: 0 0 0 1px var(--hair);
+        font: 600 0.7rem/1.2 var(--sans);
+        white-space: nowrap;
+        opacity: 0;
+        transition:
+          opacity 0.35s var(--ease),
+          translate 0.35s var(--ease);
+      }
+      .tag.r {
+        translate: 12px -50%;
+      }
+      .tag.l {
+        translate: calc(-100% - 12px) -50%;
+      }
+      .tag.t {
+        translate: -50% calc(-100% - 12px);
+      }
+      .tag.on {
+        opacity: 1;
+      }
+      .tag i {
+        font-style: normal;
+        font-weight: 500;
+        color: var(--ink-3);
+      }
+      @media (max-width: 900px) {
+        .ra .stage {
+          padding-top: calc(var(--hh) + 10px);
+        }
+        .ra__grid {
+          grid-template-columns: minmax(0, 1fr);
+          grid-template-rows: auto 1fr;
+          gap: 8px;
+          align-items: stretch;
+        }
+        .now {
+          grid-template-columns: 1fr 1fr;
+          gap: 8px;
+          margin-top: 10px;
+        }
+        .card2 {
+          padding: 10px 10px 10px 13px;
+          border-radius: 10px;
+        }
+        .card2__line,
+        .card2__sum,
+        .pips {
+          display: none;
+        }
+        .card2__stop {
+          margin-top: 4px;
+          font-size: 1.05rem;
+        }
+        .card2__k {
+          font-size: 0.56rem;
+        }
+        .ra .rt-note {
+          display: none;
+        }
+        .plate {
+          width: min(100%, calc((100dvh - 290px) * 596 / 850));
+          align-self: start;
+          padding: 8px 8px 0;
+        }
+        .cap {
+          font-size: 0.52rem;
+          padding: 6px 2px 8px;
+        }
+        .tag {
+          font-size: 0.6rem;
+          padding: 2px 6px;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <main>
+      <section class="opt-lead">
+        <div>
+          <span class="kick">IV or tablets · option A, second version</span>
+          <h1>The route map</h1>
+          <p>
+            A textbook plate of the body. Both routes start together: the drip is in the blood almost at once, while the
+            tablet pauses at each organ and runs thinner after the gut and the liver.
+          </p>
+        </div>
+      </section>
+      <section class="act ra" id="ra" aria-labelledby="rt-h">
+        <div class="stage">
+          <div class="wrap ra__grid">
+            <div>
+              <p class="kick">IV or tablets?</p>
+              <h2 id="rt-h" class="rt-h">Same dose, <em>two routes.</em></h2>
+              <div class="now" aria-live="polite">
+                <div class="card2 card2--tab" id="cTab">
+                  <div class="card2__top">
+                    <p class="card2__k"><b>By tablet</b> · part of it is absorbed</p>
+                    <span class="pips"></span>
+                  </div>
+                  <p class="card2__stop"></p>
+                  <p class="card2__line"></p>
+                </div>
+                <div class="card2 card2--iv" id="cIv">
+                  <div class="card2__top">
+                    <p class="card2__k"><b>By IV drip</b> · all of it enters the blood</p>
+                    <span class="pips"></span>
+                  </div>
+                  <p class="card2__stop"></p>
+                  <p class="card2__line"></p>
+                </div>
+              </div>
+              <p class="rt-note">
+                <span>Illustration, not to scale.</span> What remains by mouth varies by nutrient, dose and person.
+              </p>
+            </div>
+            <figure class="plate">
+              <div class="fig" id="fig">
+                <img
+                  src="../images/rt-body.webp"
+                  alt="A line drawing of the body: the stomach, the gut, the liver and a vein in the arm"
+                />
+                <svg viewBox="0 0 596 792" aria-hidden="true">
+                  <g id="ahead"></g>
+                  <circle class="pulse" id="puB1" cx="430" cy="318" style="stroke: var(--blue)" />
+                  <circle class="pulse b" id="puB2" cx="430" cy="318" style="stroke: var(--blue)" />
+                  <circle class="pulse" id="puG" cx="430" cy="318" style="stroke: var(--gold)" />
+                  <g id="lines"></g>
+                  <g id="specks"></g>
+                  <g id="stops"></g>
+                  <circle id="dTab" r="7" style="fill: var(--gold)" />
+                  <circle id="dIv" r="7" style="fill: var(--blue)" />
+                </svg>
+              </div>
+              <figcaption class="cap">
+                <span><b>Fig. 1</b> · the same dose by two routes</span><span>Not to scale</span>
+              </figcaption>
+            </figure>
+          </div>
+        </div>
+      </section>
+      <section class="opt-next">
+        <div class="wrap">
+          <p class="kick">Next on the page</p>
+          <h2>Why we exist.</h2>
+          <p>The next section follows here.</p>
+        </div>
+      </section>
+    </main>
+    <nav class="figsw" aria-label="Choose the figure">
+      <a href="?fig=line" data-k="line">Line drawing</a><a href="?fig=porcelain" data-k="porcelain">Porcelain</a
+      ><a href="?fig=glass" data-k="glass">Glass</a>
+    </nav>
+    <div class="opt-tag">
+      IV or tablets · A · Route map <a href="rt-a-map-v1.html">First version</a> <a href="index.html">All options</a>
+    </div>
+
+    <script src="opt.js"></script>
+    <script src="rt.js"></script>
+    <script>
+      (function () {
+        "use strict";
+        var O = OPT,
+          ss = O.ss,
+          clamp = O.clamp,
+          R = RT,
+          NS = "http://www.w3.org/2000/svg";
+        var $ = function (s) {
+          return document.querySelector(s);
+        };
+        var el = function (tag, a, parent) {
+          var e = document.createElementNS(NS, tag);
+          for (var k in a) e.setAttribute(k, a[k]);
+          parent.appendChild(e);
+          return e;
+        };
+        // the tablet's road in four legs between its stops (on the plate's own 596 x 792 drawing), and how wide the line
+        // runs on each: full to the gut, then thinner after the small intestine, thinner again after the liver
+        // three figures to compare (?fig=line, porcelain or glass), each with the routes placed on its own body (on the
+        // plate's 596 x 792 grid): the tablet's four legs and how wide each runs, the drip's road, and where each stop is
+        var FIGS = {
+          line: {
+            src: "../images/rt-body.webp",
+            alt: "A line drawing of the body: the stomach, the gut, the liver and a vein in the arm",
+            bside: "r",
+            legs: [
+              "M360,176 L364,250 Q368,330 386,380 Q398,398 404,410",
+              "M404,410 Q426,470 392,520 Q372,548 362,540",
+              "M362,540 Q318,552 300,500 Q292,450 306,404",
+              "M306,404 Q326,340 430,318",
+            ],
+            iv: "M104,660 Q140,585 184,502 Q214,446 238,380 Q252,330 300,320 L430,318",
+            at: {
+              mouth: [360, 176, "r"],
+              stomach: [404, 410, "r"],
+              intestine: [362, 540, "r"],
+              liver: [306, 404, "l"],
+              blood: [430, 318, "t"],
+              vein: [104, 660, "r"],
+            },
+          },
+          porcelain: {
+            src: "../images/rt-body-porcelain.webp",
+            alt: "A frosted, porcelain-like figure of the body, the heart, liver, stomach, gut and a vein in the arm softly visible inside",
+            bside: "r",
+            legs: [
+              "M296,142 L296,230 Q297,340 304,392 Q312,420 325,430",
+              "M325,430 Q352,488 300,520 Q290,526 295,520",
+              "M295,520 Q236,526 230,462 Q226,414 250,390",
+              "M250,390 Q272,342 330,328",
+            ],
+            iv: "M478,648 Q452,520 434,420 Q422,356 406,316 Q374,302 330,328",
+            at: {
+              mouth: [296, 142, "r"],
+              stomach: [325, 430, "r"],
+              intestine: [295, 520, "r"],
+              liver: [250, 390, "l"],
+              blood: [330, 328, "r"],
+              vein: [478, 648, "l"],
+            },
+          },
+          glass: {
+            src: "../images/rt-body-glass.webp",
+            alt: "A clear glass figure of the body, the heart, liver, stomach, gut and a vein in the arm visible inside",
+            bside: "l",
+            legs: [
+              "M296,138 L296,250 Q298,360 305,400 Q311,414 318,420",
+              "M318,420 Q348,480 298,520 Q290,525 295,520",
+              "M295,520 Q240,522 232,462 Q229,416 255,395",
+              "M255,395 Q262,352 278,318",
+            ],
+            iv: "M78,548 Q110,470 140,400 Q170,330 200,302 Q242,292 278,318",
+            at: {
+              mouth: [296, 138, "r"],
+              stomach: [318, 420, "r"],
+              intestine: [295, 520, "r"],
+              liver: [255, 395, "l"],
+              blood: [278, 318, "l"],
+              vein: [78, 548, "r"],
+            },
+          },
+        };
+        var FIGK = (/[?&]fig=(\w+)/.exec(location.search) || [])[1];
+        if (!FIGS[FIGK]) FIGK = "line";
+        var FIG = FIGS[FIGK],
+          WIDE = [5, 5, 3.3, 2];
+        var LEGS = FIG.legs.map(function (d, i) {
+            return [d, WIDE[i]];
+          }),
+          IV = FIG.iv,
+          AT = FIG.at;
+        ["#puB1", "#puB2", "#puG"].forEach(function (id) {
+          var c = document.querySelector(id);
+          c.setAttribute("cx", AT.blood[0]);
+          c.setAttribute("cy", AT.blood[1]);
+        });
+        var img = document.querySelector("#fig img");
+        img.src = FIG.src;
+        img.alt = FIG.alt;
+        document.documentElement.classList.toggle("fig-render", FIGK !== "line");
+        document.querySelectorAll(".figsw a").forEach(function (x) {
+          x.setAttribute("aria-current", x.dataset.k === FIGK ? "true" : "false");
+        });
+        var ahead = $("#ahead"),
+          lines = $("#lines"),
+          stops = $("#stops"),
+          specksG = $("#specks"),
+          fig = $("#fig");
+        var legs = LEGS.map(function (l) {
+          el("path", { d: l[0], class: "ahead", style: "stroke: var(--gold)" }, ahead);
+          var h = el("path", { d: l[0], class: "halo", "stroke-width": l[1] + 6 }, lines),
+            p = el("path", { d: l[0], "stroke-width": l[1], style: "stroke: var(--gold)" }, lines);
+          var L = p.getTotalLength();
+          [h, p].forEach(function (x) {
+            x.style.strokeDasharray = L + " " + L;
+            x.style.strokeDashoffset = L;
+          });
+          return { h: h, p: p, L: L };
+        });
+        el("path", { d: IV, class: "ahead", style: "stroke: var(--blue)" }, ahead);
+        var ivH = el("path", { d: IV, class: "halo", "stroke-width": 11 }, lines),
+          ivP = el("path", { d: IV, "stroke-width": 5, style: "stroke: var(--blue)" }, lines);
+        var LI = ivP.getTotalLength();
+        [ivH, ivP].forEach(function (x) {
+          x.style.strokeDasharray = LI + " " + LI;
+          x.style.strokeDashoffset = LI;
+        });
+        // the stops and their labels
+        var marks = {};
+        var mark = function (key, label, color) {
+          var a = AT[key],
+            c = el("circle", { cx: a[0], cy: a[1], r: 7, class: "stop" }, stops);
+          c.style.color = color;
+          c.style.stroke = color;
+          var t = document.createElement("span");
+          t.className = "tag " + a[2];
+          t.style.left = (a[0] / 596) * 100 + "%";
+          t.style.top = (a[1] / 792) * 100 + "%";
+          t.innerHTML = label;
+          fig.appendChild(t);
+          marks[key] = { c: c, t: t };
+        };
+        R.TAB.forEach(function (s) {
+          if (s[0] !== "blood") mark(s[0], s[1], "var(--gold)");
+        });
+        mark("vein", "Into a vein", "var(--blue)");
+        mark("blood", "Bloodstream", "var(--blue)");
+        // on a wide plate its label sits to the right, clear of the tablet's line; on a phone, above
+        var side = function () {
+          marks.blood.t.className = marks.blood.t.className.replace(
+            / (r|l|t)( |$)/,
+            " " + (innerWidth <= 900 ? "t" : FIG.bside) + "$2"
+          );
+        };
+        side();
+        addEventListener("resize", side);
+        // the specks that fall away after the small intestine and after the liver
+        var specks = [2, 3]
+          .map(function (k) {
+            var a = AT[k === 2 ? "intestine" : "liver"];
+            return [0, 1, 2].map(function (j) {
+              var ang = (k === 2 ? 0.4 : 3.6) + j * 0.55;
+              return {
+                c: el("circle", { r: 2.6, style: "fill: var(--gold)", opacity: 0 }, specksG),
+                x: a[0],
+                y: a[1],
+                dx: Math.cos(ang),
+                dy: Math.sin(ang),
+                k: k,
+              };
+            });
+          })
+          .flat();
+
+        // the cards
+        var card = function (id, rows) {
+          var c = $(id);
+          c.querySelector(".pips").innerHTML = rows
+            .map(function () {
+              return "<i></i>";
+            })
+            .join("");
+          return {
+            el: c,
+            rows: rows,
+            pips: c.querySelectorAll(".pips i"),
+            stop: $(id + " .card2__stop"),
+            line: $(id + " .card2__line"),
+            at: -2,
+            tm: 0,
+          };
+        };
+        var cT = card("#cTab", R.TAB),
+          cI = card("#cIv", R.IV);
+        cT.el.insertAdjacentHTML("beforeend", '<p class="card2__sum"></p>');
+        cI.el.insertAdjacentHTML("beforeend", '<p class="card2__sum"></p>');
+        function show(c, i, sum) {
+          c.pips.forEach(function (p, k) {
+            p.classList.toggle("on", k <= i);
+          });
+          c.el.querySelector(".card2__sum").textContent = sum;
+          if (i === c.at) return;
+          c.at = i;
+          var r = c.rows[Math.max(0, i)],
+            set = function () {
+              c.stop.textContent = i < 0 ? "Not yet" : r[1];
+              c.line.textContent = i < 0 ? "Scroll to follow the dose." : r[2];
+              c.el.classList.remove("swap");
+            };
+          clearTimeout(c.tm);
+          c.el.classList.add("swap");
+          c.tm = setTimeout(set, 180);
+        }
+
+        function fn(p) {
+          // the drip: up the arm and in, early
+          var v = ss((p - 0.05) / 0.17);
+          [ivH, ivP].forEach(function (x) {
+            x.style.strokeDashoffset = (LI * (1 - v)).toFixed(1);
+          });
+          var b = ivP.getPointAtLength(LI * v);
+          $("#dIv").setAttribute("cx", b.x);
+          $("#dIv").setAttribute("cy", b.y);
+          // the tablet: four legs, a pause at each stop before it moves on
+          var q = clamp((p - 0.06) / 0.84, 0, 1) * 4,
+            leg = Math.min(3, Math.floor(q)),
+            f = q >= 4 ? 1 : ss(clamp((q - leg - 0.22) / 0.78, 0, 1));
+          legs.forEach(function (l, k) {
+            var done = k < leg ? 1 : k === leg ? f : 0;
+            [l.h, l.p].forEach(function (x) {
+              x.style.strokeDashoffset = (l.L * (1 - done)).toFixed(1);
+            });
+          });
+          var a = legs[leg].p.getPointAtLength(legs[leg].L * f);
+          $("#dTab").setAttribute("cx", a.x);
+          $("#dTab").setAttribute("cy", a.y);
+          $("#dTab").setAttribute("r", [7, 7, 5.6, 4.4][leg]);
+          $("#dTab").style.opacity = $("#dIv").style.opacity = p > 0.02 ? 1 : 0;
+          var reached = q >= 4 ? 4 : leg + (f >= 0.999 ? 1 : 0); // stops the tablet has reached: 0 = mouth
+          if (p <= 0.06) reached = -1;
+          ["mouth", "stomach", "intestine", "liver"].forEach(function (k, i) {
+            var on = reached >= i;
+            marks[k].c.classList.toggle("on", on);
+            marks[k].t.classList.toggle("on", on);
+          });
+          marks.vein.c.classList.toggle("on", v > 0.01);
+          marks.vein.t.classList.toggle("on", v > 0.01);
+          var inB = v >= 0.99;
+          marks.blood.c.classList.toggle("on", inB);
+          marks.blood.t.classList.toggle("on", inB);
+          marks.blood.t.innerHTML =
+            "Bloodstream " + (reached >= 4 ? "<i>both, by different roads</i>" : inB ? "<i>the drip, already</i>" : "");
+          // the specks fall away just after the tablet leaves the small intestine (k 2) and the liver (k 3)
+          specks.forEach(function (s, j) {
+            var u = clamp((q - s.k) / 0.55, 0, 1),
+              o = u > 0 && u < 1 ? Math.sin(Math.PI * u) : 0,
+              d = 6 + u * 30 + (j % 3) * 6;
+            s.c.setAttribute("cx", s.x + s.dx * d);
+            s.c.setAttribute("cy", s.y + s.dy * d + u * 10);
+            s.c.setAttribute("opacity", o.toFixed(2));
+          });
+          // a pulse from the chest when each arrives
+          ["#puB1", "#puB2"].forEach(function (id) {
+            $(id).classList.toggle("go", inB);
+          });
+          $("#puG").classList.toggle("go", reached >= 4);
+          show(cI, v <= 0.01 ? -1 : inB ? 1 : 0, inB ? "In the blood" : v > 0.01 ? "On its way" : "");
+          show(
+            cT,
+            reached,
+            reached >= 4
+              ? "In the blood, what remains"
+              : reached >= 0
+                ? "Stop " + (reached + 1) + " of " + R.TAB.length
+                : ""
+          );
+        }
+        O.pin($("#ra"), fn);
+      })();
+    </script>
+  </body>
+</html>

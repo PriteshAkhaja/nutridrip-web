@@ -1,0 +1,425 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Section 4, option F: the loupe</title>
+    <link rel="icon" href="../images/mark.svg" type="image/svg+xml" />
+    <script>
+      document.documentElement.className = "js";
+    </script>
+    <link rel="stylesheet" href="../styles.css" />
+    <link rel="stylesheet" href="opt.css" />
+    <link rel="stylesheet" href="s4.css" />
+    <style>
+      /* Option F: the loupe. The drips lie side by side on a lit table, each with its real printed label, too small to read.
+   A pharmacist's loupe rests on the chosen one; move it (the pointer, or a finger on a phone) and it magnifies the
+   label beneath: carrier, every ingredient and dose. Choose the drip under it to open it below. Reading the label is
+   how you choose. */
+      .lt {
+        position: relative;
+        margin-top: 28px;
+        height: 380px;
+        border-radius: 20px;
+        overflow: hidden;
+        cursor: none;
+        touch-action: pan-y;
+        background: radial-gradient(120% 90% at 50% 40%, #ffffff, #f1f4f3 55%, #e2e7e5);
+        box-shadow:
+          inset 0 0 0 1px var(--hair-2),
+          inset 0 0 60px rgba(160, 190, 186, 0.25);
+      }
+      .lt__bags,
+      .lp__in {
+        position: absolute;
+        left: 0;
+        top: 0;
+        width: 100%;
+        height: 100%;
+      }
+      .lb {
+        position: absolute;
+        top: 50%;
+        width: 92px;
+        translate: -50% -50%;
+        padding: 0;
+        transition: opacity 0.3s;
+      }
+      .lb .bag {
+        filter: drop-shadow(0 12px 10px rgba(18, 26, 23, 0.16));
+      }
+      .lb.off {
+        opacity: 0.22;
+      }
+      .lb b {
+        position: absolute;
+        left: 50%;
+        top: calc(100% + 8px);
+        translate: -50% 0;
+        width: 120px;
+        text-align: center;
+        font: 500 0.74rem/1.2 var(--sans);
+        color: var(--ink-2);
+      }
+      .lb[aria-pressed="true"] b {
+        color: var(--ink);
+        font-weight: 650;
+      }
+      .lb[aria-pressed="true"]::after {
+        content: "";
+        position: absolute;
+        left: 50%;
+        top: calc(100% + 30px);
+        width: 24px;
+        height: 3px;
+        translate: -50% 0;
+        border-radius: 2px;
+        background: var(--tint);
+      }
+      /* the loupe: a lens in a chrome ring; inside it the same table, larger */
+      .lp {
+        position: absolute;
+        left: 0;
+        top: 0;
+        width: 230px;
+        height: 230px;
+        border-radius: 50%;
+        overflow: hidden;
+        z-index: 5;
+        pointer-events: none;
+        will-change: transform;
+        box-shadow:
+          0 0 0 6px #c9cfcd,
+          0 0 0 8px #8d9593,
+          0 0 0 9px rgba(255, 255, 255, 0.7),
+          0 26px 40px -14px rgba(18, 26, 23, 0.45);
+        background: #ffffff;
+      }
+      .lp__in {
+        width: var(--tw);
+        height: var(--th);
+        transform-origin: 0 0;
+      }
+      .lp__in .lb {
+        cursor: none;
+      }
+      .lp::after {
+        content: "";
+        position: absolute;
+        inset: 0;
+        border-radius: 50%;
+        pointer-events: none;
+        background:
+          radial-gradient(60% 40% at 32% 22%, rgba(255, 255, 255, 0.55), transparent 60%),
+          radial-gradient(closest-side, transparent 82%, rgba(18, 26, 23, 0.12));
+      }
+      .lt__hint {
+        position: absolute;
+        left: 18px;
+        bottom: 14px;
+        font: 500 0.62rem var(--mono);
+        letter-spacing: 0.12em;
+        text-transform: uppercase;
+        color: var(--ink-3);
+        z-index: 6;
+      }
+      /* the opened drip */
+      .lo {
+        margin-top: 26px;
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) 350px;
+        gap: 24px;
+        align-items: start;
+      }
+      .lo__row {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 22px 18px;
+        align-items: end;
+        padding: 26px;
+        border-radius: 18px;
+        background: #efebe1;
+        box-shadow: inset 0 0 0 1px var(--hair-2);
+      }
+      .lo__k {
+        width: 100%;
+        font: 500 0.62rem var(--mono);
+        letter-spacing: 0.12em;
+        text-transform: uppercase;
+        color: var(--ink-3);
+      }
+      .lo__ing {
+        display: grid;
+        justify-items: center;
+        gap: 6px;
+        width: 104px;
+        text-align: center;
+        animation: loIn 0.6s var(--ease) both;
+        animation-delay: calc(var(--i) * 60ms);
+      }
+      .lo__ing .glass {
+        --gh: 118px;
+      }
+      .lo__ing b {
+        font-weight: 500;
+        font-size: 0.82rem;
+        line-height: 1.25;
+      }
+      .lo__ing em {
+        font: 500 0.7rem var(--mono);
+        font-style: normal;
+        color: var(--ink-3);
+      }
+      @keyframes loIn {
+        from {
+          opacity: 0;
+          transform: translateY(12px);
+        }
+      }
+      @media (max-width: 1100px) {
+        .lo {
+          grid-template-columns: 1fr;
+        }
+      }
+      @media (max-width: 800px) {
+        .lt {
+          height: 600px;
+          cursor: auto;
+        }
+        .lb b {
+          width: 100px;
+          font-size: 0.68rem;
+        }
+        .lp {
+          width: 170px;
+          height: 170px;
+        }
+        .lo__ing {
+          width: 88px;
+        }
+        .lo__ing .glass {
+          --gh: 90px;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <main>
+      <section class="opt-lead">
+        <div>
+          <span class="kick">Preview F · section 4 · new</span>
+          <h1>The loupe</h1>
+          <p>
+            The drips lie on a lit table, each with its real printed label, too small to read. Move the pharmacist’s
+            loupe over one and read it: carrier, every ingredient and dose. Click the one under it to open it below.
+          </p>
+        </div>
+      </section>
+
+      <section class="s4" aria-labelledby="s4h">
+        <div class="wrap">
+          <div id="head"></div>
+          <div class="lt" id="lt">
+            <div class="lt__bags" id="bags" role="group" aria-label="The drips"></div>
+            <div class="lp" id="lp" aria-hidden="true"><div class="lp__in" id="lpIn"></div></div>
+            <p class="lt__hint" id="hint">Move the loupe over a label · click to open</p>
+          </div>
+          <div class="lo" id="open"></div>
+          <div id="cmp" hidden style="margin-top: 26px"></div>
+        </div>
+      </section>
+      <section class="opt-next">
+        <div class="wrap">
+          <p class="kick">Next on the page</p>
+          <h2>Follow one dose.</h2>
+          <p>The dose act follows here.</p>
+        </div>
+      </section>
+    </main>
+    <div class="opt-tag">
+      Section 4 · F · Loupe <a href="index.html">All options</a> <a href="../index.html">Home</a>
+    </div>
+
+    <script src="kit.js"></script>
+    <script src="s4.js"></script>
+    <script>
+      (function () {
+        "use strict";
+        var S = S4,
+          K = S.K,
+          $ = S.$,
+          $$ = S.$$;
+        S.head($("#head"));
+        var lt = $("#lt"),
+          bags = $("#bags"),
+          lp = $("#lp"),
+          lpIn = $("#lpIn"),
+          open = $("#open"),
+          cmp = $("#cmp");
+        var touch = matchMedia("(hover: none)").matches;
+        if (touch) $("#hint").textContent = "Drag the loupe over a label · tap a drip to open";
+        K.DRIPS.forEach(function (d, i) {
+          var b = document.createElement("button");
+          b.className = "lb";
+          b.dataset.id = d.id;
+          b.style.setProperty("--tint", d.tint);
+          b.setAttribute("aria-pressed", "false");
+          b.setAttribute("aria-label", d.name + ", " + K.money(d.price));
+          b.innerHTML = K.bagHTML(d, true, 0.92) + "<b>" + d.name + "</b>";
+          bags.appendChild(b);
+        });
+        var R = 115,
+          S2 = 2.9,
+          L = { x: 0, y: 0, tx: 0, ty: 0, raf: 0, free: false };
+        function lay() {
+          // spread the bags across the table, each turned a little, as if laid down by hand
+          var W = lt.clientWidth,
+            n = K.DRIPS.length,
+            ph = innerWidth <= 800,
+            gap = (W - 40) / n;
+          // on a phone, three rows of three; otherwise one row across the table
+          var H = lt.clientHeight;
+          $$(".lb", bags).forEach(function (b, i) {
+            if (ph) {
+              b.style.left = (W * ((i % 3) + 0.5)) / 3 + "px";
+              b.style.top = (H * (Math.floor(i / 3) + 0.42)) / 3 + "px";
+              b.style.width = Math.min(70, (W / 3) * 0.55) + "px";
+            } else {
+              b.style.left = 20 + gap * (i + 0.5) + "px";
+              b.style.top = "";
+              b.style.width = Math.min(112, gap * 0.82) + "px";
+            }
+            b.style.rotate = ((i * 37) % 9) - 4 + "deg";
+          });
+          lpIn.style.setProperty("--tw", W + "px");
+          lpIn.style.setProperty("--th", lt.clientHeight + "px");
+          R = lp.offsetWidth / 2;
+          S2 = ph ? 2.6 : 2.9;
+          copy();
+          restOn(S.st.id, true);
+        }
+        // the lens shows a copy of the table, scaled about the point under its centre
+        function copy() {
+          lpIn.innerHTML = bags.innerHTML;
+        }
+        function draw() {
+          L.raf = 0;
+          L.x += (L.tx - L.x) * 0.22;
+          L.y += (L.ty - L.y) * 0.22;
+          lp.style.transform = "translate3d(" + (L.x - R).toFixed(1) + "px," + (L.y - R).toFixed(1) + "px,0)";
+          lpIn.style.transform =
+            "translate3d(" + (R - L.x * S2).toFixed(1) + "px," + (R - L.y * S2).toFixed(1) + "px,0) scale(" + S2 + ")";
+          if (Math.abs(L.tx - L.x) + Math.abs(L.ty - L.y) > 0.3) L.raf = requestAnimationFrame(draw);
+        }
+        var to = function (x, y, snap) {
+          L.tx = x;
+          L.ty = y;
+          if (snap) {
+            L.x = x;
+            L.y = y;
+          }
+          if (!L.raf) L.raf = requestAnimationFrame(draw);
+        };
+        // at rest the loupe sits on the chosen drip's label
+        function restOn(id, snap) {
+          var b = $('.lb[data-id="' + id + '"]', bags);
+          if (!b) return;
+          var r = b.getBoundingClientRect(),
+            t = lt.getBoundingClientRect();
+          to(r.left - t.left + r.width / 2, r.top - t.top + r.height * 0.5, snap);
+        }
+        var at = function (e) {
+          var t = lt.getBoundingClientRect();
+          return [e.clientX - t.left, e.clientY - t.top];
+        };
+        var under = function (x, y) {
+          var t = lt.getBoundingClientRect();
+          var el = document.elementsFromPoint(x + t.left, y + t.top).filter(function (n) {
+            return n.closest && n.closest("#bags .lb");
+          })[0];
+          return el ? el.closest(".lb") : null;
+        };
+        lt.addEventListener("pointermove", function (e) {
+          if (e.pointerType === "mouse" || L.drag) {
+            var p = at(e);
+            L.free = true;
+            to(p[0], p[1]);
+          }
+        });
+        lt.addEventListener("pointerleave", function (e) {
+          if (e.pointerType === "mouse") {
+            L.free = false;
+            restOn(S.st.cmp ? S.st.picks[0] || S.st.id : S.st.id);
+          }
+        });
+        lt.addEventListener("pointerdown", function (e) {
+          if (e.pointerType !== "mouse") {
+            var p = at(e);
+            if (Math.hypot(p[0] - L.x, p[1] - L.y) < R) {
+              L.drag = true;
+              lt.setPointerCapture(e.pointerId);
+              e.preventDefault();
+            }
+          }
+        });
+        lt.addEventListener("pointerup", function (e) {
+          if (L.drag) {
+            L.drag = false;
+            return;
+          }
+        });
+        lt.addEventListener("click", function (e) {
+          var b = e.target.closest(".lb") || (touch ? null : under(L.x, L.y));
+          if (b) S.choose(b.dataset.id);
+        });
+        function render(st) {
+          var vis = S.shown().map(function (d) {
+              return d.id;
+            }),
+            on = st.cmp ? st.picks : [st.id];
+          $$(".lb", bags).forEach(function (b) {
+            b.classList.toggle("off", vis.indexOf(b.dataset.id) < 0);
+            b.setAttribute("aria-pressed", on.indexOf(b.dataset.id) >= 0 ? "true" : "false");
+          });
+          copy();
+          open.hidden = st.cmp;
+          cmp.hidden = !st.cmp;
+          if (st.cmp) {
+            cmp.innerHTML = st.picks.length
+              ? S.cmpTable(st.picks)
+              : '<p class="s4empty">Pick up to three drips on the table.</p>';
+          } else {
+            var d = K.byId(st.id),
+              cols = K.bandsFor(d.items);
+            open.innerHTML =
+              '<div class="lo__row"><p class="lo__k">' +
+              d.base +
+              " · then</p>" +
+              d.items
+                .map(function (it, i) {
+                  return (
+                    '<div class="lo__ing" style="--i:' +
+                    i +
+                    '">' +
+                    K.glassEl(it, cols[i]) +
+                    "<b>" +
+                    it[0] +
+                    "</b><em>" +
+                    it[1] +
+                    (it[3] ? " · beside the bag" : "") +
+                    "</em></div>"
+                  );
+                })
+                .join("") +
+              "</div>" +
+              S.card(d);
+          }
+          if (!L.free) restOn(st.cmp ? st.picks[st.picks.length - 1] || st.id : st.id);
+        }
+        S.on(render);
+        lay();
+        addEventListener("resize", lay);
+      })();
+    </script>
+  </body>
+</html>

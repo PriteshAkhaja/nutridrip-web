@@ -1,0 +1,346 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>IV or tablets, option B: the diptych</title>
+    <link rel="icon" href="../images/mark.svg" type="image/svg+xml" />
+    <script>
+      document.documentElement.className = "js";
+    </script>
+    <link rel="stylesheet" href="../styles.css" />
+    <link rel="stylesheet" href="opt.css" />
+    <link rel="stylesheet" href="rt.css" />
+    <style>
+      /* Option B: the diptych. The screen splits in two, full height: the tablets on the left, the drip in a resting arm on
+   the right, each carrying its own route. As you scroll, the tablet side works through its stops one by one while
+   the drip side is already in the blood. */
+      .rb {
+        height: 300vh;
+      }
+      .rb .stage {
+        padding-top: var(--hh);
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+      }
+      .half {
+        position: relative;
+        overflow: hidden;
+      }
+      .half > img {
+        position: absolute;
+        inset: 0;
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        will-change: transform;
+      }
+      .half--tab > img {
+        object-position: 70% 50%;
+      }
+      .half--iv > img {
+        object-position: 60% 50%;
+      }
+      .half::after {
+        content: "";
+        position: absolute;
+        inset: 0;
+        pointer-events: none;
+      }
+      .half--tab::after {
+        background: linear-gradient(180deg, rgba(244, 241, 234, 0) 30%, rgba(244, 241, 234, 0.92) 78%);
+      }
+      .half--iv::after {
+        background: linear-gradient(180deg, rgba(18, 22, 20, 0) 30%, rgba(18, 22, 20, 0.78) 80%);
+      }
+      .half__in {
+        position: absolute;
+        left: clamp(20px, 4vw, 64px);
+        right: clamp(20px, 3vw, 48px);
+        bottom: clamp(24px, 5vh, 56px);
+        z-index: 2;
+      }
+      .half__k {
+        font: 500 0.72rem/1 var(--mono);
+        letter-spacing: 0.14em;
+        text-transform: uppercase;
+      }
+      .half__l {
+        margin-top: 8px;
+        font: 350 clamp(1.7rem, 1rem + 1.6vw, 2.6rem)/1.05 var(--serif);
+        letter-spacing: -0.02em;
+      }
+      .half--iv .half__k,
+      .half--iv .half__l {
+        color: #f3f0e8;
+      }
+      .half--tab .half__k {
+        color: var(--gold);
+      }
+      .half--iv .half__k {
+        color: #9cc3ee;
+      }
+      .steps {
+        position: relative;
+        margin-top: 18px;
+        display: grid;
+        gap: 10px;
+        padding-left: 22px;
+      }
+      .steps::before,
+      .steps i {
+        content: "";
+        position: absolute;
+        left: 4px;
+        top: 6px;
+        bottom: 6px;
+        width: 2px;
+        border-radius: 1px;
+      }
+      .steps::before {
+        background: currentColor;
+        opacity: 0.18;
+      }
+      .steps i {
+        transform-origin: 0 0;
+        transform: scaleY(var(--f, 0));
+      }
+      .half--tab .steps {
+        color: var(--ink);
+      }
+      .half--tab .steps i {
+        background: var(--gold);
+      }
+      .half--iv .steps {
+        color: #f3f0e8;
+      }
+      .half--iv .steps i {
+        background: #6fa6e8;
+      }
+      .steps li {
+        position: relative;
+        display: grid;
+        grid-template-columns: 8.6em 1fr;
+        gap: 12px;
+        font-size: 0.9rem;
+        line-height: 1.35;
+        opacity: 0.35;
+        transition: opacity 0.35s var(--ease);
+      }
+      .steps li::before {
+        content: "";
+        position: absolute;
+        left: -22px;
+        top: 0.3em;
+        width: 10px;
+        height: 10px;
+        border-radius: 50%;
+        box-shadow: inset 0 0 0 1.5px currentColor;
+        background: transparent;
+        transition: background 0.3s;
+      }
+      .half--tab .steps li.on::before {
+        background: var(--gold);
+        box-shadow: none;
+      }
+      .half--iv .steps li.on::before {
+        background: #6fa6e8;
+        box-shadow: none;
+      }
+      .steps li.on {
+        opacity: 1;
+      }
+      .steps li b {
+        font-weight: 600;
+      }
+      .rb__top {
+        position: absolute;
+        left: 50%;
+        top: calc(var(--hh) + clamp(20px, 4vh, 44px));
+        translate: -50% 0;
+        z-index: 4;
+        text-align: center;
+        padding: 14px 26px 16px;
+        border-radius: 18px;
+        background: rgba(244, 241, 234, 0.94);
+        box-shadow: 0 20px 40px -28px rgba(18, 26, 23, 0.6);
+      }
+      .rb__top .rt-h {
+        margin-top: 6px;
+        font-size: clamp(1.8rem, 1rem + 2vw, 3rem);
+      }
+      .rb__mid {
+        position: absolute;
+        left: 50%;
+        top: var(--hh);
+        bottom: 0;
+        width: 2px;
+        translate: -50% 0;
+        background: #f4f1ea;
+        z-index: 3;
+      }
+      .rb__note2 {
+        display: none;
+      }
+      .rb__note {
+        position: absolute;
+        left: 50%;
+        bottom: 14px;
+        translate: -50% 0;
+        z-index: 4;
+        padding: 6px 12px;
+        border-radius: 999px;
+        background: rgba(244, 241, 234, 0.94);
+        font: 500 0.62rem var(--mono);
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        color: var(--ink-2);
+        white-space: nowrap;
+      }
+      @media (max-width: 900px) {
+        .rb .stage {
+          grid-template-columns: 1fr;
+          grid-template-rows: 1fr 1fr;
+        }
+        .rb__mid {
+          left: 0;
+          right: 0;
+          top: 50%;
+          bottom: auto;
+          width: auto;
+          height: 2px;
+          translate: 0 calc(var(--hh) / 2);
+        }
+        .rb__top {
+          width: calc(100% - 32px);
+          padding: 10px 16px 12px;
+        }
+        .steps li {
+          grid-template-columns: 1fr;
+        }
+        .steps li span {
+          display: none;
+        }
+        .steps {
+          gap: 5px;
+          margin-top: 10px;
+        }
+        .half__l {
+          font-size: 1.4rem;
+        }
+        .rb__note {
+          display: none;
+        }
+        .rb__note2 {
+          display: block;
+          margin-top: 6px;
+          font: 500 0.56rem/1.4 var(--mono);
+          letter-spacing: 0.06em;
+          text-transform: uppercase;
+          color: var(--ink-3);
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <main>
+      <section class="opt-lead">
+        <div>
+          <span class="kick">IV or tablets · option B</span>
+          <h1>The diptych</h1>
+          <p>
+            The screen splits in two, full height: the tablets on one side, the drip in a resting arm on the other, each
+            with its own route. The tablet side works through its stops; the drip side is already in the blood.
+          </p>
+        </div>
+      </section>
+      <section class="act rb" id="rb" aria-labelledby="rt-h">
+        <div class="stage">
+          <div class="half half--tab">
+            <img src="../images/tablets.webp" alt="White tablets and capsules on a table" />
+            <div class="half__in">
+              <p class="half__k">By tablet</p>
+              <p class="half__l">Part of it is absorbed.</p>
+              <ol class="steps" id="sTab">
+                <i></i>
+              </ol>
+            </div>
+          </div>
+          <div class="half half--iv">
+            <img src="../images/dose-arm.webp" alt="An arm resting on a chair, with an IV line taped at the forearm" />
+            <div class="half__in">
+              <p class="half__k">By IV drip</p>
+              <p class="half__l">All of it enters the blood.</p>
+              <ol class="steps" id="sIv">
+                <i></i>
+              </ol>
+            </div>
+          </div>
+          <i class="rb__mid" aria-hidden="true"></i>
+          <div class="rb__top">
+            <p class="kick">IV or tablets?</p>
+            <h2 id="rt-h" class="rt-h">Same dose, <em>two routes.</em></h2>
+            <p class="rb__note2">
+              Illustration, not to scale · what remains by mouth varies by nutrient, dose and person
+            </p>
+          </div>
+          <p class="rb__note">Illustration, not to scale · what remains by mouth varies by nutrient, dose and person</p>
+        </div>
+      </section>
+      <section class="opt-next">
+        <div class="wrap">
+          <p class="kick">Next on the page</p>
+          <h2>Why we exist.</h2>
+          <p>The next section follows here.</p>
+        </div>
+      </section>
+    </main>
+    <div class="opt-tag">
+      IV or tablets · B · Diptych <a href="index.html">All options</a> <a href="../index.html">Home</a>
+    </div>
+
+    <script src="opt.js"></script>
+    <script src="rt.js"></script>
+    <script>
+      (function () {
+        "use strict";
+        var O = OPT,
+          ss = O.ss,
+          R = RT,
+          $ = function (s) {
+            return document.querySelector(s);
+          };
+        var fill = function (el, rows) {
+          el.insertAdjacentHTML(
+            "beforeend",
+            rows
+              .map(function (r) {
+                return "<li><b>" + r[1] + "</b><span>" + r[2] + "</span></li>";
+              })
+              .join("")
+          );
+          return Array.prototype.slice.call(el.querySelectorAll("li"));
+        };
+        var tab = fill($("#sTab"), R.TAB),
+          iv = fill($("#sIv"), R.IV),
+          imgs = document.querySelectorAll(".half > img");
+        function fn(p) {
+          var t = ss((p - 0.08) / 0.78),
+            v = ss((p - 0.06) / 0.16);
+          tab.forEach(function (li, i) {
+            li.classList.toggle("on", t > 0 && t >= i / (tab.length - 1) - 0.01);
+          });
+          iv.forEach(function (li, i) {
+            li.classList.toggle("on", i === 0 ? v > 0 : v >= 0.99);
+          });
+          $("#sTab i").style.setProperty("--f", t.toFixed(3));
+          $("#sIv i").style.setProperty("--f", v.toFixed(3));
+          // each picture moves in very slowly as its route goes on
+          imgs[0].style.transform = "scale(" + (1.04 + 0.06 * t).toFixed(4) + ")";
+          imgs[1].style.transform = "scale(" + (1.04 + 0.06 * v).toFixed(4) + ")";
+        }
+        O.pin($("#rb"), fn);
+      })();
+    </script>
+  </body>
+</html>

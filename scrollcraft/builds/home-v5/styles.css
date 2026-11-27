@@ -93,6 +93,9 @@ body {
 img {
   display: block;
   max-width: 100%;
+  /* a picture is never picked up and dragged (the browser's ghost copy); app.js stops it in Firefox too */
+  -webkit-user-drag: none;
+  user-select: none;
 }
 h1,
 h2,
@@ -412,6 +415,9 @@ p {
 
 /* ------------------------------------------------------------ the bag: tinted liquid under the clear bag photo, label in HTML */
 .bag {
+  /* its label is printed on it: real text, so it stays sharp, but not something to select */
+  -webkit-user-select: none;
+  user-select: none;
   position: relative;
   aspect-ratio: 577 / 1200;
   width: 100%;
@@ -623,6 +629,9 @@ p {
 
 /* ------------------------------------------------------------ the glass: photo, our label on top */
 .glass {
+  /* its label is printed on it: real text, so it stays sharp, but not something to select */
+  -webkit-user-select: none;
+  user-select: none;
   position: relative;
   height: var(--gh, 220px);
   aspect-ratio: var(--ar);
@@ -3324,236 +3333,355 @@ p {
   }
 }
 
-/* ============================================================ 8. IV OR TABLETS */
+/* ============================================================ 8. IV OR TABLETS: the route map
+   A plate of the body, the clear glass figure (images/rt-body-glass.webp; the line drawing rt-body.webp is kept for options/). Both routes start together as you scroll: the drip's blue line
+   runs up the arm and is in the blood almost at once, a pulse going out from the chest; the tablet's gold line pauses
+   at each organ and runs thinner after the small intestine and again after the liver, a few specks falling away.
+   No numbers; not to scale. Two cards beside the plate say where each route is. app.js draws it (rmFn). */
 .rt {
-  height: 330vh;
-  background: var(--paper-2);
+  height: 360vh;
+  background: #ece8de;
+  --gold: #b8882f;
+  --blue: #2f6fb8;
 }
 .rt .stage {
   padding-top: var(--hh);
+  background: #ece8de;
+}
+.rm {
+  height: 100%;
   display: grid;
+  grid-template-columns: minmax(0, 0.85fr) minmax(0, 1.15fr);
+  gap: clamp(24px, 5vw, 84px);
   align-items: center;
 }
-.rt__head {
+.rm__h {
+  margin-top: 12px;
+  font-size: clamp(2.4rem, 1.2rem + 3vw, 4.4rem);
+}
+.rm__cards {
+  margin-top: clamp(18px, 3vh, 30px);
   display: grid;
-  grid-template-columns: minmax(0, 1.2fr) minmax(0, 0.8fr);
-  gap: 20px 50px;
-  align-items: end;
-  margin-bottom: clamp(18px, 3vh, 40px);
+  gap: 12px;
 }
-.rt__head h2 {
-  font-size: clamp(2rem, 1rem + 3.6vw, 4.2rem);
-}
-.rt__pic {
+.rm-card {
   position: relative;
-  height: clamp(90px, 16vh, 170px);
-  border-radius: 8px;
+  padding: 16px 18px 16px 20px;
+  border-radius: 14px;
+  background: #f7f4ec;
+  box-shadow:
+    0 0 0 1px var(--hair-2),
+    0 18px 30px -26px rgba(18, 26, 23, 0.5);
   overflow: hidden;
 }
-.rt__pic img {
-  position: absolute;
-  inset: -10% 0;
-  width: 100%;
-  height: 120%;
-  object-fit: cover;
-  transform: translateY(var(--py, 0px));
-}
-.lanes {
-  display: grid;
-  gap: clamp(14px, 2.6vh, 30px);
-}
-.lane {
-  display: grid;
-  grid-template-columns: 7.5rem minmax(0, 1fr);
-  gap: 12px 20px;
-  align-items: start;
-}
-.lane__t {
-  font: 500 0.78rem/1.3 var(--mono);
-  letter-spacing: 0.1em;
-  text-transform: uppercase;
-  padding-top: 10px;
-}
-.lane__t b {
-  display: block;
-  font: 350 1.5rem/1 var(--serif);
-  letter-spacing: -0.02em;
-  text-transform: none;
-  margin-top: 6px;
-}
-.track {
-  display: grid;
-  grid-template-columns: repeat(5, minmax(0, 1fr));
-  gap: 0;
-  position: relative;
-}
-.stn {
-  position: relative;
-  padding-top: 38px;
-  padding-right: 10px;
-  opacity: 0.35;
-  transition: opacity 0.5s var(--ease);
-}
-.stn.on {
-  opacity: 1;
-}
-.stn::before {
+.rm-card::before,
+.rm-card::after {
   content: "";
   position: absolute;
   left: 0;
-  top: 4px;
-  width: 20px;
-  height: 20px;
+  top: 0;
+  bottom: 0;
+  width: 4px;
+  background: var(--c);
+}
+.rm-card::before {
+  opacity: 0.22;
+}
+.rm-card::after {
+  transform-origin: 50% 0;
+  transform: scaleY(var(--prog, 0));
+}
+.rm-card--tab {
+  --c: var(--gold);
+}
+.rm-card--iv {
+  --c: var(--blue);
+}
+.rm-card__top {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 10px;
+}
+.rm-card__k {
+  font: 500 0.68rem/1.2 var(--mono);
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--ink-3);
+}
+.rm-card__k b {
+  color: var(--c);
+  font-weight: 600;
+}
+.rm-pips {
+  display: flex;
+  gap: 5px;
+}
+.rm-pips i {
+  width: 8px;
+  height: 8px;
   border-radius: 50%;
-  background: var(--paper-2);
-  box-shadow: inset 0 0 0 2px var(--ink);
-  z-index: 2;
-  transition: background 0.4s;
+  box-shadow: inset 0 0 0 1.5px var(--c);
+  transition: background 0.3s;
 }
-.stn.on::before {
-  background: var(--ink);
+.rm-pips i.on {
+  background: var(--c);
+  box-shadow: none;
 }
-.stn h4 {
-  font: 560 0.98rem/1.2 var(--sans);
+/* every stop's text is in the card at once, stacked in one cell: the card keeps the height of its longest, so
+   nothing below it moves. They roll like a departure board inside a clipped window: the old one slides up and out
+   while the new one slides up into place, both at full strength the whole way, so the text never goes faint. */
+.rm-card__rows {
+  display: grid;
+  margin-top: 10px;
+  overflow: hidden;
+  padding-bottom: 2px;
 }
-.stn p {
-  font-size: 0.8rem;
+.rm-row {
+  grid-area: 1 / 1;
+  transform: translateY(105%);
+  transition: transform 0.6s cubic-bezier(0.22, 0.8, 0.2, 1);
+  will-change: transform;
+}
+.rm-row.is-past {
+  transform: translateY(-105%);
+}
+.rm-row.is-on {
+  transform: none;
+}
+.rm-row__stop {
+  font: 350 clamp(1.4rem, 1rem + 0.9vw, 1.9rem) / 1.05 var(--serif);
+  letter-spacing: -0.02em;
+}
+.rm-row__line {
+  margin-top: 6px;
+  font-size: 0.92rem;
   line-height: 1.4;
   color: var(--ink-2);
-  margin-top: 4px;
-  max-width: 15em;
 }
-.seg {
-  position: absolute;
-  left: 10px;
-  top: 14px;
-  height: 0;
-  width: 100%;
-  z-index: 1;
+.rm-row__sum {
+  margin-top: 10px;
+  font: 500 0.66rem var(--mono);
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--c);
 }
-.seg i {
-  position: absolute;
-  left: 0;
-  top: calc(var(--t) / -2);
-  height: var(--t);
-  width: 100%;
-  background: var(--tint);
-  border-radius: 99px;
-  transform-origin: 0 50%;
-  transform: scaleX(var(--f, 0));
-  opacity: 0.9;
-}
-.stn:last-child .seg {
-  display: none;
-}
-.lane--iv {
-  --tint: #2f6fb8;
-}
-.lane--tab {
-  --tint: #b8882f;
-}
-.rt__note {
-  margin-top: clamp(10px, 2vh, 22px);
-  font: 500 0.76rem var(--mono);
+.rm__note {
+  margin-top: clamp(14px, 2.4vh, 24px);
+  font: 500 0.7rem/1.5 var(--mono);
   letter-spacing: 0.08em;
   text-transform: uppercase;
   color: var(--ink-3);
+}
+.rm__note span {
+  color: var(--ink-2);
+}
+/* the plate */
+.rm-plate {
+  position: relative;
+  justify-self: center;
+  width: min(100%, calc((100dvh - var(--hh) - 40px) * 596 / 850), 640px);
+  margin: 0;
+  padding: 14px 14px 0;
+  border-radius: 6px;
+  background: #f3efe6;
+  box-shadow:
+    0 0 0 1px rgba(18, 26, 23, 0.1),
+    inset 0 0 0 7px #f3efe6,
+    inset 0 0 0 8px rgba(18, 26, 23, 0.12),
+    0 30px 50px -40px rgba(18, 26, 23, 0.6);
+}
+.rm-fig {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 596 / 792;
+}
+.rm-fig img,
+.rm-fig svg {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+}
+.rm-fig svg {
+  overflow: visible;
+}
+.rm-fig path {
+  fill: none;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+.rm-fig .rm-ahead {
+  stroke-width: 2.4;
+  stroke-dasharray: 1 7;
+  opacity: 0.7;
+}
+/* the figure is a render: the lines lift off it on a white halo */
+.rm-fig .rm-halo {
+  stroke: rgba(255, 255, 255, 0.8);
+}
+.rm-fig img {
+  border-radius: 2px;
+}
+.rm-fig circle.rm-stop {
+  fill: rgba(255, 255, 255, 0.9);
+  stroke-width: 3;
+  transition: fill 0.3s;
+}
+.rm-fig circle.rm-stop.on {
+  fill: currentColor;
+}
+#rmDotTab {
+  fill: var(--gold);
+}
+#rmDotIv {
+  fill: var(--blue);
+}
+.rm-pulse {
+  fill: none;
+  stroke: var(--blue);
+  stroke-width: 2;
+  opacity: 0;
+}
+.rm-pulse.g {
+  stroke: var(--gold);
+}
+.rm-pulse.go {
+  animation: rm-pulse 2.4s cubic-bezier(0.2, 0.6, 0.3, 1) infinite;
+}
+.rm-pulse.go.b {
+  animation-delay: 0.8s;
+}
+@keyframes rm-pulse {
+  0% {
+    opacity: 0.7;
+    r: 8;
+  }
+  100% {
+    opacity: 0;
+    r: 46;
+  }
+}
+.rm-plate__cap {
   display: flex;
   justify-content: space-between;
-  gap: 16px;
-  flex-wrap: wrap;
+  gap: 14px;
+  padding: 10px 6px 12px;
+  border-top: 1px solid rgba(18, 26, 23, 0.12);
+  font: 500 0.62rem/1.4 var(--mono);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--ink-3);
 }
-.rt__note b {
-  color: var(--ink);
+.rm-plate__cap b {
+  color: var(--ink-2);
+  font-weight: 600;
+}
+.rm-tag {
+  position: absolute;
+  padding: 3px 8px;
+  border-radius: 999px;
+  background: #fbf9f3;
+  box-shadow: 0 0 0 1px var(--hair);
+  font: 600 0.7rem/1.2 var(--sans);
+  white-space: nowrap;
+  opacity: 0;
+  transition: opacity 0.35s var(--ease);
+}
+.rm-tag.r {
+  translate: 12px -50%;
+}
+.rm-tag.l {
+  translate: calc(-100% - 12px) -50%;
+}
+.rm-tag.t {
+  translate: -50% calc(-100% - 12px);
+}
+.rm-tag.on {
+  opacity: 1;
+}
+.rm-tag i {
+  font-style: normal;
   font-weight: 500;
+  color: var(--ink-3);
 }
-@media (max-width: 800px) {
+@media (max-width: 900px) {
   .rt {
-    height: 380vh;
-  }
-  .rt__head {
-    grid-template-columns: 1fr;
-    margin-bottom: 8px;
-  }
-  .rt__head .lede,
-  .rt__pic {
-    display: none;
-  }
-  .lane {
-    grid-template-columns: 1fr;
-    gap: 4px;
-  }
-  .lane__t {
-    padding: 0;
-    display: flex;
-    align-items: baseline;
-    gap: 12px;
-  }
-  .lane__t b {
-    margin: 0;
-    font-size: 1.25rem;
-  }
-  .track {
-    grid-template-columns: 1fr;
-  }
-  .stn--end {
-    grid-column: auto !important;
-  }
-  .stn {
-    padding: 0 0 12px 34px;
-    min-height: 0;
-  }
-  .stn::before {
-    top: 0;
-  }
-  .stn h4 {
-    font-size: 0.9rem;
-    line-height: 1.5;
-  }
-  .stn p {
-    font-size: 0.74rem;
-    margin-top: 0;
-    max-width: none;
-  }
-  .seg {
-    left: 10px;
-    top: 16px;
-    width: 0 !important;
-    height: 100%;
-  }
-  .seg i {
-    left: calc(var(--t) / -2);
-    top: 0;
-    height: 100%;
-    width: var(--t);
-    transform-origin: 50% 0;
-    transform: scaleY(var(--f, 0));
+    height: 340vh;
   }
   .rt .stage {
-    align-items: start;
-    padding-top: calc(var(--hh) + 6px);
+    padding-top: calc(var(--hh) + 10px);
   }
-  .lanes {
+  .rm {
+    grid-template-columns: minmax(0, 1fr);
+    grid-template-rows: auto 1fr;
     gap: 8px;
+    align-items: stretch;
   }
-  .stn--tab-hide {
+  .rm__h {
+    font-size: clamp(1.9rem, 8vw, 2.5rem);
+  }
+  .rm__cards {
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+    margin-top: 10px;
+  }
+  .rm-card {
+    padding: 10px 10px 10px 13px;
+    border-radius: 10px;
+  }
+  .rm-row__line,
+  .rm-row__sum,
+  .rm-pips {
     display: none;
   }
-  .rt__note {
+  .rm-card__rows {
+    margin-top: 4px;
+  }
+  .rm-row__stop {
+    font-size: 1.05rem;
+  }
+  .rm-card__k {
+    font-size: 0.56rem;
+  }
+  .rm__note {
     display: none;
+  }
+  .rm-plate {
+    width: min(100%, calc((100dvh - 290px) * 596 / 850));
+    align-self: start;
+    padding: 8px 8px 0;
+  }
+  .rm-plate__cap {
+    font-size: 0.52rem;
+    padding: 6px 2px 8px;
+  }
+  .rm-tag {
+    font-size: 0.6rem;
+    padding: 2px 6px;
   }
 }
+/* the still version: the finished map, the cards at their last stop, nothing pulsing */
 .still .rt {
   padding: 100px 0;
 }
-.still .stn {
-  opacity: 1;
-}
-.still .stn::before {
-  background: var(--ink);
-}
 .still .rt .stage {
-  display: block;
+  padding-top: 0;
+}
+.still .rm {
+  height: auto;
+}
+.still .rm-plate {
+  width: min(100%, 560px);
+}
+.still .rm-pulse {
+  animation: none;
+  opacity: 0;
+}
+@media (max-width: 900px) {
+  .still .rm__note {
+    display: block;
+  }
 }
 .honest {
   padding: clamp(60px, 8vw, 120px) 0 clamp(80px, 10vw, 150px);

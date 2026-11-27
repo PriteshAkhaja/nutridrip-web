@@ -79,6 +79,9 @@
   .sc-site .hv5 img {
     display: block;
     max-width: 100%;
+    /* a picture is never picked up and dragged (the browser's ghost copy); app.js stops it in Firefox too */
+    -webkit-user-drag: none;
+    user-select: none;
   }
   .sc-site .hv5 h1,
   .sc-site .hv5 h2,
@@ -392,6 +395,9 @@
   }
   /* ------------------------------------------------------------ the bag: tinted liquid under the clear bag photo, label in HTML */
   .sc-site .hv5 .bag {
+    /* its label is printed on it: real text, so it stays sharp, but not something to select */
+    -webkit-user-select: none;
+    user-select: none;
     position: relative;
     aspect-ratio: 577 / 1200;
     width: 100%;
@@ -602,6 +608,9 @@
   }
   /* ------------------------------------------------------------ the glass: photo, our label on top */
   .sc-site .hv5 .glass {
+    /* its label is printed on it: real text, so it stays sharp, but not something to select */
+    -webkit-user-select: none;
+    user-select: none;
     position: relative;
     height: var(--gh, 220px);
     aspect-ratio: var(--ar);
@@ -3287,236 +3296,355 @@
       letter-spacing: 0.02em;
     }
   }
-  /* ============================================================ 8. IV OR TABLETS */
+  /* ============================================================ 8. IV OR TABLETS: the route map
+   A plate of the body, the clear glass figure (images/rt-body-glass.webp; the line drawing rt-body.webp is kept for options/). Both routes start together as you scroll: the drip's blue line
+   runs up the arm and is in the blood almost at once, a pulse going out from the chest; the tablet's gold line pauses
+   at each organ and runs thinner after the small intestine and again after the liver, a few specks falling away.
+   No numbers; not to scale. Two cards beside the plate say where each route is. app.js draws it (rmFn). */
   .sc-site .hv5 .rt {
-    height: 330vh;
-    background: var(--paper-2);
+    height: 360vh;
+    background: #ece8de;
+    --gold: #b8882f;
+    --blue: #2f6fb8;
   }
   .sc-site .hv5 .rt .stage {
     padding-top: var(--hh);
+    background: #ece8de;
+  }
+  .sc-site .hv5 .rm {
+    height: 100%;
     display: grid;
+    grid-template-columns: minmax(0, 0.85fr) minmax(0, 1.15fr);
+    gap: clamp(24px, 5vw, 84px);
     align-items: center;
   }
-  .sc-site .hv5 .rt__head {
+  .sc-site .hv5 .rm__h {
+    margin-top: 12px;
+    font-size: clamp(2.4rem, 1.2rem + 3vw, 4.4rem);
+  }
+  .sc-site .hv5 .rm__cards {
+    margin-top: clamp(18px, 3vh, 30px);
     display: grid;
-    grid-template-columns: minmax(0, 1.2fr) minmax(0, 0.8fr);
-    gap: 20px 50px;
-    align-items: end;
-    margin-bottom: clamp(18px, 3vh, 40px);
+    gap: 12px;
   }
-  .sc-site .hv5 .rt__head h2 {
-    font-size: clamp(2rem, 1rem + 3.6vw, 4.2rem);
-  }
-  .sc-site .hv5 .rt__pic {
+  .sc-site .hv5 .rm-card {
     position: relative;
-    height: clamp(90px, 16vh, 170px);
-    border-radius: 8px;
+    padding: 16px 18px 16px 20px;
+    border-radius: 14px;
+    background: #f7f4ec;
+    box-shadow:
+      0 0 0 1px var(--hair-2),
+      0 18px 30px -26px rgba(18, 26, 23, 0.5);
     overflow: hidden;
   }
-  .sc-site .hv5 .rt__pic img {
-    position: absolute;
-    inset: -10% 0;
-    width: 100%;
-    height: 120%;
-    object-fit: cover;
-    transform: translateY(var(--py, 0px));
-  }
-  .sc-site .hv5 .lanes {
-    display: grid;
-    gap: clamp(14px, 2.6vh, 30px);
-  }
-  .sc-site .hv5 .lane {
-    display: grid;
-    grid-template-columns: 7.5rem minmax(0, 1fr);
-    gap: 12px 20px;
-    align-items: start;
-  }
-  .sc-site .hv5 .lane__t {
-    font: 500 0.78rem/1.3 var(--mono);
-    letter-spacing: 0.1em;
-    text-transform: uppercase;
-    padding-top: 10px;
-  }
-  .sc-site .hv5 .lane__t b {
-    display: block;
-    font: 350 1.5rem/1 var(--serif);
-    letter-spacing: -0.02em;
-    text-transform: none;
-    margin-top: 6px;
-  }
-  .sc-site .hv5 .track {
-    display: grid;
-    grid-template-columns: repeat(5, minmax(0, 1fr));
-    gap: 0;
-    position: relative;
-  }
-  .sc-site .hv5 .stn {
-    position: relative;
-    padding-top: 38px;
-    padding-right: 10px;
-    opacity: 0.35;
-    transition: opacity 0.5s var(--ease);
-  }
-  .sc-site .hv5 .stn.on {
-    opacity: 1;
-  }
-  .sc-site .hv5 .stn::before {
+  .sc-site .hv5 .rm-card::before,
+  .sc-site .hv5 .rm-card::after {
     content: "";
     position: absolute;
     left: 0;
-    top: 4px;
-    width: 20px;
-    height: 20px;
+    top: 0;
+    bottom: 0;
+    width: 4px;
+    background: var(--c);
+  }
+  .sc-site .hv5 .rm-card::before {
+    opacity: 0.22;
+  }
+  .sc-site .hv5 .rm-card::after {
+    transform-origin: 50% 0;
+    transform: scaleY(var(--prog, 0));
+  }
+  .sc-site .hv5 .rm-card--tab {
+    --c: var(--gold);
+  }
+  .sc-site .hv5 .rm-card--iv {
+    --c: var(--blue);
+  }
+  .sc-site .hv5 .rm-card__top {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 10px;
+  }
+  .sc-site .hv5 .rm-card__k {
+    font: 500 0.68rem/1.2 var(--mono);
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--ink-3);
+  }
+  .sc-site .hv5 .rm-card__k b {
+    color: var(--c);
+    font-weight: 600;
+  }
+  .sc-site .hv5 .rm-pips {
+    display: flex;
+    gap: 5px;
+  }
+  .sc-site .hv5 .rm-pips i {
+    width: 8px;
+    height: 8px;
     border-radius: 50%;
-    background: var(--paper-2);
-    box-shadow: inset 0 0 0 2px var(--ink);
-    z-index: 2;
-    transition: background 0.4s;
+    box-shadow: inset 0 0 0 1.5px var(--c);
+    transition: background 0.3s;
   }
-  .sc-site .hv5 .stn.on::before {
-    background: var(--ink);
+  .sc-site .hv5 .rm-pips i.on {
+    background: var(--c);
+    box-shadow: none;
   }
-  .sc-site .hv5 .stn h4 {
-    font: 560 0.98rem/1.2 var(--sans);
+  /* every stop's text is in the card at once, stacked in one cell: the card keeps the height of its longest, so
+   nothing below it moves. They roll like a departure board inside a clipped window: the old one slides up and out
+   while the new one slides up into place, both at full strength the whole way, so the text never goes faint. */
+  .sc-site .hv5 .rm-card__rows {
+    display: grid;
+    margin-top: 10px;
+    overflow: hidden;
+    padding-bottom: 2px;
   }
-  .sc-site .hv5 .stn p {
-    font-size: 0.8rem;
+  .sc-site .hv5 .rm-row {
+    grid-area: 1 / 1;
+    transform: translateY(105%);
+    transition: transform 0.6s cubic-bezier(0.22, 0.8, 0.2, 1);
+    will-change: transform;
+  }
+  .sc-site .hv5 .rm-row.is-past {
+    transform: translateY(-105%);
+  }
+  .sc-site .hv5 .rm-row.is-on {
+    transform: none;
+  }
+  .sc-site .hv5 .rm-row__stop {
+    font: 350 clamp(1.4rem, 1rem + 0.9vw, 1.9rem) / 1.05 var(--serif);
+    letter-spacing: -0.02em;
+  }
+  .sc-site .hv5 .rm-row__line {
+    margin-top: 6px;
+    font-size: 0.92rem;
     line-height: 1.4;
     color: var(--ink-2);
-    margin-top: 4px;
-    max-width: 15em;
   }
-  .sc-site .hv5 .seg {
-    position: absolute;
-    left: 10px;
-    top: 14px;
-    height: 0;
-    width: 100%;
-    z-index: 1;
+  .sc-site .hv5 .rm-row__sum {
+    margin-top: 10px;
+    font: 500 0.66rem var(--mono);
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--c);
   }
-  .sc-site .hv5 .seg i {
-    position: absolute;
-    left: 0;
-    top: calc(var(--t) / -2);
-    height: var(--t);
-    width: 100%;
-    background: var(--tint);
-    border-radius: 99px;
-    transform-origin: 0 50%;
-    transform: scaleX(var(--f, 0));
-    opacity: 0.9;
-  }
-  .sc-site .hv5 .stn:last-child .seg {
-    display: none;
-  }
-  .sc-site .hv5 .lane--iv {
-    --tint: #2f6fb8;
-  }
-  .sc-site .hv5 .lane--tab {
-    --tint: #b8882f;
-  }
-  .sc-site .hv5 .rt__note {
-    margin-top: clamp(10px, 2vh, 22px);
-    font: 500 0.76rem var(--mono);
+  .sc-site .hv5 .rm__note {
+    margin-top: clamp(14px, 2.4vh, 24px);
+    font: 500 0.7rem/1.5 var(--mono);
     letter-spacing: 0.08em;
     text-transform: uppercase;
     color: var(--ink-3);
+  }
+  .sc-site .hv5 .rm__note span {
+    color: var(--ink-2);
+  }
+  /* the plate */
+  .sc-site .hv5 .rm-plate {
+    position: relative;
+    justify-self: center;
+    width: min(100%, calc((100dvh - var(--hh) - 40px) * 596 / 850), 640px);
+    margin: 0;
+    padding: 14px 14px 0;
+    border-radius: 6px;
+    background: #f3efe6;
+    box-shadow:
+      0 0 0 1px rgba(18, 26, 23, 0.1),
+      inset 0 0 0 7px #f3efe6,
+      inset 0 0 0 8px rgba(18, 26, 23, 0.12),
+      0 30px 50px -40px rgba(18, 26, 23, 0.6);
+  }
+  .sc-site .hv5 .rm-fig {
+    position: relative;
+    width: 100%;
+    aspect-ratio: 596 / 792;
+  }
+  .sc-site .hv5 .rm-fig img,
+  .sc-site .hv5 .rm-fig svg {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+  }
+  .sc-site .hv5 .rm-fig svg {
+    overflow: visible;
+  }
+  .sc-site .hv5 .rm-fig path {
+    fill: none;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+  }
+  .sc-site .hv5 .rm-fig .rm-ahead {
+    stroke-width: 2.4;
+    stroke-dasharray: 1 7;
+    opacity: 0.7;
+  }
+  /* the figure is a render: the lines lift off it on a white halo */
+  .sc-site .hv5 .rm-fig .rm-halo {
+    stroke: rgba(255, 255, 255, 0.8);
+  }
+  .sc-site .hv5 .rm-fig img {
+    border-radius: 2px;
+  }
+  .sc-site .hv5 .rm-fig circle.rm-stop {
+    fill: rgba(255, 255, 255, 0.9);
+    stroke-width: 3;
+    transition: fill 0.3s;
+  }
+  .sc-site .hv5 .rm-fig circle.rm-stop.on {
+    fill: currentColor;
+  }
+  .sc-site .hv5 #rmDotTab {
+    fill: var(--gold);
+  }
+  .sc-site .hv5 #rmDotIv {
+    fill: var(--blue);
+  }
+  .sc-site .hv5 .rm-pulse {
+    fill: none;
+    stroke: var(--blue);
+    stroke-width: 2;
+    opacity: 0;
+  }
+  .sc-site .hv5 .rm-pulse.g {
+    stroke: var(--gold);
+  }
+  .sc-site .hv5 .rm-pulse.go {
+    animation: hv5-rm-pulse 2.4s cubic-bezier(0.2, 0.6, 0.3, 1) infinite;
+  }
+  .sc-site .hv5 .rm-pulse.go.b {
+    animation-delay: 0.8s;
+  }
+  @keyframes hv5-rm-pulse {
+    0% {
+      opacity: 0.7;
+      r: 8;
+    }
+    100% {
+      opacity: 0;
+      r: 46;
+    }
+  }
+  .sc-site .hv5 .rm-plate__cap {
     display: flex;
     justify-content: space-between;
-    gap: 16px;
-    flex-wrap: wrap;
+    gap: 14px;
+    padding: 10px 6px 12px;
+    border-top: 1px solid rgba(18, 26, 23, 0.12);
+    font: 500 0.62rem/1.4 var(--mono);
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--ink-3);
   }
-  .sc-site .hv5 .rt__note b {
-    color: var(--ink);
+  .sc-site .hv5 .rm-plate__cap b {
+    color: var(--ink-2);
+    font-weight: 600;
+  }
+  .sc-site .hv5 .rm-tag {
+    position: absolute;
+    padding: 3px 8px;
+    border-radius: 999px;
+    background: #fbf9f3;
+    box-shadow: 0 0 0 1px var(--hair);
+    font: 600 0.7rem/1.2 var(--sans);
+    white-space: nowrap;
+    opacity: 0;
+    transition: opacity 0.35s var(--ease);
+  }
+  .sc-site .hv5 .rm-tag.r {
+    translate: 12px -50%;
+  }
+  .sc-site .hv5 .rm-tag.l {
+    translate: calc(-100% - 12px) -50%;
+  }
+  .sc-site .hv5 .rm-tag.t {
+    translate: -50% calc(-100% - 12px);
+  }
+  .sc-site .hv5 .rm-tag.on {
+    opacity: 1;
+  }
+  .sc-site .hv5 .rm-tag i {
+    font-style: normal;
     font-weight: 500;
+    color: var(--ink-3);
   }
-  @media (max-width: 800px) {
+  @media (max-width: 900px) {
     .sc-site .hv5 .rt {
-      height: 380vh;
-    }
-    .sc-site .hv5 .rt__head {
-      grid-template-columns: 1fr;
-      margin-bottom: 8px;
-    }
-    .sc-site .hv5 .rt__head .lede,
-    .sc-site .hv5 .rt__pic {
-      display: none;
-    }
-    .sc-site .hv5 .lane {
-      grid-template-columns: 1fr;
-      gap: 4px;
-    }
-    .sc-site .hv5 .lane__t {
-      padding: 0;
-      display: flex;
-      align-items: baseline;
-      gap: 12px;
-    }
-    .sc-site .hv5 .lane__t b {
-      margin: 0;
-      font-size: 1.25rem;
-    }
-    .sc-site .hv5 .track {
-      grid-template-columns: 1fr;
-    }
-    .sc-site .hv5 .stn--end {
-      grid-column: auto !important;
-    }
-    .sc-site .hv5 .stn {
-      padding: 0 0 12px 34px;
-      min-height: 0;
-    }
-    .sc-site .hv5 .stn::before {
-      top: 0;
-    }
-    .sc-site .hv5 .stn h4 {
-      font-size: 0.9rem;
-      line-height: 1.5;
-    }
-    .sc-site .hv5 .stn p {
-      font-size: 0.74rem;
-      margin-top: 0;
-      max-width: none;
-    }
-    .sc-site .hv5 .seg {
-      left: 10px;
-      top: 16px;
-      width: 0 !important;
-      height: 100%;
-    }
-    .sc-site .hv5 .seg i {
-      left: calc(var(--t) / -2);
-      top: 0;
-      height: 100%;
-      width: var(--t);
-      transform-origin: 50% 0;
-      transform: scaleY(var(--f, 0));
+      height: 340vh;
     }
     .sc-site .hv5 .rt .stage {
-      align-items: start;
-      padding-top: calc(var(--hh) + 6px);
+      padding-top: calc(var(--hh) + 10px);
     }
-    .sc-site .hv5 .lanes {
+    .sc-site .hv5 .rm {
+      grid-template-columns: minmax(0, 1fr);
+      grid-template-rows: auto 1fr;
       gap: 8px;
+      align-items: stretch;
     }
-    .sc-site .hv5 .stn--tab-hide {
+    .sc-site .hv5 .rm__h {
+      font-size: clamp(1.9rem, 8vw, 2.5rem);
+    }
+    .sc-site .hv5 .rm__cards {
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
+      margin-top: 10px;
+    }
+    .sc-site .hv5 .rm-card {
+      padding: 10px 10px 10px 13px;
+      border-radius: 10px;
+    }
+    .sc-site .hv5 .rm-row__line,
+    .sc-site .hv5 .rm-row__sum,
+    .sc-site .hv5 .rm-pips {
       display: none;
     }
-    .sc-site .hv5 .rt__note {
+    .sc-site .hv5 .rm-card__rows {
+      margin-top: 4px;
+    }
+    .sc-site .hv5 .rm-row__stop {
+      font-size: 1.05rem;
+    }
+    .sc-site .hv5 .rm-card__k {
+      font-size: 0.56rem;
+    }
+    .sc-site .hv5 .rm__note {
       display: none;
+    }
+    .sc-site .hv5 .rm-plate {
+      width: min(100%, calc((100dvh - 290px) * 596 / 850));
+      align-self: start;
+      padding: 8px 8px 0;
+    }
+    .sc-site .hv5 .rm-plate__cap {
+      font-size: 0.52rem;
+      padding: 6px 2px 8px;
+    }
+    .sc-site .hv5 .rm-tag {
+      font-size: 0.6rem;
+      padding: 2px 6px;
     }
   }
+  /* the still version: the finished map, the cards at their last stop, nothing pulsing */
   .sc-site .hv5.still .rt {
     padding: 100px 0;
   }
-  .sc-site .hv5.still .stn {
-    opacity: 1;
-  }
-  .sc-site .hv5.still .stn::before {
-    background: var(--ink);
-  }
   .sc-site .hv5.still .rt .stage {
-    display: block;
+    padding-top: 0;
+  }
+  .sc-site .hv5.still .rm {
+    height: auto;
+  }
+  .sc-site .hv5.still .rm-plate {
+    width: min(100%, 560px);
+  }
+  .sc-site .hv5.still .rm-pulse {
+    animation: none;
+    opacity: 0;
+  }
+  @media (max-width: 900px) {
+    .sc-site .hv5.still .rm__note {
+      display: block;
+    }
   }
   .sc-site .hv5 .honest {
     padding: clamp(60px, 8vw, 120px) 0 clamp(80px, 10vw, 150px);

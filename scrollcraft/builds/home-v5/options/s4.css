@@ -1,0 +1,181 @@
+/* Section 4 option previews: the parts the three share (heading, chips, the drip's card, the compare table). */
+.s4 {
+  position: relative;
+  padding: calc(var(--hh) + 64px) 0 110px;
+  background: var(--paper);
+}
+.s4h {
+  display: grid;
+  grid-template-columns: minmax(0, 1.2fr) minmax(0, 0.8fr);
+  gap: 24px 60px;
+  align-items: end;
+}
+.s4h h2 {
+  margin-top: 14px;
+  font-size: clamp(2.4rem, 1.2rem + 3vw, 4.6rem);
+}
+.s4h .lede {
+  max-width: 30em;
+}
+.s4bar {
+  margin-top: 34px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  justify-content: space-between;
+  align-items: center;
+}
+.s4chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+.s4line:empty {
+  display: none;
+}
+/* the chosen drip */
+.s4card {
+  padding: clamp(22px, 2.4vw, 34px);
+  border-radius: 18px;
+  background: #fbf9f3;
+  box-shadow:
+    0 0 0 1px var(--hair-2),
+    0 30px 50px -36px rgba(18, 26, 23, 0.4);
+}
+.s4card h3 {
+  font: 350 clamp(2rem, 1.2rem + 1.8vw, 3rem)/1 var(--serif);
+  letter-spacing: -0.03em;
+}
+.s4card__tag {
+  margin-top: 10px;
+  font: italic 350 1.15rem/1.3 var(--serif);
+  color: var(--ink-2);
+}
+.s4card__price {
+  margin-top: 16px;
+  padding-top: 16px;
+  border-top: 1px solid var(--hair);
+  font: 500 2rem/1 var(--mono);
+  letter-spacing: -0.02em;
+}
+.s4card__meta {
+  margin: 10px 0 16px;
+  padding-bottom: 16px;
+  border-bottom: 1px solid var(--hair);
+  font: 500 0.82rem var(--mono);
+  color: var(--ink-2);
+}
+.s4card .kick {
+  margin-top: 14px;
+}
+.s4card p:not(.kick) {
+  font-size: 0.98rem;
+  line-height: 1.5;
+  color: var(--ink-2);
+}
+.s4card .kick + p,
+.s4card .kick + ul {
+  margin-top: 6px;
+}
+.s4card ul {
+  display: grid;
+  gap: 6px;
+}
+.s4card li {
+  position: relative;
+  padding-left: 18px;
+  font-size: 0.95rem;
+  color: var(--ink-2);
+}
+.s4card li::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 0.72em;
+  width: 9px;
+  height: 1px;
+  background: var(--ink-2);
+}
+.s4card__go {
+  margin-top: 22px;
+  width: 100%;
+  justify-content: center;
+}
+.s4card__fine {
+  margin-top: 8px;
+  font-size: 0.8rem !important;
+  color: var(--ink-3) !important;
+  text-align: center;
+}
+/* compare: the picked drips side by side, their ingredients lined up */
+.s4cmpt {
+  margin-top: 28px;
+  border-radius: 18px;
+  background: #fbf9f3;
+  box-shadow: 0 0 0 1px var(--hair-2);
+  overflow: hidden;
+}
+.s4cmpt__row {
+  display: grid;
+  grid-template-columns: minmax(150px, 0.9fr) repeat(var(--n), minmax(0, 1fr));
+  border-top: 1px solid var(--hair-2);
+}
+.s4cmpt__row > span {
+  padding: 12px 16px;
+  font-size: 0.92rem;
+  color: var(--ink-2);
+}
+.s4cmpt__row > span:first-child {
+  color: var(--ink);
+}
+.s4cmpt__row b {
+  font: 500 0.86rem var(--mono);
+  color: var(--ink);
+}
+.s4cmpt__row i {
+  display: block;
+  font-style: normal;
+  font-size: 0.76rem;
+  color: var(--ink-3);
+}
+.s4cmpt__hd {
+  border-top: 0;
+  align-items: end;
+}
+.s4cmpt__hd > span {
+  display: grid;
+  gap: 4px;
+  padding-top: 22px;
+}
+.s4cmpt__hd b {
+  font: 350 1.35rem/1.1 var(--serif);
+}
+.s4cmpt__hd em {
+  font: 500 0.78rem var(--mono);
+  font-style: normal;
+  color: var(--ink-3);
+}
+.s4cmpt__bag {
+  width: 46px;
+  margin-bottom: 6px;
+}
+.s4cmp__no {
+  color: var(--ink-3);
+}
+.s4empty {
+  margin-top: 24px;
+  color: var(--ink-3);
+}
+@media (max-width: 800px) {
+  .s4h {
+    grid-template-columns: 1fr;
+    gap: 14px;
+  }
+  .s4cmpt {
+    overflow-x: auto;
+  }
+  .s4cmpt__row {
+    grid-template-columns: 120px repeat(var(--n), minmax(130px, 1fr));
+    min-width: max-content;
+  }
+}

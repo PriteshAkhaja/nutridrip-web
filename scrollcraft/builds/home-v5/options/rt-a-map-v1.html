@@ -1,0 +1,301 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>IV or tablets, option A: the route map</title>
+    <link rel="icon" href="../images/mark.svg" type="image/svg+xml" />
+    <script>
+      document.documentElement.className = "js";
+    </script>
+    <link rel="stylesheet" href="../styles.css" />
+    <link rel="stylesheet" href="opt.css" />
+    <link rel="stylesheet" href="rt.css" />
+    <style>
+      /* Option A: the route map. A textbook plate of the body, and the two routes drawn over it as you scroll: the tablet
+   (gold) from the mouth down through the stomach, the small intestine and the liver before the blood; the drip
+   (blue) from a vein in the forearm, straight in. The drip arrives while the tablet is still on its way. */
+      .ra {
+        height: 320vh;
+      }
+      .ra .stage {
+        padding-top: var(--hh);
+        background: #ece8de;
+      }
+      .ra__grid {
+        height: 100%;
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+        gap: clamp(24px, 5vw, 90px);
+        align-items: center;
+      }
+      .fig {
+        position: relative;
+        height: min(84dvh, 780px);
+        aspect-ratio: 596 / 792;
+        justify-self: center;
+      }
+      .fig img,
+      .fig svg {
+        position: absolute;
+        inset: 0;
+        width: 100%;
+        height: 100%;
+      }
+      .fig svg {
+        overflow: visible;
+      }
+      .fig path {
+        fill: none;
+        stroke-linecap: round;
+        stroke-linejoin: round;
+      }
+      .fig .p-tab {
+        stroke: var(--gold);
+        stroke-width: 5;
+      }
+      .fig .p-iv {
+        stroke: var(--blue);
+        stroke-width: 5;
+      }
+      .fig .halo {
+        stroke: #ece8de;
+        stroke-width: 11;
+      }
+      .fig circle.stop {
+        fill: #ece8de;
+        stroke-width: 3;
+        transition: fill 0.3s;
+      }
+      .fig circle.stop.on {
+        fill: currentColor;
+      }
+      .fig .head {
+        fill: currentColor;
+      }
+      .tag {
+        position: absolute;
+        translate: 0 -50%;
+        padding: 3px 8px;
+        border-radius: 999px;
+        background: #fbf9f3;
+        box-shadow: 0 0 0 1px var(--hair);
+        font: 600 0.72rem/1.2 var(--sans);
+        white-space: nowrap;
+        opacity: 0;
+        transition:
+          opacity 0.35s var(--ease),
+          transform 0.35s var(--ease);
+        transform: translateX(-4px);
+      }
+      .tag.on {
+        opacity: 1;
+        transform: none;
+      }
+      .tag.l {
+        translate: -100% -50%;
+        transform: translateX(4px);
+      }
+      .tag.l.on {
+        transform: none;
+      }
+      .tag i {
+        font-style: normal;
+        font-weight: 500;
+        color: var(--ink-3);
+      }
+      @media (max-width: 900px) {
+        .ra .stage {
+          padding-top: calc(var(--hh) + 12px);
+        }
+        .ra__grid {
+          grid-template-columns: 1fr;
+          grid-template-rows: auto 1fr;
+          gap: 0;
+          align-items: stretch;
+        }
+        .ra .rt-lists {
+          display: none;
+        }
+        .fig {
+          width: 100%;
+          height: auto;
+          max-height: 100%;
+          align-self: center;
+        }
+        .tag {
+          font-size: 0.62rem;
+          padding: 2px 6px;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <main>
+      <section class="opt-lead">
+        <div>
+          <span class="kick">IV or tablets · option A</span>
+          <h1>The route map</h1>
+          <p>
+            A textbook plate of the body, and the two routes drawn over it as you scroll: the tablet from the mouth down
+            through the stomach, gut and liver; the drip from a vein in the arm, straight in.
+          </p>
+        </div>
+      </section>
+      <section class="act ra" id="ra" aria-labelledby="rt-h">
+        <div class="stage">
+          <div class="wrap ra__grid">
+            <div>
+              <p class="kick">IV or tablets?</p>
+              <h2 id="rt-h" class="rt-h">Same dose, <em>two routes.</em></h2>
+              <div class="rt-lists" id="lists"></div>
+              <p class="rt-note">
+                <span>Illustration, not to scale.</span> What remains by mouth varies by nutrient, dose and person.
+              </p>
+            </div>
+            <div class="fig" id="fig">
+              <img
+                src="../images/rt-body.webp"
+                alt="A line drawing of the body, with the stomach, gut, liver and a vein in the arm"
+              />
+              <svg viewBox="0 0 596 792" aria-hidden="true">
+                <path class="halo" id="hTab" />
+                <path class="p-tab" id="pTab" />
+                <path class="halo" id="hIv" />
+                <path class="p-iv" id="pIv" />
+                <g id="stops"></g>
+                <circle class="head" id="dTab" r="7" style="color: var(--gold)" />
+                <circle class="head" id="dIv" r="7" style="color: var(--blue)" />
+              </svg>
+            </div>
+          </div>
+        </div>
+      </section>
+      <section class="opt-next">
+        <div class="wrap">
+          <p class="kick">Next on the page</p>
+          <h2>Why we exist.</h2>
+          <p>The next section follows here.</p>
+        </div>
+      </section>
+    </main>
+    <div class="opt-tag">
+      IV or tablets · A (first version) <a href="index.html">All options</a> <a href="../index.html">Home</a>
+    </div>
+
+    <script src="opt.js"></script>
+    <script src="rt.js"></script>
+    <script>
+      (function () {
+        "use strict";
+        var O = OPT,
+          ss = O.ss,
+          clamp = O.clamp,
+          R = RT;
+        var $ = function (s) {
+          return document.querySelector(s);
+        };
+        // where each stop is on the plate (its own 596 x 792 drawing): [x, y, label side]
+        var AT = {
+          mouth: [360, 176, "r"],
+          stomach: [404, 410, "r"],
+          intestine: [362, 540, "r"],
+          liver: [306, 404, "l"],
+          blood: [430, 318, "r"],
+          vein: [104, 660, "l"],
+        };
+        var D_TAB =
+          "M360,176 L364,250 Q368,330 386,380 Q398,398 404,410 Q426,470 392,520 Q372,548 362,540 Q318,552 300,500 Q292,450 306,404 Q326,340 430,318";
+        var D_IV = "M104,660 Q140,585 184,502 Q214,446 238,380 Q252,330 300,320 L430,318";
+        ["hTab", "pTab"].forEach(function (id) {
+          $("#" + id).setAttribute("d", D_TAB);
+        });
+        ["hIv", "pIv"].forEach(function (id) {
+          $("#" + id).setAttribute("d", D_IV);
+        });
+        var pT = $("#pTab"),
+          pI = $("#pIv"),
+          hT = $("#hTab"),
+          hI = $("#hIv"),
+          LT = pT.getTotalLength(),
+          LI = pI.getTotalLength();
+        [pT, hT].forEach(function (p) {
+          p.style.strokeDasharray = LT + " " + LT;
+        });
+        [pI, hI].forEach(function (p) {
+          p.style.strokeDasharray = LI + " " + LI;
+        });
+        // how far along each path each stop is
+        var along = function (p, L, pt) {
+          var best = 0,
+            bd = 1e9;
+          for (var s = 0; s <= L; s += 2) {
+            var q = p.getPointAtLength(s),
+              d = Math.hypot(q.x - pt[0], q.y - pt[1]);
+            if (d < bd) {
+              bd = d;
+              best = s;
+            }
+          }
+          return best / L;
+        };
+        var stops = $("#stops"),
+          fig = $("#fig"),
+          marks = [];
+        var mark = function (route, key, label, sub, p, L) {
+          var a = AT[key],
+            c = document.createElementNS("http://www.w3.org/2000/svg", "circle");
+          c.setAttribute("cx", a[0]);
+          c.setAttribute("cy", a[1]);
+          c.setAttribute("r", 7);
+          c.setAttribute("class", "stop");
+          c.style.color = route === "tab" ? "var(--gold)" : "var(--blue)";
+          c.style.stroke = c.style.color;
+          stops.appendChild(c);
+          var t = document.createElement("span");
+          t.className = "tag" + (a[2] === "l" ? " l" : "");
+          t.style.left = (a[0] / 596) * 100 + (a[2] === "l" ? -2.6 : 2.6) + "%";
+          t.style.top = (a[1] / 792) * 100 + "%";
+          t.innerHTML = label + (sub ? " <i>" + sub + "</i>" : "");
+          fig.appendChild(t);
+          marks.push({ route: route, at: along(p, L, a), c: c, t: t });
+        };
+        R.TAB.forEach(function (s) {
+          if (s[0] !== "blood") mark("tab", s[0], s[1], "", pT, LT);
+        });
+        mark("iv", "vein", "Into a vein", "", pI, LI);
+        mark("both", "blood", "Bloodstream", "", pT, LT);
+        R.lists($("#lists"));
+        function fn(p) {
+          var t = ss((p - 0.08) / 0.8),
+            v = ss((p - 0.06) / 0.2);
+          [pT, hT].forEach(function (x) {
+            x.style.strokeDashoffset = (LT * (1 - t)).toFixed(1);
+          });
+          [pI, hI].forEach(function (x) {
+            x.style.strokeDashoffset = (LI * (1 - v)).toFixed(1);
+          });
+          var a = pT.getPointAtLength(LT * t),
+            b = pI.getPointAtLength(LI * v);
+          $("#dTab").setAttribute("cx", a.x);
+          $("#dTab").setAttribute("cy", a.y);
+          $("#dIv").setAttribute("cx", b.x);
+          $("#dIv").setAttribute("cy", b.y);
+          $("#dTab").style.opacity = $("#dIv").style.opacity = p > 0.03 ? 1 : 0;
+          marks.forEach(function (m) {
+            var on = m.route === "iv" ? v > 0.02 : m.route === "both" ? v >= 0.99 : t >= m.at - 0.01;
+            m.c.classList.toggle("on", on);
+            m.t.classList.toggle("on", on);
+          });
+          // the blood mark carries who has arrived: the drip first, the tablet much later
+          var bl = marks[marks.length - 1].t;
+          bl.innerHTML =
+            "Bloodstream " +
+            (t >= 0.99 ? "<i>both, by different roads</i>" : v >= 0.99 ? "<i>the drip, already</i>" : "");
+          R.light(t, v);
+        }
+        O.pin($("#ra"), fn);
+      })();
+    </script>
+  </body>
+</html>

@@ -103,3 +103,18 @@ kie.ai, 61.5 → 58.5 credits on top of the drape (69.5 before this section, 58.
 - `doc-stamp.webp`: a walnut rubber stamp seen from above, generated with kie.ai `google/nano-banana` (4 credits; no text, no logo, no ink), background removed with `recraft/remove-background` (1 credit). 5 credits in all; 53.5 left on the key.
 - `doc-stamp-sh.webp` (its shadow) and `ink-grain.png` (the speckle that makes stamped ink look printed): `tools/gen_doc_assets.py` (own code).
 Used by the option previews in `options/` (A and C); kept for whichever is built.
+
+## The vial labels made solid (2026-11-26)
+
+The user saw the glass behind the label show through on the two big vials (`vial-calcium-blank.webp`, `vial-vitc-blank.webp`): faint vertical panels inside the white label, and in our printed label on top. `tools/fix_vial_labels.py` (own code, no credits) repaints each label as solid paper with only its smooth shading round the glass, fitted from the photograph. The largest brightness step across the label fell from 14.0 to 2.8 and from 8.9 to 1.2. The label's own edges are kept. The same two files are used by the app's drip pages (`public/site/v3/`, `src/components/site/v3/glass.ts`), so those copies were replaced as well, and the home page's copies by `npm run home-port`. The ampoule was already right.
+
+## The body plate, for the IV-or-tablets options (2026-11-27)
+
+`rt-body.webp`: a quiet anatomical line drawing (front view, faint stomach, gut, liver and a vein in the arm), generated with kie.ai `google/nano-banana` (4 credits; no text or labels asked for or present). `tools/gen_rt_body.py` (own code) makes its paper transparent, keeping the ink. 49.5 credits left on the key.
+
+## Two rendered figures for the route map (2026-11-27)
+
+Generated with kie.ai `google/nano-banana`, 4 credits each, 3 attempts (12 credits; 37.5 left). Asked for no text or labels, and none appear:
+- `rt-body-porcelain.webp`: a frosted, porcelain-like figure, the organs softly visible.
+- `rt-body-glass.webp`: a clear glass figure, the organs clearly visible, both arms complete.
+Both cropped to the plate's shape. A third attempt (clear glass, first try) was rejected: one shoulder ended in a stump with no arm.

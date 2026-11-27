@@ -1,0 +1,448 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Section 4, option A: the exploded view</title>
+    <link rel="icon" href="../images/mark.svg" type="image/svg+xml" />
+    <script>
+      document.documentElement.className = "js";
+    </script>
+    <link rel="stylesheet" href="../styles.css" />
+    <link rel="stylesheet" href="opt.css" />
+    <link rel="stylesheet" href="s4.css" />
+    <style>
+      /* Option A: the exploded view. The chosen drip's bag in the middle of a drawing board, and every ingredient it takes
+   laid out around it like a technical drawing, an ink leader from each to the bag; what is given beside the bag sits
+   apart. Choosing another drip gathers them back into the bag and lays the new ones out. */
+      .xa {
+        margin-top: 24px;
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) 350px;
+        gap: 24px;
+        align-items: start;
+      }
+      .xa > .xl {
+        grid-column: 1 / -1;
+      }
+      .xa.is-cmp {
+        grid-template-columns: 1fr;
+      }
+      .xmain {
+        min-width: 0;
+      } /* the compare table scrolls inside it on a phone, rather than widening the page */
+      .xl {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+      }
+      .xl button {
+        display: inline-flex;
+        gap: 9px;
+        align-items: center;
+        padding: 10px 14px;
+        border-radius: 999px;
+        box-shadow: inset 0 0 0 1px var(--hair);
+        text-align: left;
+        transition:
+          background 0.25s var(--ease),
+          box-shadow 0.25s var(--ease),
+          opacity 0.25s;
+      }
+      .xl button i {
+        width: 12px;
+        height: 12px;
+        border-radius: 50%;
+        background: var(--tint);
+      }
+      .xl button span {
+        font-size: 0.98rem;
+      }
+      .xl button em {
+        font: 500 0.78rem var(--mono);
+        font-style: normal;
+        color: var(--ink-3);
+      }
+      .xl button:hover {
+        background: rgba(18, 26, 23, 0.04);
+      }
+      .xl button[aria-pressed="true"] {
+        background: #fbf9f3;
+        box-shadow:
+          inset 0 0 0 1.5px var(--tint),
+          0 12px 20px -16px rgba(18, 26, 23, 0.5);
+      }
+      .xl button.off {
+        opacity: 0.3;
+      }
+      .xl small {
+        font: 500 0.58rem var(--mono);
+        letter-spacing: 0.12em;
+        text-transform: uppercase;
+        color: var(--ink-3);
+      }
+      /* the drawing board */
+      .xs {
+        position: relative;
+        height: 640px;
+        border-radius: 18px;
+        overflow: hidden;
+        background-color: #f7f5ee;
+        background-image:
+          linear-gradient(rgba(18, 26, 23, 0.05) 1px, transparent 1px),
+          linear-gradient(90deg, rgba(18, 26, 23, 0.05) 1px, transparent 1px);
+        background-size: 28px 28px;
+        box-shadow: inset 0 0 0 1px var(--hair-2);
+      }
+      .xs svg {
+        position: absolute;
+        inset: 0;
+        width: 100%;
+        height: 100%;
+        pointer-events: none;
+      }
+      .xs line {
+        stroke: var(--ink-2);
+        stroke-width: 1.2;
+        stroke-dasharray: 3 5;
+        opacity: 0.55;
+        transition: opacity 0.4s;
+      }
+      .xs__bag {
+        position: absolute;
+        left: 50%;
+        top: 50%;
+        width: 150px;
+        translate: -50% -50%;
+        z-index: 2;
+        transition: scale 0.5s var(--ease);
+      }
+      .xs__bag.pulse {
+        scale: 1.04;
+      }
+      .xs__vol {
+        position: absolute;
+        left: 22px;
+        top: 18px;
+        font: 500 0.7rem/1.3 var(--mono);
+        letter-spacing: 0.12em;
+        text-transform: uppercase;
+        color: var(--ink-3);
+      }
+      .xs__vol b {
+        display: block;
+        font-size: 1.3rem;
+        letter-spacing: -0.01em;
+        color: var(--ink);
+        text-transform: none;
+      }
+      .xs__base {
+        position: absolute;
+        left: 50%;
+        bottom: 18px;
+        translate: -50% 0;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        padding: 8px 14px;
+        border-radius: 999px;
+        background: #fbf9f3;
+        box-shadow: 0 0 0 1px var(--hair);
+        font-size: 0.86rem;
+        white-space: nowrap;
+        z-index: 3;
+      }
+      .xs__base i {
+        width: 9px;
+        height: 9px;
+        border-radius: 50%;
+        background: var(--tint);
+      }
+      .xi {
+        position: absolute;
+        left: 0;
+        top: 0;
+        z-index: 3;
+        display: grid;
+        justify-items: center;
+        gap: 6px;
+        text-align: center;
+        width: 130px;
+        transition:
+          transform 0.7s var(--ease),
+          opacity 0.45s var(--ease);
+        will-change: transform, opacity;
+      }
+      .xi .glass {
+        --gh: 118px;
+      }
+      .xi b {
+        font-weight: 500;
+        font-size: 0.84rem;
+        line-height: 1.25;
+      }
+      .xi em {
+        font: 500 0.72rem var(--mono);
+        font-style: normal;
+        color: var(--ink-3);
+      }
+      .xi.sep::before {
+        content: "Given beside the bag";
+        order: -1;
+        font: 500 0.6rem var(--mono);
+        letter-spacing: 0.12em;
+        text-transform: uppercase;
+        color: var(--ink-3);
+      }
+      .xc .s4cmpt {
+        margin-top: 0;
+      }
+      .xhint {
+        margin-bottom: 10px;
+        font-size: 0.9rem;
+        color: var(--ink-3);
+      }
+      @media (max-width: 1100px) {
+        .xa {
+          grid-template-columns: minmax(0, 1fr);
+        }
+      }
+      @media (max-width: 800px) {
+        .xa {
+          grid-template-columns: minmax(0, 1fr);
+        }
+        .xl {
+          flex-wrap: nowrap;
+          overflow-x: auto;
+          padding-bottom: 6px;
+        }
+        .xl button {
+          flex: none;
+        }
+        .xl small {
+          display: none;
+        }
+        .xs {
+          height: 560px;
+        }
+        .xs__bag {
+          width: 104px;
+        }
+        .xi {
+          width: 96px;
+        }
+        .xi .glass {
+          --gh: 78px;
+        }
+        .xi b {
+          font-size: 0.72rem;
+        }
+        .xi em {
+          font-size: 0.62rem;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <main>
+      <section class="opt-lead">
+        <div>
+          <span class="kick">Preview A · section 4</span>
+          <h1>The exploded view</h1>
+          <p>
+            Pick a drip: its bag sits in the middle of a drawing board and every ingredient it takes is laid out around
+            it, an ink leader to the bag. Choosing another gathers them back in and lays the new ones out.
+          </p>
+        </div>
+      </section>
+
+      <section class="s4" aria-labelledby="s4h">
+        <div class="wrap">
+          <div id="head"></div>
+          <div class="xa">
+            <div class="xl" id="list" role="group" aria-label="The drips"></div>
+            <div class="xmain">
+              <div class="xs" id="board" aria-live="polite">
+                <p class="xs__vol"><b>500 mL</b>every bag</p>
+                <svg id="lines" aria-hidden="true"></svg>
+                <div class="xs__bag" id="bag"></div>
+                <p class="xs__base" id="base"><i></i><span></span></p>
+              </div>
+              <div class="xc" id="cmp" hidden></div>
+            </div>
+            <div id="card"></div>
+          </div>
+        </div>
+      </section>
+      <section class="opt-next">
+        <div class="wrap">
+          <p class="kick">Next on the page</p>
+          <h2>Follow one dose.</h2>
+          <p>The dose act follows here.</p>
+        </div>
+      </section>
+    </main>
+    <div class="opt-tag">
+      Section 4 · A · Exploded view <a href="index.html">All options</a> <a href="../index.html">Home</a>
+    </div>
+
+    <script src="kit.js"></script>
+    <script src="s4.js"></script>
+    <script>
+      (function () {
+        "use strict";
+        var S = S4,
+          K = S.K,
+          $ = S.$,
+          $$ = S.$$;
+        S.head($("#head"));
+        var list = $("#list"),
+          board = $("#board"),
+          lines = $("#lines"),
+          bagEl = $("#bag"),
+          base = $("#base"),
+          card = $("#card"),
+          cmp = $("#cmp");
+        K.DRIPS.forEach(function (d) {
+          var b = document.createElement("button");
+          b.dataset.id = d.id;
+          b.style.setProperty("--tint", d.tint);
+          b.setAttribute("aria-pressed", "false");
+          b.innerHTML =
+            "<i></i><span>" +
+            d.name +
+            "</span><em>" +
+            K.money(d.price) +
+            "</em>" +
+            (d.pop ? "<small>Most popular</small>" : "");
+          list.appendChild(b);
+        });
+        list.addEventListener("click", function (e) {
+          var b = e.target.closest("button");
+          if (b) S.choose(b.dataset.id);
+        });
+
+        var shownId = null,
+          items = [];
+        function place(d) {
+          // lay the ingredients out round the bag: those that go in it on an arc over it, those beside it apart, lower right
+          var W = board.clientWidth,
+            H = board.clientHeight,
+            ph = innerWidth <= 800,
+            cx = W / 2,
+            cy = H / 2;
+          var inBag = d.items.filter(function (it) {
+              return !it[3];
+            }),
+            beside = d.items.filter(function (it) {
+              return it[3];
+            });
+          var rx = W * (ph ? 0.36 : 0.37),
+            ry = H * (ph ? 0.34 : 0.34),
+            cols = K.bandsFor(d.items);
+          items.forEach(function (o) {
+            o.el.style.transform = "translate(" + (cx - o.w / 2) + "px," + (cy - o.h / 2) + "px) scale(.2)";
+            o.el.style.opacity = "0";
+          });
+          var old = items;
+          setTimeout(function () {
+            old.forEach(function (o) {
+              o.el.remove();
+            });
+          }, 500);
+          items = [];
+          var add = function (it, x, y, sep, i) {
+            var el = document.createElement("div");
+            el.className = "xi" + (sep ? " sep" : "");
+            el.innerHTML =
+              K.glassEl(it, cols[d.items.indexOf(it)]) + "<b>" + it[0] + "</b><em>" + it[1] + " · " + it[2] + "</em>";
+            board.appendChild(el);
+            var w = el.offsetWidth,
+              h = el.offsetHeight;
+            el.style.transition = "none";
+            el.style.opacity = "0";
+            el.style.transform = "translate(" + (cx - w / 2) + "px," + (cy - h / 2) + "px) scale(.2)";
+            var o = { el: el, w: w, h: h, x: x, y: y, sep: sep };
+            items.push(o);
+            requestAnimationFrame(function () {
+              requestAnimationFrame(function () {
+                el.style.transition = "";
+                el.style.transitionDelay = 0.18 + i * 0.06 + "s";
+                el.style.transform = "translate(" + (x - w / 2) + "px," + (y - h / 2) + "px)";
+                el.style.opacity = "1";
+              });
+            });
+          };
+          inBag.forEach(function (it, i) {
+            var n = inBag.length,
+              a = ((-214 + (248 * (i + 0.5)) / n) * Math.PI) / 180;
+            add(it, cx + rx * Math.cos(a), cy + ry * Math.sin(a) - (ph ? 0 : 10), false, i);
+          });
+          beside.forEach(function (it, i) {
+            add(it, W - (ph ? 60 : 90) - i * (ph ? 100 : 140), H - (ph ? 110 : 150), true, inBag.length + i);
+          });
+          // the leaders, drawn once everything has landed
+          lines.innerHTML = "";
+          lines.setAttribute("viewBox", "0 0 " + W + " " + H);
+          items.forEach(function (o, i) {
+            if (o.sep) return;
+            var ln = document.createElementNS("http://www.w3.org/2000/svg", "line");
+            ln.setAttribute("x1", o.x);
+            ln.setAttribute("y1", o.y);
+            ln.setAttribute("x2", cx);
+            ln.setAttribute("y2", cy);
+            ln.style.opacity = "0";
+            lines.appendChild(ln);
+            setTimeout(
+              function () {
+                ln.style.opacity = "";
+              },
+              700 + i * 60
+            );
+          });
+        }
+        function render(st) {
+          var vis = S.shown().map(function (d) {
+            return d.id;
+          });
+          $$("button", list).forEach(function (b) {
+            b.classList.toggle("off", vis.indexOf(b.dataset.id) < 0);
+            b.setAttribute(
+              "aria-pressed",
+              (st.cmp ? st.picks.indexOf(b.dataset.id) >= 0 : b.dataset.id === st.id) ? "true" : "false"
+            );
+          });
+          board.hidden = st.cmp;
+          cmp.hidden = !st.cmp;
+          card.hidden = st.cmp;
+          list.parentNode.classList.toggle("is-cmp", st.cmp);
+          if (st.cmp) {
+            cmp.innerHTML =
+              '<p class="xhint">Pick up to three from the list.</p>' + (st.picks.length ? S.cmpTable(st.picks) : "");
+            return;
+          }
+          var d = K.byId(st.id);
+          card.innerHTML = S.card(d);
+          if (d.id === shownId) return;
+          shownId = d.id;
+          board.style.setProperty("--tint", d.tint);
+          bagEl.innerHTML = K.bagHTML(d, true, 1);
+          bagEl.classList.add("pulse");
+          setTimeout(function () {
+            bagEl.classList.remove("pulse");
+          }, 500);
+          $("span", base).textContent = d.base;
+          place(d);
+        }
+        S.on(render);
+        var rt;
+        addEventListener("resize", function () {
+          clearTimeout(rt);
+          rt = setTimeout(function () {
+            if (!S.st.cmp) place(K.byId(S.st.id));
+          }, 150);
+        });
+      })();
+    </script>
+  </body>
+</html>

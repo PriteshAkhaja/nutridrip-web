@@ -1,0 +1,534 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Section 4, option B: the formulary matrix</title>
+    <link rel="icon" href="../images/mark.svg" type="image/svg+xml" />
+    <script>
+      document.documentElement.className = "js";
+    </script>
+    <link rel="stylesheet" href="../styles.css" />
+    <link rel="stylesheet" href="opt.css" />
+    <link rel="stylesheet" href="s4.css" />
+    <style>
+      /* Option B: the formulary matrix. "Every ingredient in view", literally: every drip across the top (its bag, name and
+   price), every ingredient any of them takes down the side, and where they meet a mark sized by the dose within that
+   ingredient's row (hollow if it is given beside the bag). Choosing a column opens that drip below; comparing keeps
+   only the picked columns, side by side. */
+      .mx {
+        position: relative;
+        margin-top: 26px;
+        border-radius: 18px;
+        background: #fbf9f3;
+        box-shadow:
+          0 0 0 1px var(--hair-2),
+          0 30px 50px -40px rgba(18, 26, 23, 0.4);
+        overflow-x: auto;
+      }
+      .mx__grid {
+        position: relative;
+        display: grid;
+        grid-template-columns: 190px repeat(var(--n), minmax(0, 1fr));
+      }
+      .mx__band {
+        position: absolute;
+        top: 0;
+        bottom: 0;
+        left: 0;
+        width: 0;
+        background: color-mix(in srgb, var(--tint) 9%, transparent);
+        box-shadow: inset 0 3px 0 var(--tint);
+        transition:
+          left 0.5s var(--ease),
+          width 0.5s var(--ease),
+          background 0.5s;
+        pointer-events: none;
+      }
+      .mx__c {
+        position: relative;
+        display: grid;
+        place-items: center;
+        align-content: center;
+        gap: 4px;
+        min-height: 44px;
+        padding: 6px 8px;
+        border-top: 1px solid var(--hair-2);
+        text-align: center;
+        transition:
+          opacity 0.35s var(--ease),
+          background 0.2s;
+      }
+      .mx__c.k {
+        position: sticky;
+        left: 0;
+        z-index: 2;
+        place-items: center start;
+        text-align: left;
+        padding-left: 20px;
+        background: #fbf9f3;
+        font-size: 0.9rem;
+        color: var(--ink);
+      }
+      .mx__c.k small {
+        font: 500 0.62rem var(--mono);
+        letter-spacing: 0.1em;
+        text-transform: uppercase;
+        color: var(--ink-3);
+      }
+      .mx__hd {
+        border-top: 0;
+        padding: 18px 6px 12px;
+        cursor: pointer;
+        align-content: end;
+      }
+      .mx__hd .mini {
+        width: 34px;
+        transition: transform 0.4s var(--ease);
+      }
+      .mx__hd b {
+        font: 500 0.78rem/1.2 var(--sans);
+        overflow-wrap: anywhere;
+      }
+      .mx__hd em {
+        font: 500 0.7rem var(--mono);
+        font-style: normal;
+        color: var(--ink-3);
+      }
+      .mx__hd:hover .mini {
+        transform: translateY(-4px);
+      }
+      .mx__hd.on .mini {
+        transform: translateY(-6px) scale(1.08);
+      }
+      .mx__hd small {
+        font: 500 0.54rem var(--mono);
+        letter-spacing: 0.1em;
+        text-transform: uppercase;
+        color: var(--ink-3);
+      }
+      .mx__base {
+        font-size: 0.74rem;
+        color: var(--ink-2);
+        line-height: 1.25;
+      }
+      .dot {
+        width: var(--d);
+        height: var(--d);
+        border-radius: 50%;
+        background: var(--tint);
+        transition: transform 0.4s var(--ease);
+      }
+      .dot.sep {
+        background: none;
+        box-shadow: inset 0 0 0 2px var(--tint);
+      }
+      .mx__c i {
+        font: 500 0.66rem var(--mono);
+        font-style: normal;
+        color: var(--ink-3);
+      }
+      .mx__c.row-on,
+      .mx__c.k.row-on {
+        background: rgba(18, 26, 23, 0.035);
+      }
+      .mx__c.off {
+        opacity: 0.18;
+      }
+      .mx__c.col-on .dot {
+        transform: scale(1.12);
+      }
+      .mx__key {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 18px;
+        margin-top: 12px;
+        font-size: 0.82rem;
+        color: var(--ink-3);
+      }
+      .mx__key span {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+      }
+      .mx__key .dot {
+        --d: 12px;
+        --tint: var(--ink-3);
+      }
+      /* the opened drip */
+      .mo {
+        margin-top: 26px;
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) 350px;
+        gap: 24px;
+        align-items: start;
+      }
+      .mo__bench {
+        display: grid;
+        grid-template-columns: 150px minmax(0, 1fr);
+        gap: 28px;
+        padding: 26px;
+        border-radius: 18px;
+        background: #efebe1;
+        box-shadow: inset 0 0 0 1px var(--hair-2);
+      }
+      .mo__bag {
+        align-self: start;
+      }
+      .mo__base {
+        margin-bottom: 18px;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        padding: 10px 14px;
+        border-radius: 10px;
+        background: #fbf9f3;
+        font-size: 0.9rem;
+      }
+      .mo__base i {
+        width: 9px;
+        height: 9px;
+        border-radius: 50%;
+        background: var(--tint);
+      }
+      .mo__row {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 22px 18px;
+        align-items: end;
+      }
+      .mo__ing {
+        display: grid;
+        justify-items: center;
+        gap: 6px;
+        width: 104px;
+        text-align: center;
+        opacity: 0;
+        transform: translateY(12px);
+        animation: moIn 0.6s var(--ease) forwards;
+        animation-delay: calc(var(--i) * 60ms);
+      }
+      .mo__ing .glass {
+        --gh: 120px;
+      }
+      .mo__ing b {
+        font-weight: 500;
+        font-size: 0.82rem;
+        line-height: 1.25;
+      }
+      .mo__ing em {
+        font: 500 0.7rem var(--mono);
+        font-style: normal;
+        color: var(--ink-3);
+      }
+      .mo__ing.sep::before {
+        content: "Beside the bag";
+        order: -1;
+        font: 500 0.58rem var(--mono);
+        letter-spacing: 0.1em;
+        text-transform: uppercase;
+        color: var(--ink-3);
+      }
+      @keyframes moIn {
+        to {
+          opacity: 1;
+          transform: none;
+        }
+      }
+      @media (max-width: 1100px) {
+        .mo {
+          grid-template-columns: 1fr;
+        }
+      }
+      @media (max-width: 800px) {
+        .mx__grid {
+          grid-template-columns: 132px repeat(var(--n), 84px);
+          min-width: max-content;
+        }
+        .mx__c.k {
+          padding-left: 12px;
+          font-size: 0.78rem;
+        }
+        .mo__bench {
+          grid-template-columns: 1fr;
+          padding: 18px;
+        }
+        .mo__bag {
+          width: 110px;
+        }
+        .mo__ing {
+          width: 88px;
+        }
+        .mo__ing .glass {
+          --gh: 92px;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <main>
+      <section class="opt-lead">
+        <div>
+          <span class="kick">Preview B · section 4</span>
+          <h1>The formulary matrix</h1>
+          <p>
+            “Every ingredient in view”, literally: every drip across the top, every ingredient down the side, and a mark
+            sized by the dose where they meet. Choose a column to open that drip; compare keeps only the columns you
+            pick.
+          </p>
+        </div>
+      </section>
+
+      <section class="s4" aria-labelledby="s4h">
+        <div class="wrap">
+          <div id="head"></div>
+          <div class="mx" id="mx">
+            <div class="mx__grid" id="grid" role="table" aria-label="Every drip and every ingredient it takes"></div>
+          </div>
+          <p class="mx__key">
+            <span><i class="dot"></i> In the bag (larger is more, within its row)</span
+            ><span><i class="dot sep"></i> Given beside the bag</span>
+          </p>
+          <div class="mo" id="open"></div>
+          <div id="cmpHint" class="s4empty" hidden>Pick up to three columns to set them side by side.</div>
+        </div>
+      </section>
+      <section class="opt-next">
+        <div class="wrap">
+          <p class="kick">Next on the page</p>
+          <h2>Follow one dose.</h2>
+          <p>The dose act follows here.</p>
+        </div>
+      </section>
+    </main>
+    <div class="opt-tag">
+      Section 4 · B · Matrix <a href="index.html">All options</a> <a href="../index.html">Home</a>
+    </div>
+
+    <script src="kit.js"></script>
+    <script src="s4.js"></script>
+    <script>
+      (function () {
+        "use strict";
+        var S = S4,
+          K = S.K,
+          $ = S.$,
+          $$ = S.$$;
+        S.head($("#head"));
+        var grid = $("#grid"),
+          open = $("#open"),
+          hint = $("#cmpHint");
+        var num = function (s) {
+          return parseFloat(String(s).replace(/,/g, "")) || 0;
+        };
+        // every ingredient any drip takes, the most shared first
+        var names = [];
+        K.DRIPS.forEach(function (d) {
+          d.items.forEach(function (it) {
+            if (names.indexOf(it[0]) < 0) names.push(it[0]);
+          });
+        });
+        var inHow = function (n) {
+          return K.DRIPS.filter(function (d) {
+            return d.items.some(function (it) {
+              return it[0] === n;
+            });
+          }).length;
+        };
+        names.sort(function (a, b) {
+          return inHow(b) - inHow(a) || a.localeCompare(b);
+        });
+        var cols = [];
+        function build(ids) {
+          var ds = ids.map(K.byId);
+          cols = ds.map(function (d) {
+            return d.id;
+          });
+          grid.style.setProperty("--n", ds.length);
+          var h =
+            '<i class="mx__band" id="band"></i><div class="mx__c k mx__hd" role="columnheader"><small>Drip</small></div>';
+          ds.forEach(function (d, c) {
+            h +=
+              '<button class="mx__c mx__hd" data-id="' +
+              d.id +
+              '" data-col="' +
+              c +
+              '" style="--tint:' +
+              d.tint +
+              '"><div class="mini">' +
+              K.bagHTML(d, false, 0.92) +
+              "</div><b>" +
+              d.name +
+              "</b><em>" +
+              K.money(d.price) +
+              "</em>" +
+              (d.pop ? "<small>Most popular</small>" : "") +
+              "</button>";
+          });
+          h += '<div class="mx__c k" data-row="base">Base fluid</div>';
+          ds.forEach(function (d, c) {
+            h +=
+              '<div class="mx__c mx__base" data-col="' +
+              c +
+              '" data-row="base">' +
+              d.base.replace(/ ?\d[\d,.]* ?mL$/, "") +
+              "</div>";
+          });
+          var rowsUsed = names.filter(function (n) {
+            return ds.some(function (d) {
+              return d.items.some(function (it) {
+                return it[0] === n;
+              });
+            });
+          });
+          rowsUsed.forEach(function (n, r) {
+            var max = Math.max.apply(
+              null,
+              ds.map(function (d) {
+                var it = d.items.filter(function (x) {
+                  return x[0] === n;
+                })[0];
+                return it ? num(it[1]) : 0;
+              })
+            );
+            h += '<div class="mx__c k" data-row="' + r + '">' + n + "</div>";
+            ds.forEach(function (d, c) {
+              var it = d.items.filter(function (x) {
+                return x[0] === n;
+              })[0];
+              h +=
+                '<div class="mx__c" data-col="' +
+                c +
+                '" data-row="' +
+                r +
+                '" style="--tint:' +
+                d.tint +
+                '">' +
+                (it
+                  ? '<i class="dot' +
+                    (it[3] ? " sep" : "") +
+                    '" style="--d:' +
+                    (12 + 20 * Math.sqrt(num(it[1]) / (max || 1))).toFixed(1) +
+                    'px"></i><i>' +
+                    it[1] +
+                    "</i>"
+                  : "") +
+                "</div>";
+            });
+          });
+          grid.innerHTML = h;
+        }
+        grid.addEventListener("click", function (e) {
+          var b = e.target.closest(".mx__hd[data-id]");
+          if (b) S.choose(b.dataset.id);
+        });
+        // a row and a column light as you point
+        grid.addEventListener("pointerover", function (e) {
+          var c = e.target.closest(".mx__c");
+          if (!c) return;
+          $$(".row-on", grid).forEach(function (x) {
+            x.classList.remove("row-on");
+          });
+          if (c.dataset.row != null)
+            $$('[data-row="' + c.dataset.row + '"]', grid).forEach(function (x) {
+              x.classList.add("row-on");
+            });
+        });
+        grid.addEventListener("pointerleave", function () {
+          $$(".row-on", grid).forEach(function (x) {
+            x.classList.remove("row-on");
+          });
+        });
+        function band(st) {
+          var b = $("#band");
+          if (!b) return;
+          var col = cols.indexOf(st.id),
+            hd = col >= 0 && !st.cmp ? $('.mx__hd[data-col="' + col + '"]', grid) : null;
+          if (!hd) {
+            b.style.width = "0px";
+            return;
+          }
+          b.style.left = hd.offsetLeft + "px";
+          b.style.width = hd.offsetWidth + "px";
+          b.style.setProperty("--tint", K.byId(st.id).tint);
+        }
+        var built = "";
+        function render(st) {
+          var ids = st.cmp
+            ? st.picks.length
+              ? st.picks.slice()
+              : K.DRIPS.map(function (d) {
+                  return d.id;
+                })
+            : K.DRIPS.map(function (d) {
+                return d.id;
+              });
+          if (ids.join() !== built) {
+            build(ids);
+            built = ids.join();
+          }
+          var vis = S.shown().map(function (d) {
+            return d.id;
+          });
+          $$(".mx__c[data-col]", grid).forEach(function (c) {
+            var id = cols[+c.dataset.col];
+            c.classList.toggle("off", !st.cmp && vis.indexOf(id) < 0);
+            c.classList.toggle("col-on", !st.cmp && id === st.id);
+          });
+          $$(".mx__hd[data-id]", grid).forEach(function (b) {
+            b.classList.toggle("on", st.cmp ? st.picks.indexOf(b.dataset.id) >= 0 : b.dataset.id === st.id);
+            b.setAttribute("aria-pressed", b.classList.contains("on") ? "true" : "false");
+          });
+          band(st);
+          open.hidden = st.cmp;
+          hint.hidden = !st.cmp || st.picks.length > 1;
+          if (st.cmp) {
+            if (st.picks.length < 2)
+              (build(
+                K.DRIPS.map(function (d) {
+                  return d.id;
+                })
+              ),
+                (built = ""));
+            return;
+          }
+          var d = K.byId(st.id),
+            colsB = K.bandsFor(d.items);
+          open.innerHTML =
+            '<div class="mo__bench" style="--tint:' +
+            d.tint +
+            '"><div class="mo__bag">' +
+            K.bagHTML(d, true, 1) +
+            '</div><div><p class="mo__base"><i></i>' +
+            d.base +
+            '</p><div class="mo__row">' +
+            d.items
+              .map(function (it, i) {
+                return (
+                  '<div class="mo__ing' +
+                  (it[3] ? " sep" : "") +
+                  '" style="--i:' +
+                  i +
+                  '">' +
+                  K.glassEl(it, colsB[i]) +
+                  "<b>" +
+                  it[0] +
+                  "</b><em>" +
+                  it[1] +
+                  " · " +
+                  it[2] +
+                  "</em></div>"
+                );
+              })
+              .join("") +
+            "</div></div></div>" +
+            S.card(d);
+        }
+        S.on(render);
+        addEventListener("resize", function () {
+          band(S.st);
+        });
+      })();
+    </script>
+  </body>
+</html>

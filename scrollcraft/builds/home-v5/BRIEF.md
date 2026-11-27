@@ -286,3 +286,53 @@ The route (`src/app/(site)/page.tsx`) renders `HomeV5` with `getHomeData()` (`sr
 - **Phones.** The drips heading stacks on phones.
 
 Checked on the dev server: every section at 1440 × 900, phone and reduced motion. Leaving by a client-side link and coming back leaves nothing running (the same animation-frame count on /drips either way) and rebuilds the page once. No errors; typecheck, lint and 828 tests pass. The old landing (`src/components/site/home/Landing.tsx`, `motion.ts`, the v3 `home.css`) is no longer imported. It is still in the repo, and the backup zip holds it too.
+- Later the same day: no picture on the page can be picked up and dragged any more. The user saw the browser's ghost copy of an ingredient's vial lying over the bag. It is stopped with `-webkit-user-drag: none` on images, and a `dragstart` cancel on the page for Firefox. The port script now matches regardless of formatting (Prettier reformats the preview on commit) and formats its own output, so a re-port's diff shows only real changes.
+- And: the text printed on every vial, ampoule and bag (their labels) can no longer be selected (`user-select: none` on `.glass` and `.bag`). The names and doses written under them still can.
+
+## Section 4 options (2026-11-26)
+
+Three previews for the drips section, in `options/` (linked first on `options/index.html`). They run on the page's own drips and the real labelled vials and bags: `options/kit.js` is built from `app.js` by `options/make-kit.mjs`, so re-run that after changing the data or the glass code. `s4.js` and `s4.css` hold what the three share: the heading, goal chips, compare, the drip's card and the compare table.
+- **A, `s4-a-exploded.html`:** the exploded view. The bag sits in the middle of a drawing board, and each ingredient is laid out round it with an ink leader to the bag. What goes beside the bag sits apart. Switching drips gathers the ingredients back into the bag and lays out the new ones.
+- **B, `s4-b-matrix.html`:** the formulary matrix. Drips run across the top and every ingredient down the side, with a dose mark sized within its row (hollow for beside the bag). A tinted band slides to the chosen column, and that drip opens below. Compare keeps only the picked columns.
+- **C, `s4-c-cases.html`:** the kit cases. Each drip is a closed case with its printed label. Opening one lifts the lid on its hinge, and the bag and vials sit in foam cut-outs. Switching drips closes the lid, repacks the case and opens it again.
+
+The small heading reads "The formulary" rather than "The menu" (drips are never a menu item). At the user's word, the first goal chip is now just "All", and the "Nine drips, six goals." line under the chips is gone; both changes are already in the page.
+Checked at 1440, 1024 and 390: no errors, no horizontal overflow.
+- Asked for more different ideas, three more options turn "every ingredient in view" into something physical you do:
+  - **D, `s4-d-compound.html`, the compounding bench:** a pinned scroll act. The carrier hangs clear, and each vial on the tray in turn lifts, travels over the bag, tips and pours. The drops fall, the liquid takes the drip's colour, the level rises, and that line prints on the bag's label. What goes beside the bag stays on the tray, apart. This is the site's signature move (the drip assembling itself, AGENTS.md).
+  - **E, `s4-e-wall.html`, the pharmacy wall:** one bin per ingredient, with the drips hanging on a rail below. The chosen drip's bins slide out with their doses, and dashed lines run down to its bag. Pointing at a bin lifts every drip that takes it, with its dose.
+  - **F, `s4-f-loupe.html`, the loupe:** the drips lie on a lit table, too small to read. A pharmacist's loupe magnifies the real printed label under the pointer (dragged with a finger on a phone). Clicking the bag under it opens that drip. On a phone the table is three by three.
+  Checked at 1440 and 390: no errors, no horizontal overflow.
+- The user's decision: section 4 stays as it is (the six options stay in `options/` for reference). One word changed, following the rule that drips are never a menu: its small heading now reads "The formulary" instead of "The menu".
+
+## "Same dose, two routes" options (2026-11-27)
+
+The user asked for the IV-or-tablets section's layout and picture to be improved. Now: two horizontal tracks beside a small stock-style photo of loose tablets. Three previews in `options/` (first on `options/index.html`), sharing `rt.js` (the page's own stops, word for word) and `rt.css`:
+- **A, `rt-a-map.html`, the route map:** a textbook line plate of the body (`rt-body.webp`, new). As you scroll, the drip's blue line runs up the arm into the blood while the tablet's gold line is still working down through the stomach, small intestine and liver. The two lists beside it light up in step.
+- **B, `rt-b-diptych.html`, the diptych:** a full-height split, the tablets on one side and the arm with its drip on the other (both existing photos), each with its own route list.
+- **C, `rt-c-stream.html`, the stream:** both routes as flows of particles leaving at the same rate. The tablet's thins at each of its three stops; the drip's reaches the blood whole. It is a canvas, still under reduced motion, with no numbers.
+Checked at 1440 and 390: no errors, no horizontal overflow.
+- The user liked A and asked for it to be better; the first version is kept as `options/rt-a-map-v1.html`. A now:
+  - The figure is a framed textbook plate ("Fig. 1 · the same dose by two routes · not to scale").
+  - Both routes show as a faint dotted preview ahead of their lines.
+  - The tablet's dot pauses at each organ. Its gold line runs thinner after the small intestine and again after the liver, with a few specks falling away (no numbers).
+  - A pulse goes out from the chest when the drip arrives, and a gold one when the tablet does.
+  - Two cards (gold and blue) replace the lists. Each shows its route's current stop in large type, its sentence, and progress dots.
+  - On a phone the cards are compact and every label stays on screen.
+  Checked at 1920, 1440 and 390: no errors, no overflow.
+
+## Revision 14 (2026-11-27): "Same dose, two routes" is the route map
+
+The user chose option A (second version). It replaces the section's two tracks and the photo of loose tablets:
+- **Markup:** `#routes`, `.rm`.
+- **Styles:** `8. IV OR TABLETS: the route map`.
+- **Script:** `rtFn` and `rmMeasure`, with the stops word for word as before.
+- **Images:** `rt-body.webp` is new; `tablets.webp` is no longer used on the page, though it stays in `images/`.
+- **Still version:** the finished map, with both cards at their last stop.
+Checked in the preview and on the app (port re-run) at 1440 and 390, moving and still: no errors, no horizontal overflow. Typecheck and lint pass.
+- Later the same day: the user saw the cards flicker when their text changed. The text faded to nothing and was swapped after a pause, and a sentence of a different length changed the card's height, so the card below jumped. Now:
+  - **One cell:** every state's text is stacked in a single cell, so each card keeps one height (measured through the whole scroll: one height, one gap, at 1440 and 390).
+  - **Rolling:** inside a clipped window, the old stop slides up and out while the new one slides in. Both stay at full strength, so nothing is ever faint or blank, and scrolling back reverses it.
+  - **Progress strip:** the colour strip on each card's left fills with its route's progress.
+- Asked whether the figure could look like a real 3D human: `options/rt-a-map.html` now has a switcher (Line drawing / Porcelain / Glass, `?fig=`), with the routes placed on each body's own mouth, stomach, gut, liver, heart and arm vein. The live page still uses the line drawing until the user chooses.
+- The user chose **Glass**. The page's route map now uses `rt-body-glass.webp`, with the routes placed on its own organs and the arm vein, the lines lifting off it on white halos, and the blood label to the left of the heart. Ported to the app. Checked at 1440 and 390, moving and still, preview and app: no errors, no overflow, and the cards keep one height with the text at full strength. The line drawing and the porcelain figure stay in `images/` for `options/`.

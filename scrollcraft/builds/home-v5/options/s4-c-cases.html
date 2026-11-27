@@ -1,0 +1,461 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Section 4, option C: the kit cases</title>
+    <link rel="icon" href="../images/mark.svg" type="image/svg+xml" />
+    <script>
+      document.documentElement.className = "js";
+    </script>
+    <link rel="stylesheet" href="../styles.css" />
+    <link rel="stylesheet" href="opt.css" />
+    <link rel="stylesheet" href="s4.css" />
+    <style>
+      /* Option C: the kit cases. Each drip is a closed clinical case with its printed label, like the sealed kit on the
+   sterile field. Choosing one opens it below: the lid lifts back on its hinge and the bag and every vial and ampoule
+   sit in their own cut-outs in the foam, each named and dosed. Choosing another closes the lid, packs the new one,
+   and opens it again. */
+      .kc {
+        margin-top: 26px;
+        display: flex;
+        flex-wrap: wrap;
+        gap: 14px;
+      }
+      .case {
+        position: relative;
+        width: 168px;
+        height: 112px;
+        border-radius: 16px;
+        padding: 0;
+        text-align: left;
+        background: linear-gradient(160deg, #3a4442, #232b29 70%);
+        box-shadow:
+          inset 0 1px 0 rgba(255, 255, 255, 0.12),
+          inset 0 -2px 0 rgba(0, 0, 0, 0.3),
+          0 16px 26px -18px rgba(18, 26, 23, 0.7);
+        transition:
+          transform 0.35s var(--ease),
+          box-shadow 0.35s var(--ease),
+          opacity 0.3s;
+      }
+      .case::before,
+      .case::after {
+        content: "";
+        position: absolute;
+        top: 46px;
+        width: 8px;
+        height: 22px;
+        border-radius: 3px;
+        background: linear-gradient(180deg, #9aa3a0, #5f6866);
+      }
+      .case::before {
+        left: 7px;
+      }
+      .case::after {
+        right: 7px;
+      }
+      .case__label {
+        position: absolute;
+        left: 22px;
+        right: 22px;
+        top: 14px;
+        bottom: 14px;
+        display: grid;
+        align-content: center;
+        gap: 2px;
+        padding: 8px 10px 8px 14px;
+        border-radius: 4px;
+        background: #fbf9f3;
+        overflow: hidden;
+      }
+      .case__label::before {
+        content: "";
+        position: absolute;
+        left: 0;
+        top: 0;
+        bottom: 0;
+        width: 5px;
+        background: var(--tint);
+      }
+      .case__label b {
+        font: 600 0.8rem/1.15 var(--sans);
+        color: var(--ink);
+      }
+      .case__label em {
+        font: 500 0.7rem var(--mono);
+        font-style: normal;
+        color: var(--ink-3);
+      }
+      .case__label small {
+        font: 500 0.52rem var(--mono);
+        letter-spacing: 0.1em;
+        text-transform: uppercase;
+        color: var(--ink-3);
+      }
+      .case:hover {
+        transform: translateY(-4px);
+      }
+      .case[aria-pressed="true"] {
+        transform: translateY(-6px);
+        box-shadow:
+          0 0 0 2px #fbf9f3,
+          0 0 0 4px var(--tint),
+          0 18px 28px -18px rgba(18, 26, 23, 0.8);
+      }
+      .case.off {
+        opacity: 0.25;
+      }
+      /* the open case */
+      .ko {
+        margin-top: 30px;
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) 350px;
+        gap: 24px;
+        align-items: start;
+      }
+      .box {
+        position: relative;
+        perspective: 1500px;
+        padding-top: 90px;
+      }
+      .box__shell {
+        position: relative;
+        border-radius: 22px;
+        padding: 18px;
+        background: linear-gradient(160deg, #3a4442, #232b29 70%);
+        box-shadow:
+          inset 0 1px 0 rgba(255, 255, 255, 0.12),
+          0 40px 60px -40px rgba(18, 26, 23, 0.8);
+      }
+      .box__lid {
+        position: absolute;
+        left: 0;
+        right: 0;
+        top: 90px;
+        height: calc(100% - 90px);
+        border-radius: 22px;
+        transform-origin: 50% 0;
+        transform: rotateX(0deg);
+        z-index: 5;
+        background: linear-gradient(160deg, #44504d, #2a3331 70%);
+        box-shadow:
+          inset 0 1px 0 rgba(255, 255, 255, 0.14),
+          inset 0 -3px 0 rgba(0, 0, 0, 0.3);
+        transition: transform 0.75s cubic-bezier(0.3, 0.7, 0.2, 1);
+        display: grid;
+        place-items: center;
+        transform-style: preserve-3d;
+      }
+      /* the lid's inside: the same shell, darker, seen once it stands open; the label is only on the outside */
+      .box__lid::after {
+        content: "";
+        position: absolute;
+        inset: 0;
+        border-radius: 22px;
+        transform: rotateX(180deg);
+        backface-visibility: hidden;
+        background: linear-gradient(180deg, #1c2221, #2c3533);
+        box-shadow:
+          inset 0 0 0 10px #2e3836,
+          inset 0 0 0 11px rgba(255, 255, 255, 0.06);
+      }
+      .box__lid .case__label {
+        backface-visibility: hidden;
+      }
+      .box.open .box__lid {
+        transform: rotateX(-104deg);
+      }
+      .box__lid .case__label {
+        position: relative;
+        inset: auto;
+        width: min(320px, 70%);
+        padding: 16px 18px 16px 24px;
+      }
+      .box__lid .case__label b {
+        font-size: 1.3rem;
+      }
+      .box__lid .case__label em {
+        font-size: 0.86rem;
+      }
+      .foam {
+        position: relative;
+        display: grid;
+        grid-template-columns: 170px minmax(0, 1fr);
+        gap: 16px;
+        min-height: 440px;
+        padding: 18px;
+        border-radius: 12px;
+        background-color: #3b4140;
+        background-image: radial-gradient(rgba(255, 255, 255, 0.05) 1px, transparent 1.4px);
+        background-size: 7px 7px;
+      }
+      .slot {
+        position: relative;
+        display: grid;
+        justify-items: center;
+        align-content: end;
+        gap: 8px;
+        padding: 12px 8px 10px;
+        border-radius: 12px;
+        background: #2b302f;
+        box-shadow:
+          inset 0 6px 12px rgba(0, 0, 0, 0.45),
+          inset 0 -1px 0 rgba(255, 255, 255, 0.06);
+        text-align: center;
+        opacity: 0;
+        transform: translateY(8px);
+        transition:
+          opacity 0.4s,
+          transform 0.5s var(--ease);
+      }
+      .box.open .slot {
+        opacity: 1;
+        transform: none;
+        transition-delay: calc(0.35s + var(--i) * 0.05s);
+      }
+      .slot__bag {
+        width: 128px;
+      }
+      .slot .glass {
+        --gh: 112px;
+      }
+      .slot b {
+        font-weight: 500;
+        font-size: 0.78rem;
+        line-height: 1.2;
+        color: #f3f0e8;
+      }
+      .slot em {
+        font: 500 0.68rem var(--mono);
+        font-style: normal;
+        color: rgba(243, 240, 232, 0.6);
+      }
+      .slots {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(112px, 1fr));
+        gap: 14px;
+        align-content: start;
+      }
+      .slots__k {
+        grid-column: 1 / -1;
+        margin-top: 4px;
+        font: 500 0.62rem var(--mono);
+        letter-spacing: 0.12em;
+        text-transform: uppercase;
+        color: rgba(243, 240, 232, 0.55);
+      }
+      .box__base {
+        margin-top: 14px;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        color: rgba(243, 240, 232, 0.8);
+        font-size: 0.86rem;
+      }
+      .box__base i {
+        width: 9px;
+        height: 9px;
+        border-radius: 50%;
+        background: var(--tint);
+      }
+      .kcmp {
+        margin-top: 26px;
+      }
+      @media (max-width: 1100px) {
+        .ko {
+          grid-template-columns: 1fr;
+        }
+      }
+      @media (max-width: 800px) {
+        .kc {
+          flex-wrap: nowrap;
+          overflow-x: auto;
+          padding: 8px 2px 10px;
+        }
+        .case {
+          flex: none;
+          width: 150px;
+          height: 100px;
+        }
+        .foam {
+          grid-template-columns: 1fr;
+        }
+        .slot__bag {
+          width: 100px;
+        }
+        .slots {
+          grid-template-columns: repeat(3, minmax(0, 1fr));
+        }
+        .slot .glass {
+          --gh: 84px;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <main>
+      <section class="opt-lead">
+        <div>
+          <span class="kick">Preview C · section 4</span>
+          <h1>The kit cases</h1>
+          <p>
+            Each drip is a closed clinical case with its printed label. Open one and the lid lifts back on its hinge:
+            the bag and every vial and ampoule sit in their own cut-outs in the foam, named and dosed.
+          </p>
+        </div>
+      </section>
+
+      <section class="s4" aria-labelledby="s4h">
+        <div class="wrap">
+          <div id="head"></div>
+          <div class="kc" id="cases" role="group" aria-label="The drips"></div>
+          <div class="ko" id="open">
+            <div class="box" id="box" aria-live="polite">
+              <div class="box__lid" id="lid" aria-hidden="true"></div>
+              <div class="box__shell">
+                <div class="foam" id="foam"></div>
+                <p class="box__base" id="base"><i></i><span></span></p>
+              </div>
+            </div>
+            <div id="card"></div>
+          </div>
+          <div class="kcmp" id="cmp" hidden></div>
+        </div>
+      </section>
+      <section class="opt-next">
+        <div class="wrap">
+          <p class="kick">Next on the page</p>
+          <h2>Follow one dose.</h2>
+          <p>The dose act follows here.</p>
+        </div>
+      </section>
+    </main>
+    <div class="opt-tag">
+      Section 4 · C · Kit cases <a href="index.html">All options</a> <a href="../index.html">Home</a>
+    </div>
+
+    <script src="kit.js"></script>
+    <script src="s4.js"></script>
+    <script>
+      (function () {
+        "use strict";
+        var S = S4,
+          K = S.K,
+          $ = S.$,
+          $$ = S.$$;
+        S.head($("#head"));
+        var cases = $("#cases"),
+          box = $("#box"),
+          lid = $("#lid"),
+          foam = $("#foam"),
+          base = $("#base"),
+          card = $("#card"),
+          open = $("#open"),
+          cmp = $("#cmp");
+        var label = function (d, big) {
+          return (
+            '<span class="case__label">' +
+            (d.pop ? "<small>Most popular</small>" : "") +
+            "<b>" +
+            d.name +
+            "</b><em>" +
+            K.money(d.price) +
+            (big ? " · " + d.time : "") +
+            "</em></span>"
+          );
+        };
+        K.DRIPS.forEach(function (d) {
+          var b = document.createElement("button");
+          b.className = "case";
+          b.dataset.id = d.id;
+          b.style.setProperty("--tint", d.tint);
+          b.setAttribute("aria-pressed", "false");
+          b.setAttribute("aria-label", d.name + ", " + K.money(d.price));
+          b.innerHTML = label(d, false);
+          cases.appendChild(b);
+        });
+        cases.addEventListener("click", function (e) {
+          var b = e.target.closest(".case");
+          if (b) S.choose(b.dataset.id);
+        });
+        function pack(d) {
+          var cols = K.bandsFor(d.items),
+            i = 0;
+          var slot = function (it, k) {
+            return (
+              '<div class="slot" style="--i:' +
+              i++ +
+              '">' +
+              K.glassEl(it, cols[k]) +
+              "<b>" +
+              it[0] +
+              "</b><em>" +
+              it[1] +
+              "</em></div>"
+            );
+          };
+          var inBag = [],
+            beside = [];
+          d.items.forEach(function (it, k) {
+            (it[3] ? beside : inBag).push(slot(it, k));
+          });
+          foam.innerHTML =
+            '<div class="slot" style="--i:0"><div class="slot__bag">' +
+            K.bagHTML(d, true, 1) +
+            "</div><b>" +
+            d.name +
+            "</b><em>500 mL</em></div>" +
+            '<div class="slots"><p class="slots__k">Goes in the bag</p>' +
+            inBag.join("") +
+            (beside.length ? '<p class="slots__k">Given beside the bag</p>' + beside.join("") : "") +
+            "</div>";
+          lid.innerHTML = label(d, true);
+          lid.style.setProperty("--tint", d.tint);
+          box.style.setProperty("--tint", d.tint);
+          $("span", base).textContent = d.base;
+        }
+        var shownId = null,
+          t1,
+          t2;
+        function render(st) {
+          var vis = S.shown().map(function (d) {
+            return d.id;
+          });
+          $$(".case", cases).forEach(function (b) {
+            b.classList.toggle("off", vis.indexOf(b.dataset.id) < 0);
+            b.setAttribute(
+              "aria-pressed",
+              (st.cmp ? st.picks.indexOf(b.dataset.id) >= 0 : b.dataset.id === st.id) ? "true" : "false"
+            );
+          });
+          open.hidden = st.cmp;
+          cmp.hidden = !st.cmp;
+          if (st.cmp) {
+            cmp.innerHTML = st.picks.length ? S.cmpTable(st.picks) : '<p class="s4empty">Pick up to three cases.</p>';
+            return;
+          }
+          var d = K.byId(st.id);
+          card.innerHTML = S.card(d);
+          if (d.id === shownId) return;
+          clearTimeout(t1);
+          clearTimeout(t2);
+          var first = shownId === null;
+          shownId = d.id;
+          // close the lid on the last one, pack this one, open it
+          box.classList.remove("open");
+          t1 = setTimeout(
+            function () {
+              pack(d);
+              t2 = setTimeout(function () {
+                box.classList.add("open");
+              }, 120);
+            },
+            first ? 300 : 650
+          );
+        }
+        S.on(render);
+      })();
+    </script>
+  </body>
+</html>
