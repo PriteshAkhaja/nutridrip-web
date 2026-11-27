@@ -46,7 +46,7 @@ fs.writeFileSync(`${OUT}/markup.ts`, HEAD("index.html") + `export const HOME_V5_
 
 /* ------------------------------------------------------------------ stylesheet */
 const ROOT = ".sc-site .hv5";
-const WRAPPER = ["js", "still"];
+const WRAPPER = ["js", "still", "is-waiting", "ring-late"]; // classes set on the app's wrapper itself (HomeV5.tsx)
 const SITE_FACES = ["Geist", "Outfit"];
 const css = postcss.parse(read("styles.css"));
 const frames = new Map();
@@ -179,8 +179,72 @@ for (const f of ["newsreader-var.woff2", "newsreader-italic.woff2", "geist-mono.
   fs.copyFileSync(path.join(SRC, "fonts", f), path.join(PUB, "fonts", f));
 for (const f of fs.readdirSync(path.join(SRC, "fonts")))
   if (/^OFL|LICENSE/i.test(f)) fs.copyFileSync(path.join(SRC, "fonts", f), path.join(PUB, "fonts", f));
+/* ------------------------------------------------------------------ the boot script */
+// The same page script as a plain browser script (written after the images, whose clean-up would remove it). The
+// home route sends it with the page's data right after the markup, so on a page load the ring is built and placed
+// before the first paint and arrives with the heading, as it does in the preview. HomeV5.tsx adopts what it started;
+// on a client-side navigation (no page load, so no script runs) HomeV5 loads it without data-auto and mounts.
+const boot =
+  HEAD("app.js and dose-gl.js") +
+  "(function () {\n" +
+  gl.replace("export var DoseGL = ", "var DoseGL = ") +
+  "\n" +
+  js.replace("export function mountHome", "function mountHome") +
+  `
+  window.__ndHome = { mount: mountHome };
+  var me = document.currentScript, el = document.querySelector(".hv5"), data = window.__ndHomeData;
+  if (me && me.getAttribute("data-auto") && el && data && !el.__ndRun) {
+    try { el.__ndRun = mountHome(el, data); el.classList.remove("is-waiting"); }
+    catch (e) { if (window.console) console.error(e); }
+  }
+})();
+`;
+if (!boot.includes("function mountHome(ROOT, DATA)") || /^\s*export\s+(var|function)/m.test(boot))
+  throw new Error("boot: the module lines moved");
+// minified, since it is read before the first paint (esbuild comes with Vitest; unminified if it is ever missing)
+let bootOut = boot;
+try {
+  // HOME_PORT_NOMIN=1 leaves it readable, for profiling
+  if (process.env.HOME_PORT_NOMIN) throw new Error("HOME_PORT_NOMIN set");
+  const { transformSync } = await import("esbuild");
+  bootOut =
+    HEAD("app.js and dose-gl.js") + transformSync(boot, { minify: true, target: "es2018", legalComments: "none" }).code;
+} catch (e) {
+  console.warn("home port: boot script left unminified (" + e.message + ")");
+}
+const { createHash } = await import("node:crypto");
+const ver = createHash("sha1").update(bootOut).digest("hex").slice(0, 10);
+fs.writeFileSync(`${PUB}/home-v5.boot.js`, bootOut);
+fs.writeFileSync(
+  `${OUT}/boot.ts`,
+  HEAD("app.js") +
+    `/** The boot script's address; the query changes with its content, so a new port is never served stale. */\nexport const HOME_V5_BOOT = "${URL}home-v5.boot.js?v=${ver}";\n`
+);
+
+/* ------------------------------------------------------------------ preloads */
+// The preview's head asks for the wall texture, the bag and the fonts before anything else; only its body is ported,
+// so the route asks for them too (React's preload), or the page paints a pale screen in a stand-in font that then
+// changes twice as they arrive. Only files copied above (the site brings its own Geist).
+const preloads = [...html.matchAll(/<link\s+rel="preload"[^>]*>/g)]
+  .map(([tag]) => Object.fromEntries([...tag.matchAll(/([a-z-]+)(?:="([^"]*)")?/g)].map((m) => [m[1], m[2] ?? ""])))
+  .filter((a) => a.href && fs.existsSync(path.join(PUB, a.href.replace(/^images\//, ""))))
+  .map((a) => ({
+    href: a.href.startsWith("images/") ? URL + a.href.slice("images/".length) : URL + a.href,
+    as: a.as,
+    ...(a.type ? { type: a.type } : {}),
+    ...(a.media ? { media: a.media } : {}),
+    ...("crossorigin" in a ? { crossOrigin: "anonymous" } : {}),
+    ...(a.fetchpriority ? { fetchPriority: a.fetchpriority } : {}),
+  }));
+if (!preloads.length) throw new Error("index.html: no preload lines found");
+fs.writeFileSync(
+  `${OUT}/preloads.ts`,
+  HEAD("index.html") +
+    `import type { PreloadOptions } from "react-dom";\n\n/** What the home route asks for before the first paint. */\nexport const HOME_V5_PRELOADS: Array<PreloadOptions & { href: string }> = ${JSON.stringify(preloads, null, 2)};\n`
+);
+
 console.log(
-  `home port: markup ${(markup.length / 1024).toFixed(0)} KB, ${used.size} images, keyframes renamed ${frames.size}`
+  `home port: markup ${(markup.length / 1024).toFixed(0)} KB, ${used.size} images, keyframes renamed ${frames.size}, boot ${(bootOut.length / 1024).toFixed(0)} KB`
 );
 
 // The repo formats every file on commit (lint-staged runs Prettier). Formatting the port here as well means a

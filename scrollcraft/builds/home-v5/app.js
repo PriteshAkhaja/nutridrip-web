@@ -17,8 +17,10 @@
     return x * x * (3 - 2 * x);
   };
   var root = document.documentElement;
+  // one formatter for every price (a toLocaleString per call builds a new one each time)
+  var INR = window.Intl ? new Intl.NumberFormat("en-IN") : null;
   var money = function (n) {
-    return "₹" + n.toLocaleString("en-IN");
+    return "₹" + (INR ? INR.format(n) : n.toLocaleString("en-IN"));
   };
 
   /* ------------------------------------------------------------------ data */
@@ -697,6 +699,16 @@
   }).join("");
   ring.items = $$(".ring__item", ring.box);
   ring.hits = $$(".ring__hit", ring.box);
+  // the bags show once their glass photograph is ready: without it their liquid reads as flat coloured shapes
+  (function () {
+    var img = new Image(),
+      show = function () {
+        ring.el.classList.add("has-glass");
+      };
+    img.onload = img.onerror = show;
+    img.src = "images/bag-empty.webp";
+    if (img.complete) show();
+  })();
   var pad2 = function (n) {
     return (n < 10 ? "0" : "") + n;
   };
@@ -1881,6 +1893,7 @@
     bInfo = $("#bInfo"),
     bBase = $("#bBase");
   var benchBag = null;
+  var benchSeen = false; // the bench is built the first time it is seen (bio, below), not before the first paint
 
   function renderBench(d, animate) {
     bench.style.setProperty("--tint", d.tint);
@@ -1970,11 +1983,8 @@
     $$(".dcard", rail).forEach(function (c) {
       c.setAttribute("aria-pressed", String(c.dataset.id === id && !state.cmp));
     });
-    renderBench(d, true);
-    doseBuild(d);
     heroSet(d, o);
-    sfSet(d);
-    $("#endBag").innerHTML = bagHTML(d, true, 0.92);
+    selectRest(d);
     if (o && o.scroll) {
       var y =
         bench.getBoundingClientRect().top +
@@ -1983,6 +1993,14 @@
         70;
       window.scrollTo({ top: y, behavior: isStill() ? "auto" : "smooth" });
     }
+  }
+
+  // everything below the first screen that shows the chosen drip: the bench, the dose act, the sterile field, the end
+  function selectRest(d) {
+    if (benchSeen) renderBench(d, true);
+    doseBuild(d);
+    sfSet(d);
+    $("#endBag").innerHTML = bagHTML(d, true, 0.92);
   }
 
   function renderCmp() {
@@ -2128,33 +2146,39 @@
     return [((n >> 16) & 255) / 255, ((n >> 8) & 255) / 255, (n & 255) / 255];
   };
   var PAPER = hex3("#F3F0E8");
-  ds.gl = window.DoseGL && !isStill() ? DoseGL.create(ds.canvas, { particles: innerWidth < 800 ? 150 : 240 }) : null;
-  if (!ds.gl && !isStill()) ds.el.classList.add("nogl");
-  if (ds.gl) {
+  // The dose act's WebGL is set up after the page has loaded, with its photographs, and not before the first paint
+  // (compiling its shaders took ~0.4 s): until then the act draws without it, far below the first screen.
+  ds.gl = null;
+  if (!window.WebGLRenderingContext && !isStill()) ds.el.classList.add("nogl");
+  var dsStart = function () {
+    ds.gl = window.DoseGL && !isStill() ? DoseGL.create(ds.canvas, { particles: innerWidth < 800 ? 150 : 240 }) : null;
+    if (!ds.gl) {
+      if (!isStill()) ds.el.classList.add("nogl");
+      return;
+    }
+    if (ds.W) ds.gl.resize(ds.W, ds.H, Math.min(window.devicePixelRatio || 1, ds.ph ? 1.5 : 1.75));
     var sfx = innerWidth < 800 ? "-m" : "";
-    var dsLoad = function () {
-      ds.gl
-        .load({
-          liquid: "images/dose-liquid" + sfx + ".webp",
-          drop: "images/dose-drop" + sfx + ".webp",
-          arm: "images/dose-arm" + sfx + ".webp",
-          vessel: "images/dose-vessel" + sfx + ".webp",
-          inkA: "images/ink-a.webp",
-          inkB: "images/ink-b.webp",
-          cells: "images/dose-cells.webp",
-        })
-        .then(function () {
-          PINS[2].dirty = true;
-          kick();
-        });
-    };
-    // fetched after the page has loaded, and uploaded a texture a frame, long before anyone scrolls this far
-    if (document.readyState === "complete") setTimeout(dsLoad, 250);
-    else
-      window.addEventListener("load", function () {
-        setTimeout(dsLoad, 250);
+    ds.gl
+      .load({
+        liquid: "images/dose-liquid" + sfx + ".webp",
+        drop: "images/dose-drop" + sfx + ".webp",
+        arm: "images/dose-arm" + sfx + ".webp",
+        vessel: "images/dose-vessel" + sfx + ".webp",
+        inkA: "images/ink-a.webp",
+        inkB: "images/ink-b.webp",
+        cells: "images/dose-cells.webp",
+      })
+      .then(function () {
+        PINS[2].dirty = true;
+        kick();
       });
-  }
+  };
+  // set up after the page has loaded, and its textures uploaded a frame at a time, long before anyone scrolls this far
+  if (document.readyState === "complete") setTimeout(dsStart, 250);
+  else
+    window.addEventListener("load", function () {
+      setTimeout(dsStart, 250);
+    });
 
   function doseBuild(d) {
     ds.tint = hex3(d.tint);
@@ -3037,6 +3061,7 @@
   var bio = new IntersectionObserver(
     function (es) {
       if (es[0].isIntersecting) {
+        benchSeen = true;
         renderBench(byId(state.id), true);
         bio.disconnect();
       }
@@ -3160,7 +3185,26 @@
   // a refresh starts at the top (with the head of index.html, which stops the browser restoring the old place)
   var navEntry = performance.getEntriesByType && performance.getEntriesByType("navigation")[0];
   if (navEntry && navEntry.type === "reload") window.scrollTo(0, 0);
-  selectDrip(state.id, {});
+  // The first paint needs only the ring and its caption: the rest that shows the chosen drip is built just after it
+  // (building it all first, and laying the page out for it, held the first paint back by most of a second).
+  (function () {
+    var d = byId(state.id);
+    $$(".dcard", rail).forEach(function (c) {
+      c.setAttribute("aria-pressed", String(c.dataset.id === d.id));
+    });
+    heroSet(d, {});
+    requestAnimationFrame(function () {
+      setTimeout(function () {
+        selectRest(byId(state.id));
+        measure();
+        PINS.forEach(function (pn) {
+          pn.dirty = true;
+        });
+        if (isStill()) stillRender();
+        kick();
+      }, 0);
+    });
+  })();
   // the folded drape is on screen from the statement's first frame: decode its photograph while the page is idle,
   // so its first paint does not land on a scroll frame (the same file the stylesheet asks for at this width)
   (

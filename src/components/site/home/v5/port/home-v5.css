@@ -819,7 +819,7 @@
         rgba(228, 222, 211, 0.9) 82%,
         var(--paper) 100%
       ),
-      url(/site/home/tex-plaster.webp) center / cover;
+      url(/site/home/tex-plaster.webp) center / cover #d2ccc0; /* the plaster's own average colour, until it arrives */
   }
   .sc-site .hv5 .hero__copy {
     position: relative;
@@ -845,6 +845,9 @@
     line-height: 0.96;
     letter-spacing: -0.035em;
   }
+  /* The top of the page opens as one movement, so neither side gets ahead of the other: the heading's lines rise from
+   behind their masks while the ring lowers into place on its cables, starting together and landing together; the
+   paragraph, the button and the ring's caption follow in the same beat. All of it is done in about 1.4 s. */
   .sc-site .hv5 .hero h1 .ln {
     display: block;
     overflow: hidden;
@@ -853,8 +856,8 @@
   }
   .sc-site .hv5 .hero h1 .ln > span {
     display: inline-block;
-    animation: hv5-rise 1.1s var(--ease) both;
-    animation-delay: calc(0.15s + var(--i) * 0.1s);
+    animation: hv5-rise 1s var(--ease) both;
+    animation-delay: calc(0.1s + var(--i) * 0.08s);
   }
   @keyframes hv5-rise {
     from {
@@ -869,7 +872,7 @@
     max-width: 27em;
     font-size: clamp(1.02rem, 0.95rem + 0.4vw, 1.25rem);
     color: var(--ink-2);
-    animation: hv5-fadeup 1s var(--ease) 0.75s both;
+    animation: hv5-fadeup 0.9s var(--ease) 0.45s both;
   }
   .sc-site .hv5 .hero__act {
     margin-top: clamp(20px, 2.4vw, 30px);
@@ -877,7 +880,7 @@
     flex-wrap: wrap;
     align-items: center;
     gap: 14px 24px;
-    animation: hv5-fadeup 1s var(--ease) 0.9s both;
+    animation: hv5-fadeup 0.9s var(--ease) 0.55s both;
   }
   @keyframes hv5-fadeup {
     from {
@@ -914,14 +917,47 @@
     cursor: grab;
     user-select: none;
     -webkit-user-select: none;
-    animation: hv5-ringin 1.2s var(--ease) 0.2s both;
+    animation: hv5-ringin 1.25s var(--ease) 0.1s both;
   }
-  /* the ring rises into place (no fade from nothing: it is the first thing to see, and must count as painted) */
   @keyframes hv5-ringin {
     from {
+      opacity: 0;
+      transform: translateY(-40px);
+    }
+    to {
+      opacity: 1;
+      transform: none;
+    }
+  }
+  .sc-site .hv5 .ring__bag {
+    opacity: 0;
+    transition: opacity 0.35s var(--ease);
+  }
+  .sc-site .hv5 .ring.has-glass .ring__bag {
+    opacity: 1;
+  }
+  /* In the app a page load runs the page's script before the first paint, so the ring is there with everything else.
+   After a client-side navigation the script may still have to be fetched: the ring and its caption wait unseen
+   (is-waiting, set on the app's wrapper) until it has built them, then rise and fade in together (ring-late). The
+   preview never sets either class. */
+  .sc-site .hv5.is-waiting .ring,
+  .sc-site .hv5.is-waiting .ring__ui {
+    visibility: hidden;
+    animation: none;
+  }
+  .sc-site .hv5.ring-late .ring {
+    animation: hv5-ringlate 1s var(--ease) both;
+  }
+  .sc-site .hv5.ring-late .ring__ui {
+    animation: hv5-fadeup 0.9s var(--ease) 0.3s both;
+  }
+  @keyframes hv5-ringlate {
+    from {
+      opacity: 0;
       transform: translateY(22px);
     }
     to {
+      opacity: 1;
       transform: none;
     }
   }
@@ -1049,7 +1085,7 @@
     align-items: center;
     gap: 18px;
     max-width: 46vw;
-    animation: hv5-fadeup 1s var(--ease) 0.8s both;
+    animation: hv5-fadeup 0.9s var(--ease) 0.5s both;
   }
   .sc-site .hv5 .ring__cap {
     min-width: 0;
@@ -1133,7 +1169,7 @@
           rgba(228, 222, 211, 0.9) 86%,
           var(--paper) 100%
         ),
-        url(/site/home/tex-plaster-m.webp) center / cover;
+        url(/site/home/tex-plaster-m.webp) center / cover #d2ccc0;
     }
     .sc-site .hv5 .hero__copy {
       justify-content: flex-start;
@@ -4287,6 +4323,7 @@
     .sc-site .hv5 *::before,
     .sc-site .hv5 *::after {
       animation-duration: 0.001s !important;
+      animation-delay: 0s !important;
       animation-iteration-count: 1 !important;
       transition-duration: 0.001s !important;
       scroll-behavior: auto !important;
